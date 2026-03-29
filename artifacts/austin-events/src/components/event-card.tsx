@@ -6,10 +6,20 @@ function safeFormat(dateStr: string | null | undefined, fmt: string): string {
   if (!dateStr) return "TBD";
   try {
     const d = parseISO(dateStr);
-    if (isNaN(d.getTime())) return "TBD";
+    if (isNaN(d.getTime())) return dateStr;
     return format(d, fmt);
   } catch {
-    return "TBD";
+    return dateStr;
+  }
+}
+
+function isIsoDate(dateStr: string | null | undefined): boolean {
+  if (!dateStr) return false;
+  try {
+    const d = parseISO(dateStr);
+    return !isNaN(d.getTime());
+  } catch {
+    return false;
   }
 }
 
@@ -53,9 +63,11 @@ export function EventCard({ event }: { event: EventItem }) {
               <Calendar className="w-4 h-4" />
               {safeFormat(event.date, "MMM d, yyyy")}
             </span>
-            <span className="text-xs text-muted-foreground mt-1">
-              {safeFormat(event.date, "h:mm a")}
-            </span>
+            {isIsoDate(event.date) && (
+              <span className="text-xs text-muted-foreground mt-1">
+                {safeFormat(event.date, "h:mm a")}
+              </span>
+            )}
           </div>
         </div>
 
