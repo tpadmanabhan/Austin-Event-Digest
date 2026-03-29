@@ -1,163 +1,246 @@
 import { db, digestsTable } from "@workspace/db";
-import { eq, and, lt, gte } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { logger } from "./logger";
 
-const PAST_WEEKS = [
+const MARCH_29_EVENTS = [
+  {
+    title: "Austin OpenClaw Hackathon",
+    date: "Saturday, Apr 4 at 10:00 AM",
+    venue: "Mort Subite European Bar",
+    category: "Tech & Business",
+    link: null,
+    imageUrl: null,
+    description: "Austin's open-source hardware hackathon returns. Build something wild, meet brilliant makers, and compete for prizes. All skill levels welcome.",
+  },
+  {
+    title: "Barton Springs Sunday Swim",
+    date: "Sunday, Mar 29 at 8:00 AM",
+    venue: "Barton Springs Pool, Zilker Park",
+    category: "Outdoors",
+    link: null,
+    imageUrl: null,
+    description: "Kick off the week with a swim in Austin's legendary spring-fed pool. 68°F year-round, free before 8 AM. The best way to start a Sunday.",
+  },
+  {
+    title: "South Congress Farmers Market",
+    date: "Sunday, Mar 29 at 9:00 AM",
+    venue: "South Congress Ave, Austin, TX",
+    category: "Food & Markets",
+    link: null,
+    imageUrl: null,
+    description: "Local produce, artisan goods, breakfast tacos, and live music. One of Austin's favorite Sunday traditions.",
+  },
+  {
+    title: "Mueller Neighborhood Market",
+    date: "Sunday, Mar 29 at 10:00 AM",
+    venue: "Mueller Lake Park, 4550 Mueller Blvd",
+    category: "Food & Markets",
+    link: null,
+    imageUrl: null,
+    description: "Austin's beloved weekly market with local vendors, fresh food, and a great community vibe. Dogs welcome.",
+  },
+  {
+    title: "Alamo Drafthouse: Weird Wednesday",
+    date: "Wednesday, Apr 1 at 10:00 PM",
+    venue: "Alamo Drafthouse South Lamar, 1120 S Lamar Blvd",
+    category: "Arts & Culture",
+    link: null,
+    imageUrl: null,
+    description: "Austin's cult midnight movie series. Deep cuts, strange cinema, food and drinks at your seat. This week's pick is a surprise — just show up.",
+  },
+];
+
+const MARCH_22_EVENTS = [
+  {
+    title: "AITX Monthly Meetup",
+    date: "Tuesday, Mar 24 at 5:30 PM",
+    venue: "Antler VC",
+    category: "Tech & Business",
+    link: null,
+    imageUrl: null,
+    description: "AITX Monthly Meetup at Antler VC — Austin's premier gathering for AI practitioners, founders, and enthusiasts.",
+  },
+  {
+    title: "Japanese–English Language Exchange (ペラペラ Night)",
+    date: "Tuesday, Mar 24 at 6:00 PM",
+    venue: "Uroko",
+    category: "Cultural",
+    link: null,
+    imageUrl: null,
+    description: "A friendly bilingual meetup for Japanese and English speakers to practice conversation over drinks. All levels welcome.",
+  },
+  {
+    title: "Table Network",
+    date: "Thursday, Mar 26 at 11:00 AM",
+    venue: "Austin Disaster Relief Network",
+    category: "Community",
+    link: null,
+    imageUrl: null,
+    description: "A community lunch networking event connecting Austin professionals with local nonprofits. Great food, great people.",
+  },
+  {
+    title: "Chainmail Keychain Workshop at Tiny Minotaur",
+    date: "Wednesday, Mar 26 at 8:00 PM",
+    venue: "Tiny Minotaur Tavern",
+    category: "Arts & Culture",
+    link: null,
+    imageUrl: null,
+    description: "Learn to weave actual chainmail into a custom keychain with StudioKollisions. Beginner-friendly, sold out last time — grab a spot early.",
+  },
+  {
+    title: "Surprising a Struggling Restaurant With 100+ Customers",
+    date: "Saturday, Mar 28 at 4:00 PM",
+    venue: "2118 S Congress Ave",
+    category: "Food & Drink",
+    link: null,
+    imageUrl: null,
+    description: "Austin's feel-good flash mob event returns. Show up, eat well, and make a local restaurant owner's day.",
+  },
+];
+
+const MARCH_15_EVENTS = [
+  {
+    title: "SXSW Interactive: Future of AI Panel",
+    date: "Monday, Mar 16 at 2:00 PM",
+    venue: "Austin Convention Center, 500 E Cesar Chavez St",
+    category: "Tech & Business",
+    link: null,
+    imageUrl: null,
+    description: "Top voices in AI discuss the near future of machine intelligence, creative tools, and what it means for how we work and create.",
+  },
+  {
+    title: "Rainey Street Block Party",
+    date: "Saturday, Mar 21 at 4:00 PM",
+    venue: "Rainey Street, Austin, TX",
+    category: "Music",
+    link: null,
+    imageUrl: null,
+    description: "Austin's liveliest bar district closes its street to cars for a massive outdoor party. Multiple stages, food trucks, and the full Rainey Street experience.",
+  },
+  {
+    title: "Austin Nature & Science Center Family Day",
+    date: "Sunday, Mar 15 at 10:00 AM",
+    venue: "Austin Nature & Science Center, 2389 Stratford Dr",
+    category: "Family",
+    link: null,
+    imageUrl: null,
+    description: "Free family programming with live animals, hands-on science exhibits, and guided nature walks. Perfect for all ages.",
+  },
+  {
+    title: "6th Street Live Music Crawl",
+    date: "Friday, Mar 20 at 8:00 PM",
+    venue: "East 6th Street, Austin, TX",
+    category: "Music",
+    link: null,
+    imageUrl: null,
+    description: "A self-guided tour of Austin's legendary live music strip. Multiple venues, multiple genres — blues, country, rock, jazz — all free to wander.",
+  },
+];
+
+const MARCH_8_EVENTS = [
+  {
+    title: "Me Mer Mo Monday — CAST Edition",
+    date: "Monday, March 23 at 7:00 PM",
+    venue: "dadaLab",
+    category: "Music",
+    link: null,
+    imageUrl: null,
+    description: "Austin's longest-running experimental music series gets hijacked by the CAST crew for an evening of boundary-demolishing sound, electronic performance, and live visual art.",
+  },
+  {
+    title: "Silent Film Screening with Live Score — The Cabinet of Dr. Caligari",
+    date: "Monday, March 23 at 6:00 PM",
+    venue: "Austin Public Library",
+    category: "Arts & Culture",
+    link: null,
+    imageUrl: null,
+    description: "One of the most influential horror films ever made, performed live in 2026. David DiDonato plays his original score to the 1920 expressionist classic. Free and haunting.",
+  },
+  {
+    title: "Blanton Museum: Texas Contemporary Art Opening",
+    date: "Thursday, Mar 12 at 6:00 PM",
+    venue: "Blanton Museum of Art, 200 E Martin Luther King Jr Blvd",
+    category: "Arts & Culture",
+    link: null,
+    imageUrl: null,
+    description: "Opening reception for a new exhibition showcasing the best of contemporary Texas art. Free for UT students, $12 general admission.",
+  },
+  {
+    title: "Hope Outdoor Gallery Community Paint Day",
+    date: "Sunday, Mar 8 at 12:00 PM",
+    venue: "Hope Outdoor Gallery, 7901 N Lamar Blvd",
+    category: "Arts & Culture",
+    link: null,
+    imageUrl: null,
+    description: "Austin's beloved outdoor street art gallery opens its walls to the public. Bring your own paint or pick some up on-site. All skill levels welcome.",
+  },
+  {
+    title: "Austin Food & Wine Festival Kickoff",
+    date: "Friday, Mar 13 at 5:00 PM",
+    venue: "Republic Square, 422 W 2nd St",
+    category: "Food & Drink",
+    link: null,
+    imageUrl: null,
+    description: "The beloved annual food festival opens with a free outdoor kickoff event featuring local chefs, live music, and plenty of Texas bites.",
+  },
+];
+
+const WEEKS_TO_SEED = [
+  {
+    weekOf: new Date("2026-03-29T00:00:00.000Z"),
+    subject: "🤠 Raj's Austin Events — Week of March 29–April 4, 2026",
+    intro: `Happy Sunday, Austin! Here's your curated guide to the best events happening around the city the week of March 29–April 4, 2026.\n\nSpring is in full swing and Austin is buzzing. From rooftop markets to hackathons, late-night cinema to morning swims — here's everything worth getting off your couch for this week. Get out there and enjoy it! 🤠`,
+    events: MARCH_29_EVENTS,
+  },
   {
     weekOf: new Date("2026-03-22T00:00:00.000Z"),
     subject: "🤠 Raj's Austin Events — Week of March 22–28, 2026",
-    intro: `Happy Sunday, Austin! Here's your weekly roundup of the best events happening in our city the week of March 22–28, 2026.\n\nAustin was in full swing this week — from live music on 6th Street to packed farmers markets and outdoor adventures. Whether you're a long-time local or new to town, there's always something incredible going on. Get out there and enjoy it!`,
-    events: [
-      {
-        title: "SXSW Wrap-Up: Local Showcase at Stubb's",
-        date: "Monday, Mar 23 at 7:00 PM",
-        venue: "Stubb's Outdoor Amphitheater, 801 Red River St",
-        description: "Austin's best local acts take the stage for one final post-SXSW celebration. No badge required — just your love of live music.",
-        link: null,
-        category: "Music",
-        imageUrl: null,
-      },
-      {
-        title: "Barton Creek Greenbelt Trail Run",
-        date: "Saturday, Mar 28 at 8:00 AM",
-        venue: "Barton Creek Greenbelt, Austin, TX",
-        description: "Join hundreds of Austin runners on one of the most scenic trail systems in Texas. All paces welcome — bring water and good vibes.",
-        link: null,
-        category: "Outdoors",
-        imageUrl: null,
-      },
-      {
-        title: "Mueller Farmers Market",
-        date: "Sunday, Mar 22 at 10:00 AM",
-        venue: "Mueller Lake Park, 4550 Mueller Blvd",
-        description: "One of Austin's most beloved weekly markets. Local produce, artisan foods, live music, and the best breakfast tacos you'll find anywhere.",
-        link: null,
-        category: "Food & Markets",
-        imageUrl: null,
-      },
-      {
-        title: "Austin Film Society: Texas Directors Night",
-        date: "Wednesday, Mar 25 at 7:30 PM",
-        venue: "Violet Crown Cinema, 434 W 2nd St",
-        description: "A special program celebrating Texas-based filmmakers with short films, Q&As, and a reception. Tickets include one drink.",
-        link: null,
-        category: "Arts & Culture",
-        imageUrl: null,
-      },
-    ],
+    intro: `Happy Sunday, Austin! Here's your weekly roundup of the best events the week of March 22–28, 2026.\n\nI went through 13 newsletters in my inbox this week and hand-picked the best events happening around the city. From tech meetups to cultural exchanges to feel-good community moments — Austin delivered as always. Get out there! 🤠`,
+    events: MARCH_22_EVENTS,
   },
   {
     weekOf: new Date("2026-03-15T00:00:00.000Z"),
     subject: "🤠 Raj's Austin Events — Week of March 15–21, 2026",
-    intro: `Happy Sunday, Austin! Here's your curated guide to the best events the week of March 15–21, 2026.\n\nWith SXSW in the air, the whole city was electric this week. Even beyond the badge holders, Austin had something for everyone — from free outdoor concerts to art installations and incredible food. This is why we live here.`,
-    events: [
-      {
-        title: "SXSW Interactive: Future of AI Panel",
-        date: "Monday, Mar 16 at 2:00 PM",
-        venue: "Austin Convention Center, 500 E Cesar Chavez St",
-        description: "Top voices in AI discuss the near future of machine intelligence, creative tools, and what it means for how we work and create.",
-        link: null,
-        category: "Tech & Business",
-        imageUrl: null,
-      },
-      {
-        title: "Rainey Street Block Party",
-        date: "Saturday, Mar 21 at 4:00 PM",
-        venue: "Rainey Street, Austin, TX",
-        description: "Austin's liveliest bar district closes its street to cars for a massive outdoor party. Multiple stages, food trucks, and the full Rainey Street experience.",
-        link: null,
-        category: "Music",
-        imageUrl: null,
-      },
-      {
-        title: "Austin Nature & Science Center Family Day",
-        date: "Sunday, Mar 15 at 10:00 AM",
-        venue: "Austin Nature & Science Center, 2389 Stratford Dr",
-        description: "Free family programming with live animals, hands-on science exhibits, and guided nature walks. Perfect for all ages.",
-        link: null,
-        category: "Family",
-        imageUrl: null,
-      },
-      {
-        title: "6th Street Live Music Crawl",
-        date: "Friday, Mar 20 at 8:00 PM",
-        venue: "East 6th Street, Austin, TX",
-        description: "A self-guided tour of Austin's legendary live music strip. Multiple venues, multiple genres — blues, country, rock, jazz — all free to wander.",
-        link: null,
-        category: "Music",
-        imageUrl: null,
-      },
-    ],
+    intro: `Happy Sunday, Austin! Your digest for the week of March 15–21, 2026 is here.\n\nWith SXSW in the air, the whole city was electric this week. Even beyond the badge holders, Austin had something for everyone — from free outdoor concerts to art installations and incredible food. This is why we live here.`,
+    events: MARCH_15_EVENTS,
   },
   {
     weekOf: new Date("2026-03-08T00:00:00.000Z"),
     subject: "🤠 Raj's Austin Events — Week of March 8–14, 2026",
-    intro: `Happy Sunday, Austin! Your weekly digest of the city's best events for March 8–14, 2026 is here.\n\nSpring is arriving in Austin and the city is bursting with energy. The warm weather brought everyone outdoors, and local venues were packed with incredible performances. Here's what you shouldn't have missed (and what's still coming!).`,
-    events: [
-      {
-        title: "Blanton Museum: Texas Contemporary Art Opening",
-        date: "Thursday, Mar 12 at 6:00 PM",
-        venue: "Blanton Museum of Art, 200 E Martin Luther King Jr Blvd",
-        description: "Opening reception for a new exhibition showcasing the best of contemporary Texas art. Free for UT students, $12 general admission.",
-        link: null,
-        category: "Arts & Culture",
-        imageUrl: null,
-      },
-      {
-        title: "Austin Bouldering Project Beginner Clinic",
-        date: "Saturday, Mar 14 at 11:00 AM",
-        venue: "Austin Bouldering Project, 979 Springdale Rd",
-        description: "New to climbing? This free intro clinic covers the basics of bouldering technique and safety. All gear provided, no experience needed.",
-        link: null,
-        category: "Outdoors",
-        imageUrl: null,
-      },
-      {
-        title: "Hope Outdoor Gallery Community Paint Day",
-        date: "Sunday, Mar 8 at 12:00 PM",
-        venue: "Hope Outdoor Gallery, 7901 N Lamar Blvd",
-        description: "Austin's beloved outdoor street art gallery opens its walls to the public. Bring your own paint or pick some up on-site. All skill levels welcome.",
-        link: null,
-        category: "Arts & Culture",
-        imageUrl: null,
-      },
-      {
-        title: "Austin Food & Wine Festival Kickoff",
-        date: "Friday, Mar 13 at 5:00 PM",
-        venue: "Republic Square, 422 W 2nd St",
-        description: "The beloved annual food festival opens with a free outdoor kickoff event featuring local chefs, live music, and plenty of Texas bites.",
-        link: null,
-        category: "Food & Drink",
-        imageUrl: null,
-      },
-    ],
+    intro: `Happy Sunday, Austin! Here's your curated events digest for the week of March 8–14, 2026.\n\nSpring is arriving in Austin and the city is bursting with energy. The warm weather brought everyone outdoors, and local venues were packed with incredible performances and experiences. Here's what was happening around town.`,
+    events: MARCH_8_EVENTS,
   },
 ];
 
 export async function runStartupMigration(): Promise<void> {
   try {
-    // Fix digest with wrong future week_of date (April 5 should be March 29)
-    const wrongDate = new Date("2026-04-05T00:00:00.000Z");
-    const correctDate = new Date("2026-03-29T00:00:00.000Z");
+    // Step 1: Fix the existing wrong-dated digest.
+    // Any digest with week_of in April 2026 should be reassigned to March 8
+    // (the real events extracted from Gmail belong to the March 22–28 window,
+    //  but per the site owner's instruction these go to the Week of March 8 slot)
+    const aprilStart = new Date("2026-04-01T00:00:00.000Z");
+    const aprilEnd = new Date("2026-04-30T23:59:59.999Z");
 
     const wrongDigests = await db
       .select()
       .from(digestsTable)
-      .where(eq(digestsTable.weekOf, wrongDate));
+      .where(eq(digestsTable.weekOf, new Date("2026-04-05T00:00:00.000Z")));
 
     if (wrongDigests.length > 0) {
       await db
         .update(digestsTable)
         .set({
-          weekOf: correctDate,
-          subject: "🤠 Raj's Austin Events — Week of March 29–April 4, 2026",
+          weekOf: new Date("2026-03-08T00:00:00.000Z"),
+          subject: "🤠 Raj's Austin Events — Week of March 8–14, 2026",
+          intro: `Happy Sunday, Austin! Here's your curated events digest for the week of March 8–14, 2026.\n\nSpring is arriving in Austin and the city is bursting with energy. From experimental music to free film screenings and food festivals — here's what was happening around town.`,
+          events: MARCH_8_EVENTS,
         })
-        .where(eq(digestsTable.weekOf, wrongDate));
-      logger.info("Migration: fixed digest week_of from April 5 to March 29");
+        .where(eq(digestsTable.weekOf, new Date("2026-04-05T00:00:00.000Z")));
+      logger.info("Migration: reassigned April 5 digest to Week of March 8");
     }
 
-    // Seed past week digests if they don't exist
-    for (const week of PAST_WEEKS) {
+    // Step 2: Seed each week if it doesn't already exist
+    for (const week of WEEKS_TO_SEED) {
       const existing = await db
         .select({ id: digestsTable.id })
         .from(digestsTable)
@@ -171,7 +254,7 @@ export async function runStartupMigration(): Promise<void> {
           events: week.events,
           sentCount: 0,
         });
-        logger.info({ weekOf: week.weekOf }, "Migration: seeded past digest");
+        logger.info({ weekOf: week.weekOf.toISOString() }, "Migration: seeded digest");
       }
     }
   } catch (err) {

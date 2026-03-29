@@ -33,7 +33,7 @@ router.get("/digest/latest", async (req, res) => {
     const [latest] = await db
       .select()
       .from(digestsTable)
-      .orderBy(desc(digestsTable.createdAt))
+      .orderBy(desc(digestsTable.weekOf))
       .limit(1);
 
     if (!latest) {
@@ -54,7 +54,7 @@ router.get("/digest/list", async (req, res) => {
     const digests = await db
       .select()
       .from(digestsTable)
-      .orderBy(desc(digestsTable.createdAt));
+      .orderBy(desc(digestsTable.weekOf));
 
     const response = ListDigestsResponse.parse({
       digests: digests.map(digestToApi),
