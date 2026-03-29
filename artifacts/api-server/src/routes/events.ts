@@ -87,8 +87,12 @@ router.post("/digest/generate", async (req, res) => {
       req.log.info("Gmail configured — fetching events from inbox");
       const since = new Date(weekOf);
       since.setDate(since.getDate() - 7);
+      // Only fetch emails received before the weekOf date (exclusive to that week's window)
+      // For the current/upcoming week, don't restrict before so we get the latest emails
+      const isPastWeek = weekOf < new Date();
+      const before = isPastWeek ? new Date(weekOf) : undefined;
 
-      const gmailResult = await fetchEventsFromGmail(since);
+      const gmailResult = await fetchEventsFromGmail(since, before);
       sourceNote = `(sourced from ${gmailResult.emails} newsletter email${gmailResult.emails === 1 ? "" : "s"})`;
 
       const fallback = generateSampleDigest(weekOf, customNotes || undefined);

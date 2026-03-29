@@ -18,7 +18,7 @@ interface FetchedEmail {
   html: string;
 }
 
-async function fetchRecentNewsletterEmails(since: Date): Promise<FetchedEmail[]> {
+async function fetchRecentNewsletterEmails(since: Date, before?: Date): Promise<FetchedEmail[]> {
   if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
     throw new Error("GMAIL_USER and GMAIL_APP_PASSWORD environment variables are required");
   }
@@ -38,7 +38,9 @@ async function fetchRecentNewsletterEmails(since: Date): Promise<FetchedEmail[]>
     const lock = await client.getMailboxLock("INBOX");
 
     try {
-      const messages = client.fetch({ since }, { source: true, envelope: true });
+      const criteria: Record<string, any> = { since };
+      if (before) criteria.before = before;
+      const messages = client.fetch(criteria, { source: true, envelope: true });
 
       for await (const msg of messages) {
         try {
@@ -254,16 +256,16 @@ export interface EmailSourceResult {
   sources: string[];
 }
 
-export async function fetchEventsFromGmail(since?: Date): Promise<EmailSourceResult> {
+export async function fetchEventsFromGmail(since?: Date, before?: Date): Promise<EmailSourceResult> {
   const sinceDate = since || (() => {
     const d = new Date();
     d.setDate(d.getDate() - 7);
     return d;
   })();
 
-  logger.info({ since: sinceDate, user: GMAIL_USER }, "Fetching newsletter emails from Gmail");
+  logger.info({ since: sinceDate, before, user: GMAIL_USER }, "Fetching newsletter emails from Gmail");
 
-  const allEmails = await fetchRecentNewsletterEmails(sinceDate);
+  const allEmails = await fetchRecentNewsletterEmails(sinceDate, before);
   logger.info({ total: allEmails.length }, "Total emails fetched");
 
   const newsletterEmails = allEmails.filter(isNewsletterEmail);
