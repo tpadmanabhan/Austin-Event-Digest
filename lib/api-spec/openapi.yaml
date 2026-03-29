@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: API specification for Raj's Austin Events newsletter
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: newsletter
+    description: Newsletter subscriber and digest operations
+  - name: events
+    description: Events and digest management
 paths:
   /healthz:
     get:
@@ -24,6 +27,134 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /newsletter/subscribe:
+    post:
+      operationId: subscribeToNewsletter
+      tags: [newsletter]
+      summary: Subscribe to the newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscribeRequest"
+      responses:
+        "200":
+          description: Successfully subscribed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscribeResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /newsletter/unsubscribe:
+    post:
+      operationId: unsubscribeFromNewsletter
+      tags: [newsletter]
+      summary: Unsubscribe from the newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnsubscribeRequest"
+      responses:
+        "200":
+          description: Successfully unsubscribed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /newsletter/subscribers:
+    get:
+      operationId: getSubscribers
+      tags: [newsletter]
+      summary: Get all subscribers (admin)
+      responses:
+        "200":
+          description: List of subscribers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscribersResponse"
+
+  /events/digest/latest:
+    get:
+      operationId: getLatestDigest
+      tags: [events]
+      summary: Get the latest weekly digest
+      responses:
+        "200":
+          description: Latest digest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DigestResponse"
+        "404":
+          description: No digest found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /events/digest/list:
+    get:
+      operationId: listDigests
+      tags: [events]
+      summary: List all past digests
+      responses:
+        "200":
+          description: List of digests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DigestListResponse"
+
+  /events/digest/generate:
+    post:
+      operationId: generateDigest
+      tags: [events]
+      summary: Generate a new weekly digest (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateDigestRequest"
+      responses:
+        "200":
+          description: Digest generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DigestResponse"
+
+  /events/digest/send:
+    post:
+      operationId: sendDigest
+      tags: [events]
+      summary: Send the latest digest to all subscribers (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendDigestRequest"
+      responses:
+        "200":
+          description: Digest sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +165,192 @@ components:
       required:
         - status
 
+    SubscribeRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+      required:
+        - email
+
+    SubscribeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        subscriber:
+          $ref: "#/components/schemas/Subscriber"
+      required:
+        - success
+        - message
+
+    UnsubscribeRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+        - email
+
+    MessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
+
+    Subscriber:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+          nullable: true
+        subscribedAt:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+      required:
+        - id
+        - email
+        - subscribedAt
+        - isActive
+
+    SubscribersResponse:
+      type: object
+      properties:
+        subscribers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subscriber"
+        total:
+          type: integer
+      required:
+        - subscribers
+        - total
+
+    EventItem:
+      type: object
+      properties:
+        title:
+          type: string
+        date:
+          type: string
+        venue:
+          type: string
+        description:
+          type: string
+        link:
+          type: string
+          nullable: true
+        category:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+      required:
+        - title
+        - date
+        - venue
+        - description
+        - category
+
+    Digest:
+      type: object
+      properties:
+        id:
+          type: integer
+        weekOf:
+          type: string
+          format: date-time
+        subject:
+          type: string
+        intro:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventItem"
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        sentCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - weekOf
+        - subject
+        - intro
+        - events
+        - sentCount
+        - createdAt
+
+    DigestResponse:
+      type: object
+      properties:
+        digest:
+          $ref: "#/components/schemas/Digest"
+      required:
+        - digest
+
+    DigestListResponse:
+      type: object
+      properties:
+        digests:
+          type: array
+          items:
+            $ref: "#/components/schemas/Digest"
+      required:
+        - digests
+
+    GenerateDigestRequest:
+      type: object
+      properties:
+        weekOf:
+          type: string
+          description: ISO date string for the week (defaults to next Sunday)
+        customNotes:
+          type: string
+          description: Optional personal notes to include in the intro
+      required: []
+
+    SendDigestRequest:
+      type: object
+      properties:
+        digestId:
+          type: integer
+        testEmail:
+          type: string
+          format: email
+          description: If provided, only sends to this test email
+      required:
+        - digestId

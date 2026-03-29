@@ -2,7 +2,7 @@
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+pnpm workspace monorepo using TypeScript. This is "Raj's Austin Events" — a personalized weekly newsletter website about Austin events.
 
 ## Stack
 
@@ -15,33 +15,41 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
+- **Email**: Resend API (requires RESEND_API_KEY secret)
+
+## Features
+
+1. **Landing page** with email subscription form and latest digest preview
+2. **Digest page** — view individual weekly digests with event cards
+3. **Admin panel** at `/admin` — generate new digests, manage subscribers, send newsletters
+4. **Email newsletters** via Resend (configure RESEND_API_KEY env var)
+
+## Environment Variables
+
+- `RESEND_API_KEY` — API key from resend.com for sending emails
+- `FROM_EMAIL` — The "from" email address (defaults to newsletter@rajsaustinevents.com)
+- `FROM_NAME` — The sender name (defaults to "Raj's Austin Events")
+- `DATABASE_URL` — Auto-provided by Replit PostgreSQL
 
 ## Structure
 
 ```text
 artifacts-monorepo/
 ├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
+│   ├── api-server/         # Express API server
+│   └── austin-events/      # React + Vite frontend website
 ├── lib/                    # Shared libraries
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
 │   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
-├── tsconfig.json           # Root TS project references
-└── package.json            # Root package with hoisted devDeps
+├── scripts/                # Utility scripts
+└── ...
 ```
 
 ## TypeScript & Composite Projects
 
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references. This means:
-
-- **Always typecheck from the root** — run `pnpm run typecheck` (which runs `tsc --build --emitDeclarationOnly`). This builds the full dependency graph so that cross-package imports resolve correctly. Running `tsc` inside a single package will fail if its dependencies haven't been built yet.
-- **`emitDeclarationOnly`** — we only emit `.d.ts` files during typecheck; actual JS bundling is handled by esbuild/tsx/vite...etc, not `tsc`.
-- **Project references** — when package A depends on package B, A's `tsconfig.json` must list B in its `references` array. `tsc --build` uses this to determine build order and skip up-to-date packages.
+Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references.
 
 ## Root Scripts
 
@@ -50,47 +58,36 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 
 ## Packages
 
+### `artifacts/austin-events` (`@workspace/austin-events`)
+
+React + Vite frontend. Pages: Home, Digest view, Admin panel.
+
 ### `artifacts/api-server` (`@workspace/api-server`)
 
-Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for request and response validation and `@workspace/db` for persistence.
-
-- Entry: `src/index.ts` — reads `PORT`, starts Express
-- App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
-- `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
-- Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
+Express 5 API server. Routes:
+- `GET /api/healthz` — health check
+- `POST /api/newsletter/subscribe` — subscribe to newsletter
+- `POST /api/newsletter/unsubscribe` — unsubscribe
+- `GET /api/newsletter/subscribers` — list subscribers (admin)
+- `GET /api/events/digest/latest` — get latest digest
+- `GET /api/events/digest/list` — list all digests
+- `POST /api/events/digest/generate` — generate new digest (admin)
+- `POST /api/events/digest/send` — send digest to subscribers (admin)
 
 ### `lib/db` (`@workspace/db`)
 
-Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
-
-- `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
-- `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
-- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
-- Exports: `.` (pool, db, schema), `./schema` (schema only)
-
-Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
+Database layer. Tables: `subscribers`, `digests`.
 
 ### `lib/api-spec` (`@workspace/api-spec`)
 
-Owns the OpenAPI 3.1 spec (`openapi.yaml`) and the Orval config (`orval.config.ts`). Running codegen produces output into two sibling packages:
+Owns the OpenAPI 3.1 spec. Run codegen: `pnpm --filter @workspace/api-spec run codegen`
 
-1. `lib/api-client-react/src/generated/` — React Query hooks + fetch client
-2. `lib/api-zod/src/generated/` — Zod schemas
+## Email Setup
 
-Run codegen: `pnpm --filter @workspace/api-spec run codegen`
+To enable email sending, set the `RESEND_API_KEY` secret in your environment:
+1. Sign up at resend.com (free)
+2. Create an API key
+3. Add `RESEND_API_KEY` to your Replit secrets
+4. Optionally set `FROM_EMAIL` to your verified domain email
 
-### `lib/api-zod` (`@workspace/api-zod`)
-
-Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used by `api-server` for response validation.
-
-### `lib/api-client-react` (`@workspace/api-client-react`)
-
-Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
-
-### `scripts` (`@workspace/scripts`)
-
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+Without the key, the app works fully but emails won't be sent.

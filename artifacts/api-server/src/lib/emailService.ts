@@ -1,0 +1,131 @@
+import { logger } from "./logger";
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
+const FROM_NAME = process.env.FROM_NAME || "Raj's Austin Events";
+
+interface SendEmailOptions {
+  to: string | string[];
+  subject: string;
+  html: string;
+  replyTo?: string;
+}
+
+interface SendEmailResult {
+  success: boolean;
+  id?: string;
+  error?: string;
+}
+
+export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
+  if (!RESEND_API_KEY) {
+    logger.warn("RESEND_API_KEY not configured — email sending disabled");
+    return { success: false, error: "Email service not configured" };
+  }
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        to: Array.isArray(options.to) ? options.to : [options.to],
+        subject: options.subject,
+        html: options.html,
+        reply_to: options.replyTo,
+      }),
+    });
+
+    const data = await response.json() as { id?: string; message?: string };
+
+    if (!response.ok) {
+      logger.error({ status: response.status, data }, "Resend API error");
+      return { success: false, error: data.message || "Failed to send email" };
+    }
+
+    return { success: true, id: data.id };
+  } catch (err) {
+    logger.error({ err }, "Error sending email");
+    return { success: false, error: "Network error sending email" };
+  }
+}
+
+export function buildDigestEmailHtml(digest: {
+  subject: string;
+  intro: string;
+  weekOf: Date | string;
+  events: Array<{
+    title: string;
+    date: string;
+    venue: string;
+    description: string;
+    category: string;
+    link?: string | null;
+    imageUrl?: string | null;
+  }>;
+}, subscriberName?: string | null): string {
+  const weekDate = new Date(digest.weekOf).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const greeting = subscriberName ? `Hey ${subscriberName},` : "Hey there,";
+
+  const eventCards = digest.events.map(event => `
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-bottom:20px;">
+      <div style="display:inline-block; background:#d97706; color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${event.category}</div>
+      <h3 style="margin:0 0 8px; color:#1c1917; font-size:18px; font-weight:700;">${event.title}</h3>
+      <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${event.date}</p>
+      <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${event.venue}</p>
+      <p style="margin:0 0 16px; color:#44403c; font-size:15px; line-height:1.6;">${event.description}</p>
+      ${event.link ? `<a href="${event.link}" style="display:inline-block; background:#d97706; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
+    </div>
+  `).join("");
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${digest.subject}</title>
+</head>
+<body style="margin:0; padding:0; background:#fafaf9; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:600px; margin:0 auto; padding:20px;">
+    
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg, #292524 0%, #1c1917 100%); border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
+      <h1 style="margin:0 0 6px; color:#fbbf24; font-size:26px; font-weight:800; letter-spacing:-0.5px;">🤠 Raj's Austin Events</h1>
+      <p style="margin:0; color:#d6d3d1; font-size:14px;">Your weekly guide to what's happening in Austin</p>
+      <p style="margin:8px 0 0; color:#a8a29e; font-size:13px;">Week of ${weekDate}</p>
+    </div>
+
+    <!-- Intro -->
+    <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:24px;">
+      <p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>
+      <p style="margin:0; color:#44403c; font-size:15px; line-height:1.7;">${digest.intro.replace(/\n/g, "<br>")}</p>
+    </div>
+
+    <!-- Events -->
+    <h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>
+    ${eventCards}
+
+    <!-- Footer -->
+    <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
+      <p style="margin:0 0 8px; color:#78716c; font-size:13px;">Curated with ❤️ by Raj from Austin, TX</p>
+      <p style="margin:0; color:#a8a29e; font-size:12px;">
+        You're receiving this because you subscribed at Raj's Austin Events.<br>
+        <a href="{{unsubscribe_url}}" style="color:#d97706; text-decoration:none;">Unsubscribe</a>
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
+  `;
+}

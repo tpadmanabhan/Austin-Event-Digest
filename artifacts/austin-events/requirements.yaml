@@ -1,0 +1,19 @@
+packages:
+  "framer-motion": "For premium page transitions and scroll animations"
+  "date-fns": "For formatting event and digest dates beautifully"
+  "react-hook-form": "For robust newsletter subscription and admin form handling"
+  "@hookform/resolvers": "For Zod form validation"
+  "clsx": "Utility for constructing CSS class names conditionally"
+  "tailwind-merge": "Utility for merging Tailwind classes safely"
+
+images:
+  - path: "artifacts/austin-events/public/images/austin-hero.png"
+    description: "Warm, stylized vector illustration of the Austin Texas skyline and congress bridge at sunset. Retro vintage travel poster aesthetic with warm burnt orange, amber, and deep teal colors. Clean minimalist lines, flat design, no text."
+    aspect_ratio: "16:9"
+  - path: "artifacts/austin-events/public/images/logo-mark.png"
+    description: "Minimalist modern geometric logo mark representing a sun setting over a guitar or river, warm burnt orange and yellow tones, transparent background, flat design."
+    aspect_ratio: "1:1"
+
+notes:
+  - Hooks are imported from @workspace/api-client-react but wrapped in local hook files to ensure query invalidations are wired up correctly for the admin actions.
+  - The UI uses Tailwind v4 with CSS-native variable configurations in index.css.
