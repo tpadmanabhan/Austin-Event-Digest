@@ -222,7 +222,7 @@ export default function Home() {
                 >
                   <div className="flex items-center gap-3 text-muted-foreground mb-3 text-sm">
                     <Calendar className="w-4 h-4" />
-                    {format(parseISO(digest.weekOf), "MMMM d, yyyy")}
+                    {format(parseISO(digest.weekOf.substring(0, 10)), "MMMM d, yyyy")}
                   </div>
                   <h3 className="font-serif text-xl font-bold mb-2 group-hover:text-primary transition-colors">
                     {digest.subject}

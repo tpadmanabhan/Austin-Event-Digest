@@ -9,7 +9,7 @@ interface GeneratedDigest {
 function getNextSunday(from: Date = new Date()): Date {
   const d = new Date(from);
   const day = d.getDay();
-  const diff = day === 0 ? 7 : 7 - day;
+  const diff = day === 0 ? 0 : 7 - day;
   d.setDate(d.getDate() + diff);
   d.setHours(0, 0, 0, 0);
   return d;

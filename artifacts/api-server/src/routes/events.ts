@@ -126,6 +126,31 @@ router.post("/digest/generate", async (req, res) => {
   }
 });
 
+router.delete("/digest/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+
+  try {
+    const deleted = await db
+      .delete(digestsTable)
+      .where(eq(digestsTable.id, id))
+      .returning();
+
+    if (deleted.length === 0) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+
+    res.json({ success: true, message: "Digest deleted" });
+  } catch (err) {
+    req.log.error({ err }, "Error deleting digest");
+    res.status(500).json({ error: "server_error", message: "Failed to delete digest" });
+  }
+});
+
 router.post("/digest/send", async (req, res) => {
   const parseResult = SendDigestBody.safeParse(req.body);
   if (!parseResult.success) {

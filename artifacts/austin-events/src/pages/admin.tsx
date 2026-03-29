@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Layout } from "@/components/layout";
 import { useNewsletterSubscriptions } from "@/hooks/use-newsletter";
-import { useAllDigests, useGenerateDigest, useSendDigest } from "@/hooks/use-events";
+import { useAllDigests, useGenerateDigest, useSendDigest, useDeleteDigest } from "@/hooks/use-events";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2 } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AdminDashboard() {
@@ -18,12 +18,27 @@ export default function AdminDashboard() {
   
   const { mutate: generate, isPending: isGenerating } = useGenerateDigest();
   const { mutate: send, isPending: isSending } = useSendDigest();
+  const { mutate: deleteDigest, isPending: isDeleting } = useDeleteDigest();
 
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [customNotes, setCustomNotes] = useState("");
 
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
   const [testEmail, setTestEmail] = useState("");
+
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+
+  const onDelete = (digestId: number) => {
+    deleteDigest(digestId, {
+      onSuccess: () => {
+        setDeleteTarget(null);
+        toast({ title: "Digest deleted." });
+      },
+      onError: (err) => {
+        toast({ variant: "destructive", title: "Failed to delete", description: err.message });
+      },
+    });
+  };
 
   const onGenerate = () => {
     generate(
@@ -121,7 +136,7 @@ export default function AdminDashboard() {
                     ) : digestsData?.digests?.map((digest) => (
                       <tr key={digest.id} className="hover:bg-muted/20 transition-colors">
                         <td className="px-6 py-4 font-medium">
-                          {format(parseISO(digest.weekOf), "MMM d, yyyy")}
+                          {format(parseISO(new Date(digest.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")}
                         </td>
                         <td className="px-6 py-4 max-w-xs truncate">{digest.subject}</td>
                         <td className="px-6 py-4">
@@ -141,14 +156,24 @@ export default function AdminDashboard() {
                           )}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <Button 
-                            variant="secondary" 
-                            size="sm" 
-                            className="rounded-lg shadow-none"
-                            onClick={() => setSendDialogTarget(digest.id)}
-                          >
-                            <Send className="w-3.5 h-3.5 mr-2" /> Send...
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button 
+                              variant="secondary" 
+                              size="sm" 
+                              className="rounded-lg shadow-none"
+                              onClick={() => setSendDialogTarget(digest.id)}
+                            >
+                              <Send className="w-3.5 h-3.5 mr-2" /> Send...
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-lg shadow-none text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => setDeleteTarget(digest.id)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -223,6 +248,29 @@ export default function AdminDashboard() {
             <Button variant="outline" onClick={() => setIsGenerateOpen(false)} className="rounded-xl">Cancel</Button>
             <Button onClick={onGenerate} disabled={isGenerating} className="rounded-xl bg-primary hover:bg-primary/90">
               {isGenerating ? "Generating..." : "Generate Draft"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <Dialog open={deleteTarget !== null} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-2xl">Delete Digest?</DialogTitle>
+            <DialogDescription>
+              This will permanently remove the digest. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 pt-4">
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} className="rounded-xl">Cancel</Button>
+            <Button
+              variant="destructive"
+              className="rounded-xl"
+              disabled={isDeleting}
+              onClick={() => deleteTarget !== null && onDelete(deleteTarget)}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
