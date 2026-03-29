@@ -62,7 +62,7 @@ export default function DigestView() {
         <header className="mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             <Calendar className="w-4 h-4" />
-            <span>Week of {format(parseISO(digest.weekOf), "MMMM d, yyyy")}</span>
+            <span>Week of {format(parseISO(digest.weekOf.substring(0, 10)), "MMMM d, yyyy")}</span>
           </div>
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
