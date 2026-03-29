@@ -2,6 +2,17 @@ import { Calendar, MapPin, ExternalLink, Music, Utensils, Laptop, Ticket } from 
 import { format, parseISO } from "date-fns";
 import type { EventItem } from "@workspace/api-client-react";
 
+function safeFormat(dateStr: string | null | undefined, fmt: string): string {
+  if (!dateStr) return "TBD";
+  try {
+    const d = parseISO(dateStr);
+    if (isNaN(d.getTime())) return "TBD";
+    return format(d, fmt);
+  } catch {
+    return "TBD";
+  }
+}
+
 export function EventCard({ event }: { event: EventItem }) {
   const getCategoryIcon = (category: string) => {
     const cat = category.toLowerCase();
@@ -40,10 +51,10 @@ export function EventCard({ event }: { event: EventItem }) {
           <div className="flex flex-col items-end text-right">
             <span className="text-sm font-bold text-primary flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
-              {format(parseISO(event.date), "MMM d, yyyy")}
+              {safeFormat(event.date, "MMM d, yyyy")}
             </span>
             <span className="text-xs text-muted-foreground mt-1">
-              {format(parseISO(event.date), "h:mm a")}
+              {safeFormat(event.date, "h:mm a")}
             </span>
           </div>
         </div>
