@@ -91,3 +91,18 @@ To enable email sending, set the `RESEND_API_KEY` secret in your environment:
 4. Optionally set `FROM_EMAIL` to your verified domain email
 
 Without the key, the app works fully but emails won't be sent.
+
+## Gmail / Event Source Integration (PENDING)
+
+Events are sourced from: `aiimplementationclubaustin@gmail.com`
+
+The Gmail OAuth integration (connector:ccfg_google-mail_B959E7249792448ABBA58D46AF) was not yet authorized.
+
+**To complete this:** Either:
+- Option A: Re-authorize the Gmail OAuth connector via Replit integrations, OR
+- Option B: Generate a Gmail App Password at myaccount.google.com/apppasswords and add these secrets:
+  - `GMAIL_USER` = `aiimplementationclubaustin@gmail.com`
+  - `GMAIL_APP_PASSWORD` = the 16-character app password
+
+The IMAP email reader code is in `artifacts/api-server/src/lib/emailReader.ts`.
+Once credentials are set, digest generation will auto-read newsletters from that inbox.

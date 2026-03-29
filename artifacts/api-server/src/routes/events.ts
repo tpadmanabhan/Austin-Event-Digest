@@ -11,6 +11,7 @@ import {
 } from "@workspace/api-zod";
 import { generateSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendEmail, buildDigestEmailHtml } from "../lib/emailService";
+import { fetchEventsFromGmail, isEmailReaderConfigured } from "../lib/emailReader";
 
 const router: IRouter = Router();
 
@@ -76,15 +77,43 @@ router.post("/digest/generate", async (req, res) => {
 
   try {
     const weekOf = weekOfStr ? new Date(weekOfStr) : getNextSunday();
-    const generated = generateSampleDigest(weekOf, customNotes || undefined);
+
+    let subject: string;
+    let intro: string;
+    let events: any[];
+    let sourceNote = "";
+
+    if (isEmailReaderConfigured()) {
+      req.log.info("Gmail configured — fetching events from inbox");
+      const since = new Date(weekOf);
+      since.setDate(since.getDate() - 7);
+
+      const gmailResult = await fetchEventsFromGmail(since);
+      sourceNote = `(sourced from ${gmailResult.emails} newsletter email${gmailResult.emails === 1 ? "" : "s"})`;
+
+      const fallback = generateSampleDigest(weekOf, customNotes || undefined);
+      subject = fallback.subject;
+      intro = customNotes
+        ? `${gmailResult.intro}\n\n${customNotes}`
+        : gmailResult.intro;
+      events = gmailResult.events.length > 0 ? gmailResult.events : fallback.events;
+
+      req.log.info({ emailsFetched: gmailResult.emails, eventsFound: events.length }, sourceNote);
+    } else {
+      req.log.info("Gmail not configured — using sample digest data");
+      const generated = generateSampleDigest(weekOf, customNotes || undefined);
+      subject = generated.subject;
+      intro = generated.intro;
+      events = generated.events;
+    }
 
     const [digest] = await db
       .insert(digestsTable)
       .values({
         weekOf,
-        subject: generated.subject,
-        intro: generated.intro,
-        events: generated.events,
+        subject,
+        intro,
+        events,
         sentCount: 0,
       })
       .returning();
