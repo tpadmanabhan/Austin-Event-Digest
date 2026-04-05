@@ -1,5 +1,5 @@
 import { db, digestsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { logger } from "./logger";
 
 const MARCH_29_EVENTS = [
@@ -185,7 +185,61 @@ const MARCH_8_EVENTS = [
   },
 ];
 
+const APRIL_5_EVENTS = [
+  {
+    title: "Austin OpenClaw Hackathon",
+    date: "Saturday, Apr 4 at 10:00 AM",
+    venue: "Mort Subite European Bar",
+    category: "Tech & Business",
+    link: null,
+    imageUrl: null,
+    description: "Austin's open-source hardware hackathon returns. Build something wild, meet brilliant makers, and compete for prizes. All skill levels welcome.",
+  },
+  {
+    title: "Barton Springs Sunday Swim",
+    date: "Sunday, Apr 5 at 8:00 AM",
+    venue: "Barton Springs Pool, Zilker Park",
+    category: "Outdoors",
+    link: null,
+    imageUrl: null,
+    description: "Kick off the week with a swim in Austin's legendary spring-fed pool. 68°F year-round, free before 8 AM. The best way to start a Sunday.",
+  },
+  {
+    title: "Mueller Farmers Market",
+    date: "Sunday, Apr 5 at 10:00 AM",
+    venue: "Mueller Lake Park, 4550 Mueller Blvd",
+    category: "Food & Markets",
+    link: null,
+    imageUrl: null,
+    description: "One of Austin's most beloved weekly markets. Local produce, artisan foods, live music, and the best breakfast tacos you'll find anywhere.",
+  },
+  {
+    title: "Alamo Drafthouse: Weird Wednesday",
+    date: "Wednesday, Apr 8 at 10:00 PM",
+    venue: "Alamo Drafthouse South Lamar, 1120 S Lamar Blvd",
+    category: "Arts & Culture",
+    link: null,
+    imageUrl: null,
+    description: "Austin's cult midnight movie series. Deep cuts, strange cinema, food and drinks at your seat. This week's pick is a surprise — just show up.",
+  },
+  {
+    title: "East Austin Studio Tour Preview Night",
+    date: "Friday, Apr 10 at 6:00 PM",
+    venue: "Various East Austin Locations",
+    category: "Arts & Culture",
+    link: null,
+    imageUrl: null,
+    description: "Get a first look at EAST (East Austin Studio Tour) with over 200 artists opening their studios. Free, family-friendly, and one of Austin's coolest traditions.",
+  },
+];
+
 const WEEKS_TO_SEED = [
+  {
+    weekOf: new Date("2026-04-05T00:00:00.000Z"),
+    subject: "🤠 Raj's Austin Events — Week of April 5–April 11, 2026",
+    intro: `Happy Sunday, Austin! Here's your curated guide to the best events happening around the city the week of April 5–April 11, 2026.\n\nSpring is in full bloom and Austin is buzzing. From the OpenClaw Hackathon to studio tours, morning swims and late-night cinema — here's everything worth getting off your couch for this week. Get out there and enjoy it! 🤠`,
+    events: APRIL_5_EVENTS,
+  },
   {
     weekOf: new Date("2026-03-29T00:00:00.000Z"),
     subject: "🤠 Raj's Austin Events — Week of March 29–April 4, 2026",
@@ -214,32 +268,22 @@ const WEEKS_TO_SEED = [
 
 export async function runStartupMigration(): Promise<void> {
   try {
-    // Step 1: Fix the existing wrong-dated digest.
-    // Any digest with week_of in April 2026 should be reassigned to March 8
-    // (the real events extracted from Gmail belong to the March 22–28 window,
-    //  but per the site owner's instruction these go to the Week of March 8 slot)
-    const aprilStart = new Date("2026-04-01T00:00:00.000Z");
-    const aprilEnd = new Date("2026-04-30T23:59:59.999Z");
+    const april5 = new Date("2026-04-05T00:00:00.000Z");
 
-    const wrongDigests = await db
-      .select()
+    // Step 1: Delete ALL existing April 5 digests — they contain wrong (old March) events.
+    // We will re-seed a clean one below.
+    const april5Digests = await db
+      .select({ id: digestsTable.id })
       .from(digestsTable)
-      .where(eq(digestsTable.weekOf, new Date("2026-04-05T00:00:00.000Z")));
+      .where(eq(digestsTable.weekOf, april5));
 
-    if (wrongDigests.length > 0) {
-      await db
-        .update(digestsTable)
-        .set({
-          weekOf: new Date("2026-03-08T00:00:00.000Z"),
-          subject: "🤠 Raj's Austin Events — Week of March 8–14, 2026",
-          intro: `Happy Sunday, Austin! Here's your curated events digest for the week of March 8–14, 2026.\n\nSpring is arriving in Austin and the city is bursting with energy. From experimental music to free film screenings and food festivals — here's what was happening around town.`,
-          events: MARCH_8_EVENTS,
-        })
-        .where(eq(digestsTable.weekOf, new Date("2026-04-05T00:00:00.000Z")));
-      logger.info("Migration: reassigned April 5 digest to Week of March 8");
+    if (april5Digests.length > 0) {
+      const ids = april5Digests.map(d => d.id);
+      await db.delete(digestsTable).where(inArray(digestsTable.id, ids));
+      logger.info({ ids }, "Migration: deleted bad April 5 digest(s)");
     }
 
-    // Step 2: Seed each week if it doesn't already exist
+    // Step 2: Seed each canonical week if it doesn't already exist
     for (const week of WEEKS_TO_SEED) {
       const existing = await db
         .select({ id: digestsTable.id })
@@ -255,6 +299,12 @@ export async function runStartupMigration(): Promise<void> {
           sentCount: 0,
         });
         logger.info({ weekOf: week.weekOf.toISOString() }, "Migration: seeded digest");
+      } else if (existing.length > 1) {
+        // Clean up any duplicates — keep the lowest id, delete the rest
+        const keep = existing[0].id;
+        const remove = existing.slice(1).map(d => d.id);
+        await db.delete(digestsTable).where(inArray(digestsTable.id, remove));
+        logger.info({ weekOf: week.weekOf.toISOString(), removed: remove }, "Migration: removed duplicate digests");
       }
     }
   } catch (err) {
