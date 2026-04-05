@@ -187,15 +187,6 @@ const MARCH_8_EVENTS = [
 
 const APRIL_5_EVENTS = [
   {
-    title: "Austin OpenClaw Hackathon",
-    date: "Saturday, Apr 4 at 10:00 AM",
-    venue: "Mort Subite European Bar",
-    category: "Tech & Business",
-    link: null,
-    imageUrl: null,
-    description: "Austin's open-source hardware hackathon returns. Build something wild, meet brilliant makers, and compete for prizes. All skill levels welcome.",
-  },
-  {
     title: "Barton Springs Sunday Swim",
     date: "Sunday, Apr 5 at 8:00 AM",
     venue: "Barton Springs Pool, Zilker Park",
@@ -283,7 +274,7 @@ export async function runStartupMigration(): Promise<void> {
       logger.info({ ids }, "Migration: deleted bad April 5 digest(s)");
     }
 
-    // Step 2: Seed each canonical week if it doesn't already exist
+    // Step 2: Seed or update each canonical week
     for (const week of WEEKS_TO_SEED) {
       const existing = await db
         .select({ id: digestsTable.id })
@@ -299,12 +290,20 @@ export async function runStartupMigration(): Promise<void> {
           sentCount: 0,
         });
         logger.info({ weekOf: week.weekOf.toISOString() }, "Migration: seeded digest");
-      } else if (existing.length > 1) {
+      } else {
+        // Always refresh the April 5 digest events/subject to remove pre-publish-date events
+        if (week.weekOf.getTime() === april5.getTime()) {
+          await db.update(digestsTable)
+            .set({ subject: week.subject, intro: week.intro, events: week.events })
+            .where(eq(digestsTable.weekOf, april5));
+          logger.info("Migration: updated April 5 digest with corrected events");
+        }
         // Clean up any duplicates — keep the lowest id, delete the rest
-        const keep = existing[0].id;
-        const remove = existing.slice(1).map(d => d.id);
-        await db.delete(digestsTable).where(inArray(digestsTable.id, remove));
-        logger.info({ weekOf: week.weekOf.toISOString(), removed: remove }, "Migration: removed duplicate digests");
+        if (existing.length > 1) {
+          const remove = existing.slice(1).map(d => d.id);
+          await db.delete(digestsTable).where(inArray(digestsTable.id, remove));
+          logger.info({ weekOf: week.weekOf.toISOString(), removed: remove }, "Migration: removed duplicate digests");
+        }
       }
     }
   } catch (err) {
