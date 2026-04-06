@@ -259,22 +259,37 @@ const WEEKS_TO_SEED = [
 
 export async function runStartupMigration(): Promise<void> {
   try {
-    const april5 = new Date("2026-04-05T00:00:00.000Z");
+    // De-duplicate every week: keep the digest with the most events (highest event count),
+    // breaking ties by lowest id. Delete all others.
+    const allDigests = await db
+      .select()
+      .from(digestsTable);
 
-    // Step 1: Delete ALL existing April 5 digests — they contain wrong (old March) events.
-    // We will re-seed a clean one below.
-    const april5Digests = await db
-      .select({ id: digestsTable.id })
-      .from(digestsTable)
-      .where(eq(digestsTable.weekOf, april5));
-
-    if (april5Digests.length > 0) {
-      const ids = april5Digests.map(d => d.id);
-      await db.delete(digestsTable).where(inArray(digestsTable.id, ids));
-      logger.info({ ids }, "Migration: deleted bad April 5 digest(s)");
+    // Group by weekOf timestamp
+    const byWeek = new Map<number, typeof allDigests>();
+    for (const d of allDigests) {
+      const key = new Date(d.weekOf).getTime();
+      if (!byWeek.has(key)) byWeek.set(key, []);
+      byWeek.get(key)!.push(d);
     }
 
-    // Step 2: Seed or update each canonical week
+    for (const [, group] of byWeek) {
+      if (group.length <= 1) continue;
+
+      // Sort: most events first, lowest id as tiebreaker — keep index 0
+      group.sort((a, b) => {
+        const aLen = Array.isArray(a.events) ? (a.events as any[]).length : 0;
+        const bLen = Array.isArray(b.events) ? (b.events as any[]).length : 0;
+        if (bLen !== aLen) return bLen - aLen;
+        return a.id - b.id;
+      });
+
+      const remove = group.slice(1).map(d => d.id);
+      await db.delete(digestsTable).where(inArray(digestsTable.id, remove));
+      logger.info({ weekOf: new Date(group[0].weekOf).toISOString(), kept: group[0].id, removed: remove }, "Migration: removed duplicate digests");
+    }
+
+    // Seed any weeks that are missing entirely
     for (const week of WEEKS_TO_SEED) {
       const existing = await db
         .select({ id: digestsTable.id })
@@ -289,21 +304,7 @@ export async function runStartupMigration(): Promise<void> {
           events: week.events,
           sentCount: 0,
         });
-        logger.info({ weekOf: week.weekOf.toISOString() }, "Migration: seeded digest");
-      } else {
-        // Always refresh the April 5 digest events/subject to remove pre-publish-date events
-        if (week.weekOf.getTime() === april5.getTime()) {
-          await db.update(digestsTable)
-            .set({ subject: week.subject, intro: week.intro, events: week.events })
-            .where(eq(digestsTable.weekOf, april5));
-          logger.info("Migration: updated April 5 digest with corrected events");
-        }
-        // Clean up any duplicates — keep the lowest id, delete the rest
-        if (existing.length > 1) {
-          const remove = existing.slice(1).map(d => d.id);
-          await db.delete(digestsTable).where(inArray(digestsTable.id, remove));
-          logger.info({ weekOf: week.weekOf.toISOString(), removed: remove }, "Migration: removed duplicate digests");
-        }
+        logger.info({ weekOf: week.weekOf.toISOString() }, "Migration: seeded missing digest");
       }
     }
   } catch (err) {
