@@ -21,38 +21,65 @@ interface SendEmailResult {
 }
 
 export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
-  if (!RESEND_API_KEY) {
-    logger.warn("RESEND_API_KEY not configured — email sending disabled");
+  // Prefer Resend if configured; otherwise fall back to Gmail SMTP
+  if (RESEND_API_KEY) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: `${FROM_NAME} <${FROM_EMAIL}>`,
+          to: Array.isArray(options.to) ? options.to : [options.to],
+          subject: options.subject,
+          html: options.html,
+          reply_to: options.replyTo,
+        }),
+      });
+
+      const data = await response.json() as { id?: string; message?: string };
+
+      if (!response.ok) {
+        logger.error({ status: response.status, data }, "Resend API error");
+        return { success: false, error: data.message || "Failed to send email" };
+      }
+
+      return { success: true, id: data.id };
+    } catch (err) {
+      logger.error({ err }, "Error sending email via Resend");
+      return { success: false, error: "Network error sending email" };
+    }
+  }
+
+  // Fall back to Gmail SMTP
+  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+    logger.warn("No email provider configured (RESEND_API_KEY or GMAIL_USER/GMAIL_APP_PASSWORD required)");
     return { success: false, error: "Email service not configured" };
   }
 
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: `${FROM_NAME} <${FROM_EMAIL}>`,
-        to: Array.isArray(options.to) ? options.to : [options.to],
-        subject: options.subject,
-        html: options.html,
-        reply_to: options.replyTo,
-      }),
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
     });
 
-    const data = await response.json() as { id?: string; message?: string };
+    const recipients = Array.isArray(options.to) ? options.to.join(", ") : options.to;
 
-    if (!response.ok) {
-      logger.error({ status: response.status, data }, "Resend API error");
-      return { success: false, error: data.message || "Failed to send email" };
-    }
+    await transporter.sendMail({
+      from: `${FROM_NAME} <${GMAIL_USER}>`,
+      to: recipients,
+      subject: options.subject,
+      html: options.html,
+      replyTo: options.replyTo,
+    });
 
-    return { success: true, id: data.id };
-  } catch (err) {
-    logger.error({ err }, "Error sending email");
-    return { success: false, error: "Network error sending email" };
+    logger.info({ to: options.to }, "Email sent via Gmail SMTP");
+    return { success: true };
+  } catch (err: any) {
+    logger.error({ err }, "Error sending email via Gmail SMTP");
+    return { success: false, error: err?.message || "Failed to send email" };
   }
 }
 
