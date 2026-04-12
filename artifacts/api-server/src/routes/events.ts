@@ -85,16 +85,16 @@ router.post("/digest/generate", async (req, res) => {
 
     if (isEmailReaderConfigured()) {
       req.log.info("Gmail configured — fetching events from inbox");
+      // Look back 14 days to catch newsletters that preview upcoming events
       const since = new Date(weekOf);
-      since.setDate(since.getDate() - 7);
-      // Only apply a 'before' cap for weeks older than 7 days so we don't cut off
-      // emails for the current or upcoming week
-      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const isPastWeek = weekOf < oneWeekAgo;
+      since.setDate(since.getDate() - 14);
+      // Only apply a 'before' cap for past weeks so current/future weeks get all recent mail
+      const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+      const isPastWeek = weekOf < twoWeeksAgo;
       const before = isPastWeek ? new Date(weekOf.getTime() + 7 * 24 * 60 * 60 * 1000) : undefined;
 
-      const gmailResult = await fetchEventsFromGmail(since, before);
-      sourceNote = `(sourced from ${gmailResult.emails} newsletter email${gmailResult.emails === 1 ? "" : "s"})`;
+      const gmailResult = await fetchEventsFromGmail(since, before, weekOf);
+      sourceNote = `(sourced from ${gmailResult.emails} newsletter email${gmailResult.emails === 1 ? "" : "s"}${gmailResult.weekFiltered ? ", week-filtered" : ""})`;
 
       const fallback = generateSampleDigest(weekOf, customNotes || undefined);
       subject = fallback.subject;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Layout } from "@/components/layout";
 import { useNewsletterSubscriptions } from "@/hooks/use-newsletter";
 import { useAllDigests, useGenerateDigest, useSendDigest, useDeleteDigest } from "@/hooks/use-events";
@@ -20,9 +20,17 @@ export default function AdminDashboard() {
   const { mutate: send, isPending: isSending } = useSendDigest();
   const { mutate: deleteDigest, isPending: isDeleting } = useDeleteDigest();
 
+  const currentSunday = useMemo(() => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = day === 0 ? 0 : 7 - day;
+    d.setDate(d.getDate() + diff);
+    return d.toISOString().substring(0, 10);
+  }, []);
+
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [customNotes, setCustomNotes] = useState("");
-  const [weekOfInput, setWeekOfInput] = useState("");
+  const [weekOfInput, setWeekOfInput] = useState(currentSunday);
 
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
   const [testEmail, setTestEmail] = useState("");
@@ -226,29 +234,34 @@ export default function AdminDashboard() {
       </div>
 
       {/* GENERATE DIALOG */}
-      <Dialog open={isGenerateOpen} onOpenChange={(o) => { setIsGenerateOpen(o); if (!o) { setWeekOfInput(""); setCustomNotes(""); } }}>
+      <Dialog open={isGenerateOpen} onOpenChange={(o) => { setIsGenerateOpen(o); if (!o) { setWeekOfInput(currentSunday); setCustomNotes(""); } }}>
         <DialogContent className="sm:max-w-lg rounded-2xl">
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl">Generate Digest</DialogTitle>
             <DialogDescription>
-              Pull events from Gmail and create a digest. Leave the date blank to generate for this Sunday.
+              Pulls the latest event newsletters from Gmail and creates a curated digest for the selected week.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-semibold">Week Of (Optional)</label>
+              <label className="text-sm font-semibold">Week Starting (Sunday)</label>
               <Input
                 type="date"
                 value={weekOfInput}
                 onChange={e => setWeekOfInput(e.target.value)}
                 className="rounded-xl"
               />
-              <p className="text-xs text-muted-foreground">Set a past date to generate a back-issue (e.g. 2026-03-22).</p>
+              {weekOfInput && (
+                <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2 space-y-1">
+                  <p>📬 Searches newsletters received from <strong>{format(new Date(new Date(weekOfInput).getTime() - 14 * 24 * 60 * 60 * 1000 + 86400000), "MMM d")}</strong> onwards</p>
+                  <p>📅 Shows only events happening <strong>{format(new Date(weekOfInput + "T12:00:00"), "MMM d")}–{format(new Date(new Date(weekOfInput + "T12:00:00").getTime() + 6 * 24 * 60 * 60 * 1000), "MMM d, yyyy")}</strong></p>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold">Custom Intro Notes (Optional)</label>
               <Textarea 
-                placeholder="Add a personal touch to this week's intro..."
+                placeholder="Add a personal note to this week's intro..."
                 value={customNotes}
                 onChange={e => setCustomNotes(e.target.value)}
                 className="min-h-[100px] rounded-xl resize-none"
@@ -256,9 +269,9 @@ export default function AdminDashboard() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsGenerateOpen(false); setWeekOfInput(""); setCustomNotes(""); }} className="rounded-xl">Cancel</Button>
+            <Button variant="outline" onClick={() => { setIsGenerateOpen(false); setWeekOfInput(currentSunday); setCustomNotes(""); }} className="rounded-xl">Cancel</Button>
             <Button onClick={onGenerate} disabled={isGenerating} className="rounded-xl bg-primary hover:bg-primary/90">
-              {isGenerating ? "Generating..." : "Generate Draft"}
+              {isGenerating ? "Generating from Gmail…" : "Generate Draft"}
             </Button>
           </DialogFooter>
         </DialogContent>

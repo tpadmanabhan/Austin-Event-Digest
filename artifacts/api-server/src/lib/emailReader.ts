@@ -249,21 +249,49 @@ function isNewsletterEmail(email: FetchedEmail): boolean {
   return false;
 }
 
+// Parse natural-language event dates like "Saturday, Apr 12 at 10:00 AM" → Date
+const MONTHS: Record<string, number> = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+
+function parseEventDate(dateStr: string, year: number): Date | null {
+  const m = dateStr.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})\b/i);
+  if (!m) return null;
+  const monthKey = m[1].substring(0, 3).toLowerCase();
+  const month = MONTHS[monthKey];
+  if (month === undefined) return null;
+  const day = parseInt(m[2], 10);
+  if (isNaN(day) || day < 1 || day > 31) return null;
+  return new Date(year, month, day);
+}
+
+function eventFallsInWeek(dateStr: string, weekStart: Date): boolean {
+  const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const year = weekStart.getFullYear();
+  for (const y of [year, year + 1]) {
+    const d = parseEventDate(dateStr, y);
+    if (d && d >= weekStart && d < weekEnd) return true;
+  }
+  return false;
+}
+
 export interface EmailSourceResult {
   emails: number;
   events: EventItem[];
   intro: string;
   sources: string[];
+  weekFiltered: boolean;
 }
 
-export async function fetchEventsFromGmail(since?: Date, before?: Date): Promise<EmailSourceResult> {
+export async function fetchEventsFromGmail(since?: Date, before?: Date, weekOf?: Date): Promise<EmailSourceResult> {
   const sinceDate = since || (() => {
     const d = new Date();
-    d.setDate(d.getDate() - 7);
+    d.setDate(d.getDate() - 14);
     return d;
   })();
 
-  logger.info({ since: sinceDate, before, user: GMAIL_USER }, "Fetching newsletter emails from Gmail");
+  logger.info({ since: sinceDate, before, weekOf, user: GMAIL_USER }, "Fetching newsletter emails from Gmail");
 
   const allEmails = await fetchRecentNewsletterEmails(sinceDate, before);
   logger.info({ total: allEmails.length }, "Total emails fetched");
@@ -287,14 +315,34 @@ export async function fetchEventsFromGmail(since?: Date, before?: Date): Promise
     (e, idx, arr) => arr.findIndex(x => x.title.toLowerCase() === e.title.toLowerCase()) === idx
   );
 
+  // Filter events to the target week if weekOf is provided
+  let finalEvents = uniqueEvents;
+  let weekFiltered = false;
+  if (weekOf) {
+    const inWeek = uniqueEvents.filter(e => eventFallsInWeek(e.date, weekOf));
+    logger.info({ total: uniqueEvents.length, inWeek: inWeek.length, weekOf }, "Week-filtered events");
+    if (inWeek.length >= 2) {
+      // Sort events within the week by their date
+      inWeek.sort((a, b) => {
+        const da = parseEventDate(a.date, weekOf.getFullYear());
+        const db2 = parseEventDate(b.date, weekOf.getFullYear());
+        if (!da || !db2) return 0;
+        return da.getTime() - db2.getTime();
+      });
+      finalEvents = inWeek;
+      weekFiltered = true;
+    }
+  }
+
   const intro = newsletterEmails.length > 0
     ? `Happy Sunday, Austin! I went through ${newsletterEmails.length} newsletter${newsletterEmails.length === 1 ? "" : "s"} in my inbox this week and hand-picked the best events happening around the city. Here's your curated digest — get out there and enjoy Austin! 🤠`
     : "Happy Sunday, Austin! Here's your weekly curated guide to the best events in our city.";
 
   return {
     emails: newsletterEmails.length,
-    events: uniqueEvents.slice(0, 8),
+    events: finalEvents.slice(0, 8),
     intro,
     sources,
+    weekFiltered,
   };
 }
