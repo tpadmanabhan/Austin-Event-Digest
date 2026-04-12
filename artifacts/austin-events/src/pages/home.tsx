@@ -196,7 +196,7 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
                 >
-                  <EventCard event={event} />
+                  <EventCard event={event} digestId={latestDigest.id} />
                 </motion.div>
               ))}
             </div>

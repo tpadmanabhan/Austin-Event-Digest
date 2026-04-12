@@ -141,6 +141,13 @@ export async function sendWelcomeEmail(to: string, name?: string | null): Promis
   }
 }
 
+export function buildRsvpUrl(siteUrl: string, digestId: number, eventTitle: string, subscriberEmail: string, subscriberName?: string | null): string {
+  const e = Buffer.from(eventTitle).toString("base64url");
+  const em = Buffer.from(subscriberEmail).toString("base64url");
+  const n = subscriberName ? `&n=${Buffer.from(subscriberName).toString("base64url")}` : "";
+  return `${siteUrl}/rsvp?d=${digestId}&e=${e}&em=${em}${n}`;
+}
+
 export function buildDigestEmailHtml(digest: {
   subject: string;
   intro: string;
@@ -154,7 +161,9 @@ export function buildDigestEmailHtml(digest: {
     link?: string | null;
     imageUrl?: string | null;
   }>;
-}, subscriberName?: string | null): string {
+  digestId?: number;
+  siteUrl?: string;
+}, subscriberName?: string | null, subscriberEmail?: string | null): string {
   const weekDate = new Date(digest.weekOf).toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -164,16 +173,25 @@ export function buildDigestEmailHtml(digest: {
 
   const greeting = subscriberName ? `Hey ${subscriberName},` : "Hey there,";
 
-  const eventCards = digest.events.map(event => `
+  const eventCards = digest.events.map(event => {
+    const rsvpLink = digest.digestId && digest.siteUrl && subscriberEmail
+      ? buildRsvpUrl(digest.siteUrl, digest.digestId, event.title, subscriberEmail, subscriberName)
+      : null;
+
+    return `
     <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-bottom:20px;">
-      <div style="display:inline-block; background:#d97706; color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${event.category}</div>
+      <div style="display:inline-block; background:#22c55e; color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${event.category}</div>
       <h3 style="margin:0 0 8px; color:#1c1917; font-size:18px; font-weight:700;">${event.title}</h3>
       <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${event.date}</p>
       <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${event.venue}</p>
       <p style="margin:0 0 16px; color:#44403c; font-size:15px; line-height:1.6;">${event.description}</p>
-      ${event.link ? `<a href="${event.link}" style="display:inline-block; background:#d97706; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        ${event.link ? `<a href="${event.link}" style="display:inline-block; background:#22c55e; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
+        ${rsvpLink ? `<a href="${rsvpLink}" style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #86efac; color:#16a34a; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">🚗 Interested in carpooling? &nbsp;<strong>Yes</strong></a>` : ""}
+      </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
   return `
 <!DOCTYPE html>
@@ -208,7 +226,7 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0 0 8px; color:#78716c; font-size:13px;">Curated with ❤️ by Raj from Austin, TX</p>
       <p style="margin:0; color:#a8a29e; font-size:12px;">
         You're receiving this because you subscribed at Raj's Austin Events.<br>
-        <a href="{{unsubscribe_url}}" style="color:#d97706; text-decoration:none;">Unsubscribe</a>
+        <a href="{{unsubscribe_url}}" style="color:#22c55e; text-decoration:none;">Unsubscribe</a>
       </p>
     </div>
 
@@ -216,4 +234,59 @@ export function buildDigestEmailHtml(digest: {
 </body>
 </html>
   `;
+}
+
+export async function sendRsvpNotification(opts: {
+  to: string;
+  rsvperName: string;
+  eventTitle: string;
+  eventDate: string;
+  eventVenue: string;
+  digestSubject: string;
+}): Promise<void> {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0; padding:0; background:#f0fdf4; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:560px; margin:0 auto; padding:24px;">
+    <div style="background:linear-gradient(135deg, #166534 0%, #14532d 100%); border-radius:16px; padding:28px; margin-bottom:20px; text-align:center;">
+      <div style="font-size:36px; margin-bottom:8px;">🚗</div>
+      <h1 style="margin:0 0 4px; color:#bbf7d0; font-size:20px; font-weight:800;">Carpool Interest Alert</h1>
+      <p style="margin:0; color:#86efac; font-size:13px;">Raj's Austin Events</p>
+    </div>
+    <div style="background:#fff; border:1px solid #bbf7d0; border-radius:12px; padding:24px; margin-bottom:20px;">
+      <p style="margin:0 0 16px; color:#14532d; font-size:16px; font-weight:600;">Hey there!</p>
+      <p style="margin:0 0 16px; color:#374151; font-size:15px; line-height:1.7;">
+        <strong>${opts.rsvperName}</strong> just said they're interested in carpooling to:
+      </p>
+      <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:16px; margin-bottom:16px;">
+        <p style="margin:0 0 6px; color:#15803d; font-size:17px; font-weight:700;">${opts.eventTitle}</p>
+        <p style="margin:0 0 4px; color:#4b5563; font-size:14px;">📅 ${opts.eventDate}</p>
+        <p style="margin:0; color:#4b5563; font-size:14px;">📍 ${opts.eventVenue}</p>
+      </div>
+      <p style="margin:0; color:#374151; font-size:14px; line-height:1.6;">
+        If you're also going, reply to this email and we'll connect you two!
+      </p>
+    </div>
+    <div style="text-align:center; padding-top:8px;">
+      <p style="margin:0; color:#6b7280; font-size:12px;">Raj's Austin Events · Austin, TX</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const result = await sendEmail({
+    to: opts.to,
+    subject: `🚗 ${opts.rsvperName} wants to carpool to: ${opts.eventTitle}`,
+    html,
+  });
+
+  if (!result.success) {
+    logger.warn({ to: opts.to, error: result.error }, "Failed to send RSVP notification");
+  }
 }

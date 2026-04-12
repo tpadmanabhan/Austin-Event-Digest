@@ -82,7 +82,7 @@ export default function DigestView() {
           
           <div className="grid sm:grid-cols-2 gap-8">
             {digest.events.map((event, i) => (
-              <EventCard key={i} event={event} />
+              <EventCard key={i} event={event} digestId={digest.id} />
             ))}
           </div>
         </section>

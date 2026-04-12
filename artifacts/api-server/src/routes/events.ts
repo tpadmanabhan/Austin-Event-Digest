@@ -177,16 +177,17 @@ router.post("/digest/send", async (req, res) => {
       return;
     }
 
-    let recipients: string[] = [];
+    let recipients: Array<{ email: string; name: string | null }> = [];
+    const siteUrl = process.env.SITE_URL || `https://${req.get("host")}`;
 
     if (testEmail) {
-      recipients = [testEmail];
+      recipients = [{ email: testEmail, name: null }];
     } else {
       const subscribers = await db
         .select()
         .from(subscribersTable)
         .where(eq(subscribersTable.isActive, true));
-      recipients = subscribers.map(s => s.email);
+      recipients = subscribers.map(s => ({ email: s.email, name: s.name }));
     }
 
     if (recipients.length === 0) {
@@ -201,16 +202,18 @@ router.post("/digest/send", async (req, res) => {
     let successCount = 0;
     let failCount = 0;
 
-    for (const email of recipients) {
+    for (const recipient of recipients) {
       const html = buildDigestEmailHtml({
         subject: digest.subject,
         intro: digest.intro,
         weekOf: digest.weekOf,
         events: (digest.events as any[]) || [],
-      });
+        digestId: digest.id,
+        siteUrl,
+      }, recipient.name, recipient.email);
 
       const result = await sendEmail({
-        to: email,
+        to: recipient.email,
         subject: digest.subject,
         html,
       });
@@ -219,7 +222,7 @@ router.post("/digest/send", async (req, res) => {
         successCount++;
       } else {
         failCount++;
-        req.log.warn({ email, error: result.error }, "Failed to send to subscriber");
+        req.log.warn({ email: recipient.email, error: result.error }, "Failed to send to subscriber");
       }
     }
 
