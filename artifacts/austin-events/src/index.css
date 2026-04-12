@@ -57,81 +57,81 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  /* AUSTIN VIBE COLOR PALETTE (Warm, Earthy, Teal Accents) */
-  --background: 40 33% 98%; /* Warm floral white */
-  --foreground: 20 20% 15%; /* Deep brownish black */
+  /* LIGHT GREEN PALETTE */
+  --background: 138 30% 97%; /* Very light green-tinted white */
+  --foreground: 150 25% 12%; /* Deep forest green-black */
   
-  --border: 30 20% 88%;
-  --input: 30 20% 88%;
-  --ring: 15 80% 55%; /* Burnt Orange */
+  --border: 138 20% 87%;
+  --input: 138 20% 87%;
+  --ring: 142 55% 42%; /* Fresh green */
 
   --card: 0 0% 100%;
-  --card-foreground: 20 20% 15%;
-  --card-border: 30 20% 88%;
+  --card-foreground: 150 25% 12%;
+  --card-border: 138 20% 87%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 20 20% 15%;
-  --popover-border: 30 20% 88%;
+  --popover-foreground: 150 25% 12%;
+  --popover-border: 138 20% 87%;
 
-  --primary: 15 80% 55%; /* Burnt Orange */
+  --primary: 142 55% 42%; /* Fresh green */
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 185 70% 30%; /* Deep Teal */
+  --secondary: 160 45% 32%; /* Deep forest green */
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 40 20% 92%;
-  --muted-foreground: 20 10% 45%;
+  --muted: 138 20% 91%;
+  --muted-foreground: 150 12% 44%;
 
-  --accent: 40 90% 55%; /* Warm Amber */
-  --accent-foreground: 20 20% 15%;
+  --accent: 120 45% 55%; /* Lime green */
+  --accent-foreground: 150 25% 12%;
 
   --destructive: 0 80% 50%;
   --destructive-foreground: 0 0% 100%;
 
-  --sidebar: 40 33% 98%;
-  --sidebar-foreground: 20 20% 15%;
-  --sidebar-border: 30 20% 88%;
-  --sidebar-primary: 15 80% 55%;
+  --sidebar: 138 30% 97%;
+  --sidebar-foreground: 150 25% 12%;
+  --sidebar-border: 138 20% 87%;
+  --sidebar-primary: 142 55% 42%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 40 20% 92%;
-  --sidebar-accent-foreground: 20 20% 15%;
-  --sidebar-ring: 15 80% 55%;
+  --sidebar-accent: 138 20% 91%;
+  --sidebar-accent-foreground: 150 25% 12%;
+  --sidebar-ring: 142 55% 42%;
 
   --radius: 0.75rem;
 
-  --shadow-sm: 0px 2px 4px -1px rgba(20, 10, 0, 0.05);
-  --shadow: 0px 4px 10px -2px rgba(20, 10, 0, 0.08);
-  --shadow-md: 0px 8px 20px -4px rgba(20, 10, 0, 0.1);
-  --shadow-lg: 0px 16px 32px -6px rgba(20, 10, 0, 0.12);
+  --shadow-sm: 0px 2px 4px -1px rgba(0, 20, 10, 0.05);
+  --shadow: 0px 4px 10px -2px rgba(0, 20, 10, 0.08);
+  --shadow-md: 0px 8px 20px -4px rgba(0, 20, 10, 0.1);
+  --shadow-lg: 0px 16px 32px -6px rgba(0, 20, 10, 0.12);
 }
 
 .dark {
-  --background: 20 20% 10%;
-  --foreground: 40 33% 98%;
+  --background: 150 20% 10%;
+  --foreground: 138 30% 97%;
   
-  --border: 20 15% 20%;
-  --input: 20 15% 20%;
-  --ring: 15 80% 55%;
+  --border: 150 15% 20%;
+  --input: 150 15% 20%;
+  --ring: 142 55% 42%;
 
-  --card: 20 20% 12%;
-  --card-foreground: 40 33% 98%;
-  --card-border: 20 15% 20%;
+  --card: 150 20% 12%;
+  --card-foreground: 138 30% 97%;
+  --card-border: 150 15% 20%;
 
-  --popover: 20 20% 12%;
-  --popover-foreground: 40 33% 98%;
-  --popover-border: 20 15% 20%;
+  --popover: 150 20% 12%;
+  --popover-foreground: 138 30% 97%;
+  --popover-border: 150 15% 20%;
 
-  --primary: 15 80% 55%;
+  --primary: 142 55% 42%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 185 50% 40%;
+  --secondary: 160 40% 40%;
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 20 15% 18%;
-  --muted-foreground: 40 20% 70%;
+  --muted: 150 15% 18%;
+  --muted-foreground: 138 20% 68%;
 
-  --accent: 40 90% 55%;
-  --accent-foreground: 20 20% 10%;
+  --accent: 120 45% 55%;
+  --accent-foreground: 150 25% 10%;
 
   --destructive: 0 70% 45%;
   --destructive-foreground: 0 0% 100%;
