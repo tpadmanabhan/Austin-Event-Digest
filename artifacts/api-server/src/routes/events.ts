@@ -98,12 +98,24 @@ router.post("/digest/generate", async (req, res) => {
 
       const fallback = generateSampleDigest(weekOf, customNotes || undefined);
       subject = fallback.subject;
-      intro = customNotes
-        ? `${gmailResult.intro}\n\n${customNotes}`
-        : gmailResult.intro;
-      events = gmailResult.events.length > 0 ? gmailResult.events : fallback.events;
 
-      req.log.info({ emailsFetched: gmailResult.emails, eventsFound: events.length }, sourceNote);
+      // Use Gmail events only when they are week-filtered (matched the target week).
+      // If weekOf was requested but no week-matching events were found, fall back to
+      // sample events with correct dates for that week instead of showing stale old events.
+      const useGmailEvents = gmailResult.weekFiltered && gmailResult.events.length > 0;
+      if (useGmailEvents) {
+        events = gmailResult.events;
+        intro = customNotes ? `${gmailResult.intro}\n\n${customNotes}` : gmailResult.intro;
+      } else {
+        events = fallback.events;
+        intro = customNotes ? `${fallback.intro}\n\n${customNotes}` : fallback.intro;
+        req.log.info(
+          { weekOf: weekOf.toISOString().substring(0, 10), gmailEvents: gmailResult.events.length },
+          "No week-specific events found in Gmail newsletters — using sample data for target week"
+        );
+      }
+
+      req.log.info({ emailsFetched: gmailResult.emails, eventsFound: events.length, weekFiltered: gmailResult.weekFiltered }, sourceNote);
     } else {
       req.log.info("Gmail not configured — using sample digest data");
       const generated = generateSampleDigest(weekOf, customNotes || undefined);
