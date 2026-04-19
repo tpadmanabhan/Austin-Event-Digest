@@ -190,7 +190,14 @@ router.post("/digest/send", async (req, res) => {
     }
 
     let recipients: Array<{ email: string; name: string | null }> = [];
-    const siteUrl = process.env.SITE_URL || `https://${req.get("host")}`;
+    // Build the public-facing site URL for RSVP links in emails.
+    // Priority: explicit SITE_URL → REPLIT_DOMAINS (production) → x-forwarded-host → fallback
+    const replitDomain = process.env.REPLIT_DOMAINS?.split(",")[0]?.trim();
+    const forwardedHost = req.get("x-forwarded-host");
+    const siteUrl = process.env.SITE_URL
+      || (replitDomain ? `https://${replitDomain}` : null)
+      || (forwardedHost ? `https://${forwardedHost}` : null)
+      || `https://${req.get("host")}`;
 
     if (testEmail) {
       recipients = [{ email: testEmail, name: null }];
