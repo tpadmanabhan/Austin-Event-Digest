@@ -51,10 +51,10 @@ interface RsvpBoxProps {
 
 function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) {
   const { rsvpd, markRsvpd } = useRsvpState(digestId, eventTitle);
-  const [checked, setChecked] = useState(rsvpd);
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [confirmedName, setConfirmedName] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">(rsvpd ? "done" : "idle");
   const [count, setCount] = useState<number | null>(null);
 
@@ -67,28 +67,23 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
     }
   }, [digestId, eventTitle]);
 
-  const handleCheck = () => {
-    if (status === "done") return;
-    setChecked(true);
-    setShowForm(true);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !firstName.trim()) return;
 
     setStatus("submitting");
     try {
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ digestId, eventTitle, email, name: name || undefined }),
+        body: JSON.stringify({ digestId, eventTitle, email, name: firstName.trim() }),
       });
       const data = await res.json();
       if (data.success) {
         setStatus("done");
         setShowForm(false);
         setCount(data.count);
+        setConfirmedName(firstName.trim());
         markRsvpd();
       } else {
         setStatus("error");
@@ -98,64 +93,88 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
     }
   };
 
+  if (status === "done") {
+    return (
+      <div className="mt-auto pt-4 border-t border-border/50">
+        <div className="flex items-center gap-2 text-primary text-sm font-semibold">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>
+            {confirmedName ? `You're in, ${confirmedName}! 🚗` : "You're in! 🚗"}
+            <span className="font-normal text-muted-foreground ml-1">Other subscribers have been notified.</span>
+          </span>
+        </div>
+        {count && count > 1 && (
+          <p className="text-xs text-muted-foreground mt-1 pl-6">{count} people interested in carpooling</p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="mt-auto pt-4 border-t border-border/50">
-      {status === "done" ? (
-        <div className="flex items-center gap-2 text-primary text-sm font-medium">
-          <CheckCircle2 className="w-4 h-4" />
-          You're interested in carpooling!
-          {count && count > 1 && <span className="text-muted-foreground font-normal">({count} total)</span>}
+      {!showForm ? (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <Car className="w-4 h-4 text-primary" />
+            Want to carpool?
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowForm(true)}
+            className="rounded-lg h-8 text-sm border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+          >
+            Yes!
+          </Button>
         </div>
       ) : (
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer group select-none">
-            <div
-              onClick={handleCheck}
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0
-                ${checked ? "bg-primary border-primary" : "border-border group-hover:border-primary/60"}`}
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <p className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-2">
+            <Car className="w-3.5 h-3.5 text-primary" /> Carpool RSVP — other subscribers will be notified
+          </p>
+          <Input
+            type="text"
+            placeholder="Your first name *"
+            value={firstName}
+            onChange={e => setFirstName(e.target.value)}
+            required
+            className="h-9 text-sm rounded-lg"
+            autoFocus
+          />
+          <Input
+            type="email"
+            placeholder="Your email *"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            className="h-9 text-sm rounded-lg"
+          />
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowForm(false)}
+              className="rounded-lg h-9 text-sm flex-shrink-0"
             >
-              {checked && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
-            </div>
-            <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
-              <Car className="w-4 h-4 text-primary" />
-              Interested in carpooling?
-            </span>
-          </label>
-
-          {showForm && (
-            <form onSubmit={handleSubmit} className="space-y-2 pl-8">
-              <Input
-                type="text"
-                placeholder="Your name (optional)"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="h-9 text-sm rounded-lg"
-              />
-              <Input
-                type="email"
-                placeholder="Your email *"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                className="h-9 text-sm rounded-lg"
-              />
-              <Button
-                type="submit"
-                size="sm"
-                disabled={status === "submitting" || !email}
-                className="w-full rounded-lg h-9 text-sm"
-              >
-                {status === "submitting"
-                  ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> Submitting…</>
-                  : "Yes, I'm interested!"}
-              </Button>
-              {status === "error" && <p className="text-xs text-destructive">Something went wrong. Try again.</p>}
-              {count !== null && count > 0 && (
-                <p className="text-xs text-muted-foreground">{count} {count === 1 ? "person" : "people"} already interested</p>
-              )}
-            </form>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={status === "submitting" || !email || !firstName.trim()}
+              className="w-full rounded-lg h-9 text-sm"
+            >
+              {status === "submitting"
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />Sending…</>
+                : "Send Carpool Alert 🚗"}
+            </Button>
+          </div>
+          {status === "error" && <p className="text-xs text-destructive">Something went wrong. Please try again.</p>}
+          {count !== null && count > 0 && (
+            <p className="text-xs text-muted-foreground">{count} {count === 1 ? "person" : "people"} already interested</p>
           )}
-        </div>
+        </form>
       )}
     </div>
   );

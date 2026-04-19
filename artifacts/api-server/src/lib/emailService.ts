@@ -244,6 +244,9 @@ export async function sendRsvpNotification(opts: {
   eventVenue: string;
   digestSubject: string;
 }): Promise<void> {
+  const firstName = opts.rsvperName.split(" ")[0];
+  const shortTitle = opts.eventTitle.length > 60 ? opts.eventTitle.substring(0, 60).trimEnd() + "…" : opts.eventTitle;
+
   const html = `
 <!DOCTYPE html>
 <html>
@@ -259,17 +262,17 @@ export async function sendRsvpNotification(opts: {
       <p style="margin:0; color:#86efac; font-size:13px;">Raj's Austin Events</p>
     </div>
     <div style="background:#fff; border:1px solid #bbf7d0; border-radius:12px; padding:24px; margin-bottom:20px;">
-      <p style="margin:0 0 16px; color:#14532d; font-size:16px; font-weight:600;">Hey there!</p>
+      <p style="margin:0 0 16px; color:#14532d; font-size:20px; font-weight:700;">${firstName} wants to carpool! 🚗</p>
       <p style="margin:0 0 16px; color:#374151; font-size:15px; line-height:1.7;">
-        <strong>${opts.rsvperName}</strong> just said they're interested in carpooling to:
+        <strong>${firstName}</strong> is interested in carpooling to this week's event:
       </p>
       <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:16px; margin-bottom:16px;">
-        <p style="margin:0 0 6px; color:#15803d; font-size:17px; font-weight:700;">${opts.eventTitle}</p>
+        <p style="margin:0 0 8px; color:#15803d; font-size:16px; font-weight:700;">${opts.eventTitle}</p>
         <p style="margin:0 0 4px; color:#4b5563; font-size:14px;">📅 ${opts.eventDate}</p>
         <p style="margin:0; color:#4b5563; font-size:14px;">📍 ${opts.eventVenue}</p>
       </div>
       <p style="margin:0; color:#374151; font-size:14px; line-height:1.6;">
-        If you're also going, reply to this email and we'll connect you two!
+        If you're also going, just reply to this email and we'll connect you with ${firstName}!
       </p>
     </div>
     <div style="text-align:center; padding-top:8px;">
@@ -282,7 +285,7 @@ export async function sendRsvpNotification(opts: {
 
   const result = await sendEmail({
     to: opts.to,
-    subject: `🚗 ${opts.rsvperName} wants to carpool to: ${opts.eventTitle}`,
+    subject: `🚗 ${firstName} wants to carpool to: ${shortTitle}`,
     html,
   });
 
