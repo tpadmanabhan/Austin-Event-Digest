@@ -277,7 +277,7 @@ function parseDateColonStyle(lines: string[]): EventItem[] {
     const m = line.match(DATE_COLON_LINE);
     if (!m) continue;
 
-    const dateStr = `${m[1]}. ${m[2]}`;
+    const dateStr = `${m[1]} ${m[2]}`;
     const title = m[3].trim();
     if (title.length < 5 || JUNK_LINE.test(title) || REGISTER_LINK_FULL.test(title) || PROSE_OPENER.test(title)) continue;
 
