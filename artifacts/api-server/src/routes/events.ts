@@ -11,7 +11,7 @@ import {
 } from "@workspace/api-zod";
 import { generateSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendEmail, buildDigestEmailHtml } from "../lib/emailService";
-import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
+import { fetchEventsFromGmail, isEmailReaderConfigured } from "../lib/emailReader";
 
 const router: IRouter = Router();
 
@@ -85,9 +85,9 @@ router.post("/digest/generate", async (req, res) => {
 
     if (isEmailReaderConfigured()) {
       req.log.info("Gmail configured — fetching events from inbox");
-      // Look back 21 days before the target week to catch newsletters sent in advance
+      // Look back 14 days before the target week to catch newsletters sent in advance
       const since = new Date(weekOf);
-      since.setDate(since.getDate() - 21);
+      since.setDate(since.getDate() - 14);
       // Only apply a 'before' cap for past weeks so current/future weeks get all recent mail
       const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
       const isPastWeek = weekOf < twoWeeksAgo;
@@ -140,23 +140,6 @@ router.post("/digest/generate", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error generating digest");
     res.status(500).json({ error: "server_error", message: "Failed to generate digest" });
-  }
-});
-
-router.get("/digest/debug-gmail", async (req, res) => {
-  if (!isEmailReaderConfigured()) {
-    res.status(400).json({ error: "Gmail not configured" });
-    return;
-  }
-  try {
-    const days = parseInt((req.query.days as string) || "30", 10);
-    const since = new Date();
-    since.setDate(since.getDate() - days);
-    const emails = await debugFetchEmails(since);
-    res.json({ since: since.toISOString(), totalEmails: emails.length, emails });
-  } catch (err: any) {
-    req.log.error({ err }, "Error in debug-gmail");
-    res.status(500).json({ error: err?.message || "Failed" });
   }
 });
 

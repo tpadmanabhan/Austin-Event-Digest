@@ -44,7 +44,8 @@ async function fetchRecentNewsletterEmails(since: Date, before?: Date): Promise<
 
       for await (const msg of messages) {
         try {
-          const parsed: ParsedMail = await simpleParser(msg.source);
+          if (!msg.source) continue;
+          const parsed: ParsedMail = await simpleParser(msg.source as Buffer);
           emails.push({
             subject: parsed.subject || "(no subject)",
             from: parsed.from?.text || "",
