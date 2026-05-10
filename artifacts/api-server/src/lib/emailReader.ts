@@ -460,7 +460,7 @@ export async function fetchEventsFromGmail(since?: Date, before?: Date, weekOf?:
   if (weekOf) {
     const inWeek = uniqueEvents.filter(e => eventFallsInWeek(e.date, weekOf));
     logger.info({ total: uniqueEvents.length, inWeek: inWeek.length, weekOf }, "Week-filtered events");
-    if (inWeek.length >= 2) {
+    if (inWeek.length >= 1) {
       // Sort events within the week by their date
       inWeek.sort((a, b) => {
         const da = parseEventDate(a.date, weekOf.getFullYear());
