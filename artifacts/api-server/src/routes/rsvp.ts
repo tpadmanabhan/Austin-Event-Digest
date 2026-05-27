@@ -22,7 +22,13 @@ router.post("/", async (req, res) => {
     }
 
     const events = (digest.events as any[]) || [];
-    const event = events.find((e: any) => e.title === eventTitle);
+    // Exact match first; fall back to case-insensitive substring match so links
+    // survive minor title edits made after the newsletter was sent.
+    const event = events.find((e: any) => e.title === eventTitle)
+      ?? events.find((e: any) =>
+        e.title.toLowerCase().includes(eventTitle.toLowerCase()) ||
+        eventTitle.toLowerCase().includes(e.title.toLowerCase())
+      );
     if (!event) {
       res.status(404).json({ error: "not_found", message: "Event not found in digest" });
       return;
