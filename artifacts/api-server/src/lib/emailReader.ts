@@ -4,7 +4,8 @@ import { logger } from "./logger";
 import { EventItem } from "@workspace/db";
 
 const GMAIL_USER = process.env.GMAIL_USER;
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
+// Strip spaces — Google displays app passwords with spaces but IMAP requires them without
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "");
 
 export function isEmailReaderConfigured(): boolean {
   return !!(GMAIL_USER && GMAIL_APP_PASSWORD);
