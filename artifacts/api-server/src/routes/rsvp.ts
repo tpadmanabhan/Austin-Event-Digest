@@ -47,35 +47,46 @@ router.post("/", async (req, res) => {
     let alreadyRsvpd = existing.length > 0;
 
     if (!alreadyRsvpd) {
+      // Fetch existing RSVPers BEFORE inserting so we know who was already interested
+      const priorRsvps = await db
+        .select()
+        .from(rsvpsTable)
+        .where(and(
+          eq(rsvpsTable.digestId, digestId),
+          eq(rsvpsTable.eventTitle, eventTitle),
+        ));
+
       await db.insert(rsvpsTable).values({
         digestId,
         eventTitle,
         email: normalizedEmail,
         name: name || null,
       });
-    }
 
-    const allRsvps = await db
-      .select()
-      .from(rsvpsTable)
-      .where(and(
-        eq(rsvpsTable.digestId, digestId),
-        eq(rsvpsTable.eventTitle, eventTitle),
-      ));
-
-    if (!alreadyRsvpd) {
-      const subscribers = await db
-        .select()
-        .from(subscribersTable)
-        .where(eq(subscribersTable.isActive, true));
-
-      const others = subscribers.filter(s => s.email.toLowerCase() !== normalizedEmail);
       const rsvperName = name || email.split("@")[0];
 
-      for (const subscriber of others) {
+      // Notify each prior RSVPer that the new person also wants to carpool
+      for (const prior of priorRsvps) {
+        if (prior.email.toLowerCase() !== normalizedEmail) {
+          sendRsvpNotification({
+            to: prior.email,
+            rsvperName,
+            rsvperEmail: normalizedEmail,
+            eventTitle: event.title,
+            eventDate: event.date,
+            eventVenue: event.venue,
+            digestSubject: digest.subject,
+          }).catch(() => {});
+        }
+      }
+
+      // Notify the new RSVPer about each person who was already interested
+      for (const prior of priorRsvps) {
+        const priorName = prior.name || prior.email.split("@")[0];
         sendRsvpNotification({
-          to: subscriber.email,
-          rsvperName,
+          to: normalizedEmail,
+          rsvperName: priorName,
+          rsvperEmail: prior.email,
           eventTitle: event.title,
           eventDate: event.date,
           eventVenue: event.venue,
@@ -83,13 +94,21 @@ router.post("/", async (req, res) => {
         }).catch(() => {});
       }
 
-      req.log.info({ email: normalizedEmail, eventTitle, digestId }, "RSVP recorded");
+      req.log.info({ email: normalizedEmail, eventTitle, digestId, carpoolMatches: priorRsvps.length }, "RSVP recorded");
     }
+
+    const totalRsvps = await db
+      .select()
+      .from(rsvpsTable)
+      .where(and(
+        eq(rsvpsTable.digestId, digestId),
+        eq(rsvpsTable.eventTitle, eventTitle),
+      ));
 
     res.json({
       success: true,
       message: alreadyRsvpd ? "You already RSVPd!" : "RSVP recorded!",
-      count: allRsvps.length,
+      count: totalRsvps.length,
       alreadyRsvpd,
     });
   } catch (err) {

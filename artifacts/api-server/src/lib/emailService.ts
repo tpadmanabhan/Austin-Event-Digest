@@ -239,6 +239,7 @@ export function buildDigestEmailHtml(digest: {
 export async function sendRsvpNotification(opts: {
   to: string;
   rsvperName: string;
+  rsvperEmail: string;
   eventTitle: string;
   eventDate: string;
   eventVenue: string;
@@ -258,21 +259,27 @@ export async function sendRsvpNotification(opts: {
   <div style="max-width:560px; margin:0 auto; padding:24px;">
     <div style="background:linear-gradient(135deg, #166534 0%, #14532d 100%); border-radius:16px; padding:28px; margin-bottom:20px; text-align:center;">
       <div style="font-size:36px; margin-bottom:8px;">🚗</div>
-      <h1 style="margin:0 0 4px; color:#bbf7d0; font-size:20px; font-weight:800;">Carpool Interest Alert</h1>
+      <h1 style="margin:0 0 4px; color:#bbf7d0; font-size:20px; font-weight:800;">Carpool Match!</h1>
       <p style="margin:0; color:#86efac; font-size:13px;">Raj's Austin Events</p>
     </div>
     <div style="background:#fff; border:1px solid #bbf7d0; border-radius:12px; padding:24px; margin-bottom:20px;">
-      <p style="margin:0 0 16px; color:#14532d; font-size:20px; font-weight:700;">${firstName} wants to carpool! 🚗</p>
+      <p style="margin:0 0 16px; color:#14532d; font-size:20px; font-weight:700;">${firstName} also wants to carpool! 🚗</p>
       <p style="margin:0 0 16px; color:#374151; font-size:15px; line-height:1.7;">
-        <strong>${firstName}</strong> is interested in carpooling to this week's event:
+        You've got a carpool match! <strong>${firstName}</strong> is also interested in carpooling to:
       </p>
       <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:16px; margin-bottom:16px;">
         <p style="margin:0 0 8px; color:#15803d; font-size:16px; font-weight:700;">${opts.eventTitle}</p>
         <p style="margin:0 0 4px; color:#4b5563; font-size:14px;">📅 ${opts.eventDate}</p>
         <p style="margin:0; color:#4b5563; font-size:14px;">📍 ${opts.eventVenue}</p>
       </div>
+      <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:16px; margin-bottom:16px;">
+        <p style="margin:0 0 6px; color:#92400e; font-size:13px; font-weight:700;">📬 Reach out directly:</p>
+        <p style="margin:0; font-size:15px;">
+          <strong>${firstName}</strong> — <a href="mailto:${opts.rsvperEmail}" style="color:#166534; text-decoration:none; font-weight:600;">${opts.rsvperEmail}</a>
+        </p>
+      </div>
       <p style="margin:0; color:#374151; font-size:14px; line-height:1.6;">
-        If you're also going, just reply to this email and we'll connect you with ${firstName}!
+        Just email ${firstName} directly to coordinate pickup, timing, or meeting spot. Have fun! 🎉
       </p>
     </div>
     <div style="text-align:center; padding-top:8px;">
