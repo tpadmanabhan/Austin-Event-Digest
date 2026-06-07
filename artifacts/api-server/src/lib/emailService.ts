@@ -273,13 +273,12 @@ export async function sendRsvpNotification(opts: {
         <p style="margin:0; color:#4b5563; font-size:14px;">📍 ${opts.eventVenue}</p>
       </div>
       <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:16px; margin-bottom:16px;">
-        <p style="margin:0 0 6px; color:#92400e; font-size:13px; font-weight:700;">📬 Reach out directly:</p>
-        <p style="margin:0; font-size:15px;">
-          <strong>${firstName}</strong> — <a href="mailto:${opts.rsvperEmail}" style="color:#166534; text-decoration:none; font-weight:600;">${opts.rsvperEmail}</a>
-        </p>
+        <p style="margin:0 0 8px; color:#92400e; font-size:13px; font-weight:700;">📬 Reach out directly — just hit Reply or email:</p>
+        <p style="margin:0 0 4px; font-size:16px; font-weight:700; color:#166534;">${opts.rsvperEmail}</p>
+        <p style="margin:0; font-size:13px; color:#6b7280;">(or click: <a href="mailto:${opts.rsvperEmail}" style="color:#166534;">${opts.rsvperEmail}</a>)</p>
       </div>
       <p style="margin:0; color:#374151; font-size:14px; line-height:1.6;">
-        Just email ${firstName} directly to coordinate pickup, timing, or meeting spot. Have fun! 🎉
+        Email ${firstName} directly — or just hit <strong>Reply</strong> to this email — to coordinate pickup, timing, or meeting spot. Have fun! 🎉
       </p>
     </div>
     <div style="text-align:center; padding-top:8px;">
@@ -294,6 +293,7 @@ export async function sendRsvpNotification(opts: {
     to: opts.to,
     subject: `🚗 ${firstName} wants to carpool to: ${shortTitle}`,
     html,
+    replyTo: opts.rsvperEmail,
   });
 
   if (!result.success) {
