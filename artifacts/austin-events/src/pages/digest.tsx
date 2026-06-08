@@ -88,7 +88,7 @@ export default function DigestView() {
           </div>
         </section>
 
-        <section className="mt-24 p-10 bg-secondary rounded-3xl text-secondary-foreground relative overflow-hidden">
+        <section id="subscribe" className="mt-24 p-10 bg-secondary rounded-3xl text-secondary-foreground relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--color-primary)_0%,transparent_70%)] opacity-20" />
           <div className="relative z-10">
             <h3 className="font-serif text-3xl font-bold mb-2 text-center">Don't miss the next one</h3>
