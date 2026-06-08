@@ -321,6 +321,22 @@ function parseDateColonStyle(lines: string[]): EventItem[] {
   return events;
 }
 
+function deriveSourceName(email: FetchedEmail): string {
+  // Strip "Fwd: " / "Fwd: Fwd: " chains to get the original newsletter subject
+  const innerSubj = email.subject.replace(/^(fwd?:\s*)+/i, "").trim();
+  const from = email.from.toLowerCase();
+
+  if (/austin business review/i.test(innerSubj)) return "The Austin Business Review";
+  if (/capital factory/i.test(innerSubj) || /station austin/i.test(innerSubj) || /capital factory/i.test(from)) return "Capital Factory";
+  if (/asian chamber|gacc|aanhpi|access vietnam|greater asian/i.test(innerSubj) || /asian chamber/i.test(from)) return "Greater Asian Chamber of Commerce";
+  if (/what'?s happening in austin|happening in austin/i.test(innerSubj)) return "Luma";
+  if (/lu\.ma|noreply@lu\.ma|hello@lu\.ma/i.test(from) || /\bluma\b/i.test(from)) return "Luma";
+  // Extract display name from "Name <email>" format
+  const nameMatch = email.from.match(/^([^<]+)</);
+  if (nameMatch) return nameMatch[1].trim();
+  return innerSubj || email.subject;
+}
+
 function extractEventsFromEmail(email: FetchedEmail): EventItem[] {
   const raw = email.html ? stripHtml(email.html) : email.text;
   const cleaned = stripForwardedHeaders(raw);
@@ -337,12 +353,15 @@ function extractEventsFromEmail(email: FetchedEmail): EventItem[] {
   // Combine with deduplication (luma first as highest quality)
   const combined = [...lumaEvents, ...dateColonEvents, ...genericEvents];
   const seen = new Set<string>();
-  return combined.filter(e => {
-    const key = e.title.toLowerCase().substring(0, 40);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  const source = deriveSourceName(email);
+  return combined
+    .filter(e => {
+      const key = e.title.toLowerCase().substring(0, 40);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map(e => ({ ...e, source }));
 }
 
 function isNewsletterEmail(email: FetchedEmail): boolean {

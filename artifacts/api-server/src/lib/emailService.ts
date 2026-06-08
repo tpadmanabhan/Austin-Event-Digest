@@ -160,6 +160,7 @@ export function buildDigestEmailHtml(digest: {
     category: string;
     link?: string | null;
     imageUrl?: string | null;
+    source?: string | null;
   }>;
   digestId?: number;
   siteUrl?: string;
@@ -184,7 +185,8 @@ export function buildDigestEmailHtml(digest: {
       <h3 style="margin:0 0 8px; color:#1c1917; font-size:18px; font-weight:700;">${event.title}</h3>
       <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${event.date}</p>
       <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${event.venue}</p>
-      <p style="margin:0 0 16px; color:#44403c; font-size:15px; line-height:1.6;">${event.description}</p>
+      <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${event.description}</p>
+      ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${event.source}</p>` : ""}
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
         ${event.link ? `<a href="${event.link}" style="display:inline-block; background:#22c55e; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
         ${rsvpLink ? `<a href="${rsvpLink}" style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #86efac; color:#16a34a; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">🚗 Interested in carpooling? &nbsp;<strong>Yes</strong></a>` : ""}

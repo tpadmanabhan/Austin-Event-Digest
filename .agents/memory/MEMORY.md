@@ -1,0 +1,4 @@
+- [Email source detection](email-source-detection.md) — forwarded emails need "Fwd:" stripped from subject before pattern matching
+- [Prod vs dev databases](prod-dev-db.md) — production and dev are separate DBs; must POST to eventcarpooling.com API to push data to prod
+- [Capital Factory newsletter](capital-factory-parse.md) — Station Austin newsletter is HTML-only with zero-width spacers; parser yields 0 events
+- [Zod schema stripping on deploy](zod-deployed-schema.md) — deployed server strips fields not in its schema; adding a field requires redeploy to flow through API responses

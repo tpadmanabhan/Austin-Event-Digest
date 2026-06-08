@@ -14,4 +14,5 @@ export interface EventItem {
   link?: string | null;
   category: string;
   imageUrl?: string | null;
+  source?: string | null;
 }

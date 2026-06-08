@@ -9,11 +9,7 @@ import {
 } from "@workspace/api-client-react";
 
 export function useLatestDigest() {
-  return useGetLatestApi({
-    query: {
-      retry: false, // Don't retry heavily if 404
-    }
-  });
+  return useGetLatestApi();
 }
 
 export function useAllDigests() {

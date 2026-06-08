@@ -11,7 +11,7 @@ import {
 } from "@workspace/api-zod";
 import { generateSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendEmail, buildDigestEmailHtml } from "../lib/emailService";
-import { fetchEventsFromGmail, isEmailReaderConfigured } from "../lib/emailReader";
+import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
 
 const router: IRouter = Router();
 
@@ -165,6 +165,19 @@ router.delete("/digest/:id", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error deleting digest");
     res.status(500).json({ error: "server_error", message: "Failed to delete digest" });
+  }
+});
+
+// Debug: show raw emails + extracted events from Gmail inbox
+router.get("/debug/emails", async (req, res) => {
+  try {
+    const sinceStr = req.query.since as string | undefined;
+    const since = sinceStr ? new Date(sinceStr) : new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const emails = await debugFetchEmails(since);
+    res.json({ emails });
+  } catch (err) {
+    req.log.error({ err }, "Error fetching debug emails");
+    res.status(500).json({ error: "server_error", message: String(err) });
   }
 });
 

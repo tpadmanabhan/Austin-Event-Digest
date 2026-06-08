@@ -10,6 +10,7 @@ export const EventItemSchema = z.object({
   link: z.string().nullable().optional(),
   category: z.string(),
   imageUrl: z.string().nullable().optional(),
+  source: z.string().nullable().optional(),
 });
 
 export type EventItem = z.infer<typeof EventItemSchema>;
