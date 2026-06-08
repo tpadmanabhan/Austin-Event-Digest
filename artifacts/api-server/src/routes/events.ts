@@ -33,7 +33,7 @@ router.get("/digest/latest", async (req, res) => {
     const [latest] = await db
       .select()
       .from(digestsTable)
-      .orderBy(desc(digestsTable.weekOf))
+      .orderBy(desc(digestsTable.weekOf), desc(digestsTable.id))
       .limit(1);
 
     if (!latest) {
@@ -165,6 +165,35 @@ router.delete("/digest/:id", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error deleting digest");
     res.status(500).json({ error: "server_error", message: "Failed to delete digest" });
+  }
+});
+
+// Admin endpoint: create a digest from a pre-built payload (bypasses Gmail parsing).
+// Useful for pushing a manually-curated or dev-verified digest into production.
+router.post("/digest/import", async (req, res) => {
+  const { weekOf: weekOfStr, subject, intro, events } = req.body || {};
+  if (!weekOfStr || !subject || !intro || !Array.isArray(events) || events.length === 0) {
+    res.status(400).json({ error: "invalid_request", message: "weekOf, subject, intro, and events[] are required" });
+    return;
+  }
+
+  try {
+    const weekOf = new Date(weekOfStr);
+    if (isNaN(weekOf.getTime())) {
+      res.status(400).json({ error: "invalid_request", message: "Invalid weekOf date" });
+      return;
+    }
+
+    const [digest] = await db
+      .insert(digestsTable)
+      .values({ weekOf, subject, intro, events, sentCount: 0 })
+      .returning();
+
+    const response = GenerateDigestResponse.parse({ digest: digestToApi(digest) });
+    res.json(response);
+  } catch (err) {
+    req.log.error({ err }, "Error importing digest");
+    res.status(500).json({ error: "server_error", message: "Failed to import digest" });
   }
 });
 

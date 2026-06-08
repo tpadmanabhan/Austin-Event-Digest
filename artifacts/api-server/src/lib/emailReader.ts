@@ -103,16 +103,26 @@ function stripHtml(html: string): string {
     .trim();
 }
 
-// Strip forwarded message headers to get the actual newsletter body
+// Strip all forwarded message headers to reach the innermost newsletter body.
+// Handles multiple forwarding layers (e.g. Raj → aiimplementationclubaustin
+// wrapping Ethan → Raj wrapping the original newsletter).
 function stripForwardedHeaders(text: string): string {
-  const forwardedIdx = text.indexOf("---------- Forwarded message");
-  if (forwardedIdx === -1) return text;
-
-  // Find where the actual body starts (after "To: ..." line)
-  const afterHeader = text.indexOf("\n\n", forwardedIdx + 50);
-  if (afterHeader === -1) return text.slice(forwardedIdx);
-
-  return text.slice(afterHeader).trim();
+  let result = text;
+  // Loop: keep stripping "---------- Forwarded message" wrappers until none remain
+  for (let depth = 0; depth < 5; depth++) {
+    const forwardedIdx = result.indexOf("---------- Forwarded message");
+    if (forwardedIdx === -1) break;
+    // Skip past the header block (From/To/Date/Subject lines) — find the blank line after it
+    const afterHeader = result.indexOf("\n\n", forwardedIdx + 50);
+    if (afterHeader === -1) {
+      result = result.slice(forwardedIdx);
+      break;
+    }
+    result = result.slice(afterHeader).trim();
+  }
+  // Also strip Gmail "On <date> <name> wrote:" quote markers
+  result = result.replace(/^On .{10,100} wrote:\s*/gm, "");
+  return result;
 }
 
 const DAY_HEADER = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday),?\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}/i;
