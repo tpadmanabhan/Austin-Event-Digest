@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Mail, Calendar, Settings, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -34,15 +34,7 @@ export function Layout({ children }: { children: ReactNode }) {
               >
                 Home
               </Link>
-              <Link
-                href="/admin"
-                className={`text-sm font-medium transition-colors hover:text-primary flex items-center gap-2 ${
-                  location === "/admin" ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline">Admin</span>
-              </Link>
+
               <a
                 href="#subscribe"
                 className="hidden sm:inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0"
