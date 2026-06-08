@@ -5,6 +5,7 @@ import { useAllDigests, useLatestDigest } from "@/hooks/use-events";
 import { format, parseISO } from "date-fns";
 import { Calendar, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+import { SubscribeForm } from "@/components/subscribe-form";
 
 export default function DigestView() {
   const [match, params] = useRoute("/digest/:id");
@@ -87,16 +88,16 @@ export default function DigestView() {
           </div>
         </section>
 
-        <section className="mt-24 p-10 bg-secondary rounded-3xl text-secondary-foreground text-center relative overflow-hidden">
+        <section className="mt-24 p-10 bg-secondary rounded-3xl text-secondary-foreground relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--color-primary)_0%,transparent_70%)] opacity-20" />
           <div className="relative z-10">
-            <h3 className="font-serif text-3xl font-bold mb-4">Don't miss the next one</h3>
-            <p className="text-secondary-foreground/80 mb-8 max-w-lg mx-auto text-lg">
-              Get next week's best Austin events delivered straight to your inbox. No spam, just the good stuff.
+            <h3 className="font-serif text-3xl font-bold mb-2 text-center">Don't miss the next one</h3>
+            <p className="text-secondary-foreground/80 mb-8 max-w-lg mx-auto text-lg text-center">
+              Get next week's best Austin events delivered straight to your inbox.
             </p>
-            <Link href="/#subscribe" className="inline-flex items-center justify-center rounded-xl bg-background px-8 py-4 text-base font-bold text-foreground shadow-lg transition-all hover:bg-background/90 hover:-translate-y-1">
-              Subscribe for Free
-            </Link>
+            <div className="max-w-xl mx-auto bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60">
+              <SubscribeForm />
+            </div>
           </div>
         </section>
       </article>
