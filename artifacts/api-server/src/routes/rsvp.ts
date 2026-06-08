@@ -63,6 +63,15 @@ router.post("/", async (req, res) => {
         name: name || null,
       });
 
+      // Auto-subscribe the RSVPer to the weekly newsletter
+      await db
+        .insert(subscribersTable)
+        .values({ email: normalizedEmail, name: name || null, isActive: true })
+        .onConflictDoUpdate({
+          target: subscribersTable.email,
+          set: { isActive: true, name: name || null },
+        });
+
       const rsvperName = name || email.split("@")[0];
 
       // Notify each prior RSVPer that the new person also wants to carpool
