@@ -8,7 +8,7 @@ import {
   UnsubscribeFromNewsletterResponse,
   GetSubscribersResponse,
 } from "@workspace/api-zod";
-import { sendWelcomeEmail } from "../lib/emailService";
+import { sendWelcomeEmail, sendNewSubscriberAdminNotification } from "../lib/emailService";
 
 const router: IRouter = Router();
 
@@ -55,6 +55,7 @@ router.post("/subscribe", async (req, res) => {
         });
         res.json(response);
         sendWelcomeEmail(email, name ?? updated[0].name).catch(() => {});
+        sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? updated[0].name, isResubscribe: true }).catch(() => {});
         return;
       }
 
@@ -91,6 +92,7 @@ router.post("/subscribe", async (req, res) => {
     });
     res.json(response);
     sendWelcomeEmail(email, name ?? null).catch(() => {});
+    sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? null }).catch(() => {});
   } catch (err) {
     req.log.error({ err }, "Error subscribing");
     res.status(500).json({ error: "server_error", message: "Failed to subscribe" });
