@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import { logger } from "./logger";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
+const FROM_EMAIL = process.env.FROM_EMAIL || (RESEND_API_KEY ? "onboarding@resend.dev" : "newsletter@rajsaustinevents.com");
 const FROM_NAME = process.env.FROM_NAME || "Raj's Austin Events";
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
