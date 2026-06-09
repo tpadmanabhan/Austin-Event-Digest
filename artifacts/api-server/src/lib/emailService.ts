@@ -384,5 +384,6 @@ export async function sendRsvpGroupNotification(opts: {
 
   if (!result.success) {
     logger.warn({ to: opts.to, error: result.error }, "Failed to send RSVP group notification");
+    throw new Error(result.error || "Failed to send RSVP group notification");
   }
 }
