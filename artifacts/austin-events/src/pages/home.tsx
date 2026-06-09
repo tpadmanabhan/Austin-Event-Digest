@@ -1,19 +1,16 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Calendar } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { ArrowRight, Sparkles } from "lucide-react";
 
-import { useLatestDigest, useAllDigests } from "@/hooks/use-events";
+import { useLatestDigest } from "@/hooks/use-events";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { SubscribeForm } from "@/components/subscribe-form";
 
 export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
-  const { data: allDigestsRes } = useAllDigests();
 
   const latestDigest = latestDigestRes?.digest;
-  const pastDigests = allDigestsRes?.digests?.filter(d => d.id !== latestDigest?.id).slice(0, 3) || [];
 
   return (
     <Layout>
@@ -116,37 +113,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PAST EDITIONS */}
-      {pastDigests.length > 0 && (
-        <section className="py-20 bg-background">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="font-serif text-3xl font-bold mb-10">Past Editions</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pastDigests.map((digest) => (
-                <Link 
-                  key={digest.id} 
-                  href={`/digest/${digest.id}`}
-                  className="group block p-6 rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-lg transition-all hover:-translate-y-1"
-                >
-                  <div className="flex items-center gap-3 text-muted-foreground mb-3 text-sm">
-                    <Calendar className="w-4 h-4" />
-                    {format(parseISO(digest.weekOf.substring(0, 10)), "MMMM d, yyyy")}
-                  </div>
-                  <h3 className="font-serif text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                    {digest.subject}
-                  </h3>
-                  <p className="text-muted-foreground text-sm line-clamp-2">
-                    {digest.intro}
-                  </p>
-                  <div className="mt-6 flex items-center text-sm font-semibold text-primary">
-                    Read Edition <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
     </Layout>
   );
 }
