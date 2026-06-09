@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { createHmac } from "crypto";
 import { db, rsvpsTable, digestsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { sendRsvpNotification } from "../lib/emailService";
+import { sendRsvpNotification, sendRsvpGroupNotification } from "../lib/emailService";
 
 const router: IRouter = Router();
 
@@ -95,26 +95,23 @@ router.post("/rsvp/resend", async (req, res) => {
       return;
     }
 
-    // Send every person a notification about every other person
-    const results: { to: string; about: string; success: boolean; error?: string }[] = [];
+    // Send each person ONE consolidated email listing all the other RSVPers
+    const results: { to: string; success: boolean; matchCount: number; error?: string }[] = [];
     for (const recipient of rsvps) {
-      for (const other of rsvps) {
-        if (other.email === recipient.email) continue;
-        const otherName = other.name || other.email.split("@")[0];
-        try {
-          await sendRsvpNotification({
-            to: recipient.email,
-            rsvperName: otherName,
-            rsvperEmail: other.email,
-            eventTitle: event.title,
-            eventDate: event.date,
-            eventVenue: event.venue,
-            digestSubject: digest.subject,
-          });
-          results.push({ to: recipient.email, about: other.email, success: true });
-        } catch (err: any) {
-          results.push({ to: recipient.email, about: other.email, success: false, error: err?.message });
-        }
+      const others = rsvps
+        .filter(r => r.email !== recipient.email)
+        .map(r => ({ name: r.name || r.email.split("@")[0], email: r.email }));
+      try {
+        await sendRsvpGroupNotification({
+          to: recipient.email,
+          matches: others,
+          eventTitle: event.title,
+          eventDate: event.date,
+          eventVenue: event.venue,
+        });
+        results.push({ to: recipient.email, success: true, matchCount: others.length });
+      } catch (err: any) {
+        results.push({ to: recipient.email, success: false, matchCount: others.length, error: err?.message });
       }
     }
 

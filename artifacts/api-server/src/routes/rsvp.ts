@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, rsvpsTable, subscribersTable, digestsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { sendRsvpNotification } from "../lib/emailService";
+import { sendRsvpNotification, sendRsvpGroupNotification } from "../lib/emailService";
 
 const router: IRouter = Router();
 
@@ -74,7 +74,7 @@ router.post("/", async (req, res) => {
 
       const rsvperName = name || email.split("@")[0];
 
-      // Notify each prior RSVPer that the new person also wants to carpool
+      // Notify each prior RSVPer (one email each) that the new person also wants to carpool
       for (const prior of priorRsvps) {
         if (prior.email.toLowerCase() !== normalizedEmail) {
           sendRsvpNotification({
@@ -89,17 +89,14 @@ router.post("/", async (req, res) => {
         }
       }
 
-      // Notify the new RSVPer about each person who was already interested
-      for (const prior of priorRsvps) {
-        const priorName = prior.name || prior.email.split("@")[0];
-        sendRsvpNotification({
+      // Notify the new RSVPer with ONE consolidated email listing everyone already interested
+      if (priorRsvps.length > 0) {
+        sendRsvpGroupNotification({
           to: normalizedEmail,
-          rsvperName: priorName,
-          rsvperEmail: prior.email,
+          matches: priorRsvps.map(p => ({ name: p.name || p.email.split("@")[0], email: p.email })),
           eventTitle: event.title,
           eventDate: event.date,
           eventVenue: event.venue,
-          digestSubject: digest.subject,
         }).catch(() => {});
       }
 

@@ -238,6 +238,24 @@ export function buildDigestEmailHtml(digest: {
   `;
 }
 
+export interface RsvpPerson {
+  name: string;
+  email: string;
+}
+
+function buildPersonCards(people: RsvpPerson[]): string {
+  return people.map(p => {
+    const first = p.name.split(" ")[0];
+    return `
+      <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:14px; margin-bottom:12px;">
+        <p style="margin:0 0 4px; color:#92400e; font-size:14px; font-weight:700;">🚗 ${first}</p>
+        <p style="margin:0 0 2px; font-size:15px; font-weight:700; color:#166534;">${p.email}</p>
+        <p style="margin:0; font-size:13px; color:#6b7280;"><a href="mailto:${p.email}" style="color:#166534;">${p.email}</a></p>
+      </div>`;
+  }).join("");
+}
+
+// Notify one person about ONE new person joining (used for existing RSVPers when someone new joins)
 export async function sendRsvpNotification(opts: {
   to: string;
   rsvperName: string;
@@ -274,12 +292,8 @@ export async function sendRsvpNotification(opts: {
         <p style="margin:0 0 4px; color:#4b5563; font-size:14px;">📅 ${opts.eventDate}</p>
         <p style="margin:0; color:#4b5563; font-size:14px;">📍 ${opts.eventVenue}</p>
       </div>
-      <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:16px; margin-bottom:16px;">
-        <p style="margin:0 0 8px; color:#92400e; font-size:13px; font-weight:700;">📬 Reach out directly — just hit Reply or email:</p>
-        <p style="margin:0 0 4px; font-size:16px; font-weight:700; color:#166534;">${opts.rsvperEmail}</p>
-        <p style="margin:0; font-size:13px; color:#6b7280;">(or click: <a href="mailto:${opts.rsvperEmail}" style="color:#166534;">${opts.rsvperEmail}</a>)</p>
-      </div>
-      <p style="margin:0; color:#374151; font-size:14px; line-height:1.6;">
+      ${buildPersonCards([{ name: opts.rsvperName, email: opts.rsvperEmail }])}
+      <p style="margin:8px 0 0; color:#374151; font-size:14px; line-height:1.6;">
         Email ${firstName} directly — or just hit <strong>Reply</strong> to this email — to coordinate pickup, timing, or meeting spot. Have fun! 🎉
       </p>
     </div>
@@ -300,5 +314,75 @@ export async function sendRsvpNotification(opts: {
 
   if (!result.success) {
     logger.warn({ to: opts.to, error: result.error }, "Failed to send RSVP notification");
+  }
+}
+
+// Notify a new RSVPer about ALL existing carpool matches in one consolidated email
+export async function sendRsvpGroupNotification(opts: {
+  to: string;
+  matches: RsvpPerson[];
+  eventTitle: string;
+  eventDate: string;
+  eventVenue: string;
+}): Promise<void> {
+  if (opts.matches.length === 0) return;
+
+  const shortTitle = opts.eventTitle.length > 60 ? opts.eventTitle.substring(0, 60).trimEnd() + "…" : opts.eventTitle;
+  const count = opts.matches.length;
+  const headline = count === 1
+    ? `${opts.matches[0].name.split(" ")[0]} wants to carpool! 🚗`
+    : `${count} people want to carpool with you! 🚗`;
+  const subline = count === 1
+    ? `You've got a carpool match for:`
+    : `You've got ${count} carpool matches for:`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0; padding:0; background:#f0fdf4; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:560px; margin:0 auto; padding:24px;">
+    <div style="background:linear-gradient(135deg, #166534 0%, #14532d 100%); border-radius:16px; padding:28px; margin-bottom:20px; text-align:center;">
+      <div style="font-size:36px; margin-bottom:8px;">🚗</div>
+      <h1 style="margin:0 0 4px; color:#bbf7d0; font-size:20px; font-weight:800;">Carpool Match${count > 1 ? "es" : ""}!</h1>
+      <p style="margin:0; color:#86efac; font-size:13px;">Raj's Austin Events</p>
+    </div>
+    <div style="background:#fff; border:1px solid #bbf7d0; border-radius:12px; padding:24px; margin-bottom:20px;">
+      <p style="margin:0 0 16px; color:#14532d; font-size:20px; font-weight:700;">${headline}</p>
+      <p style="margin:0 0 16px; color:#374151; font-size:15px; line-height:1.7;">${subline}</p>
+      <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:16px; margin-bottom:16px;">
+        <p style="margin:0 0 8px; color:#15803d; font-size:16px; font-weight:700;">${opts.eventTitle}</p>
+        <p style="margin:0 0 4px; color:#4b5563; font-size:14px;">📅 ${opts.eventDate}</p>
+        <p style="margin:0; color:#4b5563; font-size:14px;">📍 ${opts.eventVenue}</p>
+      </div>
+      <p style="margin:0 0 12px; color:#92400e; font-size:13px; font-weight:700;">📬 Reach out to coordinate:</p>
+      ${buildPersonCards(opts.matches)}
+      <p style="margin:8px 0 0; color:#374151; font-size:14px; line-height:1.6;">
+        Email anyone on the list directly to coordinate pickup, timing, or meeting spot. Have fun! 🎉
+      </p>
+    </div>
+    <div style="text-align:center; padding-top:8px;">
+      <p style="margin:0; color:#6b7280; font-size:12px;">Raj's Austin Events · Austin, TX</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const firstReplyTo = opts.matches[0]?.email;
+  const result = await sendEmail({
+    to: opts.to,
+    subject: count === 1
+      ? `🚗 ${opts.matches[0].name.split(" ")[0]} wants to carpool to: ${shortTitle}`
+      : `🚗 ${count} carpool matches for: ${shortTitle}`,
+    html,
+    replyTo: firstReplyTo,
+  });
+
+  if (!result.success) {
+    logger.warn({ to: opts.to, error: result.error }, "Failed to send RSVP group notification");
   }
 }
