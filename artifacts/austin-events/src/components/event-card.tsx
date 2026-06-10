@@ -243,7 +243,19 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
 
         {(event as any).source && (
           <p className="text-xs text-muted-foreground/60 italic mb-4">
-            via {(event as any).source}
+            via{" "}
+            {event.link ? (
+              <a
+                href={event.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-primary transition-colors not-italic"
+              >
+                {(event as any).source}
+              </a>
+            ) : (
+              (event as any).source
+            )}
           </p>
         )}
 
