@@ -237,7 +237,7 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
           <span className="font-medium">{event.venue}</span>
         </div>
 
-        <p className="text-muted-foreground text-sm leading-relaxed mb-3 flex-1 line-clamp-3">
+        <p className="text-muted-foreground text-sm leading-relaxed mb-3 flex-1">
           {event.description}
         </p>
 

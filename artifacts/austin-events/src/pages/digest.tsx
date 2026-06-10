@@ -7,6 +7,31 @@ import { Calendar, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 
+const MONTH_MAP: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+};
+
+function parseEventDateForSort(dateStr: string): number {
+  // Handles: "Sunday, Jun 7", "Wednesday, Jun 10 at 7:00 AM", "Thu, Jun 11 - Fri, Jun 12"
+  const match = dateStr.match(/([A-Z][a-z]{2})\s+(\d+)/);
+  if (!match) return 0;
+  const month = MONTH_MAP[match[1]] ?? 0;
+  const day = parseInt(match[2], 10);
+  // Extract time if present (e.g. "at 7:00 AM")
+  const timeMatch = dateStr.match(/at\s+(\d+):(\d+)\s*(AM|PM)/i);
+  let hours = 0;
+  let minutes = 0;
+  if (timeMatch) {
+    hours = parseInt(timeMatch[1], 10);
+    minutes = parseInt(timeMatch[2], 10);
+    if (timeMatch[3].toUpperCase() === "PM" && hours !== 12) hours += 12;
+    if (timeMatch[3].toUpperCase() === "AM" && hours === 12) hours = 0;
+  }
+  // Use 1440 (minutes/day) so any within-day time never outweighs a day difference
+  return month * 46080 + day * 1440 + hours * 60 + minutes;
+}
+
 export default function DigestView() {
   const [match, params] = useRoute("/digest/:id");
   const idStr = params?.id;
@@ -82,9 +107,11 @@ export default function DigestView() {
           </h2>
           
           <div className="grid sm:grid-cols-2 gap-8">
-            {digest.events.map((event, i) => (
-              <EventCard key={i} event={event} digestId={digest.id} />
-            ))}
+            {[...digest.events]
+              .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date))
+              .map((event, i) => (
+                <EventCard key={i} event={event} digestId={digest.id} />
+              ))}
           </div>
         </section>
 
