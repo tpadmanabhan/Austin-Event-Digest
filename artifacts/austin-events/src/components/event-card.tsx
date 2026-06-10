@@ -5,6 +5,13 @@ import type { EventItem } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+const SOURCE_URLS: Record<string, string> = {
+  "The Austin Business Review": "https://austinbusinessreview.substack.com",
+  "Luma": "https://lu.ma/austin",
+  "ATX Today": "https://atxtoday.6amcity.com",
+  "Greater Asian Chamber of Commerce": "https://www.austinasian.org",
+};
+
 function safeFormat(dateStr: string | null | undefined, fmt: string): string {
   if (!dateStr) return "TBD";
   try {
@@ -244,18 +251,21 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
         {(event as any).source && (
           <p className="text-xs text-muted-foreground/60 italic mb-4">
             via{" "}
-            {event.link ? (
-              <a
-                href={event.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline underline-offset-2 hover:text-primary transition-colors not-italic"
-              >
-                {(event as any).source}
-              </a>
-            ) : (
-              (event as any).source
-            )}
+            {(() => {
+              const href = event.link || SOURCE_URLS[(event as any).source];
+              return href ? (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 hover:text-primary transition-colors not-italic"
+                >
+                  {(event as any).source}
+                </a>
+              ) : (
+                (event as any).source
+              );
+            })()}
           </p>
         )}
 
