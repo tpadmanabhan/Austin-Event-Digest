@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const SOURCE_URLS: Record<string, string> = {
-  "The Austin Business Review": "https://austinbr.substack.com",
+  "The Austin Business Review": "https://austinbusinessreview.com/",
   "Luma": "https://lu.ma/austin",
   "ATX Today": "https://atxtoday.6amcity.com",
   "Greater Asian Chamber of Commerce": "https://www.austinasian.org",
