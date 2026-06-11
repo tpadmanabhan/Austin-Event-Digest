@@ -31,14 +31,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       tryPlay();
       window.removeEventListener("click", onInteraction);
       window.removeEventListener("keydown", onInteraction);
+      window.removeEventListener("touchstart", onInteraction);
     };
     window.addEventListener("click", onInteraction);
     window.addEventListener("keydown", onInteraction);
+    window.addEventListener("touchstart", onInteraction, { passive: true });
 
     return () => {
       audio.pause();
       window.removeEventListener("click", onInteraction);
       window.removeEventListener("keydown", onInteraction);
+      window.removeEventListener("touchstart", onInteraction);
     };
   }, []);
 
