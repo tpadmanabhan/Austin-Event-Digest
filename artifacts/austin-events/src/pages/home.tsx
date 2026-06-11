@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Star } from "lucide-react";
 
 import { useLatestDigest } from "@/hooks/use-events";
 import { Layout } from "@/components/layout";
@@ -92,19 +92,52 @@ export default function Home() {
               ))}
             </div>
           ) : latestDigest?.events ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {latestDigest.events.slice(0, 3).map((event, i) => (
-                <motion.div 
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <EventCard event={event} digestId={latestDigest.id} />
-                </motion.div>
-              ))}
-            </div>
+            (() => {
+              const featuredEvents = latestDigest.events.filter((e: any) => e.featured);
+              const regularEvents = latestDigest.events.filter((e: any) => !e.featured);
+              return (
+                <div className="space-y-8">
+                  {featuredEvents.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                    >
+                      <div className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20 overflow-hidden">
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
+                        <div className="absolute top-4 right-4">
+                          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
+                            <Star className="w-3 h-3 fill-amber-950" />
+                            Special Event
+                          </span>
+                        </div>
+                        <div className="p-6 sm:p-8">
+                          <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-4 uppercase tracking-wider">
+                            Outside this week's dates — don't miss it!
+                          </p>
+                          <div className="max-w-xl">
+                            <EventCard event={featuredEvents[0]} digestId={latestDigest.id} />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {regularEvents.slice(0, featuredEvents.length > 0 ? 2 : 3).map((event, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.1 }}
+                      >
+                        <EventCard event={event} digestId={latestDigest.id} />
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()
           ) : (
             <div className="text-center py-20 bg-muted/30 rounded-3xl border border-dashed border-border">
               <p className="text-muted-foreground">No events found for this week yet.</p>
