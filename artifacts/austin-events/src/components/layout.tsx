@@ -12,7 +12,7 @@ export function Layout({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = new Audio(`${import.meta.env.BASE_URL}spanish-guitar.mp3`);
     audio.loop = true;
-    audio.volume = 0.35;
+    audio.volume = 0.15;
     audioRef.current = audio;
 
     const tryPlay = () => {
