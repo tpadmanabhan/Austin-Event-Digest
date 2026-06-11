@@ -13,12 +13,12 @@ export function useAudio() {
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
 
   useEffect(() => {
     const audio = new Audio(`${import.meta.env.BASE_URL}spanish-guitar.mp3`);
     audio.loop = true;
-    audio.volume = 0.15;
+    audio.volume = 0.10;
     audio.muted = true;
     audioRef.current = audio;
 
