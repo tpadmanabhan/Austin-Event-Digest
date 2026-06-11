@@ -6,3 +6,9 @@ id = "b7kqdKX42Y2RLl4dmFCK1"
 uri = "file://project-plan.md"
 type = "text"
 title = "Raj's Austin Events — Project Plan"
+
+[[outputs]]
+id = "N2FHh4YMBCcGEJjabJN3D"
+uri = "file://attached_assets/generated_audio/spanish_guitar_bg.mp3"
+type = "audio"
+title = "spanish_guitar_bg"

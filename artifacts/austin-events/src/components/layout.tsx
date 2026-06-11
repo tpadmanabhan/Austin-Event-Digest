@@ -1,10 +1,53 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, Music, VolumeX } from "lucide-react";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [muted, setMuted] = useState(false);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}spanish-guitar.mp3`);
+    audio.loop = true;
+    audio.volume = 0.35;
+    audioRef.current = audio;
+
+    const tryPlay = () => {
+      audio.play().then(() => setStarted(true)).catch(() => {});
+    };
+
+    tryPlay();
+
+    const onInteraction = () => {
+      if (!started) {
+        tryPlay();
+        window.removeEventListener("click", onInteraction);
+        window.removeEventListener("keydown", onInteraction);
+      }
+    };
+    window.addEventListener("click", onInteraction);
+    window.addEventListener("keydown", onInteraction);
+
+    return () => {
+      audio.pause();
+      window.removeEventListener("click", onInteraction);
+      window.removeEventListener("keydown", onInteraction);
+    };
+  }, []);
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!audioRef.current) return;
+    const next = !muted;
+    audioRef.current.muted = next;
+    if (!started) {
+      audioRef.current.play().then(() => setStarted(true)).catch(() => {});
+    }
+    setMuted(next);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
@@ -25,7 +68,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </div>
             </Link>
 
-            <nav className="flex items-center gap-6">
+            <nav className="flex items-center gap-4">
               <Link
                 href="/"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
@@ -34,6 +77,14 @@ export function Layout({ children }: { children: ReactNode }) {
               >
                 Home
               </Link>
+
+              <button
+                onClick={toggleMute}
+                title={muted ? "Unmute music" : "Mute music"}
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-card text-muted-foreground hover:text-primary hover:border-primary/40 transition-all"
+              >
+                {muted ? <VolumeX className="w-4 h-4" /> : <Music className="w-4 h-4" />}
+              </button>
 
               <a
                 href="#subscribe"
