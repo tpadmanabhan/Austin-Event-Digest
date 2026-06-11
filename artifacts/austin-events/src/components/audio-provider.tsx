@@ -18,7 +18,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = new Audio(`${import.meta.env.BASE_URL}spanish-guitar.mp3`);
     audio.loop = true;
-    audio.volume = 0.10;
+    const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    audio.volume = isMobile ? 0.05 : 0.10;
     audio.muted = true;
     audioRef.current = audio;
 
