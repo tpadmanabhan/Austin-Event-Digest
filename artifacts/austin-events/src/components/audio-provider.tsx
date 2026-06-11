@@ -5,7 +5,7 @@ interface AudioContextValue {
   toggleMute: () => void;
 }
 
-const AudioCtx = createContext<AudioContextValue>({ muted: false, toggleMute: () => {} });
+const AudioCtx = createContext<AudioContextValue>({ muted: true, toggleMute: () => {} });
 
 export function useAudio() {
   return useContext(AudioCtx);
@@ -13,35 +13,33 @@ export function useAudio() {
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(true);
 
   useEffect(() => {
     const audio = new Audio(`${import.meta.env.BASE_URL}spanish-guitar.mp3`);
     audio.loop = true;
     audio.volume = 0.15;
+    audio.muted = true;
     audioRef.current = audio;
 
-    const tryPlay = () => {
-      audio.play().catch(() => {});
-    };
+    audio.play().catch(() => {});
 
-    tryPlay();
-
-    const onInteraction = () => {
-      tryPlay();
-      window.removeEventListener("click", onInteraction);
-      window.removeEventListener("keydown", onInteraction);
-      window.removeEventListener("touchstart", onInteraction);
+    const onFirstInteraction = () => {
+      audio.muted = false;
+      setMuted(false);
+      window.removeEventListener("click", onFirstInteraction);
+      window.removeEventListener("keydown", onFirstInteraction);
+      window.removeEventListener("touchstart", onFirstInteraction);
     };
-    window.addEventListener("click", onInteraction);
-    window.addEventListener("keydown", onInteraction);
-    window.addEventListener("touchstart", onInteraction, { passive: true });
+    window.addEventListener("click", onFirstInteraction);
+    window.addEventListener("keydown", onFirstInteraction);
+    window.addEventListener("touchstart", onFirstInteraction, { passive: true });
 
     return () => {
       audio.pause();
-      window.removeEventListener("click", onInteraction);
-      window.removeEventListener("keydown", onInteraction);
-      window.removeEventListener("touchstart", onInteraction);
+      window.removeEventListener("click", onFirstInteraction);
+      window.removeEventListener("keydown", onFirstInteraction);
+      window.removeEventListener("touchstart", onFirstInteraction);
     };
   }, []);
 
