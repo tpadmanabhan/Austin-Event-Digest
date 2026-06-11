@@ -74,9 +74,12 @@ router.post("/digest/generate", async (req, res) => {
   }
 
   const { weekOf: weekOfStr, customNotes } = parseResult.data;
+  // weekEnd is not in the Zod schema (admin-only extension) — read directly
+  const weekEndStr = (req.body as Record<string, unknown>)?.weekEnd as string | undefined;
 
   try {
     const weekOf = weekOfStr ? new Date(weekOfStr) : getNextSunday();
+    const weekEnd = weekEndStr ? new Date(weekEndStr) : undefined;
 
     let subject: string;
     let intro: string;
@@ -85,19 +88,28 @@ router.post("/digest/generate", async (req, res) => {
 
     if (isEmailReaderConfigured()) {
       req.log.info("Gmail configured — fetching events from inbox");
-      // Look back 14 days before the target week to catch newsletters sent in advance
+      // Look back 14 days before the target range start to catch newsletters sent in advance
       const since = new Date(weekOf);
       since.setDate(since.getDate() - 14);
-      // Only apply a 'before' cap for past weeks so current/future weeks get all recent mail
+      // Only apply a 'before' cap for past ranges so current/future ranges get all recent mail
       const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-      const isPastWeek = weekOf < twoWeeksAgo;
-      const before = isPastWeek ? new Date(weekOf.getTime() + 7 * 24 * 60 * 60 * 1000) : undefined;
+      const rangeEnd = weekEnd || new Date(weekOf.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const isPastRange = rangeEnd < twoWeeksAgo;
+      const before = isPastRange ? rangeEnd : undefined;
 
-      const gmailResult = await fetchEventsFromGmail(since, before, weekOf);
-      sourceNote = `(sourced from ${gmailResult.emails} newsletter email${gmailResult.emails === 1 ? "" : "s"}${gmailResult.weekFiltered ? ", week-filtered" : ""})`;
+      const gmailResult = await fetchEventsFromGmail(since, before, weekOf, weekEnd);
+      sourceNote = `(sourced from ${gmailResult.emails} newsletter email${gmailResult.emails === 1 ? "" : "s"}${gmailResult.weekFiltered ? ", date-filtered" : ""})`;
 
       const fallback = generateSampleDigest(weekOf, customNotes || undefined);
-      subject = fallback.subject;
+      // Use custom date-range subject when weekEnd is provided
+      if (weekEnd) {
+        const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
+        const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
+        const label = `${weekOf.toLocaleDateString("en-US", opts)}–${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
+        subject = `🤠 Austin Events: ${label}`;
+      } else {
+        subject = fallback.subject;
+      }
 
       // Use Gmail events only when they are week-filtered (matched the target week).
       // If weekOf was requested but no week-matching events were found, fall back to

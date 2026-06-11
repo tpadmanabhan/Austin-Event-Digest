@@ -2,3 +2,5 @@
 - [Prod vs dev databases](prod-dev-db.md) — production and dev are separate DBs; must POST to eventcarpooling.com API to push data to prod
 - [Capital Factory newsletter](capital-factory-parse.md) — Station Austin newsletter is HTML-only with zero-width spacers; parser yields 0 events
 - [Zod schema stripping on deploy](zod-deployed-schema.md) — deployed server strips fields not in its schema; adding a field requires redeploy to flow through API responses
+- [Newsletter parser formats](newsletter-parsers.md) — each newsletter has a unique format; TIME_LINE must extract only time (not " @ Venue" trailing content); DATE_COLON_LINE needs [a-z]* for full month names
+- [Custom date range digests](custom-date-range.md) — generate endpoint supports optional weekEnd param (bypasses Zod schema) for multi-day ranges; use /api/events/digest/import to push cleaned data to production

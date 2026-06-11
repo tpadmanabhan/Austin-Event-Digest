@@ -167,12 +167,15 @@ function parseLumaStyle(lines: string[]): EventItem[] {
     }
 
     if (TIME_LINE.test(line) && currentDay) {
-      const timeStr = line.trim();
+      // Extract only the time portion — the full line may contain " @ Venue" or price info
+      const rawTimeLine = line.trim();
+      const timeMatch = rawTimeLine.match(/^\d{1,2}:\d{2}\s*(?:a\.?m\.?|p\.?m\.?)/i);
+      const timeStr = timeMatch ? timeMatch[0].trim() : rawTimeLine;
       const titleLine = lines[i + 1]?.trim() || "";
       const venueLine = lines[i + 2]?.trim() || "";
 
       if (titleLine && titleLine.length > 3 && !REGISTER_LINK_FULL.test(titleLine) && !JUNK_LINE.test(titleLine)) {
-        const hasVenue = (!REGISTER_LINK_FULL.test(venueLine) && !JUNK_LINE.test(venueLine) && !TIME_LINE.test(venueLine) && !DAY_HEADER.test(venueLine) && venueLine.length > 2);
+        const hasVenue = (!REGISTER_LINK_FULL.test(venueLine) && !JUNK_LINE.test(venueLine) && !TIME_LINE.test(venueLine) && !DAY_HEADER.test(venueLine) && venueLine.length > 2 && !/to see \d+ more/i.test(venueLine));
         const venue = hasVenue ? venueLine : "Austin, TX";
         const nextIdx = i + (hasVenue ? 3 : 2);
 
@@ -186,16 +189,27 @@ function parseLumaStyle(lines: string[]): EventItem[] {
           descLines.push(dl);
           k++;
         }
-        const description = descLines.length > 0
+        // If titleLine is very long it's a description paragraph — extract a concise title
+        let title = titleLine;
+        let prefillDesc = "";
+        if (titleLine.length > 80) {
+          const phrase = titleLine.split(/[.!?—|]/)[0].trim();
+          title = (phrase.length >= 10 && phrase.length <= 70)
+            ? phrase
+            : titleLine.substring(0, 60).replace(/\s+\S+$/, "").trim() + "…";
+          prefillDesc = titleLine;
+        }
+
+        const description = prefillDesc || (descLines.length > 0
           ? descLines.join(" ")
-          : `${titleLine} at ${venue} on ${currentDay} at ${timeStr}.`;
+          : `${title} at ${venue} on ${currentDay} at ${timeStr}.`);
 
         events.push({
-          title: titleLine,
+          title,
           date: `${currentDay} at ${timeStr}`,
           venue,
           description,
-          category: guessCategory(`${titleLine} ${description}`),
+          category: guessCategory(`${title} ${description}`),
           link: null,
           imageUrl: null,
         });
@@ -277,7 +291,8 @@ function parseGenericEvents(lines: string[]): EventItem[] {
 
 // Parse "Month. Day: Event Title" format used in newsletters like Austin Business Review
 // e.g. "Apr. 20: Dazed & Confused - Live Where It Was Filmed"
-const DATE_COLON_LINE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+(\d{1,2}):\s+(.+)/i;
+// Matches both abbreviated ("Jun.") and full ("June") month names.
+const DATE_COLON_LINE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2}):\s+(.+)/i;
 
 function parseDateColonStyle(lines: string[]): EventItem[] {
   const events: EventItem[] = [];
@@ -321,16 +336,106 @@ function parseDateColonStyle(lines: string[]): EventItem[] {
   return events;
 }
 
+// Parse ATX Today pipe-separated format: "Event Title | time | venue | price"
+// The newsletter date appears as "MM.DD.YYYY" near the top of the email.
+function parseAtxTodayStyle(lines: string[]): EventItem[] {
+  const events: EventItem[] = [];
+  const seen = new Set<string>();
+  let newsletterDate = "";
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Detect ATX Today date header like "06.11.2026"
+    const dotDate = line.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+    if (dotDate) {
+      const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const m = parseInt(dotDate[1], 10) - 1;
+      const d = parseInt(dotDate[2], 10);
+      if (m >= 0 && m < 12) newsletterDate = `${monthNames[m]} ${d}`;
+      continue;
+    }
+
+    if (!line.includes(" | ") || !newsletterDate) continue;
+
+    const parts = line.split(" | ").map(p => p.trim());
+    if (parts.length < 2) continue;
+
+    const title = parts[0];
+    if (
+      title.length < 5 || title.length > 80 ||
+      JUNK_LINE.test(title) || REGISTER_LINK_FULL.test(title) ||
+      PROSE_OPENER.test(title) || /^[a-z]/.test(title) ||
+      /shop|browse|gift|editor|sponsor|presented by/i.test(title)
+    ) continue;
+
+    const key = title.toLowerCase().substring(0, 40);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    let time = "";
+    let venue = "Austin, TX";
+    for (const part of parts.slice(1)) {
+      if (/\d{1,2}(:\d{2})?\s*(a\.?m\.?|p\.?m\.?)/i.test(part) && !time) {
+        time = part.replace(/\s*\$\d+.*/, "").trim();
+      } else if (
+        part.length > 5 && !/^\$\d+/.test(part) && venue === "Austin, TX" &&
+        !JUNK_LINE.test(part) &&
+        !/\d{1,2}(:\d{2})?\s*(a\.?m\.?|p\.?m\.?)/i.test(part) &&
+        !DATE_LINE.test(part)   // exclude recurring date-range strings like "Thu, June 11-Aug. 13"
+      ) {
+        venue = part;
+      }
+    }
+
+    // Require a time component — shopping/gift items in ATX Today lack times
+    if (!time) continue;
+
+    const date = `${newsletterDate} at ${time}`;
+
+    const descLines: string[] = [];
+    for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+      const next = lines[j].trim();
+      if (!next || next.includes(" | ") || DATE_LINE.test(next) || DAY_HEADER.test(next)) break;
+      if (!JUNK_LINE.test(next) && !REGISTER_LINK.test(next) && next.length > 20) {
+        descLines.push(next);
+        if (descLines.length >= 2) break;
+      }
+    }
+
+    const description = descLines.length > 0
+      ? descLines.join(" ").substring(0, 400)
+      : `${title} at ${venue}.`;
+
+    events.push({
+      title,
+      date,
+      venue,
+      description,
+      category: guessCategory(`${title} ${description}`),
+      link: null,
+      imageUrl: null,
+    });
+  }
+
+  return events;
+}
+
 function deriveSourceName(email: FetchedEmail): string {
   // Strip "Fwd: " / "Fwd: Fwd: " chains to get the original newsletter subject
   const innerSubj = email.subject.replace(/^(fwd?:\s*)+/i, "").trim();
   const from = email.from.toLowerCase();
+  const bodySnippet = ((email.html ? email.html : email.text) || "").substring(0, 2000).toLowerCase();
 
   if (/austin business review/i.test(innerSubj)) return "The Austin Business Review";
   if (/capital factory/i.test(innerSubj) || /station austin/i.test(innerSubj) || /capital factory/i.test(from)) return "Capital Factory";
   if (/asian chamber|gacc|aanhpi|access vietnam|greater asian/i.test(innerSubj) || /asian chamber/i.test(from)) return "Greater Asian Chamber of Commerce";
+  if (/what'?s weird atx|whatsweirdatx/i.test(innerSubj) || /whatsweirdatx/i.test(from)) return "What's Weird ATX";
+  if (/weekly common|parks.*books|books.*beer/i.test(innerSubj)) return "The Weekly Common";
   if (/what'?s happening in austin|happening in austin/i.test(innerSubj)) return "Luma";
   if (/lu\.ma|noreply@lu\.ma|hello@lu\.ma/i.test(from) || /\bluma\b/i.test(from)) return "Luma";
+  // Detect ATX Today by body signature (date format MM.DD.YYYY + 6AM City branding)
+  if (/6am city|6am austin|atxtoday\.6amcity/i.test(bodySnippet) || /\d{2}\.\d{2}\.\d{4}/.test(bodySnippet.substring(0, 200))) return "ATX Today";
   // Extract display name from "Name <email>" format
   const nameMatch = email.from.match(/^([^<]+)</);
   if (nameMatch) return nameMatch[1].trim();
@@ -345,13 +450,14 @@ function extractEventsFromEmail(email: FetchedEmail): EventItem[] {
   // Run all parsers and combine results
   const lumaEvents = parseLumaStyle(lines);
   const dateColonEvents = parseDateColonStyle(lines);
-  // Only run generic if both structured parsers found nothing
-  const genericEvents = (lumaEvents.length === 0 && dateColonEvents.length === 0)
+  const atxTodayEvents = parseAtxTodayStyle(lines);
+  // Only run generic if all structured parsers found nothing
+  const genericEvents = (lumaEvents.length === 0 && dateColonEvents.length === 0 && atxTodayEvents.length === 0)
     ? parseGenericEvents(lines)
     : [];
 
-  // Combine with deduplication (luma first as highest quality)
-  const combined = [...lumaEvents, ...dateColonEvents, ...genericEvents];
+  // Combine with deduplication (structured parsers first as highest quality)
+  const combined = [...lumaEvents, ...dateColonEvents, ...atxTodayEvents, ...genericEvents];
   const seen = new Set<string>();
   const source = deriveSourceName(email);
   return combined
@@ -419,6 +525,15 @@ function eventFallsInWeek(dateStr: string, weekStart: Date): boolean {
   return false;
 }
 
+function eventFallsInRange(dateStr: string, start: Date, end: Date): boolean {
+  const year = start.getFullYear();
+  for (const y of [year, year + 1]) {
+    const d = parseEventDate(dateStr, y);
+    if (d && d >= start && d < end) return true;
+  }
+  return false;
+}
+
 export interface EmailSourceResult {
   emails: number;
   events: EventItem[];
@@ -453,14 +568,14 @@ export async function debugFetchEmails(since: Date, before?: Date): Promise<RawE
   });
 }
 
-export async function fetchEventsFromGmail(since?: Date, before?: Date, weekOf?: Date): Promise<EmailSourceResult> {
+export async function fetchEventsFromGmail(since?: Date, before?: Date, weekOf?: Date, weekEnd?: Date): Promise<EmailSourceResult> {
   const sinceDate = since || (() => {
     const d = new Date();
     d.setDate(d.getDate() - 14);
     return d;
   })();
 
-  logger.info({ since: sinceDate, before, weekOf, user: GMAIL_USER }, "Fetching newsletter emails from Gmail");
+  logger.info({ since: sinceDate, before, weekOf, weekEnd, user: GMAIL_USER }, "Fetching newsletter emails from Gmail");
 
   const allEmails = await fetchRecentNewsletterEmails(sinceDate, before);
   logger.info({ total: allEmails.length }, "Total emails fetched");
@@ -484,19 +599,34 @@ export async function fetchEventsFromGmail(since?: Date, before?: Date, weekOf?:
     (e, idx, arr) => arr.findIndex(x => x.title.toLowerCase() === e.title.toLowerCase()) === idx
   );
 
-  // Filter events to the target week if weekOf is provided
+  // Filter events to the target date range if provided
   let finalEvents = uniqueEvents;
   let weekFiltered = false;
-  if (weekOf) {
+
+  if (weekOf && weekEnd) {
+    // Custom date range filter
+    const inRange = uniqueEvents.filter(e => eventFallsInRange(e.date, weekOf, weekEnd));
+    logger.info({ total: uniqueEvents.length, inRange: inRange.length, weekOf, weekEnd }, "Range-filtered events");
+    if (inRange.length >= 1) {
+      inRange.sort((a, b) => {
+        const da = parseEventDate(a.date, weekOf.getFullYear());
+        const db = parseEventDate(b.date, weekOf.getFullYear());
+        if (!da || !db) return 0;
+        return da.getTime() - db.getTime();
+      });
+      finalEvents = inRange;
+      weekFiltered = true;
+    }
+  } else if (weekOf) {
+    // 7-day week filter (existing behaviour)
     const inWeek = uniqueEvents.filter(e => eventFallsInWeek(e.date, weekOf));
     logger.info({ total: uniqueEvents.length, inWeek: inWeek.length, weekOf }, "Week-filtered events");
     if (inWeek.length >= 1) {
-      // Sort events within the week by their date
       inWeek.sort((a, b) => {
         const da = parseEventDate(a.date, weekOf.getFullYear());
-        const db2 = parseEventDate(b.date, weekOf.getFullYear());
-        if (!da || !db2) return 0;
-        return da.getTime() - db2.getTime();
+        const db = parseEventDate(b.date, weekOf.getFullYear());
+        if (!da || !db) return 0;
+        return da.getTime() - db.getTime();
       });
       finalEvents = inWeek;
       weekFiltered = true;
@@ -504,12 +634,12 @@ export async function fetchEventsFromGmail(since?: Date, before?: Date, weekOf?:
   }
 
   const intro = newsletterEmails.length > 0
-    ? `Happy Sunday, Austin! I went through ${newsletterEmails.length} newsletter${newsletterEmails.length === 1 ? "" : "s"} in my inbox this week and hand-picked the best events happening around the city. Here's your curated digest — get out there and enjoy Austin! 🤠`
-    : "Happy Sunday, Austin! Here's your weekly curated guide to the best events in our city.";
+    ? `Hey Austin! I combed through ${newsletterEmails.length} newsletter${newsletterEmails.length === 1 ? "" : "s"} in my inbox and hand-picked the best events happening around the city. Here's your curated digest — get out there and enjoy Austin! 🤠`
+    : "Hey Austin! Here's your curated guide to the best events in the city this week.";
 
   return {
     emails: newsletterEmails.length,
-    events: finalEvents.slice(0, 8),
+    events: finalEvents.slice(0, 25),
     intro,
     sources,
     weekFiltered,
