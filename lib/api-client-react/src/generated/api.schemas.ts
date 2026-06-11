@@ -56,6 +56,7 @@ export interface EventItem {
   category: string;
   imageUrl?: string | null;
   source?: string | null;
+  featured?: boolean;
 }
 
 export interface Digest {

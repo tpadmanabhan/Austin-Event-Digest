@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { useAllDigests, useLatestDigest } from "@/hooks/use-events";
 import { format, parseISO } from "date-fns";
-import { Calendar, ArrowLeft } from "lucide-react";
+import { Calendar, ArrowLeft, Star } from "lucide-react";
 import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 
@@ -100,20 +100,52 @@ export default function DigestView() {
           </div>
         </header>
 
-        <section>
-          <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
-            <span className="w-8 h-1 bg-primary rounded-full"></span>
-            This Week's Curated Events
-          </h2>
-          
-          <div className="grid sm:grid-cols-2 gap-8">
-            {[...digest.events]
-              .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date))
-              .map((event, i) => (
-                <EventCard key={i} event={event} digestId={digest.id} />
-              ))}
-          </div>
-        </section>
+        {(() => {
+          const featuredEvents = digest.events.filter((e: any) => e.featured);
+          const regularEvents = [...digest.events]
+            .filter((e: any) => !e.featured)
+            .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
+          return (
+            <>
+              {featuredEvents.length > 0 && (
+                <section className="mb-12">
+                  <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
+                    <span className="w-8 h-1 bg-amber-500 rounded-full"></span>
+                    <Star className="w-6 h-6 text-amber-500 fill-amber-500" />
+                    Featured Event
+                  </h2>
+                  <div className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20 overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
+                    <div className="absolute top-4 right-4">
+                      <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
+                        <Star className="w-3 h-3 fill-amber-950" />
+                        Special Event
+                      </span>
+                    </div>
+                    <div className="p-6 sm:p-8">
+                      <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-4 uppercase tracking-wider">
+                        Outside this week's dates — don't miss it!
+                      </p>
+                      <EventCard event={featuredEvents[0]} digestId={digest.id} />
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              <section>
+                <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
+                  <span className="w-8 h-1 bg-primary rounded-full"></span>
+                  This Week's Curated Events
+                </h2>
+                <div className="grid sm:grid-cols-2 gap-8">
+                  {regularEvents.map((event, i) => (
+                    <EventCard key={i} event={event} digestId={digest.id} />
+                  ))}
+                </div>
+              </section>
+            </>
+          );
+        })()}
 
         <section id="subscribe" className="mt-24 p-10 bg-secondary rounded-3xl text-secondary-foreground relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--color-primary)_0%,transparent_70%)] opacity-20" />

@@ -11,6 +11,7 @@ export const EventItemSchema = z.object({
   category: z.string(),
   imageUrl: z.string().nullable().optional(),
   source: z.string().nullable().optional(),
+  featured: z.boolean().optional(),
 });
 
 export type EventItem = z.infer<typeof EventItemSchema>;

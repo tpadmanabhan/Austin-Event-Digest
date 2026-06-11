@@ -276,6 +276,8 @@ components:
         source:
           type: string
           nullable: true
+        featured:
+          type: boolean
       required:
         - title
         - date
