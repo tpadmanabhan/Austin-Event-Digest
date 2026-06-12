@@ -271,22 +271,19 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
           </p>
         )}
 
-        {(() => {
-          const href = event.link || `https://do512.com/search?q=${encodeURIComponent(event.title)}`;
-          return (
-            <div className="pb-4">
-              <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80 group/link"
-              >
-                View Event Details
-                <ExternalLink className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
-              </a>
-            </div>
-          );
-        })()}
+        {event.link && (
+          <div className="pb-4">
+            <a
+              href={event.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80 group/link"
+            >
+              View Event Details
+              <ExternalLink className="w-4 h-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
+            </a>
+          </div>
+        )}
 
         {digestId && (
           <RsvpBox
