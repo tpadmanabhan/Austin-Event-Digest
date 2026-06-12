@@ -3,6 +3,7 @@ import { createHmac } from "crypto";
 import { db, rsvpsTable, digestsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { sendRsvpNotification, sendRsvpGroupNotification } from "../lib/emailService";
+import { verifyTurnstileToken } from "../lib/turnstile";
 
 const router: IRouter = Router();
 
@@ -13,7 +14,13 @@ function verifyAdminToken(token: string | undefined): boolean {
   return token === expected;
 }
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
+  const captchaOk = await verifyTurnstileToken(req.body?.captchaToken, req.ip);
+  if (!captchaOk) {
+    res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
+    return;
+  }
+
   const { password } = req.body ?? {};
   const adminPassword = process.env.ADMIN_PASSWORD;
 

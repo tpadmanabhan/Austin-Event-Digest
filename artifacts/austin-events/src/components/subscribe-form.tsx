@@ -5,8 +5,8 @@ import * as z from "zod";
 import { Mail, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSubscribe } from "@/hooks/use-newsletter";
 import { useToast } from "@/hooks/use-toast";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 
 const subscribeSchema = z.object({
   name: z.string().min(2, "Name is too short").optional().or(z.literal("")),
@@ -15,35 +15,50 @@ const subscribeSchema = z.object({
 
 export function SubscribeForm() {
   const { toast } = useToast();
-  const { mutate: subscribe, isPending: isSubscribing } = useSubscribe();
   const [subscribed, setSubscribed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof subscribeSchema>>({
     resolver: zodResolver(subscribeSchema),
     defaultValues: { name: "", email: "" },
   });
 
-  const onSubmit = (values: z.infer<typeof subscribeSchema>) => {
-    subscribe(
-      { data: values },
-      {
-        onSuccess: () => {
-          setSubscribed(true);
-          form.reset();
-          toast({
-            title: "You're on the list! 🎉",
-            description: "Keep an eye on your inbox this Sunday.",
-          });
-        },
-        onError: (err) => {
-          toast({
-            variant: "destructive",
-            title: "Uh oh!",
-            description: err.message || "Failed to subscribe. Please try again.",
-          });
-        },
+  const onSubmit = async (values: z.infer<typeof subscribeSchema>) => {
+    if (!captchaToken) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...values, captchaToken }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSubscribed(true);
+        form.reset();
+        toast({
+          title: "You're on the list! 🎉",
+          description: "Keep an eye on your inbox this Sunday.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Uh oh!",
+          description: data.message || "Failed to subscribe. Please try again.",
+        });
+        setCaptchaToken(null);
       }
-    );
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Uh oh!",
+        description: "Failed to subscribe. Please try again.",
+      });
+      setCaptchaToken(null);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (subscribed) {
@@ -87,12 +102,17 @@ export function SubscribeForm() {
           )}
         </div>
       </div>
+      <TurnstileWidget
+        onSuccess={setCaptchaToken}
+        onError={() => setCaptchaToken(null)}
+        onExpire={() => setCaptchaToken(null)}
+      />
       <Button
         type="submit"
-        disabled={isSubscribing}
+        disabled={isSubmitting || !captchaToken}
         className="w-full h-12 text-base rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:-translate-y-0.5"
       >
-        {isSubscribing ? "Subscribing..." : "Subscribe for Free"}
+        {isSubmitting ? "Subscribing..." : "Subscribe for Free"}
       </Button>
       <p className="text-xs text-center text-muted-foreground mt-3">
         No spam. Unsubscribe anytime.

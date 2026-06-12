@@ -9,10 +9,17 @@ import {
   GetSubscribersResponse,
 } from "@workspace/api-zod";
 import { sendWelcomeEmail, sendNewSubscriberAdminNotification } from "../lib/emailService";
+import { verifyTurnstileToken } from "../lib/turnstile";
 
 const router: IRouter = Router();
 
 router.post("/subscribe", async (req, res) => {
+  const captchaOk = await verifyTurnstileToken(req.body?.captchaToken, req.ip);
+  if (!captchaOk) {
+    res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
+    return;
+  }
+
   const parseResult = SubscribeToNewsletterBody.safeParse(req.body);
   if (!parseResult.success) {
     res.status(400).json({ error: "invalid_request", message: "Invalid email address" });

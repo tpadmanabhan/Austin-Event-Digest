@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TurnstileWithRef } from "@/components/turnstile-widget";
+import type { TurnstileInstance } from "@/components/turnstile-widget";
 
 const TOKEN_KEY = "admin_token";
 
@@ -19,12 +21,12 @@ async function verifyToken(token: string): Promise<boolean> {
   }
 }
 
-async function login(password: string): Promise<string | null> {
+async function login(password: string, captchaToken: string): Promise<string | null> {
   try {
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ password, captchaToken }),
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -39,6 +41,8 @@ export function AdminLoginGate({ children }: { children: React.ReactNode }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   useEffect(() => {
     const stored = sessionStorage.getItem(TOKEN_KEY);
@@ -51,9 +55,10 @@ export function AdminLoginGate({ children }: { children: React.ReactNode }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!captchaToken) return;
     setError("");
     setLoading(true);
-    const token = await login(password);
+    const token = await login(password, captchaToken);
     setLoading(false);
     if (token) {
       sessionStorage.setItem(TOKEN_KEY, token);
@@ -61,6 +66,8 @@ export function AdminLoginGate({ children }: { children: React.ReactNode }) {
     } else {
       setError("Incorrect password");
       setPassword("");
+      setCaptchaToken(null);
+      turnstileRef.current?.reset();
     }
   }
 
@@ -89,8 +96,14 @@ export function AdminLoginGate({ children }: { children: React.ReactNode }) {
             autoFocus
             className="h-11"
           />
+          <TurnstileWithRef
+            turnstileRef={turnstileRef}
+            onSuccess={setCaptchaToken}
+            onError={() => setCaptchaToken(null)}
+            onExpire={() => setCaptchaToken(null)}
+          />
           {error && <p className="text-sm text-destructive text-center">{error}</p>}
-          <Button type="submit" disabled={loading || !password} className="h-11">
+          <Button type="submit" disabled={loading || !password || !captchaToken} className="h-11">
             {loading ? "Checking…" : "Sign in"}
           </Button>
         </form>

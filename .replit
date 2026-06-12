@@ -29,6 +29,8 @@ timeoutMs = 20000
 
 [userenv.shared]
 GMAIL_USER = "aiimplementationclubaustin@gmail.com"
+VITE_TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"
 
 [nix]
 channel = "stable-25_05"

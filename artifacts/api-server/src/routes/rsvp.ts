@@ -2,10 +2,17 @@ import { Router, type IRouter } from "express";
 import { db, rsvpsTable, subscribersTable, digestsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { sendRsvpNotification, sendRsvpGroupNotification } from "../lib/emailService";
+import { verifyTurnstileToken } from "../lib/turnstile";
 
 const router: IRouter = Router();
 
 router.post("/", async (req, res) => {
+  const captchaOk = await verifyTurnstileToken(req.body?.captchaToken, req.ip);
+  if (!captchaOk) {
+    res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
+    return;
+  }
+
   const { digestId, eventTitle, email, name } = req.body ?? {};
 
   if (!digestId || typeof digestId !== "number" || !eventTitle || !email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {

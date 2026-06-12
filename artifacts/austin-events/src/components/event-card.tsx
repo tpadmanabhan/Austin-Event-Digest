@@ -4,6 +4,7 @@ import { format, parseISO } from "date-fns";
 import type { EventItem } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 
 const SOURCE_URLS: Record<string, string> = {
   "The Austin Business Review": "https://austinbusinessreview.com/",
@@ -66,6 +67,7 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
   const [confirmedName, setConfirmedName] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">(rsvpd ? "done" : "idle");
   const [count, setCount] = useState<number | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (digestId && eventTitle) {
@@ -78,14 +80,14 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !firstName.trim()) return;
+    if (!email || !firstName.trim() || !captchaToken) return;
 
     setStatus("submitting");
     try {
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ digestId, eventTitle, email, name: firstName.trim() }),
+        body: JSON.stringify({ digestId, eventTitle, email, name: firstName.trim(), captchaToken }),
       });
       const data = await res.json();
       if (data.success) {
@@ -158,12 +160,17 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
             required
             className="h-9 text-sm rounded-lg"
           />
+          <TurnstileWidget
+            onSuccess={setCaptchaToken}
+            onError={() => setCaptchaToken(null)}
+            onExpire={() => setCaptchaToken(null)}
+          />
           <div className="flex gap-2">
             <Button
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => setShowForm(false)}
+              onClick={() => { setShowForm(false); setCaptchaToken(null); }}
               className="rounded-lg h-9 text-sm flex-shrink-0"
             >
               Cancel
@@ -171,7 +178,7 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
             <Button
               type="submit"
               size="sm"
-              disabled={status === "submitting" || !email || !firstName.trim()}
+              disabled={status === "submitting" || !email || !firstName.trim() || !captchaToken}
               className="w-full rounded-lg h-9 text-sm"
             >
               {status === "submitting"
