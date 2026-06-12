@@ -238,7 +238,7 @@ export function buildDigestEmailHtml(digest: {
   `;
 }
 
-const ADMIN_NOTIFY_EMAIL = "aiimplementation@gmail.com";
+const ADMIN_NOTIFY_EMAIL = "AIimplementationclubaustin@gmail.com";
 
 export async function sendNewSubscriberAdminNotification(opts: {
   subscriberEmail: string;
@@ -282,6 +282,52 @@ export async function sendNewSubscriberAdminNotification(opts: {
     logger.warn({ error: result.error }, "Failed to send new-subscriber admin notification");
   } else {
     logger.info({ subscriberEmail: opts.subscriberEmail }, "Admin notified of new subscriber");
+  }
+}
+
+export async function sendCarpoolAdminNotification(opts: {
+  rsvperEmail: string;
+  rsvperName?: string | null;
+  eventTitle: string;
+  eventDate: string;
+  eventVenue: string;
+  totalRsvps: number;
+}): Promise<void> {
+  const name = opts.rsvperName || opts.rsvperEmail.split("@")[0];
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0; padding:0; background:#fafaf9; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:480px; margin:0 auto; padding:24px;">
+    <div style="background:linear-gradient(135deg, #166534 0%, #14532d 100%); border-radius:14px; padding:24px; margin-bottom:20px; text-align:center;">
+      <h1 style="margin:0 0 4px; color:#bbf7d0; font-size:22px; font-weight:800;">🚗 Carpool RSVP</h1>
+      <p style="margin:0; color:#86efac; font-size:13px;">Raj's Austin Events</p>
+    </div>
+    <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px;">
+      <p style="margin:0 0 14px; color:#1c1917; font-size:17px; font-weight:700;">New Carpool Signup</p>
+      <p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Name:</strong> ${name}</p>
+      <p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Email:</strong> ${opts.rsvperEmail}</p>
+      <p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Event:</strong> ${opts.eventTitle}</p>
+      <p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Date:</strong> ${opts.eventDate}</p>
+      <p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Venue:</strong> ${opts.eventVenue}</p>
+      <p style="margin:0; color:#78716c; font-size:13px;">Total carpool RSVPs for this event: <strong>${opts.totalRsvps}</strong></p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const result = await sendEmail({
+    to: ADMIN_NOTIFY_EMAIL,
+    subject: `🚗 Carpool RSVP: ${name} → ${opts.eventTitle.substring(0, 50)}`,
+    html,
+  });
+
+  if (!result.success) {
+    logger.warn({ error: result.error }, "Failed to send carpool admin notification");
+  } else {
+    logger.info({ rsvperEmail: opts.rsvperEmail }, "Admin notified of carpool RSVP");
   }
 }
 

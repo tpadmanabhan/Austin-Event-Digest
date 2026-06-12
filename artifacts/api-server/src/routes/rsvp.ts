@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, rsvpsTable, subscribersTable, digestsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { sendRsvpNotification, sendRsvpGroupNotification } from "../lib/emailService";
+import { sendRsvpNotification, sendRsvpGroupNotification, sendCarpoolAdminNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 
 const router: IRouter = Router();
@@ -106,6 +106,17 @@ router.post("/", async (req, res) => {
           eventVenue: event.venue,
         }).catch(() => {});
       }
+
+      // Notify admin of new carpool signup
+      const totalAfter = priorRsvps.length + 1;
+      sendCarpoolAdminNotification({
+        rsvperEmail: normalizedEmail,
+        rsvperName: name || null,
+        eventTitle: event.title,
+        eventDate: event.date,
+        eventVenue: event.venue,
+        totalRsvps: totalAfter,
+      }).catch(() => {});
 
       req.log.info({ email: normalizedEmail, eventTitle, digestId, carpoolMatches: priorRsvps.length }, "RSVP recorded");
     }
