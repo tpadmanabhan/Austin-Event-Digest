@@ -85,11 +85,6 @@ export function Layout({ children }: { children: ReactNode }) {
                 © {new Date().getFullYear()} Raj's Austin Events. Handcrafted in Texas.
               </p>
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-primary transition-colors">Twitter</a>
-              <a href="#" className="hover:text-primary transition-colors">Instagram</a>
-              <a href="#" className="hover:text-primary transition-colors">Contact</a>
-            </div>
           </div>
         </div>
       </footer>
