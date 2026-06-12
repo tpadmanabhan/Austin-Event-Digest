@@ -129,7 +129,15 @@ export default function DigestView() {
           </div>
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
-            {digest.subject}
+            {(() => {
+              const upcoming = digest.events.filter((e: any) => isEventTodayOrLater(e.date));
+              const range = getEventDateRange(upcoming);
+              if (!range) return digest.subject;
+              // Extract leading emoji if present
+              const emojiMatch = digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
+              const emoji = emojiMatch ? emojiMatch[1] : "";
+              return `${emoji}Austin Events: ${range}`;
+            })()}
           </h1>
           
           <div className="prose prose-lg prose-p:text-muted-foreground prose-p:leading-relaxed max-w-none bg-card p-8 rounded-3xl border border-border shadow-sm">
