@@ -45,7 +45,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 {muted ? <VolumeX className="w-4 h-4" /> : <Music className="w-4 h-4" />}
               </button>
 
-              <span className="hidden sm:inline-flex items-center rounded-full border border-amber-400/60 bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-700">
+              <span className="inline-flex items-center rounded-full border border-amber-400/60 bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-700">
                 Beta Launch
               </span>
 
