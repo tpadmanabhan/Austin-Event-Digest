@@ -16,7 +16,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [muted, setMuted] = useState(false);
 
   useEffect(() => {
-    const audio = new Audio(`${import.meta.env.BASE_URL}spanish-guitar.mp3`);
+    const audio = new Audio(`${import.meta.env.BASE_URL}background-music.mp3`);
     audio.loop = true;
     const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     audio.volume = isMobile ? 0.05 : 0.10;

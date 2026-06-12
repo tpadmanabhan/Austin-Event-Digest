@@ -12,3 +12,9 @@ id = "N2FHh4YMBCcGEJjabJN3D"
 uri = "file://attached_assets/generated_audio/spanish_guitar_bg.mp3"
 type = "audio"
 title = "spanish_guitar_bg"
+
+[[outputs]]
+id = "952TU4qM7UJ5qgWTBW2x8"
+uri = "file://artifacts/austin-events/public/background-music.mp3"
+type = "audio"
+title = "upbeat texas country"
