@@ -23,24 +23,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     audio.muted = true;
     audioRef.current = audio;
 
-    audio.play().catch(() => {});
-
-    const onFirstInteraction = () => {
-      audio.muted = false;
-      setMuted(false);
-      window.removeEventListener("click", onFirstInteraction);
-      window.removeEventListener("keydown", onFirstInteraction);
-      window.removeEventListener("touchstart", onFirstInteraction);
-    };
-    window.addEventListener("click", onFirstInteraction);
-    window.addEventListener("keydown", onFirstInteraction);
-    window.addEventListener("touchstart", onFirstInteraction, { passive: true });
-
     return () => {
       audio.pause();
-      window.removeEventListener("click", onFirstInteraction);
-      window.removeEventListener("keydown", onFirstInteraction);
-      window.removeEventListener("touchstart", onFirstInteraction);
     };
   }, []);
 
