@@ -442,10 +442,34 @@ function deriveSourceName(email: FetchedEmail): string {
   return innerSubj || email.subject;
 }
 
+// Extract <a href="...">text</a> pairs from raw HTML so links survive stripHtml().
+// Returns a map of normalised title text (first 50 chars) → URL.
+function extractHtmlEventLinks(html: string): Map<string, string> {
+  const links = new Map<string, string>();
+  const anchorRe = /<a\s[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = anchorRe.exec(html)) !== null) {
+    const url = m[1].trim();
+    if (!url.startsWith("http")) continue;
+    // Skip tracking / unsubscribe / image beacon links
+    if (/unsubscribe|track|pixel|open\.php|click\.php|manage|preferences|mailto:|cgi-bin/i.test(url)) continue;
+    const text = stripHtml(m[2]).replace(/\s+/g, " ").trim();
+    if (text.length < 5 || text.length > 150) continue;
+    // Skip generic CTA text — these point to the event page but don't carry the title
+    if (/^(register(?: here)?|rsvp(?: here)?|learn more|buy tickets?|sign up|↗|view details?|get tickets?|click here|read more|join us|book now|reserve.*|更多|詳細)$/i.test(text)) continue;
+    const key = text.toLowerCase().replace(/\s+/g, " ").substring(0, 50);
+    if (!links.has(key)) links.set(key, url);
+  }
+  return links;
+}
+
 function extractEventsFromEmail(email: FetchedEmail): EventItem[] {
   const raw = email.html ? stripHtml(email.html) : email.text;
   const cleaned = stripForwardedHeaders(raw);
   const lines = cleaned.split(/\n/).map(l => l.trim()).filter(l => l.length > 1);
+
+  // Extract event-page links from the raw HTML *before* it is stripped to plain text.
+  const htmlLinks = email.html ? extractHtmlEventLinks(email.html) : new Map<string, string>();
 
   // Run all parsers and combine results
   const lumaEvents = parseLumaStyle(lines);
@@ -467,7 +491,19 @@ function extractEventsFromEmail(email: FetchedEmail): EventItem[] {
       seen.add(key);
       return true;
     })
-    .map(e => ({ ...e, source }));
+    .map(e => {
+      if (e.link) return { ...e, source };
+      // Try to match the event title against links extracted from the HTML
+      const titleKey = e.title.toLowerCase().replace(/\s+/g, " ").substring(0, 50);
+      // Exact prefix match first (up to 30 chars)
+      const prefix = titleKey.substring(0, 30);
+      for (const [linkText, url] of htmlLinks) {
+        if (linkText.startsWith(prefix) || prefix.startsWith(linkText.substring(0, 30))) {
+          return { ...e, source, link: url };
+        }
+      }
+      return { ...e, source };
+    });
 }
 
 function isNewsletterEmail(email: FetchedEmail): boolean {
