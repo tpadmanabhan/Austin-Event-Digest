@@ -272,7 +272,7 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
         )}
 
         {(() => {
-          const href = event.link || `https://www.google.com/search?q=${encodeURIComponent(`${event.title} ${event.venue} Austin`)}`;
+          const href = event.link || `https://do512.com/search?q=${encodeURIComponent(event.title)}`;
           return (
             <div className="pb-4">
               <a

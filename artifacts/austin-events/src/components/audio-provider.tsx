@@ -13,7 +13,7 @@ export function useAudio() {
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(true);
 
   useEffect(() => {
     const audio = new Audio(`${import.meta.env.BASE_URL}background-music.mp3`);
