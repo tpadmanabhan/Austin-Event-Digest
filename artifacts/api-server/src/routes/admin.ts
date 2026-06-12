@@ -163,4 +163,24 @@ router.post("/fix-broken-links", async (req, res) => {
   }
 });
 
+// Patch a digest subject
+router.post("/digest/patch-subject", async (req, res) => {
+  const { token, digestId, subject } = req.body ?? {};
+  if (!verifyAdminToken(token)) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
+  if (!digestId || typeof digestId !== "number" || !subject) {
+    res.status(400).json({ error: "invalid_request", message: "digestId and subject are required" });
+    return;
+  }
+  try {
+    await db.update(digestsTable).set({ subject }).where(eq(digestsTable.id, digestId));
+    res.json({ success: true, digestId, subject });
+  } catch (err) {
+    req.log.error({ err }, "Error patching digest subject");
+    res.status(500).json({ error: "server_error" });
+  }
+});
+
 export default router;
