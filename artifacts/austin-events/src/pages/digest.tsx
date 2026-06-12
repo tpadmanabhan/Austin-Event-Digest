@@ -12,6 +12,39 @@ const MONTH_MAP: Record<string, number> = {
   Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
 };
 
+function isEventTodayOrLater(dateStr: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const match = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+  if (!match) return true;
+  const key = match[1].substring(0, 3);
+  const month = MONTH_MAP[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()];
+  if (month === undefined) return true;
+  const day = parseInt(match[2], 10);
+  const eventDate = new Date(today.getFullYear(), month, day);
+  return eventDate >= today;
+}
+
+function getEventDateRange(events: any[]): string {
+  const dates: Date[] = [];
+  for (const e of events) {
+    const match = (e.date || "").match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+    if (!match) continue;
+    const key = match[1].substring(0, 3);
+    const month = MONTH_MAP[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()];
+    if (month === undefined) continue;
+    dates.push(new Date(new Date().getFullYear(), month, parseInt(match[2], 10)));
+  }
+  if (dates.length === 0) return "";
+  dates.sort((a, b) => a.getTime() - b.getTime());
+  const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  const min = dates[0];
+  const max = dates[dates.length - 1];
+  const year = max.getFullYear();
+  if (min.getTime() === max.getTime()) return `${fmt(min)}, ${year}`;
+  return `${fmt(min)} – ${fmt(max)}, ${year}`;
+}
+
 function parseEventDateForSort(dateStr: string): number {
   // Handles: "Sunday, Jun 7", "Wednesday, Jun 10 at 7:00 AM", "Thu, Jun 11 - Fri, Jun 12"
   const match = dateStr.match(/([A-Z][a-z]{2})\s+(\d+)/);
@@ -88,7 +121,11 @@ export default function DigestView() {
         <header className="mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             <Calendar className="w-4 h-4" />
-            <span>Week of {format(parseISO(digest.weekOf.substring(0, 10)), "MMMM d, yyyy")}</span>
+            <span>{(() => {
+              const upcoming = digest.events.filter((e: any) => isEventTodayOrLater(e.date));
+              const range = getEventDateRange(upcoming);
+              return range ? `Events: ${range}` : `Week of ${format(parseISO(digest.weekOf.substring(0, 10)), "MMMM d, yyyy")}`;
+            })()}</span>
           </div>
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
@@ -101,8 +138,9 @@ export default function DigestView() {
         </header>
 
         {(() => {
-          const featuredEvents = digest.events.filter((e: any) => e.featured);
-          const regularEvents = [...digest.events]
+          const upcomingEvents = digest.events.filter((e: any) => isEventTodayOrLater(e.date));
+          const featuredEvents = upcomingEvents.filter((e: any) => e.featured);
+          const regularEvents = [...upcomingEvents]
             .filter((e: any) => !e.featured)
             .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
           return (

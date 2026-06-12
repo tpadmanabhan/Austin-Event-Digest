@@ -7,6 +7,24 @@ import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { SubscribeForm } from "@/components/subscribe-form";
 
+const MONTH_MAP: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+};
+
+function isEventTodayOrLater(dateStr: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const match = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+  if (!match) return true;
+  const key = match[1].substring(0, 3);
+  const month = MONTH_MAP[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()];
+  if (month === undefined) return true;
+  const day = parseInt(match[2], 10);
+  const eventDate = new Date(today.getFullYear(), month, day);
+  return eventDate >= today;
+}
+
 export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
 
@@ -93,8 +111,9 @@ export default function Home() {
             </div>
           ) : latestDigest?.events ? (
             (() => {
-              const featuredEvents = latestDigest.events.filter((e: any) => e.featured);
-              const regularEvents = latestDigest.events.filter((e: any) => !e.featured);
+              const upcomingEvents = latestDigest.events.filter((e: any) => isEventTodayOrLater(e.date));
+              const featuredEvents = upcomingEvents.filter((e: any) => e.featured);
+              const regularEvents = upcomingEvents.filter((e: any) => !e.featured);
               return (
                 <div className="space-y-8">
                   {featuredEvents.length > 0 && (
