@@ -453,6 +453,8 @@ function extractHtmlEventLinks(html: string): Map<string, string> {
     if (!url.startsWith("http")) continue;
     // Skip tracking / unsubscribe / image beacon links
     if (/unsubscribe|track|pixel|open\.php|click\.php|manage|preferences|mailto:|cgi-bin/i.test(url)) continue;
+    // Skip 6amcity individual event slug URLs — those pages return a browser 404 even with HTTP 200
+    if (/6amcity\.com\/[a-z]{2}\/[a-z-]+\/events\//i.test(url)) continue;
     const text = stripHtml(m[2]).replace(/\s+/g, " ").trim();
     if (text.length < 5 || text.length > 150) continue;
     // Skip generic CTA text — these point to the event page but don't carry the title

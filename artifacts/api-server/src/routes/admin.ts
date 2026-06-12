@@ -131,4 +131,36 @@ router.post("/rsvp/resend", async (req, res) => {
   }
 });
 
+// One-time fix: null out 6amcity individual event slug links (they browser-404)
+router.post("/fix-broken-links", async (req, res) => {
+  const { token } = req.body ?? {};
+  if (!verifyAdminToken(token)) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
+  try {
+    const digests = await db.select().from(digestsTable);
+    let totalFixed = 0;
+    for (const digest of digests) {
+      const events = (digest.events as any[]) || [];
+      let changed = false;
+      const fixed = events.map((e: any) => {
+        if (e.link && /6amcity\.com\/[a-z]{2}\/[a-z-]+\/events\//i.test(e.link)) {
+          changed = true;
+          totalFixed++;
+          return { ...e, link: null };
+        }
+        return e;
+      });
+      if (changed) {
+        await db.update(digestsTable).set({ events: fixed }).where(eq(digestsTable.id, digest.id));
+      }
+    }
+    res.json({ success: true, totalFixed });
+  } catch (err) {
+    req.log.error({ err }, "Error fixing broken links");
+    res.status(500).json({ error: "server_error" });
+  }
+});
+
 export default router;
