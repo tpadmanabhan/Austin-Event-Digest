@@ -209,6 +209,9 @@ export function buildDigestEmailHtml(digest: {
     <!-- Header -->
     <div style="background:linear-gradient(135deg, #292524 0%, #1c1917 100%); border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
       <h1 style="margin:0 0 6px; color:#fbbf24; font-size:26px; font-weight:800; letter-spacing:-0.5px;">🤠 Raj's Austin Events</h1>
+      <div style="display:inline-block; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:6px; padding:2px 8px; margin-bottom:6px;">
+        <span style="color:#fff; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase;">IRL — In Real Life</span>
+      </div>
       <p style="margin:0; color:#d6d3d1; font-size:14px;">Your weekly guide to what's happening in Austin</p>
       <p style="margin:8px 0 0; color:#a8a29e; font-size:13px;">Week of ${weekDate}</p>
     </div>

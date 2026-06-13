@@ -18,9 +18,14 @@ export function Layout({ children }: { children: ReactNode }) {
                 <MapPin className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
-                <span className="font-serif text-2xl font-bold leading-none tracking-tight text-foreground">
-                  Raj's Austin Events
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-serif text-2xl font-bold leading-none tracking-tight text-foreground">
+                    Raj's Austin Events
+                  </span>
+                  <span className="inline-flex items-center rounded-md bg-primary/10 border border-primary/25 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-primary leading-none">
+                    IRL
+                  </span>
+                </div>
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
                   Weekly Digest
                 </span>
