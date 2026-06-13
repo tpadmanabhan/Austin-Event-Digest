@@ -43,7 +43,11 @@ export function useDeleteDigest() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (digestId: number) => {
-      const res = await fetch(`/api/events/digest/${digestId}`, { method: "DELETE" });
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/events/digest/${digestId}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error((data as any).message || `Failed to delete digest`);

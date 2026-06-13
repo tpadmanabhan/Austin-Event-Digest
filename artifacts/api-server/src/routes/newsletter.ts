@@ -10,6 +10,7 @@ import {
 } from "@workspace/api-zod";
 import { sendWelcomeEmail, sendNewSubscriberAdminNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
+import { requireAdmin } from "../middleware/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -132,7 +133,7 @@ router.post("/unsubscribe", async (req, res) => {
   }
 });
 
-router.get("/subscribers", async (req, res) => {
+router.get("/subscribers", requireAdmin, async (req, res) => {
   try {
     const subscribers = await db
       .select()

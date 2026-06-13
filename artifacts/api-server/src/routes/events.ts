@@ -12,6 +12,7 @@ import {
 import { generateSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendEmail, buildDigestEmailHtml } from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
+import { requireAdmin } from "../middleware/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -66,7 +67,7 @@ router.get("/digest/list", async (req, res) => {
   }
 });
 
-router.post("/digest/generate", async (req, res) => {
+router.post("/digest/generate", requireAdmin, async (req, res) => {
   const parseResult = GenerateDigestBody.safeParse(req.body);
   if (!parseResult.success) {
     res.status(400).json({ error: "invalid_request", message: "Invalid request body" });
@@ -155,8 +156,8 @@ router.post("/digest/generate", async (req, res) => {
   }
 });
 
-router.patch("/digest/:id/events", async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
   if (isNaN(id)) {
     res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
     return;
@@ -183,8 +184,8 @@ router.patch("/digest/:id/events", async (req, res) => {
   }
 });
 
-router.delete("/digest/:id", async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+router.delete("/digest/:id", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
   if (isNaN(id)) {
     res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
     return;
@@ -209,7 +210,7 @@ router.delete("/digest/:id", async (req, res) => {
 });
 
 // Debug: show raw emails + extracted events from Gmail inbox
-router.get("/debug/emails", async (req, res) => {
+router.get("/debug/emails", requireAdmin, async (req, res) => {
   try {
     const sinceStr = req.query.since as string | undefined;
     const since = sinceStr ? new Date(sinceStr) : new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
@@ -223,7 +224,7 @@ router.get("/debug/emails", async (req, res) => {
 
 // Admin endpoint: create a digest from a pre-built payload (bypasses Gmail parsing).
 // Useful for pushing a manually-curated or dev-verified digest into production.
-router.post("/digest/import", async (req, res) => {
+router.post("/digest/import", requireAdmin, async (req, res) => {
   const { weekOf: weekOfStr, subject, intro, events } = req.body || {};
   if (!weekOfStr || !subject || !intro || !Array.isArray(events) || events.length === 0) {
     res.status(400).json({ error: "invalid_request", message: "weekOf, subject, intro, and events[] are required" });
@@ -250,7 +251,7 @@ router.post("/digest/import", async (req, res) => {
   }
 });
 
-router.post("/digest/send", async (req, res) => {
+router.post("/digest/send", requireAdmin, async (req, res) => {
   const parseResult = SendDigestBody.safeParse(req.body);
   if (!parseResult.success) {
     res.status(400).json({ error: "invalid_request", message: "Invalid request body" });
