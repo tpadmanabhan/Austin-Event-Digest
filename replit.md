@@ -30,6 +30,7 @@ pnpm workspace monorepo using TypeScript. This is "Raj's Austin Events" — a pe
 - `FROM_EMAIL` — The "from" email address (defaults to newsletter@rajsaustinevents.com)
 - `FROM_NAME` — The sender name (defaults to "Raj's Austin Events")
 - `DATABASE_URL` — Auto-provided by Replit PostgreSQL
+- `RSVP_HMAC_SECRET` — Secret key used to sign RSVP email links (prevents link forgery). Generate with: `openssl rand -base64 32`. When not set, the email-link RSVP flow is disabled.
 
 ## Structure
 

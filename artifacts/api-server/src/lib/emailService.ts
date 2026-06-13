@@ -164,10 +164,13 @@ function safeHref(url: string | null | undefined): string | null {
 }
 
 export function buildRsvpUrl(siteUrl: string, digestId: number, eventTitle: string, subscriberEmail: string, subscriberName?: string | null): string {
+  const { signRsvpParams } = require("./rsvpToken") as typeof import("./rsvpToken");
   const e = Buffer.from(eventTitle).toString("base64url");
   const em = Buffer.from(subscriberEmail).toString("base64url");
   const n = subscriberName ? `&n=${Buffer.from(subscriberName).toString("base64url")}` : "";
-  return `${siteUrl}/rsvp?d=${digestId}&e=${e}&em=${em}${n}`;
+  const sig = signRsvpParams(digestId, eventTitle, subscriberEmail, subscriberName);
+  const s = sig ? `&s=${sig}` : "";
+  return `${siteUrl}/rsvp?d=${digestId}&e=${e}&em=${em}${n}${s}`;
 }
 
 export function buildDigestEmailHtml(digest: {

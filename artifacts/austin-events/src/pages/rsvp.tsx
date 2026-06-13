@@ -18,13 +18,14 @@ export default function RsvpPage() {
   const eventTitle = decodeParam(params.get("e"));
   const email = decodeParam(params.get("em"));
   const name = decodeParam(params.get("n"));
+  const sig = params.get("s") || undefined;
 
   const [status, setStatus] = useState<"loading" | "success" | "already" | "error">("loading");
   const [count, setCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    if (!digestId || !eventTitle || !email) {
+    if (!digestId || !eventTitle || !email || !sig) {
       setStatus("error");
       setErrorMsg("Invalid RSVP link.");
       return;
@@ -33,10 +34,15 @@ export default function RsvpPage() {
     fetch("/api/rsvp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ digestId, eventTitle, email, name: name || undefined }),
+      body: JSON.stringify({ digestId, eventTitle, email, name: name || undefined, sig }),
     })
-      .then(r => r.json())
-      .then(data => {
+      .then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          setStatus("error");
+          setErrorMsg(data?.message || "This RSVP link is invalid or has expired.");
+          return;
+        }
         setCount(data.count || 1);
         setStatus(data.alreadyRsvpd ? "already" : "success");
       })

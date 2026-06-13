@@ -6,7 +6,7 @@ export async function verifyTurnstileToken(
   ip?: string,
 ): Promise<boolean> {
   if (!TURNSTILE_SECRET) {
-    return true;
+    return false;
   }
   if (!token) return false;
 
