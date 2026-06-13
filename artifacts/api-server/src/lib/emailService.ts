@@ -141,6 +141,28 @@ export async function sendWelcomeEmail(to: string, name?: string | null): Promis
   }
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function safeHref(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return escapeHtml(url);
+    }
+  } catch {
+    // not a valid URL
+  }
+  return null;
+}
+
 export function buildRsvpUrl(siteUrl: string, digestId: number, eventTitle: string, subscriberEmail: string, subscriberName?: string | null): string {
   const e = Buffer.from(eventTitle).toString("base64url");
   const em = Buffer.from(subscriberEmail).toString("base64url");
@@ -172,24 +194,26 @@ export function buildDigestEmailHtml(digest: {
     day: "numeric",
   });
 
-  const greeting = subscriberName ? `Hey ${subscriberName},` : "Hey there,";
+  const greeting = subscriberName ? `Hey ${escapeHtml(subscriberName)},` : "Hey there,";
 
   const eventCards = digest.events.map(event => {
     const rsvpLink = digest.digestId && digest.siteUrl && subscriberEmail
       ? buildRsvpUrl(digest.siteUrl, digest.digestId, event.title, subscriberEmail, subscriberName)
       : null;
 
+    const safeLink = safeHref(event.link);
+
     return `
     <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-bottom:20px;">
-      <div style="display:inline-block; background:#22c55e; color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${event.category}</div>
-      <h3 style="margin:0 0 8px; color:#1c1917; font-size:18px; font-weight:700;">${event.title}</h3>
-      <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${event.date}</p>
-      <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${event.venue}</p>
-      <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${event.description}</p>
-      ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${event.source}</p>` : ""}
+      <div style="display:inline-block; background:#22c55e; color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(event.category)}</div>
+      <h3 style="margin:0 0 8px; color:#1c1917; font-size:18px; font-weight:700;">${escapeHtml(event.title)}</h3>
+      <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${escapeHtml(event.date)}</p>
+      <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}</p>
+      <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${escapeHtml(event.description)}</p>
+      ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${escapeHtml(event.source)}</p>` : ""}
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-        ${event.link ? `<a href="${event.link}" style="display:inline-block; background:#22c55e; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
-        ${rsvpLink ? `<a href="${rsvpLink}" style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #86efac; color:#16a34a; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">🚗 Interested in carpooling? &nbsp;<strong>Yes</strong></a>` : ""}
+        ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#22c55e; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
+        ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #86efac; color:#16a34a; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">🚗 Interested in carpooling? &nbsp;<strong>Yes</strong></a>` : ""}
       </div>
     </div>
   `;
@@ -201,7 +225,7 @@ export function buildDigestEmailHtml(digest: {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${digest.subject}</title>
+  <title>${escapeHtml(digest.subject)}</title>
 </head>
 <body style="margin:0; padding:0; background:#fafaf9; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:600px; margin:0 auto; padding:20px;">
@@ -219,7 +243,7 @@ export function buildDigestEmailHtml(digest: {
     <!-- Intro -->
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:24px;">
       <p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>
-      <p style="margin:0; color:#44403c; font-size:15px; line-height:1.7;">${digest.intro.replace(/\n/g, "<br>")}</p>
+      <p style="margin:0; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
     </div>
 
     <!-- Events -->

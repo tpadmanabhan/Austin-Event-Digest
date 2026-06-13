@@ -508,6 +508,47 @@ function extractEventsFromEmail(email: FetchedEmail): EventItem[] {
     });
 }
 
+// Exact email addresses whose forwards are trusted regardless of domain.
+const TRUSTED_SENDER_EMAILS = new Set([
+  "rajpaj@gmail.com",
+  "raj@customersuccessforgood.com",
+]);
+
+// Domains (and their subdomains) whose mail is accepted as newsletter input.
+// Attacker-controlled content must never satisfy this check: do NOT add
+// keyword-only patterns such as "newsletter" or "events" here.
+const TRUSTED_SENDER_DOMAINS = [
+  "lu.ma",
+  "beehiiv.com",
+  "mailchimp.com",
+  "substack.com",
+  "convertkit.com",
+  "constantcontact.com",
+  "sendgrid.net",
+  "klaviyo.com",
+  "atxdaily.com",
+  "austinchamber.com",
+  "do512.com",
+  "culturemap.com",
+  "austinot.com",
+  "austinmonitor.com",
+];
+
+function extractSenderEmail(from: string): string | null {
+  // Prefer the bracketed form "Display Name <user@domain>" first
+  const bracketed = from.match(/<([^>@\s]+@[^>@\s]+)>/);
+  if (bracketed) return bracketed[1].toLowerCase().trim();
+  // Fall back to a bare address
+  const bare = from.match(/([^\s<>@,]+@[^\s<>@,]+)/);
+  return bare ? bare[1].toLowerCase().trim() : null;
+}
+
+function isTrustedSenderDomain(domain: string): boolean {
+  return TRUSTED_SENDER_DOMAINS.some(
+    d => domain === d || domain.endsWith("." + d)
+  );
+}
+
 function isNewsletterEmail(email: FetchedEmail): boolean {
   const subjectLower = email.subject.toLowerCase();
   const fromLower = email.from.toLowerCase();
@@ -519,21 +560,17 @@ function isNewsletterEmail(email: FetchedEmail): boolean {
   // Hard exclusions: our own system emails (RSVP notifications, welcome emails)
   if (/wants to carpool|carpool interest|you're on the list|raj's austin events/i.test(subjectLower)) return false;
 
-  // Hard exclusions: social/advertising noise
-  if (/noreply@redditmail|reddit\.com/i.test(fromLower)) return false;
-  if (/noreply@accounts\.google|google-account|googleads|ads-account-noreply/i.test(fromLower)) return false;
+  const senderEmail = extractSenderEmail(email.from);
+  if (!senderEmail) return false;
 
-  // Accept known forwarded newsletter senders explicitly
-  if (/rajpaj@gmail\.com|raj@customersuccessforgood\.com/i.test(fromLower)) return true;
+  // Exact trusted address check (e.g. personal forwards)
+  if (TRUSTED_SENDER_EMAILS.has(senderEmail)) return true;
 
-  // Accept classic newsletter sender patterns
-  if (/luma|beehiiv|mailchimp|substack|convertkit|constantcontact|sendgrid|klaviyo/i.test(fromLower)) return true;
-  if (/noreply|no-reply|newsletter|digest|events|weekly/i.test(fromLower)) return true;
-
-  // Accept if subject mentions events/newsletter keywords
-  if (/newsletter|digest|weekly|events|happening|what's|upcoming|calendar|fwd:/i.test(subjectLower)) return true;
-
-  return false;
+  // Domain-based allowlist — only accept senders from known newsletter providers
+  const atIdx = senderEmail.lastIndexOf("@");
+  if (atIdx === -1) return false;
+  const domain = senderEmail.substring(atIdx + 1);
+  return isTrustedSenderDomain(domain);
 }
 
 // Parse natural-language event dates like "Saturday, Apr 12 at 10:00 AM" → Date
