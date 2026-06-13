@@ -22,8 +22,10 @@ export function Layout({ children }: { children: ReactNode }) {
                   <span className="font-serif text-2xl font-bold leading-none tracking-tight text-foreground">
                     Raj's Austin Events
                   </span>
-                  <span className="inline-flex items-center rounded-md bg-primary/10 border border-primary/25 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-primary leading-none">
-                    IRL
+                  <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/30 px-3 py-0.5 leading-none shadow-sm shadow-primary/10">
+                    <span className="text-[13px] italic text-primary" style={{ fontFamily: '"DM Serif Display", serif', letterSpacing: '0.01em' }}>
+                      In Real Life
+                    </span>
                   </span>
                 </div>
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
