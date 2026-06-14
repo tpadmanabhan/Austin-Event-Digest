@@ -184,6 +184,34 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
   }
 });
 
+router.patch("/digest/:id/intro", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+  const { intro } = req.body || {};
+  if (typeof intro !== "string" || !intro.trim()) {
+    res.status(400).json({ error: "invalid_request", message: "intro string is required" });
+    return;
+  }
+  try {
+    const [updated] = await db
+      .update(digestsTable)
+      .set({ intro: intro.trim() })
+      .where(eq(digestsTable.id, id))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+    res.json({ success: true, digest: digestToApi(updated) });
+  } catch (err) {
+    req.log.error({ err }, "Error updating digest intro");
+    res.status(500).json({ error: "server_error", message: "Failed to update digest intro" });
+  }
+});
+
 router.delete("/digest/:id", requireAdmin, async (req, res) => {
   const id = parseInt(req.params["id"] as string, 10);
   if (isNaN(id)) {
