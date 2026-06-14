@@ -214,9 +214,9 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
   };
 
   return (
-    <div className={`group relative flex flex-col overflow-hidden rounded-2xl bg-card border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full ${event.link ? "border-primary/40 border-t-2 border-t-primary hover:border-primary/60" : "border-border hover:border-primary/30"}`}>
+    <div className={`group relative flex flex-col rounded-2xl bg-card border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full ${event.link ? "border-primary/40 border-t-2 border-t-primary hover:border-primary/60" : "border-border hover:border-primary/30"}`}>
       {event.imageUrl && (
-        <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
+        <div className="aspect-[16/9] w-full overflow-hidden bg-muted rounded-t-2xl">
           <img
             src={event.imageUrl}
             alt={event.title}
@@ -244,21 +244,48 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
           </div>
         </div>
 
-        <h3 className="font-serif text-2xl font-bold leading-tight text-foreground mb-3 line-clamp-2">
-          {event.link ? (
-            <a
-              href={event.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group/title inline-flex items-start gap-2 hover:text-primary transition-colors"
+        <div className="relative group/title-wrap mb-3">
+          <h3 className="font-serif text-2xl font-bold leading-tight text-foreground line-clamp-2">
+            {event.link ? (
+              <a
+                href={event.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group/title inline-flex items-start gap-2 hover:text-primary transition-colors"
+              >
+                {event.title}
+                <ExternalLink className="w-4 h-4 shrink-0 mt-1 opacity-0 group-hover/title:opacity-100 transition-opacity" />
+              </a>
+            ) : (
+              event.title
+            )}
+          </h3>
+          {event.link && (
+            <div
+              className="pointer-events-none absolute left-0 top-full mt-2 z-50 w-72 rounded-xl bg-popover border border-border shadow-xl p-3 opacity-0 group-hover/title-wrap:opacity-100 transition-opacity duration-200 [@media(hover:none)]:hidden"
+              role="tooltip"
             >
-              {event.title}
-              <ExternalLink className="w-4 h-4 shrink-0 mt-1 opacity-0 group-hover/title:opacity-100 transition-opacity" />
-            </a>
-          ) : (
-            event.title
+              <div className="flex items-center gap-1.5 text-primary font-semibold text-xs mb-1.5">
+                <Calendar className="w-3.5 h-3.5 shrink-0" />
+                {safeFormat(event.date, "MMM d, yyyy")}
+                {isIsoDate(event.date) && (
+                  <span className="text-muted-foreground font-normal">· {safeFormat(event.date, "h:mm a")}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-2">
+                <MapPin className="w-3.5 h-3.5 shrink-0 text-secondary" />
+                <span>{event.venue}</span>
+              </div>
+              {event.description && (
+                <p className="text-muted-foreground text-xs leading-relaxed border-t border-border/60 pt-2">
+                  {event.description.length > 100
+                    ? event.description.slice(0, 100) + "…"
+                    : event.description}
+                </p>
+              )}
+            </div>
           )}
-        </h3>
+        </div>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
           <MapPin className="w-4 h-4 shrink-0 text-secondary" />
