@@ -295,7 +295,7 @@ export function buildDigestEmailHtml(digest: {
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
       <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by Raj from Austin, TX</p>
       <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at Raj's Austin Events.</p>
-      ${unsubscribeUrl ? `<a href="${escapeHtml(unsubscribeUrl)}" style="display:inline-block; background:#f9fafb; border:1px solid #e5e7eb; color:#6b7280; padding:9px 22px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:600; letter-spacing:0.2px;">Unsubscribe</a>` : ""}
+      ${unsubscribeUrl ? `<p style="margin:12px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a8a29e; font-size:11px; text-decoration:underline;">Unsubscribe</a></p>` : ""}
     </div>
 
   </div>
