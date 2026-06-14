@@ -56,18 +56,18 @@ const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
 };
 
 function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" {
-  const text = ((event.category || "") + " " + (event.title || "") + " " + (event.description || "")).toLowerCase();
+  const cat = (event.category || "").toLowerCase().trim();
+  if (cat === "arts" || cat === "art" || cat === "music" || cat === "culture" || cat === "entertainment") return "Arts";
+  if (cat === "sports" || cat === "fitness" || cat === "outdoors") return "Sports";
+  if (cat === "tech" || cat === "technology" || cat === "business") return "Tech";
+  const titleOnly = ((event.title || "")).toLowerCase();
   if (
-    text.includes("tech") || text.includes("business") || text.includes("startup") ||
-    text.includes("healthtech") || text.includes("forum") || text.includes("chess") ||
-    text.includes("coding") || text.includes("data science") || text.includes("ai ")
+    titleOnly.includes("tech") || titleOnly.includes("business") || titleOnly.includes("startup") ||
+    titleOnly.includes("forum") || titleOnly.includes("coding") || titleOnly.includes("ai ")
   ) return "Tech";
   if (
-    text.includes("outdoor") || text.includes("fitness") || text.includes("yoga") ||
-    text.includes("birding") || text.includes("garden") || text.includes("hike") ||
-    text.includes("cycling") || text.includes("mom walk") || text.includes("birding 101") ||
-    (text.includes("walk") && !text.includes("sidewalk") && !text.includes("catwa")) ||
-    text.includes("sport") || text.includes("swim")
+    titleOnly.includes("fitness") || titleOnly.includes("yoga") || titleOnly.includes("hike") ||
+    titleOnly.includes("cycling") || titleOnly.includes("swim") || titleOnly.includes("sport")
   ) return "Sports";
   return "Arts";
 }
