@@ -186,6 +186,7 @@ export function buildDigestEmailHtml(digest: {
     link?: string | null;
     imageUrl?: string | null;
     source?: string | null;
+    featured?: boolean | null;
   }>;
   digestId?: number;
   siteUrl?: string;
@@ -203,12 +204,36 @@ export function buildDigestEmailHtml(digest: {
     ? `${digest.siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`
     : null;
 
-  const eventCards = digest.events.map(event => {
+  const buildEventCard = (event: (typeof digest.events)[number], featured = false) => {
     const rsvpLink = digest.digestId && digest.siteUrl && subscriberEmail
       ? buildRsvpUrl(digest.siteUrl, digest.digestId, event.title, subscriberEmail, subscriberName)
       : null;
 
     const safeLink = safeHref(event.link);
+
+    if (featured) {
+      return `
+    <div style="border:2px solid #fbbf24; border-radius:16px; overflow:hidden; margin-bottom:28px; background:#fffbeb;">
+      <div style="height:4px; background:linear-gradient(90deg,#fbbf24,#fde68a,#fbbf24);"></div>
+      <div style="padding:24px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+          <div style="display:inline-block; background:#22c55e; color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(event.category)}</div>
+          <div style="display:inline-flex; align-items:center; gap:5px; background:#fbbf24; color:#451a03; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">⭐ Special Event</div>
+        </div>
+        <p style="margin:0 0 8px; color:#92400e; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Outside this week — don't miss it!</p>
+        <h3 style="margin:0 0 8px; color:#1c1917; font-size:19px; font-weight:700;">${escapeHtml(event.title)}</h3>
+        <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${escapeHtml(event.date)}</p>
+        <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}</p>
+        <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${escapeHtml(event.description)}</p>
+        ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${escapeHtml(event.source)}</p>` : ""}
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#d97706; color:#fff; padding:9px 20px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
+          ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #86efac; color:#16a34a; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">🚗 Interested in carpooling? &nbsp;<strong>Yes</strong></a>` : ""}
+        </div>
+      </div>
+    </div>
+  `;
+    }
 
     return `
     <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-bottom:20px;">
@@ -224,7 +249,13 @@ export function buildDigestEmailHtml(digest: {
       </div>
     </div>
   `;
-  }).join("");
+  };
+
+  const featuredEvents = digest.events.filter(e => e.featured);
+  const regularEvents = digest.events.filter(e => !e.featured);
+
+  const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
+  const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
 
   return `
 <!DOCTYPE html>
@@ -252,6 +283,9 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>
       <p style="margin:0; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
     </div>
+
+    <!-- Featured Event -->
+    ${featuredCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">⭐ Special Event</h2>${featuredCards}` : ""}
 
     <!-- Events -->
     <h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>
