@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRoute } from "wouter";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
@@ -45,6 +46,32 @@ function getEventDateRange(events: any[]): string {
   return `${fmt(min)} – ${fmt(max)}, ${year}`;
 }
 
+type DisplayCat = "All" | "Tech" | "Arts" | "Sports";
+
+const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
+  All:    { label: "All Events", emoji: "✦" },
+  Tech:   { label: "Tech",       emoji: "💻" },
+  Arts:   { label: "Arts",       emoji: "🎨" },
+  Sports: { label: "Sports",     emoji: "🏃" },
+};
+
+function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" {
+  const text = ((event.category || "") + " " + (event.title || "") + " " + (event.description || "")).toLowerCase();
+  if (
+    text.includes("tech") || text.includes("business") || text.includes("startup") ||
+    text.includes("healthtech") || text.includes("forum") || text.includes("chess") ||
+    text.includes("coding") || text.includes("data science") || text.includes("ai ")
+  ) return "Tech";
+  if (
+    text.includes("outdoor") || text.includes("fitness") || text.includes("yoga") ||
+    text.includes("birding") || text.includes("garden") || text.includes("hike") ||
+    text.includes("cycling") || text.includes("mom walk") || text.includes("birding 101") ||
+    (text.includes("walk") && !text.includes("sidewalk") && !text.includes("catwa")) ||
+    text.includes("sport") || text.includes("swim")
+  ) return "Sports";
+  return "Arts";
+}
+
 function parseEventDateForSort(dateStr: string): number {
   // Handles: "Sunday, Jun 7", "Wednesday, Jun 10 at 7:00 AM", "Thu, Jun 11 - Fri, Jun 12"
   const match = dateStr.match(/([A-Z][a-z]{2})\s+(\d+)/);
@@ -74,7 +101,8 @@ export default function DigestView() {
   const { data: allData, isLoading: loadingAll } = useAllDigests();
 
   const isLoading = isLatest ? loadingLatest : loadingAll;
-  
+  const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
+
   let digest = null;
   if (isLatest && latestData?.digest) {
     digest = latestData.digest;
@@ -145,12 +173,56 @@ export default function DigestView() {
           </div>
         </header>
 
+        {/* Category Filter Bar */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 flex-wrap">
+            {(Object.keys(CAT_CONFIG) as DisplayCat[]).map(cat => {
+              const cfg = CAT_CONFIG[cat];
+              const isActive = categoryFilter === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                      : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                  }`}
+                >
+                  <span>{cfg.emoji}</span>
+                  <span>{cfg.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {(() => {
           const upcomingEvents = digest.events.filter((e: any) => isEventTodayOrLater(e.date));
-          const featuredEvents = upcomingEvents.filter((e: any) => e.featured);
-          const regularEvents = [...upcomingEvents]
+          const visibleEvents = categoryFilter === "All"
+            ? upcomingEvents
+            : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
+          const featuredEvents = visibleEvents.filter((e: any) => e.featured);
+          const regularEvents = [...visibleEvents]
             .filter((e: any) => !e.featured)
             .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
+
+          if (visibleEvents.length === 0) {
+            return (
+              <div className="text-center py-20">
+                <p className="text-4xl mb-4">{CAT_CONFIG[categoryFilter].emoji}</p>
+                <p className="text-xl font-serif font-bold text-foreground mb-2">No {categoryFilter} events this week</p>
+                <p className="text-muted-foreground text-sm mb-6">Check back next issue for {categoryFilter.toLowerCase()} events.</p>
+                <button
+                  onClick={() => setCategoryFilter("All")}
+                  className="text-primary text-sm font-medium hover:underline"
+                >
+                  View all events →
+                </button>
+              </div>
+            );
+          }
+
           return (
             <>
               {featuredEvents.length > 0 && (

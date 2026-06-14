@@ -304,12 +304,26 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
     let successCount = 0;
     let failCount = 0;
 
+    // Only include upcoming events in the email (filter out past events)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const MONTH_IDX: Record<string, number> = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+    function isUpcomingEvent(dateStr: string): boolean {
+      const m = (dateStr || "").match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+      if (!m) return true;
+      const key = m[1].substring(0,3);
+      const mo = MONTH_IDX[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()];
+      if (mo === undefined) return true;
+      return new Date(today.getFullYear(), mo, parseInt(m[2], 10)) >= today;
+    }
+    const emailEvents = ((digest.events as any[]) || []).filter(e => isUpcomingEvent(e.date));
+
     for (const recipient of recipients) {
       const html = buildDigestEmailHtml({
         subject: digest.subject,
         intro: digest.intro,
         weekOf: digest.weekOf,
-        events: (digest.events as any[]) || [],
+        events: emailEvents,
         digestId: digest.id,
         siteUrl,
       }, recipient.name, recipient.email);

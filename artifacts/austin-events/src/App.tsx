@@ -9,6 +9,7 @@ import DigestView from "./pages/digest";
 import AdminDashboard from "./pages/admin";
 import { AdminLoginGate } from "@/components/admin-login-gate";
 import RsvpPage from "./pages/rsvp";
+import UnsubscribePage from "./pages/unsubscribe";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -31,6 +32,7 @@ function Router() {
           </AdminLoginGate>
         </Route>
       <Route path="/rsvp" component={RsvpPage} />
+      <Route path="/unsubscribe" component={UnsubscribePage} />
       <Route component={NotFound} />
     </Switch>
   );
