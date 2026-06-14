@@ -211,6 +211,7 @@ export function buildDigestEmailHtml(digest: {
     "What's Weird ATX": "https://whatsweirdatx.substack.com",
     "Greater Asian Chamber": "https://greaterasianchamber.org",
     "ATX Today": "https://atxtoday.6am.city",
+    "Station Austin": "https://stationaustin.org/in-person/",
   };
 
   const MONTH_IDX: Record<string, number> = {
