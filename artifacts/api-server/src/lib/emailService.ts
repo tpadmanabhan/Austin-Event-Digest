@@ -204,6 +204,27 @@ export function buildDigestEmailHtml(digest: {
     ? `${digest.siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`
     : null;
 
+  const SOURCE_URLS: Record<string, string> = {
+    "Luma": "https://lu.ma",
+    "The Austin Business Review": "https://austinbusinessreview.com",
+    "Salesforce Trailblazer Community": "https://trailblazercommunitygroups.com",
+    "What's Weird ATX": "https://whatsweirdatx.substack.com",
+    "Greater Asian Chamber": "https://greaterasianchamber.org",
+    "ATX Today": "https://atxtoday.6am.city",
+  };
+
+  const MONTH_IDX: Record<string, number> = {
+    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+  };
+
+  function parseSortKey(dateStr: string): number {
+    const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+    if (!m) return 9999;
+    const month = MONTH_IDX[m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase().substring(0, 2)] ?? 0;
+    return month * 100 + parseInt(m[2], 10);
+  }
+
   const buildEventCard = (event: (typeof digest.events)[number], featured = false) => {
     const rsvpLink = digest.digestId && digest.siteUrl && subscriberEmail
       ? buildRsvpUrl(digest.siteUrl, digest.digestId, event.title, subscriberEmail, subscriberName)
@@ -225,7 +246,7 @@ export function buildDigestEmailHtml(digest: {
         <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${escapeHtml(event.date)}</p>
         <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}</p>
         <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${escapeHtml(event.description)}</p>
-        ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${escapeHtml(event.source)}</p>` : ""}
+        ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
           ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#d97706; color:#fff; padding:9px 20px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
           ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #86efac; color:#16a34a; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">🚗 Interested in carpooling? &nbsp;<strong>Yes</strong></a>` : ""}
@@ -242,7 +263,7 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${escapeHtml(event.date)}</p>
       <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}</p>
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${escapeHtml(event.description)}</p>
-      ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${escapeHtml(event.source)}</p>` : ""}
+      ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
         ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#22c55e; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
         ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #86efac; color:#16a34a; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">🚗 Interested in carpooling? &nbsp;<strong>Yes</strong></a>` : ""}
@@ -252,7 +273,8 @@ export function buildDigestEmailHtml(digest: {
   };
 
   const featuredEvents = digest.events.filter(e => e.featured);
-  const regularEvents = digest.events.filter(e => !e.featured);
+  const regularEvents = [...digest.events.filter(e => !e.featured)]
+    .sort((a, b) => parseSortKey(a.date) - parseSortKey(b.date));
 
   const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
   const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
@@ -270,7 +292,7 @@ export function buildDigestEmailHtml(digest: {
     
     <!-- Header -->
     <div style="background:linear-gradient(135deg, #292524 0%, #1c1917 100%); border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
-      <h1 style="margin:0 0 6px; color:#fbbf24; font-size:26px; font-weight:800; letter-spacing:-0.5px;">🤠 Raj's Austin Events</h1>
+      <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl && digest.digestId ? `<a href="${escapeHtml(digest.siteUrl)}/digest/${digest.digestId}" style="color:#fbbf24; text-decoration:none;">🤠 Raj's Austin Events</a>` : `<span style="color:#fbbf24;">🤠 Raj's Austin Events</span>`}</h1>
       <div style="display:inline-block; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:6px; padding:2px 8px; margin-bottom:6px;">
         <span style="color:#fff; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase;">IRL — In Real Life</span>
       </div>
