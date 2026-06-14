@@ -212,6 +212,37 @@ router.patch("/digest/:id/intro", requireAdmin, async (req, res) => {
   }
 });
 
+router.patch("/digest/:id/meta", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+  const { subject, weekOf } = req.body || {};
+  const updates: Record<string, unknown> = {};
+  if (typeof subject === "string" && subject.trim()) updates.subject = subject.trim();
+  if (typeof weekOf === "string" && weekOf.trim()) updates.weekOf = new Date(weekOf.trim());
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: "invalid_request", message: "At least one of subject, weekOf is required" });
+    return;
+  }
+  try {
+    const [updated] = await db
+      .update(digestsTable)
+      .set(updates)
+      .where(eq(digestsTable.id, id))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+    res.json({ success: true, digest: digestToApi(updated) });
+  } catch (err) {
+    req.log.error({ err }, "Error updating digest meta");
+    res.status(500).json({ error: "server_error", message: "Failed to update digest meta" });
+  }
+});
+
 router.delete("/digest/:id", requireAdmin, async (req, res) => {
   const id = parseInt(req.params["id"] as string, 10);
   if (isNaN(id)) {
