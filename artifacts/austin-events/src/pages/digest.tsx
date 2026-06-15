@@ -203,7 +203,11 @@ export default function DigestView() {
           const upcomingEvents = digest.events.filter((e: any) => isEventTodayOrLater(e.date));
           const visibleEvents = categoryFilter === "All"
             ? upcomingEvents
-            : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
+            : upcomingEvents.filter((e: any) => {
+                const cats: string[] = e.categories ?? [];
+                if (cats.length > 0) return cats.includes(categoryFilter);
+                return getDisplayCategory(e) === categoryFilter;
+              });
           const featuredEvents = visibleEvents.filter((e: any) => e.featured);
           const regularEvents = [...visibleEvents]
             .filter((e: any) => !e.featured)
