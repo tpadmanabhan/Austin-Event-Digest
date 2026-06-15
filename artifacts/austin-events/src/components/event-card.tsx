@@ -248,7 +248,7 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
                   </span>
                 )}
                 {todayLabel && (
-                  <span className="text-xs text-muted-foreground mt-1">Daily through Jun 19</span>
+                  <span className="text-xs text-muted-foreground mt-1">Daily through Friday, Jun 19</span>
                 )}
               </div>
             </div>
