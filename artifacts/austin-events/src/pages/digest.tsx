@@ -46,17 +46,19 @@ function getEventDateRange(events: any[]): string {
   return `${fmt(min)} – ${fmt(max)}, ${year}`;
 }
 
-type DisplayCat = "All" | "Tech" | "Arts" | "Sports";
+type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics";
 
 const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
   All:    { label: "All Events", emoji: "✦" },
   Tech:   { label: "Tech",       emoji: "💻" },
   Arts:   { label: "Arts",       emoji: "🎨" },
   Sports: { label: "Sports",     emoji: "🏃" },
+  Civics: { label: "Civics",     emoji: "🏛️" },
 };
 
-function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" {
+function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" | "Civics" {
   const cat = (event.category || "").toLowerCase().trim();
+  if (cat === "civics" || cat === "civic" || cat === "community" || cat === "government" || cat === "policy") return "Civics";
   if (cat === "arts" || cat === "art" || cat === "music" || cat === "culture" || cat === "entertainment") return "Arts";
   if (cat === "sports" || cat === "fitness" || cat === "outdoors") return "Sports";
   if (cat === "tech" || cat === "technology" || cat === "business") return "Tech";

@@ -212,6 +212,7 @@ export function buildDigestEmailHtml(digest: {
     "Greater Asian Chamber": "https://greaterasianchamber.org",
     "ATX Today": "https://atxtoday.6am.city",
     "Station Austin": "https://stationaustin.org/in-person/",
+    "Austin Forum": "https://www.austinforum.org/events",
   };
 
   const MONTH_IDX: Record<string, number> = {
