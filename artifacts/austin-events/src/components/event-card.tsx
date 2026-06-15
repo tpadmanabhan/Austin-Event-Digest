@@ -226,23 +226,34 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
       )}
       
       <div className="flex flex-1 flex-col p-6">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border ${getCategoryColor(event.category)}`}>
-            {getCategoryIcon(event.category)}
-            {event.category}
-          </span>
-          <div className="flex flex-col items-end text-right">
-            <span className="text-sm font-bold text-primary flex items-center gap-1.5">
-              <Calendar className="w-4 h-4" />
-              {safeFormat(event.date, "MMM d, yyyy")}
-            </span>
-            {isIsoDate(event.date) && (
-              <span className="text-xs text-muted-foreground mt-1">
-                {safeFormat(event.date, "h:mm a")}
+        {(() => {
+          const dailyUntil = (event as any).dailyUntil as string | undefined;
+          const todayLabel = dailyUntil
+            ? new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+            : null;
+          return (
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border ${getCategoryColor(event.category)}`}>
+                {getCategoryIcon(event.category)}
+                {event.category}
               </span>
-            )}
-          </div>
-        </div>
+              <div className="flex flex-col items-end text-right">
+                <span className="text-sm font-bold text-primary flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4" />
+                  {todayLabel ? <>Today · {todayLabel}</> : safeFormat(event.date, "MMM d, yyyy")}
+                </span>
+                {!todayLabel && isIsoDate(event.date) && (
+                  <span className="text-xs text-muted-foreground mt-1">
+                    {safeFormat(event.date, "h:mm a")}
+                  </span>
+                )}
+                {todayLabel && (
+                  <span className="text-xs text-muted-foreground mt-1">Daily through Jun 19</span>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="relative group/title-wrap mb-3">
           <h3 className="font-serif text-2xl font-bold leading-tight text-foreground line-clamp-2">

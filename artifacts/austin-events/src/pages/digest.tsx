@@ -13,9 +13,13 @@ const MONTH_MAP: Record<string, number> = {
   Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
 };
 
-function isEventTodayOrLater(dateStr: string): boolean {
+function isEventTodayOrLater(dateStr: string, event?: any): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  if (event?.dailyUntil) {
+    const until = new Date(event.dailyUntil + "T00:00:00");
+    return until >= today;
+  }
   const match = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
   if (!match) return true;
   const key = match[1].substring(0, 3);
@@ -200,7 +204,7 @@ export default function DigestView() {
         </div>
 
         {(() => {
-          const upcomingEvents = digest.events.filter((e: any) => isEventTodayOrLater(e.date));
+          const upcomingEvents = digest.events.filter((e: any) => isEventTodayOrLater(e.date, e));
           const visibleEvents = categoryFilter === "All"
             ? upcomingEvents
             : upcomingEvents.filter((e: any) => {
