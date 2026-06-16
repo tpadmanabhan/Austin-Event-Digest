@@ -50,18 +50,20 @@ function getEventDateRange(events: any[]): string {
   return `${fmt(min)} – ${fmt(max)}, ${year}`;
 }
 
-type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics";
+type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";
 
 const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
-  All:    { label: "All Events", emoji: "✦" },
-  Tech:   { label: "Tech",       emoji: "💻" },
-  Arts:   { label: "Arts",       emoji: "🎨" },
-  Sports: { label: "Sports",     emoji: "🏃" },
-  Civics: { label: "Civics",     emoji: "🏛️" },
+  All:     { label: "All Events", emoji: "✦" },
+  Tech:    { label: "Tech",       emoji: "💻" },
+  Arts:    { label: "Arts",       emoji: "🎨" },
+  Sports:  { label: "Sports",     emoji: "🏃" },
+  Civics:  { label: "Civics",     emoji: "🏛️" },
+  Wellness:{ label: "Wellness",   emoji: "🧘" },
 };
 
-function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" | "Civics" {
+function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" {
   const cat = (event.category || "").toLowerCase().trim();
+  if (cat === "wellness" || cat === "meditation" || cat === "mindfulness" || cat === "yoga" || cat === "health") return "Wellness";
   if (cat === "civics" || cat === "civic" || cat === "community" || cat === "government" || cat === "policy") return "Civics";
   if (cat === "arts" || cat === "art" || cat === "music" || cat === "culture" || cat === "entertainment") return "Arts";
   if (cat === "sports" || cat === "fitness" || cat === "outdoors") return "Sports";
