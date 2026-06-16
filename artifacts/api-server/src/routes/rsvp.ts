@@ -85,15 +85,13 @@ router.post("/", async (req, res) => {
       const resolvedName: string | null = verifiedBySignature ? (name || null) : null;
 
       // Fetch existing RSVPers BEFORE inserting so we know who was already interested
-      const priorRsvps = verifiedBySignature
-        ? await db
-            .select()
-            .from(rsvpsTable)
-            .where(and(
-              eq(rsvpsTable.digestId, digestId),
-              eq(rsvpsTable.eventTitle, eventTitle),
-            ))
-        : [];
+      const priorRsvps = await db
+        .select()
+        .from(rsvpsTable)
+        .where(and(
+          eq(rsvpsTable.digestId, digestId),
+          eq(rsvpsTable.eventTitle, eventTitle),
+        ));
 
       await db.insert(rsvpsTable).values({
         digestId,
@@ -139,18 +137,17 @@ router.post("/", async (req, res) => {
             eventVenue: event.venue,
           }).catch(() => {});
         }
-
-        // Notify admin of new carpool signup
-        const totalAfter = priorRsvps.length + 1;
-        sendCarpoolAdminNotification({
-          rsvperEmail: normalizedEmail,
-          rsvperName: resolvedName,
-          eventTitle: event.title,
-          eventDate: event.date,
-          eventVenue: event.venue,
-          totalRsvps: totalAfter,
-        }).catch(() => {});
       }
+
+      // Always notify admin of new carpool signup, regardless of verification method
+      sendCarpoolAdminNotification({
+        rsvperEmail: normalizedEmail,
+        rsvperName: name || resolvedName,
+        eventTitle: event.title,
+        eventDate: event.date,
+        eventVenue: event.venue,
+        totalRsvps: priorRsvps.length + 1,
+      }).catch(() => {});
 
       req.log.info({ email: normalizedEmail, eventTitle, digestId, carpoolMatches: priorRsvps.length, verifiedBySignature }, "RSVP recorded");
     }
