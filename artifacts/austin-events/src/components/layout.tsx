@@ -35,14 +35,14 @@ export function Layout({ children }: { children: ReactNode }) {
             </Link>
 
             <nav className="flex items-center gap-4">
-              <Link
-                href="/"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location === "/" ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                Home
-              </Link>
+              {location === "/" && (
+                <Link
+                  href="/"
+                  className="text-sm font-medium text-primary transition-colors hover:text-primary"
+                >
+                  Home
+                </Link>
+              )}
 
               <button
                 onClick={toggleMute}
