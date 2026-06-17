@@ -109,34 +109,37 @@ router.post("/", async (req, res) => {
             target: subscribersTable.email,
             set: { isActive: true, name: resolvedName },
           });
+      }
 
-        const rsvperName = resolvedName || (email as string).split("@")[0];
+      // Use the submitted name for display in carpool emails even for CAPTCHA submissions
+      // (name is not verified via CAPTCHA, but the CAPTCHA proves the submitter is human).
+      const rsvperName = resolvedName || name || (email as string).split("@")[0];
 
-        // Notify each prior RSVPer (one email each) that the new person also wants to carpool
-        for (const prior of priorRsvps) {
-          if (prior.email.toLowerCase() !== normalizedEmail) {
-            sendRsvpNotification({
-              to: prior.email,
-              rsvperName,
-              rsvperEmail: normalizedEmail,
-              eventTitle: event.title,
-              eventDate: event.date,
-              eventVenue: event.venue,
-              digestSubject: digest.subject,
-            }).catch(() => {});
-          }
-        }
-
-        // Notify the new RSVPer with ONE consolidated email listing everyone already interested
-        if (priorRsvps.length > 0) {
-          sendRsvpGroupNotification({
-            to: normalizedEmail,
-            matches: priorRsvps.map(p => ({ name: p.name || p.email.split("@")[0], email: p.email })),
+      // Notify each prior RSVPer (one email each) that the new person also wants to carpool.
+      // Fires for both signed-link and CAPTCHA submissions so no match goes unannounced.
+      for (const prior of priorRsvps) {
+        if (prior.email.toLowerCase() !== normalizedEmail) {
+          sendRsvpNotification({
+            to: prior.email,
+            rsvperName,
+            rsvperEmail: normalizedEmail,
             eventTitle: event.title,
             eventDate: event.date,
             eventVenue: event.venue,
+            digestSubject: digest.subject,
           }).catch(() => {});
         }
+      }
+
+      // Notify the new RSVPer with ONE consolidated email listing everyone already interested.
+      if (priorRsvps.length > 0) {
+        sendRsvpGroupNotification({
+          to: normalizedEmail,
+          matches: priorRsvps.map(p => ({ name: p.name || p.email.split("@")[0], email: p.email })),
+          eventTitle: event.title,
+          eventDate: event.date,
+          eventVenue: event.venue,
+        }).catch(() => {});
       }
 
       // Always notify admin of new carpool signup, regardless of verification method
