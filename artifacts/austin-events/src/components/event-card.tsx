@@ -132,8 +132,9 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
           <Button
             size="sm"
             variant="outline"
+            disabled={true}
             onClick={() => setShowForm(true)}
-            className="rounded-lg h-8 text-sm border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+            className="rounded-lg h-8 text-sm border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground !opacity-100"
           >
             Yes!
           </Button>
