@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import { Calendar, ArrowLeft, Star } from "lucide-react";
 import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
+import { useTenant } from "@/contexts/tenant-context";
 
 const MONTH_MAP: Record<string, number> = {
   Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
@@ -104,6 +105,8 @@ export default function DigestView() {
   const [match, params] = useRoute("/digest/:id");
   const idStr = params?.id;
   const isLatest = idStr === "latest";
+  const tenant = useTenant();
+  const cityShortName = tenant.city.split(",")[0];
   
   const { data: latestData, isLoading: loadingLatest } = useLatestDigest();
   const { data: allData, isLoading: loadingAll } = useAllDigests();
@@ -172,7 +175,7 @@ export default function DigestView() {
               // Extract leading emoji if present
               const emojiMatch = digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
               const emoji = emojiMatch ? emojiMatch[1] : "";
-              return `${emoji}Austin Events: ${range}`;
+              return `${emoji}${cityShortName} Events: ${range}`;
             })()}
           </h1>
           
@@ -283,7 +286,7 @@ export default function DigestView() {
           <div className="relative z-10">
             <h3 className="font-serif text-3xl font-bold mb-2 text-center">Don't miss the next one</h3>
             <p className="text-secondary-foreground/80 mb-8 max-w-lg mx-auto text-lg text-center">
-              Get next week's best Austin events delivered straight to your inbox.
+              Get next week's best {cityShortName} events delivered straight to your inbox.
             </p>
             <div className="max-w-xl mx-auto bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60">
               <SubscribeForm />

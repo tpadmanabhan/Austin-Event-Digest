@@ -3,10 +3,12 @@ import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Music, VolumeX } from "lucide-react";
 import { useAudio } from "@/components/audio-provider";
+import { useTenant } from "@/contexts/tenant-context";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { muted, toggleMute } = useAudio();
+  const tenant = useTenant();
 
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
@@ -20,7 +22,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <span className="font-serif text-2xl font-bold leading-none tracking-tight text-foreground">
-                    Raj's Austin Events
+                    {tenant.name}
                   </span>
                   <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/30 px-3 py-0.5 leading-none shadow-sm shadow-primary/10">
                     <span className="text-[13px] italic text-primary" style={{ fontFamily: '"DM Serif Display", serif', letterSpacing: '0.01em' }}>
@@ -89,9 +91,15 @@ export function Layout({ children }: { children: ReactNode }) {
                 className="w-8 h-8 opacity-80 grayscale"
               />
               <p className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} Raj's Austin Events. Handcrafted in Texas.
+                © {new Date().getFullYear()} {tenant.name}. Handcrafted in {tenant.city.split(",")[0]}.
               </p>
             </div>
+            <p className="text-xs text-muted-foreground/60">
+              Powered by{" "}
+              <a href="https://eventcarpooling.com" className="hover:text-muted-foreground transition-colors">
+                EventCarpooling
+              </a>
+            </p>
           </div>
         </div>
       </footer>

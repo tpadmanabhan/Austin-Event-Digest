@@ -6,6 +6,7 @@ import { useLatestDigest } from "@/hooks/use-events";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { SubscribeForm } from "@/components/subscribe-form";
+import { useTenant } from "@/contexts/tenant-context";
 
 const MONTH_MAP: Record<string, number> = {
   Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
@@ -27,8 +28,10 @@ function isEventTodayOrLater(dateStr: string): boolean {
 
 export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
+  const tenant = useTenant();
 
   const latestDigest = latestDigestRes?.digest;
+  const cityShortName = tenant.city.split(",")[0];
 
   return (
     <Layout>
@@ -47,16 +50,16 @@ export default function Home() {
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-6 border border-secondary/20">
                 <Sparkles className="w-4 h-4" />
-                <span>The best of ATX, hand-picked for you</span>
+                <span>The best of {cityShortName}, hand-picked for you</span>
               </div>
               
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold font-serif text-balance text-foreground mb-6 leading-[1.1]">
                 Stop scrolling. <br/>
-                Start <span className="text-primary italic">experiencing</span> Austin.
+                Start <span className="text-primary italic">experiencing</span> {cityShortName}.
               </h1>
               
               <p className="text-lg sm:text-xl text-muted-foreground mb-10 leading-relaxed max-w-xl">
-                Every Sunday, I cut through the noise and send you a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in Austin this week.
+                Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in {cityShortName} this week.
               </p>
 
               <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60">
