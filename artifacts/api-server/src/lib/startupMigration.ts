@@ -277,6 +277,14 @@ async function runTenantMigration(): Promise<void> {
     ALTER TABLE tenants ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true
   `);
 
+  // Step 1b: add adminEmail and firstRun columns (Task #19 — tenant onboarding)
+  await db.execute(sql`
+    ALTER TABLE tenants ADD COLUMN IF NOT EXISTS admin_email TEXT
+  `);
+  await db.execute(sql`
+    ALTER TABLE tenants ADD COLUMN IF NOT EXISTS first_run BOOLEAN NOT NULL DEFAULT false
+  `);
+
   // Step 2: add nullable tenant_id FK columns to each table (idempotent)
   await db.execute(sql`
     ALTER TABLE subscribers
