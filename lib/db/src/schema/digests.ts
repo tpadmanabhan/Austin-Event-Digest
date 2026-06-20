@@ -1,4 +1,5 @@
 import { pgTable, text, serial, timestamp, integer, jsonb } from "drizzle-orm/pg-core";
+import { tenantsTable } from "./tenants";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -18,6 +19,7 @@ export type EventItem = z.infer<typeof EventItemSchema>;
 
 export const digestsTable = pgTable("digests", {
   id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").references(() => tenantsTable.id),
   weekOf: timestamp("week_of").notNull(),
   subject: text("subject").notNull(),
   intro: text("intro").notNull(),
