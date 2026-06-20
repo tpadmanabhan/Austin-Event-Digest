@@ -7,6 +7,7 @@ export interface TenantConfig {
   city: string;
   accentColor: string;
   categories: string[];
+  firstRun: boolean;
 }
 
 const TenantContext = createContext<TenantConfig | null>(null);

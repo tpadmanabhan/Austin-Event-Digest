@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Zap, Check, ExternalLink } from "lucide-react";
 import { PlatformLayout } from "@/components/platform-layout";
+import { LaunchCityModal } from "@/components/launch-city-modal";
 
 interface TenantSummary {
   slug: string;
@@ -90,6 +92,7 @@ const STEPS = [
 
 export default function PlatformHome() {
   const { data: tenants, isLoading: loadingTenants } = useTenantList();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <PlatformLayout>
@@ -119,13 +122,13 @@ export default function PlatformHome() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a
-                href="#launch"
+              <button
+                onClick={() => setIsModalOpen(true)}
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 hover:-translate-y-0.5"
               >
                 Launch your city
                 <span className="text-primary-foreground/70">→</span>
-              </a>
+              </button>
               <a
                 href="https://austin.eventcarpooling.com"
                 className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -311,11 +314,7 @@ export default function PlatformHome() {
             </p>
             <button
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-10 py-4 text-base font-semibold text-primary-foreground shadow-xl shadow-primary/25 transition-all hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0"
-              onClick={() => {
-                const el = document.getElementById("launch-signup");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-                else alert("Signup form coming soon — check back shortly!");
-              }}
+              onClick={() => setIsModalOpen(true)}
             >
               Get started — it's free
             </button>
@@ -323,6 +322,7 @@ export default function PlatformHome() {
           </motion.div>
         </div>
       </section>
+      <LaunchCityModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </PlatformLayout>
   );
 }

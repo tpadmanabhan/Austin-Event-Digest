@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, rsvpsTable, digestsTable } from "@workspace/db";
+import { db, rsvpsTable, digestsTable, tenantsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { sendRsvpGroupNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
@@ -167,6 +167,21 @@ router.post("/fix-broken-links", requireAdmin, async (req, res) => {
     res.json({ success: true, totalFixed });
   } catch (err) {
     req.log.error({ err }, "Error fixing broken links");
+    res.status(500).json({ error: "server_error" });
+  }
+});
+
+// Dismiss first-run banner after initial digest generation
+router.post("/dismiss-first-run", requireAdmin, async (req, res) => {
+  const tenantId = req.tenant!.id;
+  try {
+    await db
+      .update(tenantsTable)
+      .set({ firstRun: false })
+      .where(eq(tenantsTable.id, tenantId));
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "Error dismissing first-run");
     res.status(500).json({ error: "server_error" });
   }
 });

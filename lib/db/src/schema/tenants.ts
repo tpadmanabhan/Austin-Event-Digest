@@ -8,6 +8,8 @@ export const tenantsTable = pgTable("tenants", {
   accentColor: text("accent_color").notNull().default("#7c3aed"),
   categories: jsonb("categories").notNull().$type<string[]>(),
   passwordHash: text("password_hash"),
+  adminEmail: text("admin_email"),
+  firstRun: boolean("first_run").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
