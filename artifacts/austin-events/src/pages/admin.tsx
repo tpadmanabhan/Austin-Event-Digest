@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { AdminSettingsTab } from "@/components/admin-settings-tab";
+
+type FirstRunStep = "generate" | "preview" | "ready";
 
 export default function AdminDashboard() {
   const { toast } = useToast();
@@ -24,6 +26,31 @@ export default function AdminDashboard() {
   const { mutate: generate, isPending: isGenerating } = useGenerateDigest();
   const { mutate: send, isPending: isSending } = useSendDigest();
   const { mutate: deleteDigest, isPending: isDeleting } = useDeleteDigest();
+
+  const [firstRunStep, setFirstRunStep] = useState<FirstRunStep>("generate");
+  const [firstRunDigestId, setFirstRunDigestId] = useState<number | null>(null);
+  const [firstRunPreviewHtml, setFirstRunPreviewHtml] = useState<string | null>(null);
+  const [firstRunPreviewLoading, setFirstRunPreviewLoading] = useState(false);
+  const [firstRunTestEmail, setFirstRunTestEmail] = useState("");
+
+  async function fetchPreviewHtml(digestId: number) {
+    setFirstRunPreviewLoading(true);
+    setFirstRunPreviewHtml(null);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/admin/digest/${digestId}/preview-html`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json() as { html: string };
+        setFirstRunPreviewHtml(data.html);
+      }
+    } catch {
+      // preview unavailable — operator can still proceed
+    } finally {
+      setFirstRunPreviewLoading(false);
+    }
+  }
 
   async function dismissFirstRun() {
     try {
@@ -82,7 +109,12 @@ export default function AdminDashboard() {
           const digestId = typeof data?.digest?.id === "number" ? data.digest.id : null;
           if (digestId !== null) setLastGeneratedDigest({ eventCount, digestId });
           toast({ title: "Digest generated successfully!" });
-          if (tenant.firstRun) dismissFirstRun();
+          if (tenant.firstRun) {
+            const newDigestId = data.digest.id;
+            setFirstRunDigestId(newDigestId);
+            setFirstRunStep("preview");
+            fetchPreviewHtml(newDigestId);
+          }
         },
         onError: (err) => {
           toast({ variant: "destructive", title: "Failed to generate", description: err.message });
@@ -116,41 +148,154 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* FIRST-RUN BANNER — prompt state */}
-        {tenant.firstRun && !lastGeneratedDigest && (
+        {tenant.firstRun && (
           <div className="mb-8 relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-primary/5 p-6">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary)_0%,transparent_50%)] opacity-10 pointer-events-none" />
-            <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
-                <Sparkles className="h-6 w-6" />
+
+            {/* Step 1: Generate */}
+            {firstRunStep === "generate" && (
+              <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg font-serif font-bold text-foreground">Welcome to {tenant.name}! 🎉</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Generate your first digest to start discovering events in {tenant.city.split(",")[0]}. It only takes a minute.
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    onClick={() => setIsGenerateOpen(true)}
+                    className="rounded-xl shadow-md gap-2 bg-primary hover:bg-primary/90"
+                  >
+                    <Plus className="w-4 h-4" /> Generate first digest
+                  </Button>
+                  <a
+                    href={`https://${tenant.slug}.eventcarpooling.com`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
+                  >
+                    <ExternalLink className="w-4 h-4" /> Live site
+                  </a>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-serif font-bold text-foreground">Welcome to {tenant.name}! 🎉</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Generate your first digest to start discovering events in {tenant.city.split(",")[0]}. It only takes a minute.
-                </p>
+            )}
+
+            {/* Step 2: Preview */}
+            {firstRunStep === "preview" && (
+              <div className="relative space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+                    <Eye className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-serif font-bold text-foreground">Preview your newsletter</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      This is exactly what your subscribers will receive. Send a test to yourself before going live.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Email preview iframe */}
+                <div className="rounded-xl overflow-hidden border border-border bg-white shadow-sm" style={{ height: 460 }}>
+                  {firstRunPreviewLoading ? (
+                    <div className="flex items-center justify-center h-full gap-2 text-muted-foreground text-sm">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Building preview…
+                    </div>
+                  ) : firstRunPreviewHtml ? (
+                    <iframe
+                      srcDoc={firstRunPreviewHtml}
+                      className="w-full h-full"
+                      sandbox="allow-same-origin"
+                      title="Email newsletter preview"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground text-sm px-6 text-center">
+                      <Eye className="w-8 h-8 opacity-30" />
+                      <p>Preview unavailable — you can still send a test email below.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Test email CTA */}
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-card rounded-xl border border-border p-4">
+                  <div className="flex-1 space-y-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                      <Mail className="w-4 h-4 text-primary" /> Send a test email
+                    </p>
+                    <p className="text-xs text-muted-foreground">Verify delivery and formatting in your inbox before going live.</p>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto shrink-0">
+                    <Input
+                      placeholder="you@example.com"
+                      type="email"
+                      value={firstRunTestEmail}
+                      onChange={(e) => setFirstRunTestEmail(e.target.value)}
+                      className="rounded-lg sm:w-56"
+                    />
+                    <Button
+                      disabled={isSending || !firstRunTestEmail || firstRunDigestId === null}
+                      onClick={() => {
+                        if (firstRunDigestId === null) return;
+                        send(
+                          { data: { digestId: firstRunDigestId, testEmail: firstRunTestEmail } },
+                          {
+                            onSuccess: () => {
+                              toast({ title: "Test email sent! Check your inbox." });
+                              setFirstRunStep("ready");
+                            },
+                            onError: (err) => {
+                              toast({ variant: "destructive", title: "Failed to send test", description: err.message });
+                            },
+                          }
+                        );
+                      }}
+                      className="rounded-lg gap-1.5 shrink-0"
+                    >
+                      {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      Send test
+                    </Button>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground rounded-lg shrink-0"
+                    onClick={() => setFirstRunStep("ready")}
+                  >
+                    Skip →
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2 shrink-0">
+            )}
+
+            {/* Step 3: Ready */}
+            {firstRunStep === "ready" && (
+              <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-green-600 text-white shadow-lg shadow-green-600/25">
+                  <CheckCircle2 className="h-6 w-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg font-serif font-bold text-foreground">You're all set! 🚀</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Your newsletter looks great. Use the <strong>Send…</strong> button on any digest to broadcast to your subscribers whenever you're ready.
+                  </p>
+                </div>
                 <Button
-                  onClick={() => setIsGenerateOpen(true)}
-                  className="rounded-xl shadow-md gap-2 bg-primary hover:bg-primary/90"
+                  variant="outline"
+                  onClick={dismissFirstRun}
+                  className="rounded-xl shrink-0 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
                 >
-                  <Plus className="w-4 h-4" /> Generate first digest
+                  Dismiss
                 </Button>
-                <a
-                  href={`https://${tenant.slug}.eventcarpooling.com`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
-                >
-                  <ExternalLink className="w-4 h-4" /> Live site
-                </a>
               </div>
-            </div>
+            )}
           </div>
         )}
 
-        {/* FIRST-RUN SUCCESS BANNER — shown after first digest generates */}
-        {lastGeneratedDigest && (
+        {/* SUCCESS BANNER — shown after digest generates (non-first-run) */}
+        {lastGeneratedDigest && !tenant.firstRun && (
           <div className="mb-8 relative overflow-hidden rounded-2xl border-2 border-green-500/30 bg-green-500/5 p-6">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,#22c55e_0%,transparent_50%)] opacity-10 pointer-events-none" />
             <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">

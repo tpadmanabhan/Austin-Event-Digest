@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, rsvpsTable, digestsTable, tenantsTable, type InsertTenant } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { sendRsvpGroupNotification } from "../lib/emailService";
+import { sendRsvpGroupNotification, buildDigestEmailHtml } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin, adminTokenForHash } from "../middleware/requireAdmin";
 import { verifyPassword } from "../lib/passwordHash";
@@ -168,6 +168,46 @@ router.post("/fix-broken-links", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error fixing broken links");
     res.status(500).json({ error: "server_error" });
+  }
+});
+
+// Return rendered email HTML for a digest — used by the admin preview pane
+router.get("/digest/:id/preview-html", requireAdmin, async (req, res) => {
+  const digestId = parseInt(String(req.params.id), 10);
+  if (isNaN(digestId)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest ID" });
+    return;
+  }
+  const tenantId = req.tenant!.id;
+  try {
+    const [digest] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, tenantId)))
+      .limit(1);
+
+    if (!digest) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+
+    const siteUrl = `https://${req.tenant!.slug}.eventcarpooling.com`;
+    const html = buildDigestEmailHtml(
+      {
+        subject: digest.subject,
+        intro: digest.intro,
+        weekOf: digest.weekOf,
+        events: (digest.events as any[]) || [],
+        digestId: digest.id,
+        siteUrl,
+      },
+      "Preview Reader",
+    );
+
+    res.json({ html });
+  } catch (err) {
+    req.log.error({ err }, "Error building digest preview HTML");
+    res.status(500).json({ error: "server_error", message: "Failed to build preview" });
   }
 });
 
