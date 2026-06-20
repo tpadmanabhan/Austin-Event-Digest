@@ -11,9 +11,9 @@ const router: IRouter = Router();
 
 // Platform-level routes — no tenant required (work on root domain)
 router.use(healthRouter);
-// Tenant onboarding (check-slug + create) must only be accessible from the root domain.
-// requirePlatformRoot rejects any request that already resolved a city tenant (i.e. a subdomain call).
-router.use(requirePlatformRoot, tenantsRouter);
+// Tenant config + list are used by city subdomains too — no host guard.
+// requirePlatformRoot is applied per-route inside tenantsRouter for onboarding-only endpoints.
+router.use(tenantsRouter);
 
 // City-level routes — require a resolved tenant from the subdomain
 router.use("/newsletter", requireTenant, newsletterRouter);

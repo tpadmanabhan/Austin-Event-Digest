@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { db, tenantsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "../lib/passwordHash";
+import { requirePlatformRoot } from "../middleware/resolveTenant";
 
 const router: IRouter = Router();
 
@@ -69,7 +70,7 @@ router.get("/tenants/list", async (req, res) => {
   }
 });
 
-router.get("/tenants/check-slug", async (req, res) => {
+router.get("/tenants/check-slug", requirePlatformRoot, async (req, res) => {
   const slug = req.query.slug as string | undefined;
   if (!slug) {
     res.status(400).json({ error: "invalid_request", message: "slug query param is required" });
@@ -100,7 +101,7 @@ router.get("/tenants/check-slug", async (req, res) => {
   }
 });
 
-router.post("/tenants", async (req, res) => {
+router.post("/tenants", requirePlatformRoot, async (req, res) => {
   const { cityName, slug, adminEmail, adminPassword, categories, accentColor } = req.body ?? {};
 
   if (!cityName || typeof cityName !== "string" || cityName.trim().length < 2) {
