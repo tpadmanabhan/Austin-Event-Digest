@@ -68,6 +68,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [accentColor, setAccentColor] = useState("#7c3aed");
+  const [verifyEmailSent, setVerifyEmailSent] = useState(false);
 
   const slugStatus = useSlugAvailability(slug);
 
@@ -88,6 +89,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
     setIsSubmitting(false);
     setSubmitError("");
     setAccentColor("#7c3aed");
+    setVerifyEmailSent(false);
   }
 
   function handleClose(open: boolean) {
@@ -126,7 +128,12 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
         return;
       }
       queryClient.invalidateQueries({ queryKey: ["tenants-list"] });
-      window.location.href = data.adminUrl;
+      if (data.requiresVerification) {
+        setVerifyEmailSent(true);
+        setIsSubmitting(false);
+      } else {
+        window.location.href = data.adminUrl;
+      }
     } catch {
       setSubmitError("Network error — please check your connection and try again.");
       setIsSubmitting(false);
@@ -158,7 +165,28 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
         </div>
 
         <div className="px-6 py-6">
-          {step === 1 && (
+          {verifyEmailSent && (
+            <div className="space-y-4 text-center py-4">
+              <div className="text-5xl">📬</div>
+              <div>
+                <h3 className="font-serif font-bold text-xl text-foreground">Check your inbox</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  We sent a verification link to <strong className="text-foreground">{adminEmail}</strong>.
+                  Click it to activate <strong className="text-foreground">{cityName} Events</strong> and access your admin panel.
+                </p>
+              </div>
+              <div className="bg-muted/50 rounded-xl p-4 text-left text-xs text-muted-foreground space-y-1">
+                <p>• Check spam/promotions if it doesn't arrive within a minute</p>
+                <p>• The link expires in 48 hours</p>
+                <p>• Your subdomain: <strong className="font-mono text-foreground">{slug}.eventcarpooling.com</strong></p>
+              </div>
+              <Button variant="outline" className="rounded-xl w-full" onClick={() => onOpenChange(false)}>
+                Got it — close
+              </Button>
+            </div>
+          )}
+
+          {!verifyEmailSent && step === 1 && (
             <div className="space-y-4">
               <DialogHeader className="text-left space-y-1 pb-2">
                 <DialogTitle className="font-serif text-xl">About your city</DialogTitle>
@@ -256,7 +284,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
             </div>
           )}
 
-          {step === 2 && (
+          {!verifyEmailSent && step === 2 && (
             <div className="space-y-4">
               <DialogHeader className="text-left space-y-1 pb-2">
                 <DialogTitle className="font-serif text-xl">What events matter?</DialogTitle>

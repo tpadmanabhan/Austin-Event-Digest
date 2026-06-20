@@ -9,6 +9,7 @@ export const tenantsTable = pgTable("tenants", {
   categories: jsonb("categories").notNull().$type<string[]>(),
   passwordHash: text("password_hash"),
   adminEmail: text("admin_email"),
+  emailVerified: boolean("email_verified").notNull().default(false),
   firstRun: boolean("first_run").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),

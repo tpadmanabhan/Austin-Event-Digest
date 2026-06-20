@@ -277,9 +277,12 @@ async function runTenantMigration(): Promise<void> {
     ALTER TABLE tenants ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true
   `);
 
-  // Step 1b: add adminEmail and firstRun columns (Task #19 — tenant onboarding)
+  // Step 1b: add adminEmail, emailVerified, and firstRun columns (Tasks #19/#23)
   await db.execute(sql`
     ALTER TABLE tenants ADD COLUMN IF NOT EXISTS admin_email TEXT
+  `);
+  await db.execute(sql`
+    ALTER TABLE tenants ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false
   `);
   await db.execute(sql`
     ALTER TABLE tenants ADD COLUMN IF NOT EXISTS first_run BOOLEAN NOT NULL DEFAULT false
@@ -313,6 +316,9 @@ async function runTenantMigration(): Promise<void> {
     )
     ON CONFLICT (id) DO NOTHING
   `);
+
+  // Step 3b: mark Austin tenant as email-verified (pre-dates verification feature)
+  await db.execute(sql`UPDATE tenants SET email_verified = true WHERE slug = 'austin'`);
 
   // Step 4: back-fill any rows that still have NULL tenant_id
   await db.execute(sql`UPDATE subscribers SET tenant_id = 1 WHERE tenant_id IS NULL`);

@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
+import { AdminSettingsTab } from "@/components/admin-settings-tab";
 
 export default function AdminDashboard() {
   const { toast } = useToast();
@@ -51,6 +52,7 @@ export default function AdminDashboard() {
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [customNotes, setCustomNotes] = useState("");
   const [weekOfInput, setWeekOfInput] = useState(currentSunday);
+  const [lastGeneratedDigest, setLastGeneratedDigest] = useState<{ eventCount: number; digestId: number } | null>(null);
 
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
   const [testEmail, setTestEmail] = useState("");
@@ -73,9 +75,12 @@ export default function AdminDashboard() {
     generate(
       { data: { customNotes, ...(weekOfInput ? { weekOf: weekOfInput } : {}) } },
       {
-        onSuccess: () => {
+        onSuccess: (data: any) => {
           setIsGenerateOpen(false);
           setCustomNotes("");
+          const eventCount = Array.isArray(data?.digest?.events) ? (data.digest.events as unknown[]).length : 0;
+          const digestId = typeof data?.digest?.id === "number" ? data.digest.id : null;
+          if (digestId !== null) setLastGeneratedDigest({ eventCount, digestId });
           toast({ title: "Digest generated successfully!" });
           if (tenant.firstRun) dismissFirstRun();
         },
@@ -110,8 +115,8 @@ export default function AdminDashboard() {
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        {/* FIRST-RUN BANNER */}
-        {tenant.firstRun && (
+        {/* FIRST-RUN BANNER — prompt state */}
+        {tenant.firstRun && !lastGeneratedDigest && (
           <div className="mb-8 relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-primary/5 p-6">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary)_0%,transparent_50%)] opacity-10 pointer-events-none" />
             <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
@@ -139,6 +144,50 @@ export default function AdminDashboard() {
                 >
                   <ExternalLink className="w-4 h-4" /> Live site
                 </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* FIRST-RUN SUCCESS BANNER — shown after first digest generates */}
+        {lastGeneratedDigest && (
+          <div className="mb-8 relative overflow-hidden rounded-2xl border-2 border-green-500/30 bg-green-500/5 p-6">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,#22c55e_0%,transparent_50%)] opacity-10 pointer-events-none" />
+            <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-green-500 text-white shadow-lg shadow-green-500/25">
+                <Rocket className="h-6 w-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-serif font-bold text-foreground">
+                  First digest created — {lastGeneratedDigest.eventCount} event{lastGeneratedDigest.eventCount !== 1 ? "s" : ""} found!
+                </h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Send a test email to yourself before blasting to subscribers, or view the live site.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 shrink-0">
+                <Button
+                  variant="outline"
+                  className="rounded-xl gap-2 border-green-500/40 hover:border-green-500/70 hover:bg-green-500/5"
+                  onClick={() => setSendDialogTarget(lastGeneratedDigest.digestId)}
+                >
+                  <Send className="w-4 h-4" /> Send test email
+                </Button>
+                <a
+                  href={`https://${tenant.slug}.eventcarpooling.com`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:border-green-500/40 transition-all"
+                >
+                  <ExternalLink className="w-4 h-4" /> View live site
+                </a>
+                <button
+                  onClick={() => setLastGeneratedDigest(null)}
+                  className="text-xs text-muted-foreground hover:text-foreground px-2 transition-colors"
+                  aria-label="Dismiss"
+                >
+                  ✕
+                </button>
               </div>
             </div>
           </div>
@@ -194,6 +243,7 @@ export default function AdminDashboard() {
           <TabsList className="mb-8 bg-muted/50 p-1 rounded-xl">
             <TabsTrigger value="digests" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Weekly Digests</TabsTrigger>
             <TabsTrigger value="subscribers" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Subscribers List</TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="digests" className="space-y-6 mt-0">
@@ -301,6 +351,10 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="settings" className="mt-0">
+            <AdminSettingsTab />
           </TabsContent>
         </Tabs>
       </div>

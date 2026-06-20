@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, rsvpsTable, digestsTable, tenantsTable } from "@workspace/db";
+import { db, rsvpsTable, digestsTable, tenantsTable, type InsertTenant } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { sendRsvpGroupNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
@@ -183,6 +183,62 @@ router.post("/dismiss-first-run", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error dismissing first-run");
     res.status(500).json({ error: "server_error" });
+  }
+});
+
+// Update tenant settings (name, accentColor, categories)
+router.patch("/settings", requireAdmin, async (req, res) => {
+  const { name, accentColor, categories } = req.body ?? {};
+  const tenantId = req.tenant!.id;
+
+  const updates: Record<string, unknown> = {};
+
+  if (name !== undefined) {
+    if (typeof name !== "string" || name.trim().length < 2) {
+      res.status(400).json({ error: "invalid_request", message: "name must be at least 2 characters" });
+      return;
+    }
+    updates.name = name.trim();
+  }
+
+  if (accentColor !== undefined) {
+    if (typeof accentColor !== "string" || !/^#[0-9a-fA-F]{6}$/.test(accentColor)) {
+      res.status(400).json({ error: "invalid_request", message: "accentColor must be a 6-digit hex color" });
+      return;
+    }
+    updates.accentColor = accentColor;
+  }
+
+  const allowed = new Set(["Tech", "Music", "Food", "Wellness", "Civics"]);
+  if (categories !== undefined) {
+    if (!Array.isArray(categories) || categories.length === 0 || !categories.every((c: unknown) => typeof c === "string" && allowed.has(c))) {
+      res.status(400).json({ error: "invalid_request", message: "categories must be a non-empty array of valid category names" });
+      return;
+    }
+    updates.categories = categories;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: "invalid_request", message: "No valid fields to update" });
+    return;
+  }
+
+  try {
+    const [updated] = await db
+      .update(tenantsTable)
+      .set(updates as Partial<InsertTenant>)
+      .where(eq(tenantsTable.id, tenantId))
+      .returning({
+        slug: tenantsTable.slug,
+        name: tenantsTable.name,
+        city: tenantsTable.city,
+        accentColor: tenantsTable.accentColor,
+        categories: tenantsTable.categories,
+      });
+    res.json({ tenant: updated });
+  } catch (err) {
+    req.log.error({ err }, "Error updating tenant settings");
+    res.status(500).json({ error: "server_error", message: "Failed to update settings" });
   }
 });
 
