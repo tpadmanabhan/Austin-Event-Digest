@@ -116,3 +116,25 @@ export function requireTenant(req: Request, res: Response, next: NextFunction): 
   }
   next();
 }
+
+/**
+ * Guards a route to the platform root domain only.
+ * Rejects requests that arrive via a city subdomain (i.e. req.tenant is set).
+ *
+ * In dev, DEFAULT_TENANT_SLUG routes a single host to a specific city, so requests
+ * that reach here with req.tenant set are simulating a subdomain call.
+ * In production, any resolved tenant means the caller is on a city subdomain.
+ *
+ * Apply to self-serve tenant creation routes so operators on one city's subdomain
+ * cannot hit the onboarding API.
+ */
+export function requirePlatformRoot(req: Request, res: Response, next: NextFunction): void {
+  if (req.tenant) {
+    res.status(403).json({
+      error: "forbidden",
+      message: "This endpoint is only available on the platform root domain (eventcarpooling.com).",
+    });
+    return;
+  }
+  next();
+}
