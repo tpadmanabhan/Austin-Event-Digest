@@ -90,3 +90,26 @@ export interface SendDigestRequest {
   /** If provided, only sends to this test email */
   testEmail?: string;
 }
+
+export interface TenantPublic {
+  slug: string;
+  name: string;
+  city: string;
+  accentColor: string;
+  categories: string[];
+}
+
+export interface TenantConfigResponse {
+  tenant: TenantPublic;
+}
+
+export interface TenantsListResponse {
+  tenants: TenantPublic[];
+}
+
+export type GetTenantConfigParams = {
+  /**
+   * The tenant's subdomain slug (e.g. "austin")
+   */
+  slug: string;
+};

@@ -21,12 +21,15 @@ import type {
   DigestResponse,
   ErrorResponse,
   GenerateDigestRequest,
+  GetTenantConfigParams,
   HealthStatus,
   MessageResponse,
   SendDigestRequest,
   SubscribeRequest,
   SubscribeResponse,
   SubscribersResponse,
+  TenantConfigResponse,
+  TenantsListResponse,
   UnsubscribeRequest,
 } from "./api.schemas";
 
@@ -684,3 +687,172 @@ export const useSendDigest = <
 > => {
   return useMutation(getSendDigestMutationOptions(options));
 };
+
+/**
+ * @summary Get public config for a tenant by slug
+ */
+export const getGetTenantConfigUrl = (params: GetTenantConfigParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/tenant/config?${stringifiedParams}`
+    : `/api/tenant/config`;
+};
+
+export const getTenantConfig = async (
+  params: GetTenantConfigParams,
+  options?: RequestInit,
+): Promise<TenantConfigResponse> => {
+  return customFetch<TenantConfigResponse>(getGetTenantConfigUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTenantConfigQueryKey = (params?: GetTenantConfigParams) => {
+  return [`/api/tenant/config`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetTenantConfigQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTenantConfig>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  params: GetTenantConfigParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTenantConfig>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTenantConfigQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTenantConfig>>> = ({
+    signal,
+  }) => getTenantConfig(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTenantConfig>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTenantConfigQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTenantConfig>>
+>;
+export type GetTenantConfigQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get public config for a tenant by slug
+ */
+
+export function useGetTenantConfig<
+  TData = Awaited<ReturnType<typeof getTenantConfig>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  params: GetTenantConfigParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTenantConfig>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTenantConfigQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List all active tenants (for platform homepage)
+ */
+export const getListTenantsUrl = () => {
+  return `/api/tenants/list`;
+};
+
+export const listTenants = async (
+  options?: RequestInit,
+): Promise<TenantsListResponse> => {
+  return customFetch<TenantsListResponse>(getListTenantsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListTenantsQueryKey = () => {
+  return [`/api/tenants/list`] as const;
+};
+
+export const getListTenantsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listTenants>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listTenants>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListTenantsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listTenants>>> = ({
+    signal,
+  }) => listTenants({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listTenants>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListTenantsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listTenants>>
+>;
+export type ListTenantsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all active tenants (for platform homepage)
+ */
+
+export function useListTenants<
+  TData = Awaited<ReturnType<typeof listTenants>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listTenants>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListTenantsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

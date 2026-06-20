@@ -82,9 +82,10 @@ router.post("/subscribe", async (req, res) => {
       return;
     }
 
+    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     const [newSub] = await db
       .insert(subscribersTable)
-      .values({ email, name: name || null, isActive: true })
+      .values({ tenantId: 1, email, name: name || null, isActive: true })
       .returning();
 
     const response = SubscribeToNewsletterResponse.parse({

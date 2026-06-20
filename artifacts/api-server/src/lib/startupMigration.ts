@@ -297,7 +297,9 @@ export async function runStartupMigration(): Promise<void> {
         .where(eq(digestsTable.weekOf, week.weekOf));
 
       if (existing.length === 0) {
+        // TODO(Task #16): replace hardcoded tenantId=1 with per-tenant seeding
         await db.insert(digestsTable).values({
+          tenantId: 1,
           weekOf: week.weekOf,
           subject: week.subject,
           intro: week.intro,

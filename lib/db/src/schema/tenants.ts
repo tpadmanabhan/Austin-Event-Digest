@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, jsonb, boolean } from "drizzle-orm/pg-core";
 
 export const tenantsTable = pgTable("tenants", {
   id: serial("id").primaryKey(),
@@ -8,6 +8,7 @@ export const tenantsTable = pgTable("tenants", {
   accentColor: text("accent_color").notNull().default("#7c3aed"),
   categories: jsonb("categories").notNull().$type<string[]>(),
   passwordHash: text("password_hash"),
+  isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

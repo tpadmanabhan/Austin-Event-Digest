@@ -47,6 +47,7 @@ router.get("/tenants/list", async (req, res) => {
         categories: tenantsTable.categories,
       })
       .from(tenantsTable)
+      .where(eq(tenantsTable.isActive, true))
       .orderBy(tenantsTable.createdAt);
 
     res.json({ tenants });

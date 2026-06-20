@@ -13,6 +13,8 @@ tags:
     description: Newsletter subscriber and digest operations
   - name: events
     description: Events and digest management
+  - name: tenants
+    description: Multi-tenant platform operations
 paths:
   /healthz:
     get:
@@ -154,6 +156,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
+
+  /tenant/config:
+    get:
+      operationId: getTenantConfig
+      tags: [tenants]
+      summary: Get public config for a tenant by slug
+      parameters:
+        - name: slug
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The tenant's subdomain slug (e.g. "austin")
+      responses:
+        "200":
+          description: Tenant config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantConfigResponse"
+        "404":
+          description: Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tenants/list:
+    get:
+      operationId: listTenants
+      tags: [tenants]
+      summary: List all active tenants (for platform homepage)
+      responses:
+        "200":
+          description: List of active tenants
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantsListResponse"
 
 components:
   schemas:
@@ -359,3 +400,43 @@ components:
           description: If provided, only sends to this test email
       required:
         - digestId
+
+    TenantPublic:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        accentColor:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+      required:
+        - slug
+        - name
+        - city
+        - accentColor
+        - categories
+
+    TenantConfigResponse:
+      type: object
+      properties:
+        tenant:
+          $ref: "#/components/schemas/TenantPublic"
+      required:
+        - tenant
+
+    TenantsListResponse:
+      type: object
+      properties:
+        tenants:
+          type: array
+          items:
+            $ref: "#/components/schemas/TenantPublic"
+      required:
+        - tenants

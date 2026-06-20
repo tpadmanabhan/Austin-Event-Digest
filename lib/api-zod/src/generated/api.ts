@@ -178,3 +178,37 @@ export const SendDigestResponse = zod.object({
   success: zod.boolean(),
   message: zod.string(),
 });
+
+/**
+ * @summary Get public config for a tenant by slug
+ */
+export const GetTenantConfigQueryParams = zod.object({
+  slug: zod.coerce
+    .string()
+    .describe('The tenant\'s subdomain slug (e.g. \"austin\")'),
+});
+
+export const GetTenantConfigResponse = zod.object({
+  tenant: zod.object({
+    slug: zod.string(),
+    name: zod.string(),
+    city: zod.string(),
+    accentColor: zod.string(),
+    categories: zod.array(zod.string()),
+  }),
+});
+
+/**
+ * @summary List all active tenants (for platform homepage)
+ */
+export const ListTenantsResponse = zod.object({
+  tenants: zod.array(
+    zod.object({
+      slug: zod.string(),
+      name: zod.string(),
+      city: zod.string(),
+      accentColor: zod.string(),
+      categories: zod.array(zod.string()),
+    }),
+  ),
+});

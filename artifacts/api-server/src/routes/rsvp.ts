@@ -93,7 +93,12 @@ router.post("/", async (req, res) => {
           eq(rsvpsTable.eventTitle, eventTitle),
         ));
 
+      // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id once
+      // tenant-aware routing is in place.
+      const tenantId = 1;
+
       await db.insert(rsvpsTable).values({
+        tenantId,
         digestId,
         eventTitle,
         email: normalizedEmail,
@@ -104,9 +109,9 @@ router.post("/", async (req, res) => {
         // Auto-subscribe the RSVPer to the weekly newsletter only when identity is verified.
         await db
           .insert(subscribersTable)
-          .values({ email: normalizedEmail, name: resolvedName, isActive: true })
+          .values({ tenantId, email: normalizedEmail, name: resolvedName, isActive: true })
           .onConflictDoUpdate({
-            target: subscribersTable.email,
+            target: [subscribersTable.tenantId, subscribersTable.email],
             set: { isActive: true, name: resolvedName },
           });
       }

@@ -137,9 +137,11 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       events = generated.events;
     }
 
+    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     const [digest] = await db
       .insert(digestsTable)
       .values({
+        tenantId: 1,
         weekOf,
         subject,
         intro,
@@ -297,9 +299,10 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
       return;
     }
 
+    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     const [digest] = await db
       .insert(digestsTable)
-      .values({ weekOf, subject, intro, events, sentCount: 0 })
+      .values({ tenantId: 1, weekOf, subject, intro, events, sentCount: 0 })
       .returning();
 
     const response = GenerateDigestResponse.parse({ digest: digestToApi(digest) });

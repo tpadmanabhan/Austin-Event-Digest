@@ -19,7 +19,7 @@ export type EventItem = z.infer<typeof EventItemSchema>;
 
 export const digestsTable = pgTable("digests", {
   id: serial("id").primaryKey(),
-  tenantId: integer("tenant_id").references(() => tenantsTable.id),
+  tenantId: integer("tenant_id").notNull().references(() => tenantsTable.id),
   weekOf: timestamp("week_of").notNull(),
   subject: text("subject").notNull(),
   intro: text("intro").notNull(),
