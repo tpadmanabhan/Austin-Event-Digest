@@ -46,8 +46,14 @@ router.post("/", async (req, res) => {
     }
   }
 
+  const tenantId = req.tenant!.id;
+
   try {
-    const [digest] = await db.select().from(digestsTable).where(eq(digestsTable.id, digestId)).limit(1);
+    const [digest] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, tenantId)))
+      .limit(1);
     if (!digest) {
       res.status(404).json({ error: "not_found", message: "Digest not found" });
       return;
@@ -66,12 +72,11 @@ router.post("/", async (req, res) => {
       return;
     }
 
-    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     const existing = await db
       .select()
       .from(rsvpsTable)
       .where(and(
-        eq(rsvpsTable.tenantId, 1),
+        eq(rsvpsTable.tenantId, tenantId),
         eq(rsvpsTable.digestId, digestId),
         eq(rsvpsTable.eventTitle, eventTitle),
         eq(rsvpsTable.email, normalizedEmail),
@@ -87,19 +92,14 @@ router.post("/", async (req, res) => {
       const resolvedName: string | null = verifiedBySignature ? (name || null) : null;
 
       // Fetch existing RSVPers BEFORE inserting so we know who was already interested
-      // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
       const priorRsvps = await db
         .select()
         .from(rsvpsTable)
         .where(and(
-          eq(rsvpsTable.tenantId, 1),
+          eq(rsvpsTable.tenantId, tenantId),
           eq(rsvpsTable.digestId, digestId),
           eq(rsvpsTable.eventTitle, eventTitle),
         ));
-
-      // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id once
-      // tenant-aware routing is in place.
-      const tenantId = 1;
 
       await db.insert(rsvpsTable).values({
         tenantId,
@@ -164,12 +164,11 @@ router.post("/", async (req, res) => {
       req.log.info({ email: normalizedEmail, eventTitle, digestId, carpoolMatches: priorRsvps.length, verifiedBySignature }, "RSVP recorded");
     }
 
-    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     const totalRsvps = await db
       .select()
       .from(rsvpsTable)
       .where(and(
-        eq(rsvpsTable.tenantId, 1),
+        eq(rsvpsTable.tenantId, tenantId),
         eq(rsvpsTable.digestId, digestId),
         eq(rsvpsTable.eventTitle, eventTitle),
       ));
@@ -195,13 +194,14 @@ router.get("/", async (req, res) => {
     return;
   }
 
+  const tenantId = req.tenant!.id;
+
   try {
-    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     const rsvps = await db
       .select({ id: rsvpsTable.id })
       .from(rsvpsTable)
       .where(and(
-        eq(rsvpsTable.tenantId, 1),
+        eq(rsvpsTable.tenantId, tenantId),
         eq(rsvpsTable.digestId, digestId),
         eq(rsvpsTable.eventTitle, eventTitle),
       ));

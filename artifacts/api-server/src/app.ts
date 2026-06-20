@@ -3,8 +3,12 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { resolveTenant } from "./middleware/resolveTenant";
 
 const app: Express = express();
+
+// Trust the proxy so req.hostname uses X-Forwarded-Host in production
+app.set("trust proxy", true);
 
 app.use(
   pinoHttp({
@@ -28,6 +32,10 @@ app.use(
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Resolve tenant from subdomain for every request — must run after body parsing
+// so requireAdmin body-token fallback works.
+app.use(resolveTenant);
 
 app.use("/api", router);
 

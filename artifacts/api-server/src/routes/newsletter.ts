@@ -28,10 +28,9 @@ router.post("/subscribe", async (req, res) => {
   }
 
   const { email, name } = parseResult.data;
+  const tenantId = req.tenant!.id;
 
   try {
-    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
-    const tenantId = 1;
     const existing = await db
       .select()
       .from(subscribersTable)
@@ -84,10 +83,9 @@ router.post("/subscribe", async (req, res) => {
       return;
     }
 
-    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     const [newSub] = await db
       .insert(subscribersTable)
-      .values({ tenantId: 1, email, name: name || null, isActive: true })
+      .values({ tenantId, email, name: name || null, isActive: true })
       .returning();
 
     const response = SubscribeToNewsletterResponse.parse({
@@ -118,13 +116,13 @@ router.post("/unsubscribe", async (req, res) => {
   }
 
   const { email } = parseResult.data;
+  const tenantId = req.tenant!.id;
 
   try {
-    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     await db
       .update(subscribersTable)
       .set({ isActive: false })
-      .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, 1)));
+      .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)));
 
     const response = UnsubscribeFromNewsletterResponse.parse({
       success: true,
@@ -139,11 +137,10 @@ router.post("/unsubscribe", async (req, res) => {
 
 router.get("/subscribers", requireAdmin, async (req, res) => {
   try {
-    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     const subscribers = await db
       .select()
       .from(subscribersTable)
-      .where(eq(subscribersTable.tenantId, 1))
+      .where(eq(subscribersTable.tenantId, req.tenant!.id))
       .orderBy(subscribersTable.subscribedAt);
 
     const response = GetSubscribersResponse.parse({

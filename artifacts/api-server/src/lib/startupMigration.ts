@@ -1,6 +1,7 @@
-import { db, digestsTable, subscribersTable, rsvpsTable } from "@workspace/db";
-import { eq, inArray, sql } from "drizzle-orm";
+import { db, digestsTable, subscribersTable, rsvpsTable, tenantsTable } from "@workspace/db";
+import { eq, inArray, sql, isNull } from "drizzle-orm";
 import { logger } from "./logger";
+import { hashPassword } from "./passwordHash";
 
 const MARCH_29_EVENTS = [
   {
@@ -337,11 +338,49 @@ async function runTenantMigration(): Promise<void> {
   logger.info("Tenant migration complete (Austin tenant seeded, all rows scoped to tenant 1)");
 }
 
+async function migrateAustinAdminPassword(): Promise<void> {
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    logger.debug("ADMIN_PASSWORD not set — skipping admin password migration");
+    return;
+  }
+
+  const [austin] = await db
+    .select({ id: tenantsTable.id, passwordHash: tenantsTable.passwordHash })
+    .from(tenantsTable)
+    .where(eq(tenantsTable.slug, "austin"))
+    .limit(1);
+
+  if (!austin) {
+    logger.warn("Austin tenant not found — skipping admin password migration");
+    return;
+  }
+
+  if (austin.passwordHash) {
+    logger.debug("Austin tenant already has a passwordHash — skipping migration");
+    return;
+  }
+
+  const hashed = await hashPassword(adminPassword);
+  await db
+    .update(tenantsTable)
+    .set({ passwordHash: hashed })
+    .where(eq(tenantsTable.slug, "austin"));
+
+  logger.info("Migrated ADMIN_PASSWORD → Austin tenant passwordHash");
+}
+
 export async function runStartupMigration(): Promise<void> {
   try {
     await runTenantMigration();
   } catch (err) {
     logger.warn({ err }, "Tenant migration failed (non-fatal) — DB may already be up-to-date");
+  }
+
+  try {
+    await migrateAustinAdminPassword();
+  } catch (err) {
+    logger.warn({ err }, "Admin password migration failed (non-fatal)");
   }
 
   try {
@@ -383,7 +422,6 @@ export async function runStartupMigration(): Promise<void> {
         .where(eq(digestsTable.weekOf, week.weekOf));
 
       if (existing.length === 0) {
-        // TODO(Task #16): replace hardcoded tenantId=1 with per-tenant seeding
         await db.insert(digestsTable).values({
           tenantId: 1,
           weekOf: week.weekOf,

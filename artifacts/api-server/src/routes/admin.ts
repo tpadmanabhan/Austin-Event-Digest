@@ -4,17 +4,17 @@ import { db, rsvpsTable, digestsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { sendRsvpNotification, sendRsvpGroupNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
+import { requireAdmin, adminTokenForHash } from "../middleware/requireAdmin";
+import { verifyPassword } from "../lib/passwordHash";
 
 const router: IRouter = Router();
 
-function verifyAdminToken(token: string | undefined): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword || !token) return false;
-  const expected = createHmac("sha256", adminPassword).update("admin-session").digest("hex");
-  return token === expected;
-}
-
 router.post("/login", async (req, res) => {
+  if (!req.tenant) {
+    res.status(404).json({ error: "not_found", message: "Admin login requires a city subdomain" });
+    return;
+  }
+
   const captchaOk = await verifyTurnstileToken(req.body?.captchaToken, req.ip);
   if (!captchaOk) {
     res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
@@ -22,57 +22,83 @@ router.post("/login", async (req, res) => {
   }
 
   const { password } = req.body ?? {};
-  const adminPassword = process.env.ADMIN_PASSWORD;
 
+  if (req.tenant.passwordHash) {
+    // Per-tenant path: verify password against scrypt hash stored on the tenant row
+    if (!password || typeof password !== "string") {
+      res.status(400).json({ error: "invalid_request", message: "password is required" });
+      return;
+    }
+    const valid = await verifyPassword(password, req.tenant.passwordHash);
+    if (!valid) {
+      res.status(401).json({ error: "unauthorized", message: "Incorrect password" });
+      return;
+    }
+    const token = adminTokenForHash(req.tenant.passwordHash);
+    res.json({ token });
+    return;
+  }
+
+  // Fallback: ADMIN_PASSWORD env var (used while tenant has no passwordHash set)
+  const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) {
     res.status(503).json({ error: "not_configured", message: "Admin password not configured" });
     return;
   }
-
   if (!password || password !== adminPassword) {
     res.status(401).json({ error: "unauthorized", message: "Incorrect password" });
     return;
   }
-
-  const token = createHmac("sha256", adminPassword)
-    .update("admin-session")
-    .digest("hex");
-
+  const token = createHmac("sha256", adminPassword).update("admin-session").digest("hex");
   res.json({ token });
 });
 
 router.post("/verify", (req, res) => {
   const { token } = req.body ?? {};
-  const adminPassword = process.env.ADMIN_PASSWORD;
 
-  if (!adminPassword || !token) {
+  if (!req.tenant) {
     res.status(401).json({ valid: false });
     return;
   }
 
-  const expected = createHmac("sha256", adminPassword)
-    .update("admin-session")
-    .digest("hex");
+  if (!token || typeof token !== "string") {
+    res.status(401).json({ valid: false });
+    return;
+  }
 
+  if (req.tenant.passwordHash) {
+    const expected = adminTokenForHash(req.tenant.passwordHash);
+    res.json({ valid: token === expected });
+    return;
+  }
+
+  // Fallback: ADMIN_PASSWORD env var
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    res.status(401).json({ valid: false });
+    return;
+  }
+  const expected = createHmac("sha256", adminPassword).update("admin-session").digest("hex");
   res.json({ valid: token === expected });
 });
 
 // Re-send carpool match notifications for all RSVPs on an event
-router.post("/rsvp/resend", async (req, res) => {
-  const { token, digestId, eventTitle } = req.body ?? {};
-
-  if (!verifyAdminToken(token)) {
-    res.status(401).json({ error: "unauthorized", message: "Invalid admin token" });
-    return;
-  }
+router.post("/rsvp/resend", requireAdmin, async (req, res) => {
+  const { digestId, eventTitle } = req.body ?? {};
 
   if (!digestId || typeof digestId !== "number" || !eventTitle) {
     res.status(400).json({ error: "invalid_request", message: "digestId (number) and eventTitle are required" });
     return;
   }
 
+  const tenantId = req.tenant!.id;
+
   try {
-    const [digest] = await db.select().from(digestsTable).where(eq(digestsTable.id, digestId)).limit(1);
+    const [digest] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, tenantId)))
+      .limit(1);
     if (!digest) {
       res.status(404).json({ error: "not_found", message: "Digest not found" });
       return;
@@ -93,6 +119,7 @@ router.post("/rsvp/resend", async (req, res) => {
       .select()
       .from(rsvpsTable)
       .where(and(
+        eq(rsvpsTable.tenantId, tenantId),
         eq(rsvpsTable.digestId, digestId),
         eq(rsvpsTable.eventTitle, eventTitle),
       ));
@@ -132,14 +159,13 @@ router.post("/rsvp/resend", async (req, res) => {
 });
 
 // One-time fix: null out 6amcity individual event slug links (they browser-404)
-router.post("/fix-broken-links", async (req, res) => {
-  const { token } = req.body ?? {};
-  if (!verifyAdminToken(token)) {
-    res.status(401).json({ error: "unauthorized" });
-    return;
-  }
+router.post("/fix-broken-links", requireAdmin, async (req, res) => {
+  const tenantId = req.tenant!.id;
   try {
-    const digests = await db.select().from(digestsTable);
+    const digests = await db
+      .select()
+      .from(digestsTable)
+      .where(eq(digestsTable.tenantId, tenantId));
     let totalFixed = 0;
     for (const digest of digests) {
       const events = (digest.events as any[]) || [];
@@ -153,7 +179,10 @@ router.post("/fix-broken-links", async (req, res) => {
         return e;
       });
       if (changed) {
-        await db.update(digestsTable).set({ events: fixed }).where(eq(digestsTable.id, digest.id));
+        await db
+          .update(digestsTable)
+          .set({ events: fixed })
+          .where(and(eq(digestsTable.id, digest.id), eq(digestsTable.tenantId, tenantId)));
       }
     }
     res.json({ success: true, totalFixed });
@@ -164,18 +193,18 @@ router.post("/fix-broken-links", async (req, res) => {
 });
 
 // Patch a digest subject
-router.post("/digest/patch-subject", async (req, res) => {
-  const { token, digestId, subject } = req.body ?? {};
-  if (!verifyAdminToken(token)) {
-    res.status(401).json({ error: "unauthorized" });
-    return;
-  }
+router.post("/digest/patch-subject", requireAdmin, async (req, res) => {
+  const { digestId, subject } = req.body ?? {};
   if (!digestId || typeof digestId !== "number" || !subject) {
     res.status(400).json({ error: "invalid_request", message: "digestId and subject are required" });
     return;
   }
+  const tenantId = req.tenant!.id;
   try {
-    await db.update(digestsTable).set({ subject }).where(eq(digestsTable.id, digestId));
+    await db
+      .update(digestsTable)
+      .set({ subject })
+      .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, tenantId)));
     res.json({ success: true, digestId, subject });
   } catch (err) {
     req.log.error({ err }, "Error patching digest subject");

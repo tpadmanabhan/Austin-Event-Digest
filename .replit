@@ -33,5 +33,8 @@ VITE_TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
 TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"
 SITE_URL = "https://eventcarpooling.com"
 
+[userenv.development]
+DEFAULT_TENANT_SLUG = "austin"
+
 [nix]
 channel = "stable-25_05"
