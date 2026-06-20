@@ -1,8 +1,7 @@
 import { Router, type IRouter } from "express";
-import { createHmac } from "crypto";
 import { db, rsvpsTable, digestsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { sendRsvpNotification, sendRsvpGroupNotification } from "../lib/emailService";
+import { sendRsvpGroupNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin, adminTokenForHash } from "../middleware/requireAdmin";
 import { verifyPassword } from "../lib/passwordHash";
@@ -15,6 +14,15 @@ router.post("/login", async (req, res) => {
     return;
   }
 
+  if (!req.tenant.passwordHash) {
+    res.status(503).json({
+      error: "not_configured",
+      message:
+        "Admin password not configured for this city. Set ADMIN_PASSWORD and restart the server to complete setup.",
+    });
+    return;
+  }
+
   const captchaOk = await verifyTurnstileToken(req.body?.captchaToken, req.ip);
   if (!captchaOk) {
     res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
@@ -22,41 +30,25 @@ router.post("/login", async (req, res) => {
   }
 
   const { password } = req.body ?? {};
-
-  if (req.tenant.passwordHash) {
-    // Per-tenant path: verify password against scrypt hash stored on the tenant row
-    if (!password || typeof password !== "string") {
-      res.status(400).json({ error: "invalid_request", message: "password is required" });
-      return;
-    }
-    const valid = await verifyPassword(password, req.tenant.passwordHash);
-    if (!valid) {
-      res.status(401).json({ error: "unauthorized", message: "Incorrect password" });
-      return;
-    }
-    const token = adminTokenForHash(req.tenant.passwordHash);
-    res.json({ token });
+  if (!password || typeof password !== "string") {
+    res.status(400).json({ error: "invalid_request", message: "password is required" });
     return;
   }
 
-  // Fallback: ADMIN_PASSWORD env var (used while tenant has no passwordHash set)
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) {
-    res.status(503).json({ error: "not_configured", message: "Admin password not configured" });
-    return;
-  }
-  if (!password || password !== adminPassword) {
+  const valid = await verifyPassword(password, req.tenant.passwordHash);
+  if (!valid) {
     res.status(401).json({ error: "unauthorized", message: "Incorrect password" });
     return;
   }
-  const token = createHmac("sha256", adminPassword).update("admin-session").digest("hex");
+
+  const token = adminTokenForHash(req.tenant.passwordHash);
   res.json({ token });
 });
 
 router.post("/verify", (req, res) => {
   const { token } = req.body ?? {};
 
-  if (!req.tenant) {
+  if (!req.tenant?.passwordHash) {
     res.status(401).json({ valid: false });
     return;
   }
@@ -66,19 +58,7 @@ router.post("/verify", (req, res) => {
     return;
   }
 
-  if (req.tenant.passwordHash) {
-    const expected = adminTokenForHash(req.tenant.passwordHash);
-    res.json({ valid: token === expected });
-    return;
-  }
-
-  // Fallback: ADMIN_PASSWORD env var
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) {
-    res.status(401).json({ valid: false });
-    return;
-  }
-  const expected = createHmac("sha256", adminPassword).update("admin-session").digest("hex");
+  const expected = adminTokenForHash(req.tenant.passwordHash);
   res.json({ valid: token === expected });
 });
 
@@ -129,7 +109,6 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
       return;
     }
 
-    // Send each person ONE consolidated email listing all the other RSVPers
     const results: { to: string; success: boolean; matchCount: number; error?: string }[] = [];
     for (const recipient of rsvps) {
       const others = rsvps

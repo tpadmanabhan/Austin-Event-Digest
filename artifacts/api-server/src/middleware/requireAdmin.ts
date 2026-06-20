@@ -13,16 +13,11 @@ export function adminTokenForHash(passwordHash: string): string {
 function verifyAdminToken(token: string | undefined, req: Request): boolean {
   if (!token) return false;
 
-  // Per-tenant path: verify against the tenant's stored passwordHash
-  if (req.tenant?.passwordHash) {
-    const expected = adminTokenForHash(req.tenant.passwordHash);
-    return token === expected;
-  }
+  // Require the tenant's passwordHash to be set — no global ADMIN_PASSWORD fallback.
+  // If passwordHash is null the tenant hasn't finished setup; treat as unauthorized.
+  if (!req.tenant?.passwordHash) return false;
 
-  // Global fallback: ADMIN_PASSWORD env var (used while tenant has no passwordHash set)
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) return false;
-  const expected = createHmac("sha256", adminPassword).update("admin-session").digest("hex");
+  const expected = adminTokenForHash(req.tenant.passwordHash);
   return token === expected;
 }
 

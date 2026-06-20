@@ -4,12 +4,32 @@ import { and, eq } from "drizzle-orm";
 import { logger } from "../lib/logger";
 
 /**
+ * Returns true for known development/preview hosts where subdomain-based tenant routing
+ * does not apply.  On these hosts the DEFAULT_TENANT_SLUG env var is used instead
+ * so a single-host dev workflow routes to the right city without needing a real subdomain.
+ *
+ * Crucially, the production root domain (eventcarpooling.com) is NOT matched here, so
+ * DEFAULT_TENANT_SLUG is never active in production.
+ */
+function isDevHost(hostname: string): boolean {
+  const host = hostname.split(":")[0].toLowerCase();
+  if (host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
+  // Replit workspace preview domains — UUID/slug format, never real city subdomains
+  if (host.endsWith(".replit.dev") || host.endsWith(".repl.co")) return true;
+  return false;
+}
+
+/**
  * Extracts the tenant slug from the request.
  *
- * Priority:
- * 1. X-Tenant-Slug header  — dev/testing only (NODE_ENV !== 'production')
- * 2. Subdomain from Host header — e.g. "austin.eventcarpooling.com" → "austin"
- * 3. DEFAULT_TENANT_SLUG env var — fallback for Replit dev environments
+ * Priority / routing rules:
+ * 1. X-Tenant-Slug request header  — dev/testing override (NODE_ENV !== 'production' only)
+ * 2. Dev hosts (localhost, *.replit.dev, *.repl.co) — use DEFAULT_TENANT_SLUG env var.
+ *    Subdomain extraction is intentionally skipped on these hosts because Replit preview
+ *    domains contain long UUID-like slugs that are not real city identifiers.
+ * 3. Production hosts — extract the leading subdomain from the Host header.
+ *    "austin.eventcarpooling.com" → "austin".
+ *    Root domain "eventcarpooling.com" (no subdomain) returns null — platform-only.
  */
 function extractSlug(req: Request): string | null {
   // 1. Dev header override — never allowed in production
@@ -20,23 +40,27 @@ function extractSlug(req: Request): string | null {
     }
   }
 
-  // 2. Subdomain extraction from hostname
-  // Express sets req.hostname from the Host header (or X-Forwarded-Host when trust proxy is on).
-  const host = req.hostname.split(":")[0]; // strip port if present
+  // 2. Dev host — DEFAULT_TENANT_SLUG only; skip subdomain parsing entirely.
+  //    This avoids misidentifying Replit preview UUIDs as city slugs.
+  if (isDevHost(req.hostname)) {
+    const defaultSlug = process.env.DEFAULT_TENANT_SLUG;
+    return defaultSlug?.trim() ? defaultSlug.trim().toLowerCase() : null;
+  }
+
+  // 3. Production: extract subdomain.
+  //    "eventcarpooling.com"        → 2 parts → null (root domain, no tenant)
+  //    "austin.eventcarpooling.com" → 3 parts → "austin"
+  const host = req.hostname.split(":")[0];
   const parts = host.split(".");
   if (parts.length >= 3 && parts[0] !== "www" && parts[0] !== "api") {
     return parts[0].toLowerCase();
   }
 
-  // 3. Dev default slug (for Replit dev environment where there is no subdomain)
-  const defaultSlug = process.env.DEFAULT_TENANT_SLUG;
-  if (defaultSlug?.trim()) return defaultSlug.trim().toLowerCase();
-
   return null;
 }
 
 /**
- * Resolves the tenant from the request subdomain and attaches it to req.tenant.
+ * Resolves the tenant from the request and attaches it to req.tenant.
  *
  * - Known city slug → req.tenant is populated
  * - Unknown city slug → 404
