@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, subscribersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import {
   SubscribeToNewsletterBody,
   UnsubscribeFromNewsletterBody,
@@ -30,10 +30,12 @@ router.post("/subscribe", async (req, res) => {
   const { email, name } = parseResult.data;
 
   try {
+    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
+    const tenantId = 1;
     const existing = await db
       .select()
       .from(subscribersTable)
-      .where(eq(subscribersTable.email, email))
+      .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)))
       .limit(1);
 
     if (existing.length > 0) {
@@ -42,12 +44,12 @@ router.post("/subscribe", async (req, res) => {
         await db
           .update(subscribersTable)
           .set({ isActive: true, name: name ?? sub.name })
-          .where(eq(subscribersTable.email, email));
+          .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)));
 
         const updated = await db
           .select()
           .from(subscribersTable)
-          .where(eq(subscribersTable.email, email))
+          .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)))
           .limit(1);
 
         const response = SubscribeToNewsletterResponse.parse({
@@ -118,10 +120,11 @@ router.post("/unsubscribe", async (req, res) => {
   const { email } = parseResult.data;
 
   try {
+    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     await db
       .update(subscribersTable)
       .set({ isActive: false })
-      .where(eq(subscribersTable.email, email));
+      .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, 1)));
 
     const response = UnsubscribeFromNewsletterResponse.parse({
       success: true,
@@ -136,9 +139,11 @@ router.post("/unsubscribe", async (req, res) => {
 
 router.get("/subscribers", requireAdmin, async (req, res) => {
   try {
+    // TODO(Task #16): replace hardcoded tenantId=1 with req.tenant.id
     const subscribers = await db
       .select()
       .from(subscribersTable)
+      .where(eq(subscribersTable.tenantId, 1))
       .orderBy(subscribersTable.subscribedAt);
 
     const response = GetSubscribersResponse.parse({

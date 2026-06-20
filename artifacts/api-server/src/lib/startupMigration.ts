@@ -1,5 +1,5 @@
-import { db, digestsTable } from "@workspace/db";
-import { eq, inArray } from "drizzle-orm";
+import { db, digestsTable, subscribersTable, rsvpsTable } from "@workspace/db";
+import { eq, inArray, sql } from "drizzle-orm";
 import { logger } from "./logger";
 
 const MARCH_29_EVENTS = [
@@ -257,7 +257,93 @@ const WEEKS_TO_SEED = [
   },
 ];
 
+/**
+ * Phase 1 — tenant data migration.
+ *
+ * Safe upgrade path for databases that pre-date the multi-tenant schema:
+ *   1. Add nullable tenant_id columns to all three tables (IF NOT EXISTS — idempotent).
+ *   2. Seed the Austin tenant row (id=1) if it doesn't exist.
+ *   3. Back-fill all null tenant_id values to 1.
+ *   4. Enforce NOT NULL on tenant_id now that every row has a value.
+ *
+ * For fresh databases (created after drizzle-kit push with the new schema) all
+ * these steps are no-ops — the IF NOT EXISTS / ON CONFLICT guards make this safe
+ * to run on every startup.
+ */
+async function runTenantMigration(): Promise<void> {
+  // Step 1: add is_active to tenants table (may already exist)
+  await db.execute(sql`
+    ALTER TABLE tenants ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true
+  `);
+
+  // Step 2: add nullable tenant_id FK columns to each table (idempotent)
+  await db.execute(sql`
+    ALTER TABLE subscribers
+      ADD COLUMN IF NOT EXISTS tenant_id INTEGER REFERENCES tenants(id)
+  `);
+  await db.execute(sql`
+    ALTER TABLE digests
+      ADD COLUMN IF NOT EXISTS tenant_id INTEGER REFERENCES tenants(id)
+  `);
+  await db.execute(sql`
+    ALTER TABLE rsvps
+      ADD COLUMN IF NOT EXISTS tenant_id INTEGER REFERENCES tenants(id)
+  `);
+
+  // Step 3: seed the Austin tenant (id=1) if it doesn't exist yet
+  await db.execute(sql`
+    INSERT INTO tenants (id, slug, name, city, accent_color, categories, is_active)
+    VALUES (
+      1,
+      'austin',
+      'Raj''s Austin Events',
+      'Austin, TX',
+      '#7c3aed',
+      '["Tech","Music","Food","Wellness","Civics"]'::jsonb,
+      true
+    )
+    ON CONFLICT (id) DO NOTHING
+  `);
+
+  // Step 4: back-fill any rows that still have NULL tenant_id
+  await db.execute(sql`UPDATE subscribers SET tenant_id = 1 WHERE tenant_id IS NULL`);
+  await db.execute(sql`UPDATE digests    SET tenant_id = 1 WHERE tenant_id IS NULL`);
+  await db.execute(sql`UPDATE rsvps      SET tenant_id = 1 WHERE tenant_id IS NULL`);
+
+  // Step 5: enforce NOT NULL now that every row has a value
+  await db.execute(sql`ALTER TABLE subscribers ALTER COLUMN tenant_id SET NOT NULL`);
+  await db.execute(sql`ALTER TABLE digests    ALTER COLUMN tenant_id SET NOT NULL`);
+  await db.execute(sql`ALTER TABLE rsvps      ALTER COLUMN tenant_id SET NOT NULL`);
+
+  // Step 6: add composite unique constraints (DROP + re-add to make idempotent)
+  await db.execute(sql`
+    ALTER TABLE subscribers
+      DROP CONSTRAINT IF EXISTS subscribers_email_key,
+      DROP CONSTRAINT IF EXISTS subscribers_tenant_email
+  `);
+  await db.execute(sql`
+    ALTER TABLE subscribers
+      ADD CONSTRAINT subscribers_tenant_email UNIQUE (tenant_id, email)
+  `);
+
+  await db.execute(sql`
+    ALTER TABLE rsvps DROP CONSTRAINT IF EXISTS rsvp_unique
+  `);
+  await db.execute(sql`
+    ALTER TABLE rsvps
+      ADD CONSTRAINT rsvp_unique UNIQUE (tenant_id, digest_id, event_title, email)
+  `);
+
+  logger.info("Tenant migration complete (Austin tenant seeded, all rows scoped to tenant 1)");
+}
+
 export async function runStartupMigration(): Promise<void> {
+  try {
+    await runTenantMigration();
+  } catch (err) {
+    logger.warn({ err }, "Tenant migration failed (non-fatal) — DB may already be up-to-date");
+  }
+
   try {
     // De-duplicate every week: keep the digest with the most events (highest event count),
     // breaking ties by lowest id. Delete all others.

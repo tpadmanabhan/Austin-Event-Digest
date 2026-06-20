@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, digestsTable, subscribersTable } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import {
   GenerateDigestBody,
   SendDigestBody,
@@ -31,9 +31,11 @@ function digestToApi(d: typeof digestsTable.$inferSelect) {
 
 router.get("/digest/latest", async (req, res) => {
   try {
+    // TODO(Task #16): replace with req.tenant.id
     const [latest] = await db
       .select()
       .from(digestsTable)
+      .where(eq(digestsTable.tenantId, 1))
       .orderBy(desc(digestsTable.weekOf), desc(digestsTable.id))
       .limit(1);
 
@@ -52,9 +54,11 @@ router.get("/digest/latest", async (req, res) => {
 
 router.get("/digest/list", async (req, res) => {
   try {
+    // TODO(Task #16): replace with req.tenant.id
     const digests = await db
       .select()
       .from(digestsTable)
+      .where(eq(digestsTable.tenantId, 1))
       .orderBy(desc(digestsTable.weekOf));
 
     const response = ListDigestsResponse.parse({
@@ -323,10 +327,11 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
   const { digestId, testEmail } = parseResult.data;
 
   try {
+    // TODO(Task #16): replace hardcoded 1 with req.tenant.id
     const [digest] = await db
       .select()
       .from(digestsTable)
-      .where(eq(digestsTable.id, digestId))
+      .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, 1)))
       .limit(1);
 
     if (!digest) {
@@ -347,10 +352,11 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
     if (testEmail) {
       recipients = [{ email: testEmail, name: null }];
     } else {
+      // TODO(Task #16): replace hardcoded 1 with req.tenant.id
       const subscribers = await db
         .select()
         .from(subscribersTable)
-        .where(eq(subscribersTable.isActive, true));
+        .where(and(eq(subscribersTable.isActive, true), eq(subscribersTable.tenantId, 1)));
       recipients = subscribers.map(s => ({ email: s.email, name: s.name }));
     }
 
