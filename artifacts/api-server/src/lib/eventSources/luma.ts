@@ -3,12 +3,13 @@ import type { EventItem } from "@workspace/db";
 import { getCityGeo, getCategoryKeywords, formatISODate, isWithinDateRange, guessCategory } from "./utils";
 import { logger } from "../logger";
 
+// Keyed by canonical category names (after canonicalizeCategory is applied upstream)
 const LUMA_TAG_MAP: Record<string, string[]> = {
-  Tech: ["tech", "startup", "ai"],
-  Food: ["food", "foodie"],
-  Wellness: ["wellness", "yoga", "fitness"],
-  Music: [],
-  Civics: ["community"],
+  "Tech": ["tech", "startup", "ai"],
+  "Food": ["food", "foodie"],
+  "Wellness": ["wellness", "yoga", "fitness"],
+  "Music": [],
+  "Civics": [],
 };
 
 interface LumaEvent {
@@ -43,7 +44,8 @@ async function fetchLumaEvents(query: SourceQuery): Promise<EventItem[]> {
   }
 
   const tags = LUMA_TAG_MAP[query.category] || [];
-  if (query.category === "Music" || query.category === "Civics") {
+  const LUMA_SKIP = new Set(["Music", "Civics"]);
+  if (LUMA_SKIP.has(query.category)) {
     return [];
   }
 

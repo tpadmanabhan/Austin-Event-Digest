@@ -90,6 +90,7 @@ export function deduplicateEvents(events: EventItem[]): EventItem[] {
   });
 }
 
+// Maps DB category names (canonical + aliases) to their guessCategory() equivalents
 const TENANT_TO_GUESS_CATEGORIES: Record<string, string[]> = {
   "Tech": ["Tech & Business"],
   "Music": ["Music"],
@@ -103,6 +104,19 @@ const TENANT_TO_GUESS_CATEGORIES: Record<string, string[]> = {
   "Learning": ["Learning"],
 };
 
+// Collapses aliased category names to a single canonical form used by adapters
+const CATEGORY_ALIASES: Record<string, string> = {
+  "Food & Drink": "Food",
+  "Wellness & Fitness": "Wellness",
+  "Community": "Civics",
+  "Tech & Business": "Tech",
+  "Outdoors & Fitness": "Wellness",
+};
+
+export function canonicalizeCategory(cat: string): string {
+  return CATEGORY_ALIASES[cat] || cat;
+}
+
 export function filterByTenantCategories(events: EventItem[], tenantCategories: string[]): EventItem[] {
   if (tenantCategories.length === 0) return events;
 
@@ -113,11 +127,11 @@ export function filterByTenantCategories(events: EventItem[], tenantCategories: 
   }
 
   return events.filter(event => {
-    if (event.category && acceptedGuessCats.has(event.category)) return true;
+    // Check stored category (set by structured adapters)
+    if (event.category && event.category !== "Events" && acceptedGuessCats.has(event.category)) return true;
+    // Re-guess from title + description (handles generic or mis-categorised events)
     const guessed = guessCategory(`${event.title} ${event.description || ""}`);
-    if (acceptedGuessCats.has(guessed)) return true;
-    if (!event.category || event.category === "Events") return true;
-    return false;
+    return acceptedGuessCats.has(guessed);
   });
 }
 

@@ -4,7 +4,7 @@ import { getAdaptersForCategories } from "./registry";
 import { deduplicateEvents, filterByTenantCategories } from "./utils";
 import { logger } from "../logger";
 
-export { deduplicateEvents, filterByTenantCategories } from "./utils";
+export { deduplicateEvents, filterByTenantCategories, canonicalizeCategory } from "./utils";
 
 export interface FetchEventsForTenantOptions {
   tenant: Tenant;
