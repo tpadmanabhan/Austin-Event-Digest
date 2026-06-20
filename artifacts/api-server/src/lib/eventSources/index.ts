@@ -1,10 +1,10 @@
 import type { EventItem } from "@workspace/db";
 import type { Tenant } from "@workspace/db";
 import { getAdaptersForCategories } from "./registry";
-import { deduplicateEvents } from "./utils";
+import { deduplicateEvents, filterByTenantCategories } from "./utils";
 import { logger } from "../logger";
 
-export { deduplicateEvents } from "./utils";
+export { deduplicateEvents, filterByTenantCategories } from "./utils";
 
 export interface FetchEventsForTenantOptions {
   tenant: Tenant;
@@ -64,6 +64,7 @@ export async function fetchEventsForTenant(opts: FetchEventsForTenantOptions): P
   }
 
   const deduplicated = deduplicateEvents(allEvents);
+  const filtered = filterByTenantCategories(deduplicated, categories);
 
   logger.info(
     {
@@ -73,13 +74,14 @@ export async function fetchEventsForTenant(opts: FetchEventsForTenantOptions): P
       succeeded,
       raw: allEvents.length,
       deduped: deduplicated.length,
+      filtered: filtered.length,
       sources: [...successfulSources],
     },
     "fetchEventsForTenant complete"
   );
 
   return {
-    events: deduplicated,
+    events: filtered,
     sources: [...successfulSources],
     attempted: tasks.length,
     succeeded,

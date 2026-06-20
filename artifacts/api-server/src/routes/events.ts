@@ -12,7 +12,7 @@ import {
 import { generateSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendEmail, buildDigestEmailHtml } from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
-import { fetchEventsForTenant, deduplicateEvents } from "../lib/eventSources";
+import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } from "../lib/eventSources";
 import { requireAdmin } from "../middleware/requireAdmin";
 
 const router: IRouter = Router();
@@ -121,8 +121,10 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       }
     }
 
-    // Deduplicate merged events from all sources
-    const mergedEvents = deduplicateEvents(combinedEvents);
+    // Deduplicate merged events from all sources, then filter to tenant's categories
+    const tenantCategories = (req.tenant!.categories as string[]) || [];
+    const deduped = deduplicateEvents(combinedEvents);
+    const mergedEvents = filterByTenantCategories(deduped, tenantCategories);
 
     // Build subject line
     if (weekEnd) {
@@ -139,7 +141,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const introBase = gmailIntro || fallback.intro;
       intro = customNotes ? `${introBase}\n\n${customNotes}` : introBase;
       req.log.info(
-        { adapterEvents: adapterResult.events.length, sources: adapterResult.sources, total: mergedEvents.length },
+        { adapterEvents: adapterResult.events.length, sources: adapterResult.sources, total: mergedEvents.length, filtered: deduped.length - mergedEvents.length },
         "Digest populated from discovered events"
       );
     } else {

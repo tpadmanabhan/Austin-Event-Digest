@@ -6,11 +6,14 @@ import { songkickAdapter } from "./songkick";
 import type { SourceAdapter } from "./types";
 
 export const CATEGORY_SOURCES: Record<string, SourceAdapter[]> = {
-  Tech: [lumaAdapter, meetupAdapter, eventbriteAdapter],
-  Music: [bandsintownAdapter, songkickAdapter, eventbriteAdapter],
-  Food: [lumaAdapter, eventbriteAdapter],
-  Wellness: [lumaAdapter, meetupAdapter, eventbriteAdapter],
-  Civics: [meetupAdapter, eventbriteAdapter],
+  "Tech": [lumaAdapter, meetupAdapter, eventbriteAdapter],
+  "Music": [bandsintownAdapter, songkickAdapter, eventbriteAdapter],
+  "Food": [lumaAdapter, eventbriteAdapter],
+  "Food & Drink": [lumaAdapter, eventbriteAdapter],
+  "Wellness": [lumaAdapter, meetupAdapter, eventbriteAdapter],
+  "Wellness & Fitness": [lumaAdapter, meetupAdapter, eventbriteAdapter],
+  "Civics": [meetupAdapter, eventbriteAdapter],
+  "Community": [meetupAdapter, eventbriteAdapter],
 };
 
 export function getAdaptersForCategories(categories: string[]): Array<{ adapter: SourceAdapter; category: string }> {

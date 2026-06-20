@@ -69,13 +69,55 @@ export function formatISODate(isoStr: string, timezone = "America/Chicago"): str
   }
 }
 
+function extractDateKey(dateStr: string): string {
+  if (!dateStr) return "";
+  const iso = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[2]}-${iso[3]}`;
+  const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+  if (m) return `${m[1].substring(0, 3).toLowerCase()}-${m[2]}`;
+  return dateStr.substring(0, 10).toLowerCase().replace(/\s+/g, "-");
+}
+
 export function deduplicateEvents(events: EventItem[]): EventItem[] {
   const seen = new Set<string>();
   return events.filter(e => {
-    const key = e.title.toLowerCase().replace(/\s+/g, " ").substring(0, 40);
+    const titleKey = e.title.toLowerCase().replace(/\s+/g, " ").substring(0, 40);
+    const dateKey = extractDateKey(e.date || "");
+    const key = `${titleKey}|${dateKey}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
+  });
+}
+
+const TENANT_TO_GUESS_CATEGORIES: Record<string, string[]> = {
+  "Tech": ["Tech & Business"],
+  "Music": ["Music"],
+  "Food": ["Food & Drink"],
+  "Food & Drink": ["Food & Drink"],
+  "Wellness": ["Outdoors & Fitness"],
+  "Wellness & Fitness": ["Outdoors & Fitness"],
+  "Civics": ["Community"],
+  "Community": ["Community"],
+  "Arts & Culture": ["Arts & Culture"],
+  "Learning": ["Learning"],
+};
+
+export function filterByTenantCategories(events: EventItem[], tenantCategories: string[]): EventItem[] {
+  if (tenantCategories.length === 0) return events;
+
+  const acceptedGuessCats = new Set<string>();
+  for (const cat of tenantCategories) {
+    const mapped = TENANT_TO_GUESS_CATEGORIES[cat] || [cat];
+    mapped.forEach(gc => acceptedGuessCats.add(gc));
+  }
+
+  return events.filter(event => {
+    if (event.category && acceptedGuessCats.has(event.category)) return true;
+    const guessed = guessCategory(`${event.title} ${event.description || ""}`);
+    if (acceptedGuessCats.has(guessed)) return true;
+    if (!event.category || event.category === "Events") return true;
+    return false;
   });
 }
 
