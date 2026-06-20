@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, digestsTable, subscribersTable } from "@workspace/db";
+import { db, digestsTable, subscribersTable, type EventItem } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import {
   GenerateDigestBody,
@@ -12,6 +12,7 @@ import {
 import { generateSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendEmail, buildDigestEmailHtml } from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
+import { fetchEventsForTenant, deduplicateEvents } from "../lib/eventSources";
 import { requireAdmin } from "../middleware/requireAdmin";
 
 const router: IRouter = Router();
@@ -86,57 +87,68 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
 
     let subject: string;
     let intro: string;
-    let events: any[];
-    let sourceNote = "";
+    let events: EventItem[];
 
+    const fallback = generateSampleDigest(weekOf, customNotes || undefined);
+
+    // Run category-based adapters for this tenant's configured categories (primary source)
+    const adapterResult = await fetchEventsForTenant({ tenant: req.tenant!, weekOf, weekEnd });
+    let combinedEvents: EventItem[] = [...adapterResult.events];
+    let gmailIntro = "";
+
+    // Gmail reader is a supplemental adapter (Austin-specific newsletter inbox)
     if (isEmailReaderConfigured()) {
-      req.log.info("Gmail configured — fetching events from inbox");
-      // Look back 14 days before the target range start to catch newsletters sent in advance
+      req.log.info("Gmail configured — supplementing with inbox newsletters");
       const since = new Date(weekOf);
       since.setDate(since.getDate() - 14);
-      // Only apply a 'before' cap for past ranges so current/future ranges get all recent mail
       const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
       const rangeEnd = weekEnd || new Date(weekOf.getTime() + 7 * 24 * 60 * 60 * 1000);
       const isPastRange = rangeEnd < twoWeeksAgo;
       const before = isPastRange ? rangeEnd : undefined;
 
-      const gmailResult = await fetchEventsFromGmail(since, before, weekOf, weekEnd);
-      sourceNote = `(sourced from ${gmailResult.emails} newsletter email${gmailResult.emails === 1 ? "" : "s"}${gmailResult.weekFiltered ? ", date-filtered" : ""})`;
-
-      const fallback = generateSampleDigest(weekOf, customNotes || undefined);
-      // Use custom date-range subject when weekEnd is provided
-      if (weekEnd) {
-        const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
-        const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
-        const label = `${weekOf.toLocaleDateString("en-US", opts)}–${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-        subject = `🤠 Austin Events: ${label}`;
-      } else {
-        subject = fallback.subject;
-      }
-
-      // Use Gmail events only when they are week-filtered (matched the target week).
-      // If weekOf was requested but no week-matching events were found, fall back to
-      // sample events with correct dates for that week instead of showing stale old events.
-      const useGmailEvents = gmailResult.weekFiltered && gmailResult.events.length > 0;
-      if (useGmailEvents) {
-        events = gmailResult.events;
-        intro = customNotes ? `${gmailResult.intro}\n\n${customNotes}` : gmailResult.intro;
-      } else {
-        events = fallback.events;
-        intro = customNotes ? `${fallback.intro}\n\n${customNotes}` : fallback.intro;
+      try {
+        const gmailResult = await fetchEventsFromGmail(since, before, weekOf, weekEnd);
         req.log.info(
-          { weekOf: weekOf.toISOString().substring(0, 10), gmailEvents: gmailResult.events.length },
-          "No week-specific events found in Gmail newsletters — using sample data for target week"
+          { emails: gmailResult.emails, events: gmailResult.events.length, weekFiltered: gmailResult.weekFiltered },
+          "Gmail supplement result"
         );
+        if (gmailResult.weekFiltered && gmailResult.events.length > 0) {
+          combinedEvents = [...combinedEvents, ...gmailResult.events];
+          gmailIntro = gmailResult.intro;
+        }
+      } catch (err) {
+        req.log.warn({ err }, "Gmail supplement failed — continuing without Gmail events");
       }
+    }
 
-      req.log.info({ emailsFetched: gmailResult.emails, eventsFound: events.length, weekFiltered: gmailResult.weekFiltered }, sourceNote);
+    // Deduplicate merged events from all sources
+    const mergedEvents = deduplicateEvents(combinedEvents);
+
+    // Build subject line
+    if (weekEnd) {
+      const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
+      const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
+      const label = `${weekOf.toLocaleDateString("en-US", opts)}–${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
+      subject = `🤠 ${req.tenant!.city} Events: ${label}`;
     } else {
-      req.log.info("Gmail not configured — using sample digest data");
-      const generated = generateSampleDigest(weekOf, customNotes || undefined);
-      subject = generated.subject;
-      intro = generated.intro;
-      events = generated.events;
+      subject = fallback.subject;
+    }
+
+    if (mergedEvents.length > 0) {
+      events = mergedEvents;
+      const introBase = gmailIntro || fallback.intro;
+      intro = customNotes ? `${introBase}\n\n${customNotes}` : introBase;
+      req.log.info(
+        { adapterEvents: adapterResult.events.length, sources: adapterResult.sources, total: mergedEvents.length },
+        "Digest populated from discovered events"
+      );
+    } else {
+      events = fallback.events;
+      intro = customNotes ? `${fallback.intro}\n\n${customNotes}` : fallback.intro;
+      req.log.info(
+        { weekOf: weekOf.toISOString().substring(0, 10) },
+        "No events discovered from any source — using sample digest data"
+      );
     }
 
     const [digest] = await db
