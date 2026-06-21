@@ -24,6 +24,9 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
               >
                 How it works
               </a>
+              <span className="inline-flex items-center rounded-full border border-amber-400/60 bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-700">
+                Beta
+              </span>
               <a
                 href="#launch"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0"
