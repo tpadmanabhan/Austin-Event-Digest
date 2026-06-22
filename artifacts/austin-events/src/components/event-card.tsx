@@ -123,76 +123,15 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
 
   return (
     <div className="mt-auto pt-4 border-t border-border/50">
-      {!showForm ? (
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <Car className="w-4 h-4 text-primary" />
-            Want to carpool?
-          </span>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={true}
-            onClick={() => setShowForm(true)}
-            className="rounded-lg h-8 text-sm border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground !opacity-100"
-          >
-            Yes!
-          </Button>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-2">
-          <p className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-2">
-            <Car className="w-3.5 h-3.5 text-primary" /> Carpool RSVP — other subscribers will be notified
-          </p>
-          <Input
-            type="text"
-            placeholder="Your first name *"
-            value={firstName}
-            onChange={e => setFirstName(e.target.value)}
-            required
-            className="h-9 text-sm rounded-lg"
-            autoFocus
-          />
-          <Input
-            type="email"
-            placeholder="Your email *"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            className="h-9 text-sm rounded-lg"
-          />
-          <TurnstileWidget
-            onSuccess={setCaptchaToken}
-            onError={() => setCaptchaToken(null)}
-            onExpire={() => setCaptchaToken(null)}
-          />
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => { setShowForm(false); setCaptchaToken(null); }}
-              className="rounded-lg h-9 text-sm flex-shrink-0"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={status === "submitting" || !email || !firstName.trim() || !captchaToken}
-              className="w-full rounded-lg h-9 text-sm"
-            >
-              {status === "submitting"
-                ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />Sending…</>
-                : "Send Carpool Alert 🚗"}
-            </Button>
-          </div>
-          {status === "error" && <p className="text-xs text-destructive">Something went wrong. Please try again.</p>}
-          {count !== null && count > 0 && (
-            <p className="text-xs text-muted-foreground">{count} {count === 1 ? "person" : "people"} already interested</p>
-          )}
-        </form>
-      )}
+      <div className="flex items-center justify-between opacity-50 cursor-not-allowed select-none">
+        <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+          <Car className="w-4 h-4" />
+          Interested in carpooling?
+        </span>
+        <span className="text-xs text-muted-foreground border border-border rounded-lg px-3 py-1">
+          Coming soon
+        </span>
+      </div>
     </div>
   );
 }
