@@ -198,9 +198,6 @@ export default function Home() {
                           </span>
                         </div>
                         <div className="p-6 sm:p-8">
-                          <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-4 uppercase tracking-wider">
-                            Outside this week's dates — don't miss it!
-                          </p>
                           <div className="max-w-xl">
                             <EventCard event={featuredEvents[0]} digestId={latestDigest.id} />
                           </div>
