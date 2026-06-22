@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Zap, Check, ExternalLink } from "lucide-react";
@@ -90,7 +90,27 @@ const STEPS = [
   },
   {
     number: "04",
-    icon: "🚗",
+    icon: null,
+    svgIcon: (
+      <svg viewBox="0 0 64 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 mb-4">
+        {/* People silhouettes */}
+        <circle cx="22" cy="10" r="5" fill="#16a34a" opacity="0.85"/>
+        <path d="M13 22c0-5 4-8 9-8s9 3 9 8" fill="#16a34a" opacity="0.85"/>
+        <circle cx="38" cy="10" r="5" fill="#16a34a" opacity="0.55"/>
+        <path d="M29 22c0-5 4-8 9-8s9 3 9 8" fill="#16a34a" opacity="0.55"/>
+        {/* Car body */}
+        <rect x="4" y="28" width="56" height="14" rx="4" fill="#16a34a"/>
+        <path d="M12 28l6-10h28l6 10" fill="#22c55e"/>
+        {/* Windows */}
+        <rect x="18" y="20" width="10" height="8" rx="2" fill="#bbf7d0"/>
+        <rect x="32" y="20" width="10" height="8" rx="2" fill="#bbf7d0"/>
+        {/* Wheels */}
+        <circle cx="16" cy="42" r="5" fill="#14532d"/>
+        <circle cx="16" cy="42" r="2.5" fill="#4ade80"/>
+        <circle cx="48" cy="42" r="5" fill="#14532d"/>
+        <circle cx="48" cy="42" r="2.5" fill="#4ade80"/>
+      </svg>
+    ),
     title: "Carpool with Your Trusted Network",
     description: "Coming soon — coordinate rides to events with people you already know and trust.",
     comingSoon: true,
@@ -175,7 +195,7 @@ export default function PlatformHome() {
                 <div className="text-xs font-bold text-primary/50 tracking-widest uppercase mb-4">
                   {step.number}
                 </div>
-                <div className="text-4xl mb-4">{step.icon}</div>
+                <div className="text-4xl mb-4">{(step as { svgIcon?: React.ReactNode }).svgIcon ?? step.icon}</div>
                 <h3 className="font-serif text-xl font-bold text-foreground mb-3">{step.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{step.description}</p>
               </motion.div>
