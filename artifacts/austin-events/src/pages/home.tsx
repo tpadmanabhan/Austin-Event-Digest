@@ -59,7 +59,7 @@ export default function Home() {
               </h1>
               
               <p className="text-lg sm:text-xl text-muted-foreground mb-10 leading-relaxed max-w-xl">
-                Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in {cityShortName} this week.
+                Every Monday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in {cityShortName} this week.
               </p>
 
               <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60">
