@@ -88,6 +88,13 @@ const STEPS = [
     title: "Go live",
     description: "We automatically discover events from top sources and send a polished weekly digest.",
   },
+  {
+    number: "04",
+    icon: "🚗",
+    title: "Carpool with Your Trusted Network",
+    description: "Coming soon — coordinate rides to events with people you already know and trust.",
+    comingSoon: true,
+  },
 ];
 
 export default function PlatformHome() {
@@ -150,7 +157,7 @@ export default function PlatformHome() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {STEPS.map((step, i) => (
               <motion.div
                 key={step.number}
@@ -158,8 +165,13 @@ export default function PlatformHome() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="relative flex flex-col items-start p-8 rounded-3xl bg-background border border-border hover:border-primary/30 transition-colors"
+                className={`relative flex flex-col items-start p-8 rounded-3xl bg-background border transition-colors ${(step as { comingSoon?: boolean }).comingSoon ? "border-dashed border-border opacity-75" : "border-border hover:border-primary/30"}`}
               >
+                {(step as { comingSoon?: boolean }).comingSoon && (
+                  <span className="absolute top-4 right-4 text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                    Coming soon
+                  </span>
+                )}
                 <div className="text-xs font-bold text-primary/50 tracking-widest uppercase mb-4">
                   {step.number}
                 </div>
