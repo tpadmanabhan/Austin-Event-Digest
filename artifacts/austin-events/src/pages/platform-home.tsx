@@ -117,7 +117,7 @@ export default function PlatformHome() {
             <p className="text-xl text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto">
               Launch a weekly events digest for any city in minutes. We automatically discover events
               from Luma, Meetup, Eventbrite, Bandsintown, and more — then send a beautifully curated
-              email to your subscribers.
+              email to your subscribers. Carpooling functionality will be enabled with your trusted network!
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
