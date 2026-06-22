@@ -320,6 +320,14 @@ export function buildDigestEmailHtml(digest: {
     <h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>
     ${eventCards}
 
+    <!-- Coming Soon Teaser -->
+    <div style="background:#fef9c3; border:1px solid #fde68a; border-radius:12px; padding:18px 20px; margin-bottom:24px; text-align:center;">
+      <p style="margin:0; color:#92400e; font-size:14px; line-height:1.6;">
+        <strong>Coming Soon:</strong> Become the events and carpooling person for your city or neighborhood —
+        <a href="https://eventcarpooling.com" style="color:#b45309; font-weight:700; text-decoration:underline;">eventcarpooling.com</a>
+      </p>
+    </div>
+
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
       <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by Raj from Austin, TX</p>
