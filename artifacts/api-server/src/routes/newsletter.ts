@@ -160,4 +160,31 @@ router.get("/subscribers", requireAdmin, async (req, res) => {
   }
 });
 
+router.post("/subscribers/import", requireAdmin, async (req, res) => {
+  const { subscribers: list } = req.body || {};
+  if (!Array.isArray(list) || list.length === 0) {
+    res.status(400).json({ error: "invalid_request", message: "subscribers[] is required" });
+    return;
+  }
+  const tenantId = req.tenant!.id;
+  let imported = 0;
+  let skipped = 0;
+  try {
+    for (const entry of list) {
+      const email = typeof entry.email === "string" ? entry.email.trim().toLowerCase() : null;
+      if (!email) { skipped++; continue; }
+      const name = typeof entry.name === "string" && entry.name.trim() ? entry.name.trim() : null;
+      const [existing] = await db.select().from(subscribersTable)
+        .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)));
+      if (existing) { skipped++; continue; }
+      await db.insert(subscribersTable).values({ tenantId, email, name, isActive: true });
+      imported++;
+    }
+    res.json({ success: true, imported, skipped });
+  } catch (err) {
+    req.log.error({ err }, "Error importing subscribers");
+    res.status(500).json({ error: "server_error", message: "Failed to import subscribers" });
+  }
+});
+
 export default router;
