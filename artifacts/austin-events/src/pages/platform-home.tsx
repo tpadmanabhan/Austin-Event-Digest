@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Zap, Check, ExternalLink } from "lucide-react";
 import { PlatformLayout } from "@/components/platform-layout";
+import { LaunchCityModal } from "@/components/launch-city-modal";
 
 interface TenantSummary {
   slug: string;
@@ -90,6 +92,7 @@ const STEPS = [
 
 export default function PlatformHome() {
   const { data: tenants, isLoading: loadingTenants } = useTenantList();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <PlatformLayout>
       {/* HERO */}
@@ -119,11 +122,11 @@ export default function PlatformHome() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
-                disabled
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-muted px-8 py-3.5 text-base font-semibold text-muted-foreground cursor-not-allowed"
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 hover:-translate-y-0.5"
               >
                 Launch your city
-                <span className="text-xs font-normal opacity-60">(coming soon)</span>
+                <span className="text-primary-foreground/70">→</span>
               </button>
               <a
                 href="https://austin.eventcarpooling.com"
@@ -309,16 +312,16 @@ export default function PlatformHome() {
               Setup takes under five minutes.
             </p>
             <button
-              disabled
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-muted px-10 py-4 text-base font-semibold text-muted-foreground cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-10 py-4 text-base font-semibold text-primary-foreground shadow-xl shadow-primary/25 transition-all hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0"
+              onClick={() => setIsModalOpen(true)}
             >
               Get started — it's free
-              <span className="text-xs font-normal opacity-60">(coming soon)</span>
             </button>
             <p className="text-xs text-muted-foreground mt-4">No credit card required.</p>
           </motion.div>
         </div>
       </section>
+      <LaunchCityModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </PlatformLayout>
   );
 }

@@ -165,6 +165,12 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
         </div>
 
         <div className="px-6 py-6">
+          {/* Coming soon banner */}
+          <div className="mb-5 flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+            <span className="text-base">🔒</span>
+            <span>City sign-ups are coming soon — stay tuned!</span>
+          </div>
+
           {verifyEmailSent && (
             <div className="space-y-4 text-center py-4">
               <div className="text-5xl">📬</div>
@@ -206,6 +212,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                   value={cityName}
                   onChange={e => setCityName(e.target.value)}
                   className="rounded-xl"
+                  disabled
                 />
               </div>
 
@@ -218,6 +225,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                     value={slug}
                     onChange={e => { setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugEdited(true); }}
                     className="rounded-xl pr-8"
+                    disabled
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     {slugStatus === "checking" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
@@ -241,7 +249,8 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                     type="color"
                     value={accentColor}
                     onChange={e => setAccentColor(e.target.value)}
-                    className="w-10 h-10 rounded-lg border border-border cursor-pointer p-1 bg-card"
+                    className="w-10 h-10 rounded-lg border border-border cursor-not-allowed p-1 bg-card opacity-50"
+                    disabled
                   />
                   <span className="text-sm text-muted-foreground font-mono">{accentColor}</span>
                 </div>
@@ -256,6 +265,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                   value={adminEmail}
                   onChange={e => setAdminEmail(e.target.value)}
                   className="rounded-xl"
+                  disabled
                 />
               </div>
 
@@ -268,6 +278,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                   value={adminPassword}
                   onChange={e => setAdminPassword(e.target.value)}
                   className="rounded-xl"
+                  disabled
                 />
                 {adminPassword.length > 0 && adminPassword.length < 8 && (
                   <p className="text-xs text-destructive">Password must be at least 8 characters</p>
@@ -276,8 +287,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
 
               <Button
                 className="w-full rounded-xl h-11 mt-2"
-                disabled={!step1Valid}
-                onClick={() => setStep(2)}
+                disabled
               >
                 Next: Choose categories →
               </Button>
@@ -300,12 +310,8 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                     <button
                       key={cat.name}
                       type="button"
-                      onClick={() => toggleCategory(cat.name)}
-                      className={`w-full flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all ${
-                        checked
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-border/80 hover:bg-muted/30"
-                      }`}
+                      disabled
+                      className="w-full flex items-start gap-4 p-4 rounded-xl border-2 text-left border-border opacity-60 cursor-not-allowed"
                     >
                       <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
                         checked ? "bg-primary border-primary" : "border-muted-foreground/40"
@@ -336,14 +342,9 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                 </Button>
                 <Button
                   className="rounded-xl flex-[2] gap-2"
-                  disabled={categories.length === 0 || isSubmitting}
-                  onClick={handleSubmit}
+                  disabled
                 >
-                  {isSubmitting ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Launching…</>
-                  ) : (
-                    <><MapPin className="w-4 h-4" /> Launch {cityName} 🚀</>
-                  )}
+                  <MapPin className="w-4 h-4" /> Launch city 🚀
                 </Button>
               </div>
               <p className="text-xs text-center text-muted-foreground">
