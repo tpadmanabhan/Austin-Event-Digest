@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
@@ -7,6 +8,30 @@ import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
+
+type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";
+
+const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
+  All:     { label: "All Events", emoji: "✦" },
+  Tech:    { label: "Tech",       emoji: "💻" },
+  Arts:    { label: "Arts",       emoji: "🎨" },
+  Sports:  { label: "Sports",     emoji: "🏃" },
+  Civics:  { label: "Civics",     emoji: "🏛️" },
+  Wellness:{ label: "Wellness",   emoji: "🧘" },
+};
+
+function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" {
+  const cat = (event.category || "").toLowerCase().trim();
+  if (cat === "wellness" || cat === "meditation" || cat === "mindfulness" || cat === "yoga" || cat === "health") return "Wellness";
+  if (cat === "civics" || cat === "civic" || cat === "community" || cat === "government" || cat === "policy") return "Civics";
+  if (cat === "arts" || cat === "art" || cat === "music" || cat === "culture" || cat === "entertainment") return "Arts";
+  if (cat === "sports" || cat === "fitness" || cat === "outdoors") return "Sports";
+  if (cat === "tech" || cat === "technology" || cat === "business") return "Tech";
+  const titleOnly = (event.title || "").toLowerCase();
+  if (titleOnly.includes("tech") || titleOnly.includes("business") || titleOnly.includes("startup") || titleOnly.includes("ai ")) return "Tech";
+  if (titleOnly.includes("fitness") || titleOnly.includes("yoga") || titleOnly.includes("hike") || titleOnly.includes("sport")) return "Sports";
+  return "Arts";
+}
 
 const MONTH_MAP: Record<string, number> = {
   Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
@@ -29,6 +54,7 @@ function isEventTodayOrLater(dateStr: string): boolean {
 export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
   const tenant = useTenant();
+  const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
 
   const latestDigest = latestDigestRes?.digest;
   const cityShortName = tenant.city.split(",")[0];
@@ -106,6 +132,32 @@ export default function Home() {
             )}
           </div>
 
+          {/* Category Filter Bar */}
+          {latestDigest?.events && (
+            <div className="mb-10">
+              <div className="flex items-center gap-2 flex-wrap">
+                {(Object.keys(CAT_CONFIG) as DisplayCat[]).map(cat => {
+                  const cfg = CAT_CONFIG[cat];
+                  const isActive = categoryFilter === cat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setCategoryFilter(cat)}
+                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                          : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                      }`}
+                    >
+                      <span>{cfg.emoji}</span>
+                      <span>{cfg.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {isLoadingLatest ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3].map(i => (
@@ -115,8 +167,11 @@ export default function Home() {
           ) : latestDigest?.events ? (
             (() => {
               const upcomingEvents = latestDigest.events.filter((e: any) => isEventTodayOrLater(e.date));
-              const featuredEvents = upcomingEvents.filter((e: any) => e.featured);
-              const regularEvents = upcomingEvents.filter((e: any) => !e.featured);
+              const visibleEvents = categoryFilter === "All"
+                ? upcomingEvents
+                : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
+              const featuredEvents = visibleEvents.filter((e: any) => e.featured);
+              const regularEvents = visibleEvents.filter((e: any) => !e.featured);
               return (
                 <div className="space-y-8">
                   {featuredEvents.length > 0 && (
@@ -144,19 +199,27 @@ export default function Home() {
                       </div>
                     </motion.div>
                   )}
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {regularEvents.slice(0, featuredEvents.length > 0 ? 2 : 3).map((event, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.1 }}
-                      >
-                        <EventCard event={event} digestId={latestDigest.id} />
-                      </motion.div>
-                    ))}
-                  </div>
+                  {regularEvents.length > 0 ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {regularEvents.slice(0, featuredEvents.length > 0 ? 2 : 3).map((event, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.1 }}
+                        >
+                          <EventCard event={event} digestId={latestDigest.id} />
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : featuredEvents.length === 0 ? (
+                    <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-border">
+                      <p className="text-4xl mb-3">{CAT_CONFIG[categoryFilter].emoji}</p>
+                      <p className="text-lg font-serif font-bold text-foreground mb-2">No {CAT_CONFIG[categoryFilter].label} events this week</p>
+                      <p className="text-muted-foreground text-sm">Check back next issue for {categoryFilter.toLowerCase()} events.</p>
+                    </div>
+                  ) : null}
                 </div>
               );
             })()
