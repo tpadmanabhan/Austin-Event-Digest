@@ -307,17 +307,10 @@ export function buildDigestEmailHtml(digest: {
     </div>
 
     <!-- Intro -->
-    <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:24px;">
+    <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:16px;">
       <p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>
       <p style="margin:0; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
     </div>
-
-    <!-- Featured Event -->
-    ${featuredCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">⭐ Special Event</h2>${featuredCards}` : ""}
-
-    <!-- Events -->
-    <h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>
-    ${eventCards}
 
     <!-- Coming Soon Teaser -->
     <div style="background:#fef9c3; border:1px solid #fde68a; border-radius:12px; padding:18px 20px; margin-bottom:24px; text-align:center;">
@@ -326,6 +319,13 @@ export function buildDigestEmailHtml(digest: {
         <a href="https://eventcarpooling.com" style="color:#b45309; font-weight:700; text-decoration:underline;">eventcarpooling.com</a>
       </p>
     </div>
+
+    <!-- Featured Event -->
+    ${featuredCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">⭐ Special Event</h2>${featuredCards}` : ""}
+
+    <!-- Events -->
+    <h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>
+    ${eventCards}
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
