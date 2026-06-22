@@ -152,6 +152,15 @@ export default function DigestView() {
 
   return (
     <Layout>
+      {/* ANNOUNCEMENT BANNER */}
+      <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
+        <span className="font-semibold text-primary">Coming Soon:</span>{" "}
+        <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
+        <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
+          eventcarpooling.com
+        </a>
+      </div>
+
       <article className="max-w-4xl mx-auto px-4 sm:px-6 py-12 lg:py-20">
         <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-10 text-sm font-medium">
           <ArrowLeft className="w-4 h-4" /> Back to all editions
