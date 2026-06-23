@@ -16,9 +16,11 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-transform group-hover:-translate-y-0.5">
-                <MapPin className="h-6 w-6" />
-              </div>
+              <img
+                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
+                alt="EventCarpooling logo"
+                className="h-10 w-10 object-contain transition-transform group-hover:-translate-y-0.5"
+              />
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <span className="font-serif text-2xl font-bold leading-none tracking-tight text-foreground">
@@ -85,10 +87,10 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3 opacity-80">
-              <img 
-                src={`${import.meta.env.BASE_URL}images/logo-mark.png`} 
-                alt="Logo" 
-                className="w-8 h-8 opacity-80 grayscale"
+              <img
+                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
+                alt="EventCarpooling logo"
+                className="w-8 h-8 object-contain opacity-80"
               />
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} {tenant.name}. Handcrafted in {tenant.city.split(",")[0]}.

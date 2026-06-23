@@ -9,9 +9,11 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <a href="/" className="flex items-center gap-2.5 group">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-transform group-hover:-translate-y-0.5">
-                <Zap className="h-5 w-5" />
-              </div>
+              <img
+                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
+                alt="EventCarpooling logo"
+                className="h-10 w-10 object-contain transition-transform group-hover:-translate-y-0.5"
+              />
               <span className="font-serif text-xl font-bold leading-none tracking-tight text-foreground">
                 EventCarpooling
               </span>
@@ -53,9 +55,11 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Zap className="h-4 w-4" />
-              </div>
+              <img
+                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
+                alt="EventCarpooling logo"
+                className="h-8 w-8 object-contain opacity-80"
+              />
               <span className="font-serif font-bold text-foreground">EventCarpooling</span>
             </div>
             <p className="text-sm text-muted-foreground">
