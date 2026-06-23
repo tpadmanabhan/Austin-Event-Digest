@@ -12,7 +12,7 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
               <img
                 src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
                 alt="EventCarpooling logo"
-                className="h-10 w-10 object-contain transition-transform group-hover:-translate-y-0.5"
+                className="h-14 w-14 object-contain transition-transform group-hover:-translate-y-0.5"
               />
               <span className="font-serif text-xl font-bold leading-none tracking-tight text-foreground">
                 EventCarpooling
@@ -58,7 +58,7 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
               <img
                 src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
                 alt="EventCarpooling logo"
-                className="h-8 w-8 object-contain opacity-80"
+                className="h-10 w-10 object-contain opacity-80"
               />
               <span className="font-serif font-bold text-foreground">EventCarpooling</span>
             </div>
