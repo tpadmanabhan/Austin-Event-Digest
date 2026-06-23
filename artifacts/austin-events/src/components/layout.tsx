@@ -19,7 +19,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <img
                 src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
                 alt="EventCarpooling logo"
-                className="h-14 w-14 object-contain transition-transform group-hover:-translate-y-0.5"
+                className="h-20 w-20 object-contain transition-transform group-hover:-translate-y-0.5"
               />
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <img
                 src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
                 alt="EventCarpooling logo"
-                className="w-10 h-10 object-contain opacity-80"
+                className="w-16 h-16 object-contain opacity-80"
               />
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} {tenant.name}. Handcrafted in {tenant.city.split(",")[0]}.
