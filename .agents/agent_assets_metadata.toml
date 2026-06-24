@@ -24,3 +24,9 @@ id = "FpASacZKqWjsRqpzsdUkH"
 uri = "file://screenshots/platform-landing-skyline.jpg"
 type = "image"
 title = "Landing page with city skyline backdrop"
+
+[[outputs]]
+id = "TWXnDibZuxozYl_A7h-OC"
+uri = "file://screenshots/headline-v2.jpg"
+type = "image"
+title = "Updated headline"

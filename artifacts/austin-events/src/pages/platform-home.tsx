@@ -191,9 +191,9 @@ export default function PlatformHome() {
               </span>
             </div>
 
-            <h1 className="font-serif font-bold text-white mb-6 leading-[1.1]" style={{ fontSize: "clamp(40px, 6vw, 72px)" }}>
-              Your city deserves its{" "}
-              <span className="italic" style={{ color: "#4ade80" }}>own newsletter.</span>
+            <h1 className="font-serif font-bold text-white mb-6 leading-[1.15]" style={{ fontSize: "clamp(32px, 4.5vw, 60px)" }}>
+              Your city or neighborhood deserves its own events newsletter.{" "}
+              <span className="italic" style={{ color: "#4ade80" }}>Be the Superconnector!</span>
             </h1>
 
             <p className="text-lg mb-10 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>

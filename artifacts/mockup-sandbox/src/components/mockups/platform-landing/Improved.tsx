@@ -85,9 +85,9 @@ export function Improved() {
             <span style={{ fontSize: 13, color: "#4ade80", fontWeight: 600 }}>Automated city newsletters, powered by real data</span>
           </div>
 
-          <h1 style={{ fontSize: "clamp(40px, 6vw, 72px)", fontWeight: 800, color: "#fff", margin: "0 0 24px", lineHeight: 1.1, fontFamily: "'Georgia', serif" }}>
-            Your city deserves its{" "}
-            <span style={{ color: "#4ade80", fontStyle: "italic" }}>own newsletter.</span>
+          <h1 style={{ fontSize: "clamp(32px, 4.5vw, 60px)", fontWeight: 800, color: "#fff", margin: "0 0 24px", lineHeight: 1.15, fontFamily: "'Georgia', serif" }}>
+            Your city or neighborhood deserves its own events newsletter.{" "}
+            <span style={{ color: "#4ade80", fontStyle: "italic" }}>Be the Superconnector!</span>
           </h1>
 
           <p style={{ fontSize: 18, color: "#94a3b8", margin: "0 0 40px", lineHeight: 1.7, maxWidth: 600, marginLeft: "auto", marginRight: "auto" }}>
