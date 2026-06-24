@@ -9,11 +9,16 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <a href="/" className="flex items-center gap-2 group">
-              <img
-                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
-                alt="EventCarpooling logo"
-                className="h-9 w-9 sm:h-11 sm:w-11 object-contain transition-transform group-hover:-translate-y-0.5"
-              />
+              <div className="relative shrink-0">
+                <img
+                  src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
+                  alt="EventCarpooling logo"
+                  className="h-9 w-9 sm:h-11 sm:w-11 object-contain transition-transform group-hover:-translate-y-0.5"
+                />
+                <span className="absolute -bottom-1 -right-1 rounded-full border border-amber-400/70 bg-amber-50 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-amber-700 leading-tight">
+                  Beta
+                </span>
+              </div>
               <span className="font-serif text-base sm:text-xl font-bold leading-none tracking-tight text-foreground">
                 EventCarpooling
               </span>
@@ -26,9 +31,6 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
               >
                 How it works
               </a>
-              <span className="hidden sm:inline-flex items-center rounded-full border border-amber-400/60 bg-amber-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-widest text-amber-700">
-                Beta
-              </span>
               <a
                 href="#launch"
                 className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"

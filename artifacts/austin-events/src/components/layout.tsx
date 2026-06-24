@@ -39,15 +39,6 @@ export function Layout({ children }: { children: ReactNode }) {
             </Link>
 
             <nav className="flex items-center gap-4">
-              {location === "/" && (
-                <Link
-                  href="/"
-                  className="text-sm font-medium text-primary transition-colors hover:text-primary"
-                >
-                  Home
-                </Link>
-              )}
-
               <button
                 onClick={toggleMute}
                 title={muted ? "Unmute music" : "Mute music"}
