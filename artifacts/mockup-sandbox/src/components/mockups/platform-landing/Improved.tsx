@@ -12,7 +12,7 @@ const STEPS = [
   { number: "01", icon: "📍", title: "Pick your city", description: "Choose any city and we set up a dedicated subdomain at yourCity.eventcarpooling.com." },
   { number: "02", icon: "📋", title: "Choose your categories", description: "Select which event types matter most — Tech, Music, Food, Wellness, or Civics." },
   { number: "03", icon: "🚀", title: "Go live", description: "We automatically discover events from top sources and send a polished weekly digest." },
-  { number: "04", icon: "🚗", title: "Carpool with Your Trusted Network", description: "Coming soon — coordinate rides to events with people you already know and trust.", comingSoon: true },
+  { number: "04", icon: "🚗", title: "Establish Carpooling with Your Trusted Network", description: "Coming soon — coordinate rides to events with people you already know and trust.", comingSoon: true },
 ];
 
 const FEATURES = [

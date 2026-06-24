@@ -101,7 +101,7 @@ const STEPS = [
   {
     number: "04",
     icon: "🚗",
-    title: "Carpool with Your Trusted Network",
+    title: "Establish Carpooling with Your Trusted Network",
     description: "Coming soon — coordinate rides to events with people you already know and trust.",
     comingSoon: true,
   },
