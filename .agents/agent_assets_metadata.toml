@@ -18,3 +18,9 @@ id = "952TU4qM7UJ5qgWTBW2x8"
 uri = "file://artifacts/austin-events/public/background-music.mp3"
 type = "audio"
 title = "upbeat texas country"
+
+[[outputs]]
+id = "FpASacZKqWjsRqpzsdUkH"
+uri = "file://screenshots/platform-landing-skyline.jpg"
+type = "image"
+title = "Landing page with city skyline backdrop"
