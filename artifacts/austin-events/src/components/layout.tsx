@@ -16,11 +16,12 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">
             <Link href="/" className="flex items-center gap-3 group">
-              <img
-                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
-                alt="EventCarpooling logo"
-                className="h-20 w-20 object-contain transition-transform group-hover:-translate-y-0.5"
-              />
+              <div
+                className="h-14 w-14 shrink-0 rounded-2xl flex items-center justify-center text-4xl transition-transform group-hover:-translate-y-0.5"
+                style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 6px 20px rgba(49,46,129,0.4)" }}
+              >
+                🎸
+              </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <span className="font-serif text-2xl font-bold leading-none tracking-tight text-foreground">
@@ -78,11 +79,12 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3 opacity-80">
-              <img
-                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
-                alt="EventCarpooling logo"
-                className="w-16 h-16 object-contain opacity-80"
-              />
+              <div
+                className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-2xl"
+                style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
+              >
+                🎸
+              </div>
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} {tenant.name}. Handcrafted in {tenant.city.split(",")[0]}.
               </p>
