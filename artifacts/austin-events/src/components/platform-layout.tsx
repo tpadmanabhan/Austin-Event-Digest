@@ -8,32 +8,33 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <a href="/" className="flex items-center gap-2.5 group">
+            <a href="/" className="flex items-center gap-2 group">
               <img
                 src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
                 alt="EventCarpooling logo"
-                className="h-20 w-20 object-contain transition-transform group-hover:-translate-y-0.5"
+                className="h-9 w-9 sm:h-11 sm:w-11 object-contain transition-transform group-hover:-translate-y-0.5"
               />
-              <span className="font-serif text-xl font-bold leading-none tracking-tight text-foreground">
+              <span className="font-serif text-base sm:text-xl font-bold leading-none tracking-tight text-foreground">
                 EventCarpooling
               </span>
             </a>
 
-            <nav className="flex items-center gap-3">
+            <nav className="flex items-center gap-2 sm:gap-3">
               <a
                 href="#how-it-works"
-                className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="hidden md:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 How it works
               </a>
-              <span className="inline-flex items-center rounded-full border border-amber-400/60 bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-700">
+              <span className="hidden sm:inline-flex items-center rounded-full border border-amber-400/60 bg-amber-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-widest text-amber-700">
                 Beta
               </span>
               <a
                 href="#launch"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
               >
-                Launch your city
+                <span className="sm:hidden">Launch</span>
+                <span className="hidden sm:inline">Launch your city</span>
               </a>
             </nav>
           </div>
