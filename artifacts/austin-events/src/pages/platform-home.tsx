@@ -459,10 +459,14 @@ export default function PlatformHome() {
                   <div className="p-6 flex flex-col gap-3 flex-1">
                     <div className="flex items-start justify-between">
                       <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold font-serif shadow-lg"
-                        style={{ background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)` }}
+                        className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg text-4xl"
+                        style={
+                          tenant.slug?.includes("austin")
+                            ? { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 6px 20px rgba(49,46,129,0.45)" }
+                            : { background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)`, color: "#fff", fontSize: "1.5rem", fontWeight: 700, fontFamily: "Georgia, serif" }
+                        }
                       >
-                        {tenant.name.charAt(0)}
+                        {tenant.slug?.includes("austin") ? "🎸" : tenant.name.charAt(0)}
                       </div>
                       <ExternalLink className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
                     </div>

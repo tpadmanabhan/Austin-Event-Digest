@@ -222,8 +222,8 @@ export function Improved() {
               <div style={{ height: 6, background: "linear-gradient(90deg, #16a34a, #22c55e)" }} />
               <div style={{ padding: 24 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg, #16a34a, #22c55e)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}>
-                    <span style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>A</span>
+                  <div style={{ width: 80, height: 80, borderRadius: 18, background: "linear-gradient(135deg, #1e1b4b, #312e81)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(49,46,129,0.45)", fontSize: 40 }}>
+                    🎸
                   </div>
                   <ExternalLink size={16} color="#cbd5e1" />
                 </div>
