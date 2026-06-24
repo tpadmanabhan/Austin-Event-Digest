@@ -45,6 +45,39 @@ export function Improved() {
         <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(34,197,94,0.08) 1px, transparent 1px)", backgroundSize: "32px 32px", pointerEvents: "none" }} />
         {/* glow */}
         <div style={{ position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)", width: 600, height: 300, background: "radial-gradient(ellipse, rgba(34,197,94,0.15), transparent 70%)", pointerEvents: "none" }} />
+        {/* City skyline silhouettes */}
+        <svg viewBox="0 0 1280 260" preserveAspectRatio="xMidYMax meet" aria-hidden="true"
+          style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: 260, opacity: 0.07, pointerEvents: "none" }}
+          fill="white">
+          {/* Generic left skyline */}
+          <path d="M0,260 L0,190 L18,190 L18,175 L36,175 L36,190 L50,190 L50,165 L62,165 L62,190 L76,190 L76,180 L90,180 L90,170 L104,170 L104,185 L118,185 L118,160 L130,160 L130,185 L142,185 L142,170 L155,170 L155,260 Z" />
+          {/* Chrysler Building ~x=165 — art-deco stepped spire */}
+          <path d="M163,260 L163,145 L167,145 L167,130 L170,130 L170,118 L172,118 L172,107 L173,107 L173,96 L174,96 L174,85 L175,85 L175,72 L176,65 L177,72 L177,85 L178,85 L178,96 L179,96 L179,107 L180,107 L180,118 L182,118 L182,130 L185,130 L185,145 L189,145 L189,260 Z" />
+          {/* Buildings between Chrysler and Empire State */}
+          <path d="M192,260 L192,175 L210,175 L210,155 L228,155 L228,175 L244,175 L244,260 Z" />
+          {/* Empire State Building ~x=260 — classic stepped profile with antenna */}
+          <path d="M248,260 L248,140 L256,140 L256,120 L260,120 L260,105 L262,105 L262,90 L264,90 L264,78 L265,78 L265,65 L266,65 L266,52 L267,52 L267,38 L268,30 L268,18 L269,12 L270,18 L270,30 L271,30 L271,38 L272,38 L272,52 L273,52 L273,65 L274,65 L274,78 L275,78 L275,90 L277,90 L277,105 L279,105 L279,120 L283,120 L283,140 L291,140 L291,260 Z" />
+          {/* Mid-city filler */}
+          <path d="M294,260 L294,170 L310,170 L310,155 L322,155 L322,165 L338,165 L338,150 L352,150 L352,165 L368,165 L368,175 L384,175 L384,260 Z" />
+          {/* Space Needle ~x=420 — pole + disc */}
+          <path d="M415,260 L415,220 L419,220 L419,150 L421,150 L421,135 L424,135 L424,125 L426,125 L430,122 L434,125 L436,125 L436,135 L439,135 L439,150 L441,150 L441,220 L445,220 L445,260 Z
+                   M423,125 L423,110 L424,100 L427,88 L430,85 L433,88 L436,100 L437,110 L437,125 Z" />
+          {/* More mid-city buildings */}
+          <path d="M448,260 L448,175 L464,175 L464,160 L480,160 L480,175 L496,175 L496,185 L512,185 L512,165 L528,165 L528,185 L544,185 L544,260 Z" />
+          {/* Burj Khalifa ~x=580 — very tall tapered tower */}
+          <path d="M574,260 L574,180 L578,180 L578,150 L580,150 L580,120 L581,120 L581,95 L582,95 L582,72 L583,72 L583,52 L584,52 L584,35 L585,35 L585,20 L586,20 L586,10 L587,5 L588,10 L588,20 L589,20 L589,35 L590,35 L590,52 L591,52 L591,72 L592,72 L592,95 L593,95 L593,120 L594,120 L594,150 L596,150 L596,180 L600,180 L600,260 Z" />
+          {/* Filler buildings */}
+          <path d="M603,260 L603,175 L618,175 L618,160 L632,160 L632,175 L648,175 L648,165 L664,165 L664,175 L680,175 L680,185 L696,185 L696,170 L712,170 L712,185 L728,185 L728,260 Z" />
+          {/* Eiffel Tower ~x=770 — iconic A-frame */}
+          <path d="M752,260 L752,240 L758,240 L758,220 L763,220 L770,180 L772,180 L773,160 L775,145 L776,130 L777,118 L778,108 L779,100 L780,93 L781,87 L782,82 L783,78 L784,75 L785,72 L786,70 L787,68 L788,67 L789,68 L790,70 L791,72 L792,75 L793,78 L794,82 L795,87 L796,93 L797,100 L798,108 L799,118 L800,130 L801,145 L803,160 L804,180 L806,180 L813,220 L818,220 L818,240 L824,240 L824,260 Z
+                   M786,67 L787,50 L788,67 Z" />
+          {/* Big Ben ~x=880 — tower with clock and gothic top */}
+          <path d="M874,260 L874,130 L876,130 L876,120 L878,120 L878,112 L880,112 L880,105 L882,105 L882,98 L880,95 L882,92 L884,90 L886,92 L888,95 L886,98 L886,105 L888,105 L888,112 L890,112 L890,120 L892,120 L892,130 L894,130 L894,260 Z" />
+          {/* One World Trade / modern tower ~x=930 */}
+          <path d="M924,260 L924,145 L928,145 L928,120 L930,120 L930,100 L931,100 L931,80 L932,80 L932,60 L933,55 L934,50 L935,45 L936,50 L937,55 L938,60 L938,80 L939,80 L939,100 L940,100 L940,120 L942,120 L942,145 L946,145 L946,260 Z" />
+          {/* Right filler buildings */}
+          <path d="M949,260 L949,175 L966,175 L966,155 L982,155 L982,170 L998,170 L998,155 L1012,155 L1012,170 L1028,170 L1028,180 L1044,180 L1044,165 L1058,165 L1058,180 L1074,180 L1074,190 L1090,190 L1090,175 L1106,175 L1106,190 L1122,190 L1122,175 L1138,175 L1138,190 L1154,190 L1154,200 L1170,200 L1170,185 L1186,185 L1186,200 L1202,200 L1202,185 L1218,185 L1218,195 L1234,195 L1234,210 L1252,210 L1252,200 L1268,200 L1268,210 L1280,210 L1280,260 Z" />
+        </svg>
 
         <div style={{ position: "relative", maxWidth: 800, margin: "0 auto" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 24, padding: "6px 16px", marginBottom: 32 }}>
