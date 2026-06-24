@@ -64,10 +64,10 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
   const [slugEdited, setSlugEdited] = useState(false);
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
+  const [accentColor, setAccentColor] = useState("#7c3aed");
   const [categories, setCategories] = useState<string[]>(["Tech"]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [accentColor, setAccentColor] = useState("#7c3aed");
   const [verifyEmailSent, setVerifyEmailSent] = useState(false);
 
   const slugStatus = useSlugAvailability(slug);
@@ -85,10 +85,10 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
     setSlugEdited(false);
     setAdminEmail("");
     setAdminPassword("");
+    setAccentColor("#7c3aed");
     setCategories(["Tech"]);
     setIsSubmitting(false);
     setSubmitError("");
-    setAccentColor("#7c3aed");
     setVerifyEmailSent(false);
   }
 
@@ -103,13 +103,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
     );
   }
 
-  const step1Valid =
-    cityName.trim().length >= 2 &&
-    isValidSlug(slug) &&
-    !RESERVED_SLUGS.has(slug) &&
-    slugStatus === "available" &&
-    adminEmail.includes("@") &&
-    adminPassword.length >= 8;
+  const step1Valid = cityName.trim().length >= 2;
 
   async function handleSubmit() {
     if (categories.length === 0) return;
@@ -177,7 +171,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
               <div>
                 <h3 className="font-serif font-bold text-xl text-foreground">Check your inbox</h3>
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  We sent a verification link to <strong className="text-foreground">{adminEmail}</strong>.
+                  We sent a verification link to <strong className="text-foreground">{adminEmail || "your email"}</strong>.
                   Click it to activate <strong className="text-foreground">{cityName} Events</strong> and access your admin panel.
                 </p>
               </div>
@@ -216,73 +210,75 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor={`${formId}-slug`} className="text-sm font-semibold">Subdomain</label>
-                <div className="relative">
-                  <Input
-                    id={`${formId}-slug`}
-                    placeholder="sanantonio"
-                    value={slug}
-                    onChange={e => { setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugEdited(true); }}
-                    className="rounded-xl pr-8"
-                    disabled
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {slugStatus === "checking" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-                    {slugStatus === "available" && <Check className="w-4 h-4 text-green-600" />}
-                    {(slugStatus === "taken" || slugStatus === "invalid") && <X className="w-4 h-4 text-destructive" />}
+              <div className="hidden">
+                <div className="space-y-1.5">
+                  <label htmlFor={`${formId}-slug`} className="text-sm font-semibold">Subdomain</label>
+                  <div className="relative">
+                    <Input
+                      id={`${formId}-slug`}
+                      placeholder="sanantonio"
+                      value={slug}
+                      onChange={e => { setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugEdited(true); }}
+                      className="rounded-xl pr-8"
+                      disabled
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {slugStatus === "checking" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                      {slugStatus === "available" && <Check className="w-4 h-4 text-green-600" />}
+                      {(slugStatus === "taken" || slugStatus === "invalid") && <X className="w-4 h-4 text-destructive" />}
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground flex justify-between">
+                    <span>{slug || "yourcity"}.eventcarpooling.com</span>
+                    {slugStatus === "taken" && <span className="text-destructive">Already taken</span>}
+                    {slugStatus === "invalid" && <span className="text-destructive">Invalid format</span>}
+                    {slugStatus === "available" && <span className="text-green-600">Available!</span>}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground flex justify-between">
-                  <span>{slug || "yourcity"}.eventcarpooling.com</span>
-                  {slugStatus === "taken" && <span className="text-destructive">Already taken</span>}
-                  {slugStatus === "invalid" && <span className="text-destructive">Invalid format</span>}
-                  {slugStatus === "available" && <span className="text-green-600">Available!</span>}
-                </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor={`${formId}-color`} className="text-sm font-semibold">Accent color</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    id={`${formId}-color`}
-                    type="color"
-                    value={accentColor}
-                    onChange={e => setAccentColor(e.target.value)}
-                    className="w-10 h-10 rounded-lg border border-border cursor-not-allowed p-1 bg-card opacity-50"
+                <div className="space-y-1.5">
+                  <label htmlFor={`${formId}-color`} className="text-sm font-semibold">Accent color</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      id={`${formId}-color`}
+                      type="color"
+                      value={accentColor}
+                      onChange={e => setAccentColor(e.target.value)}
+                      className="w-10 h-10 rounded-lg border border-border cursor-not-allowed p-1 bg-card opacity-50"
+                      disabled
+                    />
+                    <span className="text-sm text-muted-foreground font-mono">{accentColor}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor={`${formId}-email`} className="text-sm font-semibold">Admin email</label>
+                  <Input
+                    id={`${formId}-email`}
+                    type="email"
+                    placeholder="you@example.com"
+                    value={adminEmail}
+                    onChange={e => setAdminEmail(e.target.value)}
+                    className="rounded-xl"
                     disabled
                   />
-                  <span className="text-sm text-muted-foreground font-mono">{accentColor}</span>
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor={`${formId}-email`} className="text-sm font-semibold">Admin email</label>
-                <Input
-                  id={`${formId}-email`}
-                  type="email"
-                  placeholder="you@example.com"
-                  value={adminEmail}
-                  onChange={e => setAdminEmail(e.target.value)}
-                  className="rounded-xl"
-                  disabled
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor={`${formId}-password`} className="text-sm font-semibold">Admin password</label>
-                <Input
-                  id={`${formId}-password`}
-                  type="password"
-                  placeholder="Minimum 8 characters"
-                  value={adminPassword}
-                  onChange={e => setAdminPassword(e.target.value)}
-                  className="rounded-xl"
-                  disabled
-                />
-                {adminPassword.length > 0 && adminPassword.length < 8 && (
-                  <p className="text-xs text-destructive">Password must be at least 8 characters</p>
-                )}
+                <div className="space-y-1.5">
+                  <label htmlFor={`${formId}-password`} className="text-sm font-semibold">Admin password</label>
+                  <Input
+                    id={`${formId}-password`}
+                    type="password"
+                    placeholder="Minimum 8 characters"
+                    value={adminPassword}
+                    onChange={e => setAdminPassword(e.target.value)}
+                    className="rounded-xl"
+                    disabled
+                  />
+                  {adminPassword.length > 0 && adminPassword.length < 8 && (
+                    <p className="text-xs text-destructive">Password must be at least 8 characters</p>
+                  )}
+                </div>
               </div>
 
               <Button
