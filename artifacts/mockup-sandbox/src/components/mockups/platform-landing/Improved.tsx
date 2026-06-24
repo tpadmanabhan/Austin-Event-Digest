@@ -1,4 +1,4 @@
-import { MapPin, Zap, Check, ExternalLink, ArrowRight, Users, Globe, Star } from "lucide-react";
+import { MapPin, Check, ExternalLink, ArrowRight, Users, Globe, Star } from "lucide-react";
 
 const CATEGORIES = [
   { name: "Tech", emoji: "💻", description: "Startup meetups, AI demos, developer nights, and founder events.", sources: ["Luma", "Meetup", "Eventbrite"], border: "#3b82f6", bg: "#eff6ff", badge: "#dbeafe", badgeText: "#1d4ed8" },
@@ -29,9 +29,7 @@ export function Improved() {
       {/* NAV */}
       <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid #e5e7eb", padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #16a34a, #22c55e)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Zap size={18} color="#fff" />
-          </div>
+          <img src="/__mockup/images/eventcarpooling-logo.png" alt="EventCarpooling" style={{ width: 40, height: 40, objectFit: "contain" }} />
           <span style={{ fontWeight: 700, fontSize: 18, color: "#111827", fontFamily: "'Georgia', serif" }}>EventCarpooling</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
@@ -50,7 +48,7 @@ export function Improved() {
 
         <div style={{ position: "relative", maxWidth: 800, margin: "0 auto" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 24, padding: "6px 16px", marginBottom: 32 }}>
-            <Zap size={14} color="#4ade80" />
+            <img src="/__mockup/images/eventcarpooling-logo.png" alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
             <span style={{ fontSize: 13, color: "#4ade80", fontWeight: 600 }}>Automated city newsletters, powered by real data</span>
           </div>
 
@@ -236,9 +234,7 @@ export function Improved() {
       {/* FOOTER */}
       <footer style={{ background: "#0f172a", padding: "32px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg, #16a34a, #22c55e)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Zap size={15} color="#fff" />
-          </div>
+          <img src="/__mockup/images/eventcarpooling-logo.png" alt="EventCarpooling" style={{ width: 34, height: 34, objectFit: "contain" }} />
           <span style={{ fontWeight: 700, color: "#fff", fontFamily: "'Georgia', serif" }}>EventCarpooling</span>
         </div>
         <p style={{ color: "#475569", fontSize: 13, margin: 0 }}>© {new Date().getFullYear()} EventCarpooling. Helping cities connect in real life.</p>
