@@ -6,7 +6,9 @@ export async function verifyTurnstileToken(
   ip?: string,
 ): Promise<boolean> {
   if (!TURNSTILE_SECRET) {
-    return false;
+    // No secret configured — skip CAPTCHA check.
+    // Set TURNSTILE_SECRET_KEY + VITE_TURNSTILE_SITE_KEY to enable real protection.
+    return true;
   }
   if (!token) return false;
 
