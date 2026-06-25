@@ -89,12 +89,13 @@ export function Layout({ children }: { children: ReactNode }) {
                 © {new Date().getFullYear()} {tenant.name}. Handcrafted in {tenant.city.split(",")[0]}.
               </p>
             </div>
-            <p className="text-xs text-muted-foreground/60">
-              Powered by{" "}
-              <a href="https://eventcarpooling.com" className="hover:text-muted-foreground transition-colors">
-                EventCarpooling
-              </a>
-            </p>
+            <a href="https://eventcarpooling.com" className="opacity-60 hover:opacity-90 transition-opacity">
+              <img
+                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
+                alt="Powered by EventCarpooling"
+                className="h-8 w-auto object-contain"
+              />
+            </a>
           </div>
         </div>
       </footer>

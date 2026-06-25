@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 200" width="520" height="200" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgb(27, 58, 107)" stop-opacity="1"/>
+      <stop offset="100%" stop-color="rgb(44, 82, 130)" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="carGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgb(246, 173, 60)" stop-opacity="1"/>
+      <stop offset="100%" stop-color="rgb(224, 123, 0)" stop-opacity="1"/>
+    </linearGradient>
+    
+      
+    
+  </defs>
+
+  
+  <rect x="0" y="0" width="520" height="200" rx="16" ry="16" fill="url(#skyGrad)"/>
+
+  
+
+  
+  <rect x="18" y="155" width="164" height="8" rx="4" fill="#FFFFFF18"/>
+  
+  <rect x="80" y="157" width="18" height="4" rx="2" fill="#FFFFFF40"/>
+  <rect x="108" y="157" width="18" height="4" rx="2" fill="#FFFFFF40"/>
+  <rect x="136" y="157" width="18" height="4" rx="2" fill="#FFFFFF40"/>
+
+  
+  
+  <rect x="22" y="126" width="114" height="34" rx="8" fill="url(#carGrad)"/>
+  
+  <path d="M48 126 L62 104 L96 104 L110 126 Z" fill="#F6AD3C"/>
+  
+  <path d="M54 126 L66 108 L92 108 L104 126 Z" fill="#FFD180" opacity="0.45"/>
+
+  
+  <path d="M63 107 L68 119 L90 119 L95 107 Z" fill="#BADEFF" opacity="0.85"/>
+  
+  <line x1="70" y1="109" x2="67" y2="118" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+
+  
+  <rect x="26" y="129" width="18" height="13" rx="3" fill="#BADEFF" opacity="0.75"/>
+  <rect x="114" y="129" width="18" height="13" rx="3" fill="#BADEFF" opacity="0.75"/>
+
+  
+  <circle cx="52" cy="162" r="12" fill="#1B2A3F"/>
+  <circle cx="52" cy="162" r="7" fill="#9AA5B4"/>
+  <circle cx="52" cy="162" r="3" fill="#1B2A3F"/>
+  <circle cx="106" cy="162" r="12" fill="#1B2A3F"/>
+  <circle cx="106" cy="162" r="7" fill="#9AA5B4"/>
+  <circle cx="106" cy="162" r="3" fill="#1B2A3F"/>
+
+  
+  <ellipse cx="136" cy="143" rx="5" ry="4" fill="#FFF7AA" opacity="0.9"/>
+  
+  <ellipse cx="22" cy="143" rx="4" ry="4" fill="#FF6B6B" opacity="0.85"/>
+
+  
+  
+  <circle cx="75" cy="113" r="5.5" fill="#FDDCB0"/>
+  
+  <rect x="72" y="119" width="6" height="6" rx="2" fill="#E07B00" opacity="0.6"/>
+
+  
+  <circle cx="90" cy="113" r="5.5" fill="#FDDCB0"/>
+  <rect x="87" y="119" width="6" height="6" rx="2" fill="#E07B00" opacity="0.6"/>
+
+  
+  
+  <rect x="71" y="74" width="7" height="12" rx="1.5" fill="#E07B00"/>
+  
+  <polygon points="55,92 100,92 78,68" fill="#F6AD3C"/>
+  
+  <polygon points="78,68 100,92 78,92" fill="#E07B00" opacity="0.35"/>
+  
+  <rect x="60" y="92" width="36" height="26" rx="2" fill="#FDDCB0"/>
+  
+  <rect x="73" y="103" width="10" height="15" rx="2" fill="#E07B00"/>
+  
+  <circle cx="81" cy="111" r="1.5" fill="#1B2A3F"/>
+  
+  <rect x="63" y="96" width="8" height="7" rx="1.5" fill="#BADEFF" opacity="0.85"/>
+  
+  <rect x="85" y="96" width="8" height="7" rx="1.5" fill="#BADEFF" opacity="0.85"/>
+
+  
+  <circle cx="70" cy="66" r="4" fill="#FFFFFF" opacity="0.2"/>
+  <circle cx="73" cy="58" r="5" fill="#FFFFFF" opacity="0.13"/>
+  <circle cx="68" cy="51" r="4" fill="#FFFFFF" opacity="0.08"/>
+
+  
+  <circle cx="46" cy="78" r="2" fill="#F6AD3C" opacity="0.6"/>
+  <circle cx="112" cy="82" r="2" fill="#F6AD3C" opacity="0.6"/>
+  <circle cx="40" cy="96" r="1.5" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="116" cy="70" r="1.5" fill="#FFFFFF" opacity="0.4"/>
+
+  
+
+  
+  <text x="196" y="98" font-family="Georgia, 'Times New Roman', serif" font-size="38" font-weight="700" letter-spacing="-0.5" fill="#FFFFFF">event</text>
+  <text x="196" y="140" font-family="Georgia, 'Times New Roman', serif" font-size="38" font-weight="700" letter-spacing="-0.5" fill="#F6AD3C">carpooling</text>
+
+  
+  <line x1="196" y1="150" x2="500" y2="150" stroke="#FFFFFF" stroke-width="1" opacity="0.25"/>
+
+  
+  <text x="196" y="170" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="400" letter-spacing="2.5" fill="#FFFFFF" opacity="0.70">LESS UBER · MORE NEIGHBOR</text>
+
+</svg>

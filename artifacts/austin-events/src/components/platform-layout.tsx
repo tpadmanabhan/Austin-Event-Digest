@@ -11,17 +11,14 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
             <a href="/" className="flex items-center gap-2 group">
               <div className="relative shrink-0">
                 <img
-                  src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
+                  src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
                   alt="EventCarpooling logo"
-                  className="h-9 w-9 sm:h-11 sm:w-11 object-contain transition-transform group-hover:-translate-y-0.5"
+                  className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:-translate-y-0.5"
                 />
                 <span className="absolute -bottom-1 -right-1 rounded-full border border-amber-400/70 bg-amber-50 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-amber-700 leading-tight">
                   Beta
                 </span>
               </div>
-              <span className="font-serif text-base sm:text-xl font-bold leading-none tracking-tight text-foreground">
-                EventCarpooling
-              </span>
             </a>
 
             <nav className="flex items-center gap-2 sm:gap-3">
@@ -57,13 +54,12 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
       <footer className="border-t border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center">
               <img
-                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
+                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
                 alt="EventCarpooling logo"
-                className="h-16 w-16 object-contain opacity-80"
+                className="h-16 w-auto object-contain opacity-90"
               />
-              <span className="font-serif font-bold text-foreground">EventCarpooling</span>
             </div>
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} EventCarpooling. Helping cities connect in real life.

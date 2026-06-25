@@ -264,9 +264,9 @@ export default function PlatformHome() {
               }}
             >
               <img
-                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.png`}
+                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
                 alt=""
-                className="w-5 h-5 object-contain"
+                className="h-5 w-auto object-contain"
               />
               <span className="text-sm font-semibold" style={{ color: "#4ade80" }}>
                 Automated city newsletters, powered by real data
