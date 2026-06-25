@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, rsvpsTable, digestsTable, tenantsTable, type InsertTenant } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gte } from "drizzle-orm";
 import { sendRsvpGroupNotification, buildDigestEmailHtml, sendWelcomeEmail } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin, adminTokenForHash } from "../middleware/requireAdmin";
@@ -299,6 +299,51 @@ router.post("/digest/patch-subject", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error patching digest subject");
     res.status(500).json({ error: "server_error" });
+  }
+});
+
+router.get("/rsvps", requireAdmin, async (req, res) => {
+  const tenantId = req.tenant!.id;
+  const since = new Date("2026-06-25T00:00:00Z");
+  try {
+    const rsvps = await db
+      .select()
+      .from(rsvpsTable)
+      .where(and(eq(rsvpsTable.tenantId, tenantId), gte(rsvpsTable.createdAt, since)))
+      .orderBy(rsvpsTable.createdAt);
+
+    // For each RSVP, compute how many carpool-match emails were sent to *other* people
+    // for the same event (= number of RSVPs that came before this one for the same event)
+    type RsvpRow = typeof rsvps[number];
+    const byEvent = new Map<string, RsvpRow[]>();
+    for (const r of rsvps) {
+      const key = `${r.digestId}::${r.eventTitle}`;
+      if (!byEvent.has(key)) byEvent.set(key, []);
+      byEvent.get(key)!.push(r);
+    }
+
+    const enriched = rsvps.map((r) => {
+      const key = `${r.digestId}::${r.eventTitle}`;
+      const group = byEvent.get(key)!.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      const position = group.findIndex((x) => x.id === r.id);
+      return {
+        id: r.id,
+        eventTitle: r.eventTitle,
+        digestId: r.digestId,
+        email: r.email,
+        name: r.name,
+        createdAt: r.createdAt.toISOString(),
+        emailsSent: {
+          adminNotified: true,
+          carpoolMatchCount: position,
+        },
+      };
+    }).reverse();
+
+    res.json({ success: true, rsvps: enriched, total: enriched.length });
+  } catch (err) {
+    req.log.error({ err }, "Error fetching RSVPs");
+    res.status(500).json({ error: "server_error", message: "Failed to fetch RSVPs" });
   }
 });
 

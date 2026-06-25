@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2 } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { AdminSettingsTab } from "@/components/admin-settings-tab";
+import { useAdminRsvps } from "@/hooks/use-rsvps";
 
 type FirstRunStep = "generate" | "preview" | "ready";
 
@@ -23,6 +24,7 @@ export default function AdminDashboard() {
   const { data: subsData, isLoading: loadingSubs } = useNewsletterSubscriptions();
   const { data: digestsData, isLoading: loadingDigests } = useAllDigests();
   
+  const { data: rsvpsData, isLoading: loadingRsvps } = useAdminRsvps();
   const { mutate: generate, isPending: isGenerating } = useGenerateDigest();
   const { mutate: send, isPending: isSending } = useSendDigest();
   const { mutate: deleteDigest, isPending: isDeleting } = useDeleteDigest();
@@ -388,6 +390,13 @@ export default function AdminDashboard() {
           <TabsList className="mb-8 bg-muted/50 p-1 rounded-xl">
             <TabsTrigger value="digests" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Weekly Digests</TabsTrigger>
             <TabsTrigger value="subscribers" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Subscribers List</TabsTrigger>
+            <TabsTrigger value="carpoolers" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Car className="w-3.5 h-3.5 mr-1.5" />
+              Carpoolers
+              {rsvpsData && rsvpsData.total > 0 && (
+                <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-amber-950 text-xs font-bold">{rsvpsData.total}</span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Settings</TabsTrigger>
           </TabsList>
           
@@ -489,6 +498,71 @@ export default function AdminDashboard() {
                           ) : (
                             <span className="inline-flex px-2 py-1 rounded-md bg-zinc-100 text-zinc-600 font-medium text-xs">Unsubscribed</span>
                           )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="carpoolers" className="space-y-6 mt-0">
+            <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-sm">Carpool Sign-ups</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Everyone who clicked "I want to carpool" since Jun 25, 2026</p>
+                </div>
+                {rsvpsData && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">
+                    <Car className="w-3.5 h-3.5" /> {rsvpsData.total} total
+                  </span>
+                )}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className="bg-muted/50 text-muted-foreground uppercase text-xs tracking-wider">
+                    <tr>
+                      <th className="px-6 py-4 font-medium">Event</th>
+                      <th className="px-6 py-4 font-medium">Name</th>
+                      <th className="px-6 py-4 font-medium">Email</th>
+                      <th className="px-6 py-4 font-medium">Date</th>
+                      <th className="px-6 py-4 font-medium">Emails Sent</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {loadingRsvps ? (
+                      <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">Loading...</td></tr>
+                    ) : !rsvpsData?.rsvps?.length ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <Car className="w-8 h-8 mx-auto mb-3 text-muted-foreground/40" />
+                          <p className="text-muted-foreground text-sm">No carpool sign-ups yet since Jun 25.</p>
+                          <p className="text-muted-foreground/60 text-xs mt-1">They'll appear here as soon as someone clicks "I want to carpool".</p>
+                        </td>
+                      </tr>
+                    ) : rsvpsData.rsvps.map((rsvp) => (
+                      <tr key={rsvp.id} className="hover:bg-muted/20 transition-colors">
+                        <td className="px-6 py-4 max-w-[220px]">
+                          <span className="block truncate font-medium text-foreground" title={rsvp.eventTitle}>{rsvp.eventTitle}</span>
+                        </td>
+                        <td className="px-6 py-4 text-muted-foreground">{rsvp.name || "—"}</td>
+                        <td className="px-6 py-4 text-muted-foreground">{rsvp.email}</td>
+                        <td className="px-6 py-4 text-muted-foreground">
+                          {format(new Date(rsvp.createdAt), "MMM d, h:mm a")}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Admin notified
+                            </span>
+                            {rsvp.emailsSent.carpoolMatchCount > 0 && (
+                              <span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium">
+                                <Mail className="w-3.5 h-3.5" /> {rsvp.emailsSent.carpoolMatchCount} carpool match{rsvp.emailsSent.carpoolMatchCount > 1 ? "es" : ""} sent
+                              </span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
