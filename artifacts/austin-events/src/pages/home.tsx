@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Sparkles, Star, Bell, CheckCircle2, Loader2 } from "lucide-react";
 
 import { useLatestDigest } from "@/hooks/use-events";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";
 
@@ -55,19 +58,108 @@ export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
   const tenant = useTenant();
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
+  const [featureModalOpen, setFeatureModalOpen] = useState(false);
+  const [featureEmail, setFeatureEmail] = useState("");
+  const [featureStatus, setFeatureStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [featureError, setFeatureError] = useState("");
+
+  async function handleFeatureInterestSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!featureEmail.trim()) return;
+    setFeatureStatus("submitting");
+    setFeatureError("");
+    try {
+      const res = await fetch("/api/newsletter/feature-interest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: featureEmail.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json() as { message?: string };
+        setFeatureError(data.message || "Something went wrong. Please try again.");
+        setFeatureStatus("error");
+      } else {
+        setFeatureStatus("done");
+      }
+    } catch {
+      setFeatureError("Network error. Please try again.");
+      setFeatureStatus("error");
+    }
+  }
 
   const latestDigest = latestDigestRes?.digest;
   const cityShortName = tenant.city.split(",")[0];
 
   return (
     <Layout>
+      {/* FEATURE INTEREST MODAL */}
+      <Dialog open={featureModalOpen} onOpenChange={(open) => {
+        setFeatureModalOpen(open);
+        if (!open) { setFeatureStatus("idle"); setFeatureEmail(""); setFeatureError(""); }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Bell className="w-5 h-5 text-primary" />
+              Stay in the loop
+            </DialogTitle>
+            <DialogDescription>
+              Get notified when new features launch on EventCarpooling.com — carpooling tools, new city editions, and more.
+            </DialogDescription>
+          </DialogHeader>
+
+          {featureStatus === "done" ? (
+            <div className="py-8 text-center space-y-3">
+              <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
+              <p className="font-semibold text-lg">You're on the list!</p>
+              <p className="text-muted-foreground text-sm">We've sent a confirmation to <strong>{featureEmail}</strong>. We'll be in touch as features roll out.</p>
+              <Button variant="outline" className="mt-2" onClick={() => setFeatureModalOpen(false)}>Close</Button>
+            </div>
+          ) : (
+            <form onSubmit={handleFeatureInterestSubmit} className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <label htmlFor="feature-email" className="text-sm font-medium">Your email address</label>
+                <Input
+                  id="feature-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={featureEmail}
+                  onChange={(e) => setFeatureEmail(e.target.value)}
+                  required
+                  disabled={featureStatus === "submitting"}
+                  autoComplete="email"
+                />
+                {featureError && <p className="text-xs text-destructive">{featureError}</p>}
+              </div>
+              <Button type="submit" className="w-full" disabled={featureStatus === "submitting" || !featureEmail.trim()}>
+                {featureStatus === "submitting" ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</>
+                ) : (
+                  "Notify me about feature updates"
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">No spam, ever. Unsubscribe anytime.</p>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* ANNOUNCEMENT BANNER */}
-      <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
-        <span className="font-semibold text-primary">Coming Soon:</span>{" "}
-        <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
-        <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
-          eventcarpooling.com
-        </a>
+      <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm flex items-center justify-center gap-3 flex-wrap">
+        <span>
+          <span className="font-semibold text-primary">Coming Soon:</span>{" "}
+          <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
+          <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
+            eventcarpooling.com
+          </a>
+        </span>
+        <button
+          onClick={() => setFeatureModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors whitespace-nowrap"
+        >
+          <Bell className="w-3 h-3" />
+          Want to be notified about feature updates?
+        </button>
       </div>
 
       {/* HERO SECTION */}

@@ -8,7 +8,7 @@ import {
   UnsubscribeFromNewsletterResponse,
   GetSubscribersResponse,
 } from "@workspace/api-zod";
-import { sendWelcomeEmail, sendNewSubscriberAdminNotification } from "../lib/emailService";
+import { sendWelcomeEmail, sendNewSubscriberAdminNotification, sendFeatureInterestEmails } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin } from "../middleware/requireAdmin";
 
@@ -185,6 +185,18 @@ router.post("/subscribers/import", requireAdmin, async (req, res) => {
     req.log.error({ err }, "Error importing subscribers");
     res.status(500).json({ error: "server_error", message: "Failed to import subscribers" });
   }
+});
+
+router.post("/feature-interest", async (req, res) => {
+  const { email } = req.body ?? {};
+  if (!email || typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    res.status(400).json({ error: "invalid_request", message: "A valid email address is required" });
+    return;
+  }
+  sendFeatureInterestEmails(email.toLowerCase().trim()).catch((err) => {
+    req.log.warn({ err, email }, "Feature interest email fire-and-forget error");
+  });
+  res.json({ success: true });
 });
 
 export default router;

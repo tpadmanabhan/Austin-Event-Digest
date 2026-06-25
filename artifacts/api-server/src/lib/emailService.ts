@@ -603,3 +603,64 @@ export async function sendRsvpGroupNotification(opts: {
     throw new Error(result.error || "Failed to send RSVP group notification");
   }
 }
+
+export async function sendFeatureInterestEmails(email: string): Promise<void> {
+  const thankYouHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0; padding:0; background:#fafaf9; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:480px; margin:0 auto; padding:24px;">
+    <div style="background:linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border-radius:14px; padding:28px; margin-bottom:20px; text-align:center;">
+      <p style="margin:0 0 8px; font-size:36px;">🚗</p>
+      <h1 style="margin:0 0 4px; color:#e0e7ff; font-size:22px; font-weight:800;">Thanks for your interest!</h1>
+      <p style="margin:0; color:#c7d2fe; font-size:13px;">EventCarpooling.com</p>
+    </div>
+    <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:28px; margin-bottom:16px;">
+      <p style="margin:0 0 16px; color:#1c1917; font-size:17px; font-weight:700;">You're on the list! 🎉</p>
+      <p style="margin:0 0 14px; color:#44403c; font-size:15px; line-height:1.6;">
+        Thank you for your interest in <strong>EventCarpooling.com</strong> — we're building the easiest way to become the events and carpooling person for your city or neighborhood.
+      </p>
+      <p style="margin:0 0 14px; color:#44403c; font-size:15px; line-height:1.6;">
+        We'll reach out as soon as new features are ready for early access. You'll be among the first to know!
+      </p>
+      <p style="margin:0; color:#78716c; font-size:13px; line-height:1.5;">
+        In the meantime, check out <a href="https://austin.eventcarpooling.com" style="color:#4f46e5; text-decoration:none; font-weight:600;">austin.eventcarpooling.com</a> to see a live example of what we're building.
+      </p>
+    </div>
+    <p style="text-align:center; color:#a8a29e; font-size:12px; margin:0;">EventCarpooling.com · Austin, TX</p>
+  </div>
+</body>
+</html>`;
+
+  const adminHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0; padding:0; background:#fafaf9; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:480px; margin:0 auto; padding:24px;">
+    <div style="background:linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border-radius:14px; padding:24px; margin-bottom:20px; text-align:center;">
+      <h1 style="margin:0 0 4px; color:#e0e7ff; font-size:22px; font-weight:800;">🔔 New Feature Interest</h1>
+      <p style="margin:0; color:#c7d2fe; font-size:13px;">EventCarpooling.com</p>
+    </div>
+    <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px;">
+      <p style="margin:0 0 14px; color:#1c1917; font-size:17px; font-weight:700;">Someone wants feature updates!</p>
+      <p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Email:</strong> ${email}</p>
+      <p style="margin:0; color:#78716c; font-size:13px;">Signed up via the feature interest form on austin.eventcarpooling.com</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const [thankYouResult, adminResult] = await Promise.all([
+    sendEmail({ to: email, subject: "Thanks for your interest in EventCarpooling.com! 🚗", html: thankYouHtml }),
+    sendEmail({ to: ADMIN_NOTIFY_EMAIL, subject: `🔔 Feature interest signup: ${email}`, html: adminHtml }),
+  ]);
+
+  if (!thankYouResult.success) {
+    logger.warn({ email, error: thankYouResult.error }, "Failed to send feature interest thank-you email");
+  }
+  if (!adminResult.success) {
+    logger.warn({ email, error: adminResult.error }, "Failed to send feature interest admin notification");
+  }
+}
