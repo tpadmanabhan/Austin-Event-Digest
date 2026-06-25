@@ -175,7 +175,7 @@ export default function Home() {
             </div>
           ) : latestDigest?.events ? (
             (() => {
-              const upcomingEvents = latestDigest.events.filter((e: any) => isEventTodayOrLater(e.date));
+              const upcomingEvents = latestDigest.events.filter((e: any) => e.featured || isEventTodayOrLater(e.date));
               const visibleEvents = categoryFilter === "All"
                 ? upcomingEvents
                 : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
