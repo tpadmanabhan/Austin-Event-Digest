@@ -215,11 +215,38 @@ export default function PlatformHome() {
               </button>
               <a
                 href="https://austin.eventcarpooling.com"
-                className="inline-flex items-center gap-2 text-sm font-medium transition-colors"
-                style={{ color: "#94a3b8" }}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-sm font-semibold transition-all hover:-translate-y-0.5"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  borderColor: "rgba(255,255,255,0.15)",
+                  color: "#e2e8f0",
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.11)";
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(99,179,237,0.4)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.06)";
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(255,255,255,0.15)";
+                }}
               >
-                <ExternalLink className="w-4 h-4" />
-                See Austin's newsletter
+                <span
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xl leading-none"
+                  style={{
+                    background: "linear-gradient(135deg, #1e1b4b, #312e81)",
+                    boxShadow: "0 3px 10px rgba(49,46,129,0.5)",
+                  }}
+                >
+                  🎸
+                </span>
+                <span className="flex flex-col items-start leading-tight">
+                  <span className="text-xs font-medium" style={{ color: "#94a3b8" }}>Live now ·</span>
+                  <span>Raj's Austin Events</span>
+                </span>
+                <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
               </a>
             </div>
 
