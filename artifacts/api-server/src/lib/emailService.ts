@@ -250,7 +250,7 @@ export function buildDigestEmailHtml(digest: {
         ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
           ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#d97706; color:#fff; padding:9px 20px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
-          <span style="display:inline-flex; align-items:center; gap:6px; background:#f5f5f4; border:1px solid #e7e5e4; color:#a8a29e; padding:8px 16px; border-radius:8px; font-size:13px;">🚗 Interested in carpooling? &nbsp;<em>Coming soon</em></span>
+          ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-flex; align-items:center; gap:6px; background:#15803d; color:#fff; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">🚗 I want to carpool!</a>` : ""}
         </div>
       </div>
     </div>
@@ -267,7 +267,7 @@ export function buildDigestEmailHtml(digest: {
       ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
         ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#22c55e; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
-        <span style="display:inline-flex; align-items:center; gap:6px; background:#f5f5f4; border:1px solid #e7e5e4; color:#a8a29e; padding:8px 16px; border-radius:8px; font-size:13px;">🚗 Interested in carpooling? &nbsp;<em>Coming soon</em></span>
+        ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-flex; align-items:center; gap:6px; background:#15803d; color:#fff; padding:8px 16px; border-radius:8px; font-size:13px; text-decoration:none; font-weight:600;">🚗 I want to carpool!</a>` : ""}
       </div>
     </div>
   `;

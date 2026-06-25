@@ -123,15 +123,78 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
 
   return (
     <div className="mt-auto pt-4 border-t border-border/50">
-      <div className="flex items-center justify-between opacity-50 cursor-not-allowed select-none">
-        <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-          <Car className="w-4 h-4" />
-          Interested in carpooling?
-        </span>
-        <span className="text-xs text-muted-foreground border border-border rounded-lg px-3 py-1">
-          Coming soon
-        </span>
-      </div>
+      {!showForm ? (
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <Car className="w-4 h-4" />
+            Interested in carpooling?
+            {count !== null && count > 0 && (
+              <span className="text-xs font-semibold text-primary ml-1">({count} interested)</span>
+            )}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowForm(true)}
+            className="shrink-0 text-xs font-semibold border-primary/40 text-primary hover:bg-primary/5"
+          >
+            Yes, I'm in! 🚗
+          </Button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+            <Car className="w-4 h-4 text-primary" />
+            Carpool with others going!
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              placeholder="First name"
+              value={firstName}
+              onChange={e => setFirstName(e.target.value)}
+              className="h-9 text-sm rounded-lg"
+              required
+            />
+            <Input
+              placeholder="Email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="h-9 text-sm rounded-lg"
+              required
+            />
+          </div>
+          <TurnstileWidget
+            onSuccess={setCaptchaToken}
+            onError={() => setCaptchaToken(null)}
+            onExpire={() => setCaptchaToken(null)}
+          />
+          <div className="flex gap-2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={status === "submitting" || !captchaToken || !email || !firstName.trim()}
+              className="flex-1 text-xs disabled:opacity-50"
+            >
+              {status === "submitting"
+                ? <><Loader2 className="w-3 h-3 animate-spin mr-1" />Connecting…</>
+                : "Connect me with others 🚗"}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => { setShowForm(false); setStatus("idle"); }}
+              className="text-xs"
+            >
+              Cancel
+            </Button>
+          </div>
+          {status === "error" && (
+            <p className="text-xs text-destructive">Something went wrong. Please try again.</p>
+          )}
+        </form>
+      )}
     </div>
   );
 }

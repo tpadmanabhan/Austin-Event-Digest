@@ -109,16 +109,15 @@ router.post("/", async (req, res) => {
         name: resolvedName,
       });
 
-      if (verifiedBySignature) {
-        // Auto-subscribe the RSVPer to the weekly newsletter only when identity is verified.
-        await db
-          .insert(subscribersTable)
-          .values({ tenantId, email: normalizedEmail, name: resolvedName, isActive: true })
-          .onConflictDoUpdate({
-            target: [subscribersTable.tenantId, subscribersTable.email],
-            set: { isActive: true, name: resolvedName },
-          });
-      }
+      // Auto-subscribe the RSVPer to the weekly newsletter (both web form and email link flows).
+      // CAPTCHA proves the submitter is human; email link proves identity via HMAC.
+      await db
+        .insert(subscribersTable)
+        .values({ tenantId, email: normalizedEmail, name: resolvedName, isActive: true })
+        .onConflictDoUpdate({
+          target: [subscribersTable.tenantId, subscribersTable.email],
+          set: { isActive: true, ...(resolvedName ? { name: resolvedName } : {}) },
+        });
 
       // Use the submitted name for display in carpool emails even for CAPTCHA submissions
       // (name is not verified via CAPTCHA, but the CAPTCHA proves the submitter is human).
