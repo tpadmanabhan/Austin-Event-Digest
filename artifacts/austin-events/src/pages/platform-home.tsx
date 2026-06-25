@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Check, ExternalLink, ArrowRight, Users, Globe, Star } from "lucide-react";
+import { MapPin, Check, ExternalLink, ArrowRight, Users, Globe, Star, Bell, CheckCircle2, Loader2 } from "lucide-react";
 import { PlatformLayout } from "@/components/platform-layout";
 import { LaunchCityModal } from "@/components/launch-city-modal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface TenantSummary {
   slug: string;
@@ -117,9 +120,88 @@ const FEATURES = [
 export default function PlatformHome() {
   const { data: tenants, isLoading: loadingTenants } = useTenantList();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [featureModalOpen, setFeatureModalOpen] = useState(false);
+  const [featureEmail, setFeatureEmail] = useState("");
+  const [featureStatus, setFeatureStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [featureError, setFeatureError] = useState("");
+
+  async function handleFeatureInterestSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!featureEmail.trim()) return;
+    setFeatureStatus("submitting");
+    setFeatureError("");
+    try {
+      const res = await fetch("/api/newsletter/feature-interest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: featureEmail.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json() as { message?: string };
+        setFeatureError(data.message || "Something went wrong. Please try again.");
+        setFeatureStatus("error");
+      } else {
+        setFeatureStatus("done");
+      }
+    } catch {
+      setFeatureError("Network error. Please try again.");
+      setFeatureStatus("error");
+    }
+  }
 
   return (
     <PlatformLayout>
+      {/* FEATURE INTEREST MODAL */}
+      <Dialog open={featureModalOpen} onOpenChange={(open) => {
+        setFeatureModalOpen(open);
+        if (!open) { setFeatureStatus("idle"); setFeatureEmail(""); setFeatureError(""); }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Bell className="w-5 h-5 text-green-500" />
+              Stay in the loop
+            </DialogTitle>
+            <DialogDescription>
+              Get notified when new features launch on EventCarpooling.com — carpooling tools, new city editions, and more.
+            </DialogDescription>
+          </DialogHeader>
+          {featureStatus === "done" ? (
+            <div className="py-8 text-center space-y-3">
+              <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
+              <p className="font-semibold text-lg">You're on the list!</p>
+              <p className="text-muted-foreground text-sm">We've sent a confirmation to <strong>{featureEmail}</strong>. We'll be in touch as features roll out.</p>
+              <Button variant="outline" className="mt-2" onClick={() => setFeatureModalOpen(false)}>Close</Button>
+            </div>
+          ) : (
+            <form onSubmit={handleFeatureInterestSubmit} className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <label htmlFor="platform-feature-email" className="text-sm font-medium">Your email address</label>
+                <Input
+                  id="platform-feature-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={featureEmail}
+                  onChange={(e) => setFeatureEmail(e.target.value)}
+                  required
+                  disabled={featureStatus === "submitting"}
+                  autoComplete="email"
+                />
+                {featureError && <p className="text-xs text-destructive">{featureError}</p>}
+              </div>
+              <Button type="submit" className="w-full" disabled={featureStatus === "submitting" || !featureEmail.trim()}>
+                {featureStatus === "submitting" ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</>
+                ) : (
+                  "Notify me about feature updates"
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">No spam, ever. Unsubscribe anytime.</p>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* HERO */}
       <section
         className="relative overflow-hidden text-center"
@@ -202,7 +284,7 @@ export default function PlatformHome() {
               email to your subscribers. Carpooling functionality will be enabled with your trusted network!
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-14">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center flex-wrap mb-8">
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-base font-semibold text-white transition-all hover:-translate-y-0.5"
@@ -248,6 +330,22 @@ export default function PlatformHome() {
                 </span>
                 <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
               </a>
+            </div>
+
+            {/* Feature interest CTA */}
+            <div className="mb-14">
+              <button
+                onClick={() => setFeatureModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all hover:-translate-y-0.5"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  color: "#e2e8f0",
+                }}
+              >
+                <Bell className="w-3.5 h-3.5" style={{ color: "#4ade80" }} />
+                Want to be notified about feature updates?
+              </button>
             </div>
 
             {/* Stats row */}
