@@ -185,9 +185,16 @@ export default function Home() {
                 Start <span className="text-primary italic">experiencing</span> {cityShortName}.
               </h1>
               
-              <p className="text-lg sm:text-xl text-muted-foreground mb-10 leading-relaxed max-w-xl">
+              <p className="text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed max-w-xl">
                 Every Monday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in {cityShortName} this week. Carpooling functionality will be enabled with your trusted network!
               </p>
+
+              <div className="mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl">
+                <p className="text-foreground/90 leading-relaxed text-base italic">
+                  "Hey Austin! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest for the week of June 22–26 — get out there and enjoy Austin 🤠"
+                </p>
+                <p className="mt-3 text-sm font-semibold text-primary not-italic">— Raj</p>
+              </div>
 
               <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60 scroll-mt-24">
                 <SubscribeForm />
