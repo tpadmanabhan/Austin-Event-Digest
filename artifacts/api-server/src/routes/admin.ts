@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, rsvpsTable, digestsTable, tenantsTable, type InsertTenant } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { sendRsvpGroupNotification, buildDigestEmailHtml } from "../lib/emailService";
+import { sendRsvpGroupNotification, buildDigestEmailHtml, sendWelcomeEmail } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin, adminTokenForHash } from "../middleware/requireAdmin";
 import { verifyPassword } from "../lib/passwordHash";
@@ -300,6 +300,16 @@ router.post("/digest/patch-subject", requireAdmin, async (req, res) => {
     req.log.error({ err }, "Error patching digest subject");
     res.status(500).json({ error: "server_error" });
   }
+});
+
+router.post("/send-test-welcome", requireAdmin, async (req, res) => {
+  const { email, name } = req.body ?? {};
+  if (!email || typeof email !== "string") {
+    res.status(400).json({ error: "invalid_request", message: "email is required" });
+    return;
+  }
+  await sendWelcomeEmail(email, name ?? null);
+  res.json({ success: true, sentTo: email });
 });
 
 export default router;
