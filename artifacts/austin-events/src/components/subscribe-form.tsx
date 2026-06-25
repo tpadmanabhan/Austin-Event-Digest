@@ -109,8 +109,8 @@ export function SubscribeForm() {
       />
       <Button
         type="submit"
-        disabled={true}
-        className="w-full h-12 text-base rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:-translate-y-0.5 !opacity-100"
+        disabled={isSubmitting || !captchaToken}
+        className="w-full h-12 text-base rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
       >
         {isSubmitting ? "Subscribing..." : "Subscribe for Free"}
       </Button>

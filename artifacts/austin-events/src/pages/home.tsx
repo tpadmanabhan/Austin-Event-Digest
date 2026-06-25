@@ -97,7 +97,7 @@ export default function Home() {
                 Every Monday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in {cityShortName} this week. Carpooling functionality will be enabled with your trusted network!
               </p>
 
-              <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60">
+              <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60 scroll-mt-24">
                 <SubscribeForm />
               </div>
             </motion.div>
