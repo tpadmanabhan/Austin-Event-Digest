@@ -14,7 +14,7 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-28 items-center justify-between">
+          <div className="flex h-52 items-center justify-between">
             <Link href="/" className="flex items-center gap-3 group">
               <div
                 className="h-14 w-14 shrink-0 rounded-2xl flex items-center justify-center text-4xl transition-transform group-hover:-translate-y-0.5"
@@ -55,7 +55,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 <img
                   src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
                   alt="EventCarpooling"
-                  className="h-16 sm:h-20 w-auto object-contain"
+                  className="h-32 sm:h-40 w-auto object-contain"
                 />
               </a>
 
@@ -100,7 +100,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <img
                 src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
                 alt="Powered by EventCarpooling"
-                className="h-16 w-auto object-contain"
+                className="h-32 w-auto object-contain"
               />
             </a>
           </div>
