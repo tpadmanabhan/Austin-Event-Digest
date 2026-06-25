@@ -7,13 +7,13 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex h-28 items-center justify-between">
             <a href="/" className="flex items-center gap-2 group">
               <div className="relative shrink-0">
                 <img
                   src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
                   alt="EventCarpooling logo"
-                  className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:-translate-y-0.5"
+                  className="h-20 sm:h-24 w-auto object-contain transition-transform group-hover:-translate-y-0.5"
                 />
                 <span className="absolute -bottom-1 -right-1 rounded-full border border-amber-400/70 bg-amber-50 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-amber-700 leading-tight">
                   Beta
@@ -58,7 +58,7 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
               <img
                 src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
                 alt="EventCarpooling logo"
-                className="h-16 w-auto object-contain opacity-90"
+                className="h-24 w-auto object-contain opacity-90"
               />
             </div>
             <p className="text-sm text-muted-foreground">
