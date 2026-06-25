@@ -51,6 +51,17 @@ function getEventDateRange(events: any[]): string {
   return `${fmt(min)} – ${fmt(max)}, ${year}`;
 }
 
+function getWeekMFDateRange(weekOfStr: string): string {
+  const monday = parseISO(weekOfStr.substring(0, 10));
+  const friday = new Date(monday);
+  friday.setDate(monday.getDate() + 4);
+  const year = friday.getFullYear();
+  if (monday.getMonth() === friday.getMonth()) {
+    return `${format(monday, "MMMM")} ${monday.getDate()}–${friday.getDate()}, ${year}`;
+  }
+  return `${format(monday, "MMMM d")} – ${format(friday, "MMMM d")}, ${year}`;
+}
+
 type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";
 
 const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
@@ -169,19 +180,12 @@ export default function DigestView() {
         <header className="mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             <Calendar className="w-4 h-4" />
-            <span>{(() => {
-              const upcoming = digest.events.filter((e: any) => isEventTodayOrLater(e.date));
-              const range = getEventDateRange(upcoming);
-              return range ? `Events: ${range}` : `Week of ${format(parseISO(digest.weekOf.substring(0, 10)), "MMMM d, yyyy")}`;
-            })()}</span>
+            <span>{`Events: ${getWeekMFDateRange(digest.weekOf)}`}</span>
           </div>
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
             {(() => {
-              const upcoming = digest.events.filter((e: any) => isEventTodayOrLater(e.date));
-              const range = getEventDateRange(upcoming);
-              if (!range) return digest.subject;
-              // Extract leading emoji if present
+              const range = getWeekMFDateRange(digest.weekOf);
               const emojiMatch = digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
               const emoji = emojiMatch ? emojiMatch[1] : "";
               return `${emoji}${cityShortName} Events: ${range}`;
