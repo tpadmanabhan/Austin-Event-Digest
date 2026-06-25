@@ -83,61 +83,82 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
   }
 }
 
-export async function sendWelcomeEmail(to: string, name?: string | null): Promise<void> {
-  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
-    logger.warn("Gmail not configured — skipping welcome email");
-    return;
-  }
-
-  const greeting = name ? `Hey ${name},` : "Hey there,";
-
-  const html = `
-<!DOCTYPE html>
-<html>
+export function buildWelcomeEmailHtml(name?: string | null): string {
+  const greeting = name ? `Hey ${name}! 👋` : "Hey there! 👋";
+  return `<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to Raj's Austin Events!</title>
+  <title>You're in! Raj's Austin Events</title>
 </head>
-<body style="margin:0; padding:0; background:#fafaf9; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:600px; margin:0 auto; padding:20px;">
-    <div style="background:linear-gradient(135deg, #292524 0%, #1c1917 100%); border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
-      <h1 style="margin:0 0 6px; color:#fbbf24; font-size:26px; font-weight:800; letter-spacing:-0.5px;">🤠 Raj's Austin Events</h1>
-      <p style="margin:0; color:#d6d3d1; font-size:14px;">Your weekly guide to what's happening in Austin</p>
+<body style="margin:0;padding:0;background:#fafaf9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <div style="max-width:580px;margin:0 auto;padding:32px 16px;">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#1c1917 0%,#292524 60%,#3b1f0a 100%);border-radius:20px;padding:40px 32px 32px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;">
+      <div style="font-size:44px;margin-bottom:8px;line-height:1;">🤠</div>
+      <h1 style="margin:0 0 6px;color:#fbbf24;font-size:28px;font-weight:800;letter-spacing:-0.5px;">Raj's Austin Events</h1>
+      <p style="margin:0;color:#a8a29e;font-size:14px;letter-spacing:0.5px;text-transform:uppercase;">Weekly Digest · Austin, TX</p>
     </div>
-    <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:28px; margin-bottom:24px;">
-      <p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>
-      <p style="margin:0 0 16px; color:#44403c; font-size:15px; line-height:1.7;">
-        You're officially on the list! Every Sunday you'll get a hand-curated roundup of the best live music, 
-        food pop-ups, tech meetups, and hidden gems happening around Austin that week.
+
+    <!-- Main card -->
+    <div style="background:#ffffff;border:1px solid #e7e5e4;border-radius:16px;padding:32px;margin-bottom:16px;">
+      <p style="margin:0 0 16px;color:#1c1917;font-size:18px;font-weight:700;">${greeting}</p>
+      <p style="margin:0 0 16px;color:#44403c;font-size:15px;line-height:1.75;">
+        You're officially on the list for Austin's most interesting week-ahead digest. 🎉
       </p>
-      <p style="margin:0; color:#44403c; font-size:15px; line-height:1.7;">
-        Keep an eye on your inbox — your first digest is on its way this Sunday. 🎉
+      <p style="margin:0 0 24px;color:#44403c;font-size:15px;line-height:1.75;">
+        <strong>Every Monday morning</strong> you'll get a hand-picked roundup of the best things happening in Austin <strong>Monday through Friday</strong> — so you can plan your week before it starts.
       </p>
+
+      <!-- What to expect -->
+      <div style="background:#fafaf9;border:1px solid #e7e5e4;border-radius:12px;padding:20px;margin-bottom:24px;">
+        <p style="margin:0 0 12px;color:#1c1917;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">What's inside every edition</p>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:5px 0;color:#44403c;font-size:14px;">🎸</td>
+            <td style="padding:5px 8px;color:#44403c;font-size:14px;">Live music &amp; concerts</td>
+            <td style="padding:5px 0;color:#44403c;font-size:14px;">🍽️</td>
+            <td style="padding:5px 8px;color:#44403c;font-size:14px;">Food pop-ups &amp; markets</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 0;color:#44403c;font-size:14px;">💻</td>
+            <td style="padding:5px 8px;color:#44403c;font-size:14px;">Tech &amp; startup meetups</td>
+            <td style="padding:5px 0;color:#44403c;font-size:14px;">🌱</td>
+            <td style="padding:5px 8px;color:#44403c;font-size:14px;">Arts, wellness &amp; community</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center;">
+        <a href="https://austin.eventcarpooling.com" style="display:inline-block;background:#fbbf24;color:#1c1917;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">Browse this week's events →</a>
+      </div>
     </div>
-    <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:4px; text-align:center;">
-      <p style="margin:0; color:#78716c; font-size:13px;">Curated with ❤️ by Raj from Austin, TX</p>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding:4px 0 16px;">
+      <p style="margin:0 0 6px;color:#78716c;font-size:13px;">Curated with ❤️ by Raj from Austin, TX</p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">You subscribed at austin.eventcarpooling.com — <a href="https://austin.eventcarpooling.com" style="color:#a8a29e;">unsubscribe anytime</a></p>
     </div>
+
   </div>
 </body>
-</html>
-  `;
+</html>`;
+}
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+export async function sendWelcomeEmail(to: string, name?: string | null): Promise<void> {
+  const html = buildWelcomeEmailHtml(name);
+  const result = await sendEmail({
+    to,
+    subject: "You're in! 🤠 Welcome to Raj's Austin Events",
+    html,
   });
-
-  try {
-    await transporter.sendMail({
-      from: `${FROM_NAME} <${GMAIL_USER}>`,
-      to,
-      subject: "You're on the list! 🤠 Raj's Austin Events",
-      html,
-    });
+  if (result.success) {
     logger.info({ to }, "Welcome email sent");
-  } catch (err) {
-    logger.error({ err, to }, "Failed to send welcome email");
+  } else {
+    logger.error({ to, error: result.error }, "Failed to send welcome email");
   }
 }
 
