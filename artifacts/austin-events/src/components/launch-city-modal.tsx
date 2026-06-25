@@ -7,8 +7,8 @@ import { Check, X, Loader2, MapPin, ArrowLeft, Zap } from "lucide-react";
 
 const CATEGORIES = [
   { name: "Tech",     emoji: "💻", description: "Startup meetups, AI demos, developer nights, and founder events." },
-  { name: "Music",    emoji: "🎵", description: "Live concerts, open mics, album releases, and music festivals." },
-  { name: "Food",     emoji: "🍔", description: "Food pop-ups, restaurant openings, farmers markets, and tastings." },
+  { name: "Arts",     emoji: "🎨", description: "Live music, concerts, galleries, theater, film, and cultural events." },
+  { name: "Sports",   emoji: "🏃", description: "Fitness groups, sports meetups, outdoor adventures, and watch parties." },
   { name: "Wellness", emoji: "🧘", description: "Yoga classes, meditation circles, hiking groups, and outdoor fitness." },
   { name: "Civics",   emoji: "🏛️", description: "City council meetings, neighborhood events, volunteer drives." },
 ];
