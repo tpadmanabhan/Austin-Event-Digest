@@ -290,7 +290,7 @@ export default function Home() {
                     >
                       <div className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20 overflow-hidden">
                         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
-                        <div className="absolute top-4 right-4">
+                        <div className="absolute top-4 right-4 z-10">
                           <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
                             <Star className="w-3 h-3 fill-amber-950" />
                             Special Event
