@@ -323,6 +323,7 @@ export interface LeaderboardRow {
   name: string;
   totalXP: number;
   rank: number;
+  currentStreak: number;
 }
 
 export async function getLeaderboard(): Promise<LeaderboardRow[]> {
@@ -332,15 +333,17 @@ export async function getLeaderboard(): Promise<LeaderboardRow[]> {
       t.slug,
       t.city,
       t.name,
-      COALESCE(SUM(x.amount), 0) AS total_xp
+      COALESCE(SUM(x.amount), 0) AS total_xp,
+      COALESCE(s.current_streak, 0) AS current_streak
     FROM tenants t
     LEFT JOIN xp_ledger x ON x.tenant_id = t.id
+    LEFT JOIN streaks s ON s.tenant_id = t.id
     WHERE t.is_active = true
-    GROUP BY t.id, t.slug, t.city, t.name
+    GROUP BY t.id, t.slug, t.city, t.name, s.current_streak
     ORDER BY total_xp DESC, t.created_at ASC
   `);
 
-  return (rows.rows as Array<{ tenant_id: number; slug: string; city: string; name: string; total_xp: string | number }>)
+  return (rows.rows as Array<{ tenant_id: number; slug: string; city: string; name: string; total_xp: string | number; current_streak: string | number }>)
     .map((r, i) => ({
       tenantId: r.tenant_id,
       slug: r.slug,
@@ -348,6 +351,7 @@ export async function getLeaderboard(): Promise<LeaderboardRow[]> {
       name: r.name,
       totalXP: Number(r.total_xp),
       rank: i + 1,
+      currentStreak: Number(r.current_streak),
     }));
 }
 

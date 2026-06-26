@@ -225,6 +225,7 @@ export const GetGamificationLeaderboardResponse = zod.object({
       name: zod.string(),
       totalXP: zod.number(),
       rank: zod.number(),
+      currentStreak: zod.number(),
     }),
   ),
 });

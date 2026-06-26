@@ -13,4 +13,5 @@ export interface LeaderboardEntry {
   name: string;
   totalXP: number;
   rank: number;
+  currentStreak: number;
 }

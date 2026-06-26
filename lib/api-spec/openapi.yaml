@@ -515,6 +515,8 @@ components:
           type: integer
         rank:
           type: integer
+        currentStreak:
+          type: integer
       required:
         - tenantId
         - slug
@@ -522,6 +524,7 @@ components:
         - name
         - totalXP
         - rank
+        - currentStreak
 
     LeaderboardResponse:
       type: object

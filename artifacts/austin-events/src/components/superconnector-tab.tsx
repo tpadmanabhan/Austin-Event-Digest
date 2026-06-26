@@ -287,12 +287,14 @@ export function SuperconnectorTab() {
                         {(entry.totalXP ?? 0).toLocaleString()}
                       </td>
                       <td className="px-6 py-3 text-right text-muted-foreground">
-                        {(entry as any).currentStreak != null ? (
+                        {entry.currentStreak > 0 ? (
                           <span className="flex items-center justify-end gap-1">
                             <Flame className="w-3 h-3 text-orange-500" />
-                            {(entry as any).currentStreak}w
+                            {entry.currentStreak}w
                           </span>
-                        ) : "—"}
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
                       </td>
                     </tr>
                   );
