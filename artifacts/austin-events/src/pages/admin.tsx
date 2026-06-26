@@ -8,12 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { AdminSettingsTab } from "@/components/admin-settings-tab";
 import { useAdminRsvps } from "@/hooks/use-rsvps";
+import { SuperconnectorTab } from "@/components/superconnector-tab";
 
 type FirstRunStep = "generate" | "preview" | "ready";
 
@@ -396,6 +397,10 @@ export default function AdminDashboard() {
               {rsvpsData && rsvpsData.total > 0 && (
                 <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-amber-950 text-xs font-bold">{rsvpsData.total}</span>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="superconnector" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Trophy className="w-3.5 h-3.5 mr-1.5 text-amber-500" />
+              Superconnector
             </TabsTrigger>
             <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Settings</TabsTrigger>
           </TabsList>
