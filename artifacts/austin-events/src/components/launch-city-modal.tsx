@@ -214,6 +214,8 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
 
               <div className="space-y-1.5">
                 <label htmlFor={`${formId}-audience`} className="text-sm font-semibold">Target Audience</label>
+                {/* focus absorber: prevents iOS Safari from auto-opening the select on modal open */}
+                <span tabIndex={0} aria-hidden="true" className="sr-only" />
                 <select
                   id={`${formId}-audience`}
                   value={targetAudience}
