@@ -225,6 +225,9 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                   <option value="Friends">Friends</option>
                   <option value="Family">Family</option>
                   <option value="Business">Business</option>
+                  <option value="Nonprofit">Nonprofit</option>
+                  <option value="Environmental">Environmental</option>
+                  <option value="Government">Government</option>
                 </select>
               </div>
 
