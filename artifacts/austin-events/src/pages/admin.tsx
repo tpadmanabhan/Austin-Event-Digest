@@ -577,6 +577,10 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
 
+          <TabsContent value="superconnector" className="mt-0">
+            <SuperconnectorTab />
+          </TabsContent>
+
           <TabsContent value="settings" className="mt-0">
             <AdminSettingsTab />
           </TabsContent>

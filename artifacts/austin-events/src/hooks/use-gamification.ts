@@ -1,6 +1,8 @@
 import {
   useGetGamificationMe,
   useGetGamificationLeaderboard,
+  getGetGamificationMeQueryKey,
+  getGetGamificationLeaderboardQueryKey,
 } from "@workspace/api-client-react";
 
 function getAuthHeaders(): HeadersInit {
@@ -11,13 +13,20 @@ function getAuthHeaders(): HeadersInit {
 export function useGamificationMe() {
   return useGetGamificationMe({
     request: { headers: getAuthHeaders() },
-    query: { staleTime: 30_000, refetchInterval: 60_000 },
+    query: {
+      queryKey: getGetGamificationMeQueryKey(),
+      staleTime: 30_000,
+      refetchInterval: 60_000,
+    },
   });
 }
 
 export function useGamificationLeaderboard() {
   return useGetGamificationLeaderboard({
     request: { headers: getAuthHeaders() },
-    query: { staleTime: 60_000 },
+    query: {
+      queryKey: getGetGamificationLeaderboardQueryKey(),
+      staleTime: 60_000,
+    },
   });
 }
