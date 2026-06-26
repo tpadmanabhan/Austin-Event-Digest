@@ -212,3 +212,73 @@ export const ListTenantsResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary Get leaderboard of all cities ranked by XP (admin)
+ */
+export const GetGamificationLeaderboardResponse = zod.object({
+  leaderboard: zod.array(
+    zod.object({
+      tenantId: zod.number(),
+      slug: zod.string(),
+      city: zod.string(),
+      name: zod.string(),
+      totalXP: zod.number(),
+      rank: zod.number(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get current tenant's XP, rank, badges, challenges, and streak (admin)
+ */
+export const GetGamificationMeResponse = zod.object({
+  totalXP: zod.number(),
+  rank: zod.number(),
+  totalCities: zod.number(),
+  streak: zod.object({
+    currentStreak: zod.number(),
+    longestStreak: zod.number(),
+    lastActiveWeek: zod.string().nullish(),
+  }),
+  challenges: zod.array(
+    zod.object({
+      id: zod.number(),
+      challengeKey: zod.string(),
+      title: zod.string(),
+      description: zod.string(),
+      targetValue: zod.number(),
+      xpReward: zod.number(),
+      currentValue: zod.number(),
+      completedAt: zod.coerce.date().nullish(),
+    }),
+  ),
+  badges: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      description: zod.string(),
+      icon: zod.string(),
+      unlockHint: zod.string(),
+      earned: zod.boolean(),
+      earnedAt: zod.coerce.date().nullish(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get all badge definitions with earned state for current tenant (admin)
+ */
+export const GetGamificationBadgesResponse = zod.object({
+  badges: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      description: zod.string(),
+      icon: zod.string(),
+      unlockHint: zod.string(),
+      earned: zod.boolean(),
+      earnedAt: zod.coerce.date().nullish(),
+    }),
+  ),
+});

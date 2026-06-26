@@ -11,6 +11,7 @@ import {
 import { sendWelcomeEmail, sendNewSubscriberAdminNotification, sendFeatureInterestEmails } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin } from "../middleware/requireAdmin";
+import { awardXP } from "../lib/gamification";
 
 const router: IRouter = Router();
 
@@ -102,6 +103,7 @@ router.post("/subscribe", async (req, res) => {
     res.json(response);
     sendWelcomeEmail(email, name ?? null).catch(() => {});
     sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? null }).catch(() => {});
+    awardXP(tenantId, "subscriber", 3, { email }).catch(() => {});
   } catch (err) {
     req.log.error({ err }, "Error subscribing");
     res.status(500).json({ error: "server_error", message: "Failed to subscribe" });

@@ -384,11 +384,71 @@ async function migrateAustinAdminPassword(): Promise<void> {
   logger.info("Migrated ADMIN_PASSWORD → Austin tenant passwordHash");
 }
 
+async function runGamificationMigration(): Promise<void> {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS xp_ledger (
+      id SERIAL PRIMARY KEY,
+      tenant_id INTEGER NOT NULL REFERENCES tenants(id),
+      amount INTEGER NOT NULL,
+      reason TEXT NOT NULL,
+      metadata JSONB,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS earned_badges (
+      id SERIAL PRIMARY KEY,
+      tenant_id INTEGER NOT NULL REFERENCES tenants(id),
+      badge_id TEXT NOT NULL,
+      earned_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      CONSTRAINT earned_badges_tenant_badge UNIQUE (tenant_id, badge_id)
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS weekly_challenges (
+      id SERIAL PRIMARY KEY,
+      week_of TEXT NOT NULL,
+      challenge_key TEXT NOT NULL,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL,
+      target_value INTEGER NOT NULL,
+      xp_reward INTEGER NOT NULL,
+      reason_filter TEXT NOT NULL
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS challenge_progress (
+      id SERIAL PRIMARY KEY,
+      tenant_id INTEGER NOT NULL REFERENCES tenants(id),
+      challenge_id INTEGER NOT NULL REFERENCES weekly_challenges(id),
+      current_value INTEGER NOT NULL DEFAULT 0,
+      completed_at TIMESTAMP,
+      CONSTRAINT challenge_progress_tenant_challenge UNIQUE (tenant_id, challenge_id)
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS streaks (
+      id SERIAL PRIMARY KEY,
+      tenant_id INTEGER NOT NULL UNIQUE REFERENCES tenants(id),
+      current_streak INTEGER NOT NULL DEFAULT 0,
+      longest_streak INTEGER NOT NULL DEFAULT 0,
+      last_active_week TEXT
+    )
+  `);
+  logger.info("Gamification migration complete");
+}
+
 export async function runStartupMigration(): Promise<void> {
   try {
     await runTenantMigration();
   } catch (err) {
     logger.warn({ err }, "Tenant migration failed (non-fatal) — DB may already be up-to-date");
+  }
+
+  try {
+    await runGamificationMigration();
+  } catch (err) {
+    logger.warn({ err }, "Gamification migration failed (non-fatal) — tables may already exist");
   }
 
   try {

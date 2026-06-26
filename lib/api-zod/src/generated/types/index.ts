@@ -6,16 +6,23 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./badge";
+export * from "./badgesResponse";
+export * from "./challengeProgress";
 export * from "./digest";
 export * from "./digestListResponse";
 export * from "./digestResponse";
 export * from "./errorResponse";
 export * from "./eventItem";
+export * from "./gamificationMeResponse";
 export * from "./generateDigestRequest";
 export * from "./getTenantConfigParams";
 export * from "./healthStatus";
+export * from "./leaderboardEntry";
+export * from "./leaderboardResponse";
 export * from "./messageResponse";
 export * from "./sendDigestRequest";
+export * from "./streakInfo";
 export * from "./subscriber";
 export * from "./subscribeRequest";
 export * from "./subscribeResponse";

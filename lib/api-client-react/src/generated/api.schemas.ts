@@ -107,6 +107,59 @@ export interface TenantsListResponse {
   tenants: TenantPublic[];
 }
 
+export interface LeaderboardEntry {
+  tenantId: number;
+  slug: string;
+  city: string;
+  name: string;
+  totalXP: number;
+  rank: number;
+}
+
+export interface LeaderboardResponse {
+  leaderboard: LeaderboardEntry[];
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  unlockHint: string;
+  earned: boolean;
+  earnedAt?: string | null;
+}
+
+export interface BadgesResponse {
+  badges: Badge[];
+}
+
+export interface ChallengeProgress {
+  id: number;
+  challengeKey: string;
+  title: string;
+  description: string;
+  targetValue: number;
+  xpReward: number;
+  currentValue: number;
+  completedAt?: string | null;
+}
+
+export interface StreakInfo {
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveWeek?: string | null;
+}
+
+export interface GamificationMeResponse {
+  totalXP: number;
+  rank: number;
+  totalCities: number;
+  streak: StreakInfo;
+  challenges: ChallengeProgress[];
+  badges: Badge[];
+}
+
 export type GetTenantConfigParams = {
   /**
    * The tenant's subdomain slug (e.g. "austin")

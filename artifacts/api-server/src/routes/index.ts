@@ -5,6 +5,7 @@ import eventsRouter from "./events";
 import rsvpRouter from "./rsvp";
 import adminRouter from "./admin";
 import tenantsRouter from "./tenants";
+import gamificationRouter from "./gamification";
 import { requireTenant, requirePlatformRoot } from "../middleware/resolveTenant";
 
 const router: IRouter = Router();
@@ -20,5 +21,6 @@ router.use("/newsletter", requireTenant, newsletterRouter);
 router.use("/events", requireTenant, eventsRouter);
 router.use("/rsvp", requireTenant, rsvpRouter);
 router.use("/admin", requireTenant, adminRouter);
+router.use("/gamification", requireTenant, gamificationRouter);
 
 export default router;

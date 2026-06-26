@@ -15,6 +15,8 @@ tags:
     description: Events and digest management
   - name: tenants
     description: Multi-tenant platform operations
+  - name: gamification
+    description: Superconnector XP, badges, challenges, streaks and leaderboard
 paths:
   /healthz:
     get:
@@ -195,6 +197,63 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TenantsListResponse"
+
+  /gamification/leaderboard:
+    get:
+      operationId: getGamificationLeaderboard
+      tags: [gamification]
+      summary: Get leaderboard of all cities ranked by XP (admin)
+      responses:
+        "200":
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /gamification/me:
+    get:
+      operationId: getGamificationMe
+      tags: [gamification]
+      summary: Get current tenant's XP, rank, badges, challenges, and streak (admin)
+      responses:
+        "200":
+          description: Gamification profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GamificationMeResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /gamification/badges:
+    get:
+      operationId: getGamificationBadges
+      tags: [gamification]
+      summary: Get all badge definitions with earned state for current tenant (admin)
+      responses:
+        "200":
+          description: Badges list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadgesResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   schemas:
@@ -440,3 +499,144 @@ components:
             $ref: "#/components/schemas/TenantPublic"
       required:
         - tenants
+
+    LeaderboardEntry:
+      type: object
+      properties:
+        tenantId:
+          type: integer
+        slug:
+          type: string
+        city:
+          type: string
+        name:
+          type: string
+        totalXP:
+          type: integer
+        rank:
+          type: integer
+      required:
+        - tenantId
+        - slug
+        - city
+        - name
+        - totalXP
+        - rank
+
+    LeaderboardResponse:
+      type: object
+      properties:
+        leaderboard:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntry"
+      required:
+        - leaderboard
+
+    Badge:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        unlockHint:
+          type: string
+        earned:
+          type: boolean
+        earnedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - name
+        - description
+        - icon
+        - unlockHint
+        - earned
+
+    BadgesResponse:
+      type: object
+      properties:
+        badges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Badge"
+      required:
+        - badges
+
+    ChallengeProgress:
+      type: object
+      properties:
+        id:
+          type: integer
+        challengeKey:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        targetValue:
+          type: integer
+        xpReward:
+          type: integer
+        currentValue:
+          type: integer
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - challengeKey
+        - title
+        - description
+        - targetValue
+        - xpReward
+        - currentValue
+
+    StreakInfo:
+      type: object
+      properties:
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        lastActiveWeek:
+          type: string
+          nullable: true
+      required:
+        - currentStreak
+        - longestStreak
+
+    GamificationMeResponse:
+      type: object
+      properties:
+        totalXP:
+          type: integer
+        rank:
+          type: integer
+        totalCities:
+          type: integer
+        streak:
+          $ref: "#/components/schemas/StreakInfo"
+        challenges:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChallengeProgress"
+        badges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Badge"
+      required:
+        - totalXP
+        - rank
+        - totalCities
+        - streak
+        - challenges
+        - badges

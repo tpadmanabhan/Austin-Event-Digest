@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { hashPassword } from "../lib/passwordHash";
 import { requirePlatformRoot } from "../middleware/resolveTenant";
 import { sendEmail } from "../lib/emailService";
+import { awardXP } from "../lib/gamification";
 
 const router: IRouter = Router();
 
@@ -223,7 +224,7 @@ router.post("/tenants", requirePlatformRoot, async (req, res) => {
     const color = typeof accentColor === "string" && /^#[0-9a-fA-F]{6}$/.test(accentColor) ? accentColor : "#7c3aed";
     const emailVerificationEnabled = isEmailVerificationEnabled();
 
-    const [tenant] = await db
+    const [tenantRow] = await db
       .insert(tenantsTable)
       .values({
         slug,
@@ -238,15 +239,18 @@ router.post("/tenants", requirePlatformRoot, async (req, res) => {
         // isActive is false until email verified (when verification is enabled)
         isActive: !emailVerificationEnabled,
       })
-      .returning({
-        slug: tenantsTable.slug,
-        name: tenantsTable.name,
-        city: tenantsTable.city,
-        accentColor: tenantsTable.accentColor,
-        categories: tenantsTable.categories,
-      });
+      .returning();
+
+    const tenant = {
+      slug: tenantRow.slug,
+      name: tenantRow.name,
+      city: tenantRow.city,
+      accentColor: tenantRow.accentColor,
+      categories: tenantRow.categories,
+    };
 
     req.log.info({ slug, city: trimmedCity, emailVerification: emailVerificationEnabled }, "New tenant created via onboarding");
+    awardXP(tenantRow.id, "tenant_referral", 50, { slug, city: trimmedCity }).catch(() => {});
 
     if (emailVerificationEnabled) {
       try {

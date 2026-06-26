@@ -17,12 +17,15 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  BadgesResponse,
   DigestListResponse,
   DigestResponse,
   ErrorResponse,
+  GamificationMeResponse,
   GenerateDigestRequest,
   GetTenantConfigParams,
   HealthStatus,
+  LeaderboardResponse,
   MessageResponse,
   SendDigestRequest,
   SubscribeRequest,
@@ -849,6 +852,232 @@ export function useListTenants<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getListTenantsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get leaderboard of all cities ranked by XP (admin)
+ */
+export const getGetGamificationLeaderboardUrl = () => {
+  return `/api/gamification/leaderboard`;
+};
+
+export const getGamificationLeaderboard = async (
+  options?: RequestInit,
+): Promise<LeaderboardResponse> => {
+  return customFetch<LeaderboardResponse>(getGetGamificationLeaderboardUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGamificationLeaderboardQueryKey = () => {
+  return [`/api/gamification/leaderboard`] as const;
+};
+
+export const getGetGamificationLeaderboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGamificationLeaderboard>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGamificationLeaderboard>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGamificationLeaderboardQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGamificationLeaderboard>>
+  > = ({ signal }) => getGamificationLeaderboard({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGamificationLeaderboard>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGamificationLeaderboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGamificationLeaderboard>>
+>;
+export type GetGamificationLeaderboardQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get leaderboard of all cities ranked by XP (admin)
+ */
+
+export function useGetGamificationLeaderboard<
+  TData = Awaited<ReturnType<typeof getGamificationLeaderboard>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGamificationLeaderboard>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGamificationLeaderboardQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get current tenant's XP, rank, badges, challenges, and streak (admin)
+ */
+export const getGetGamificationMeUrl = () => {
+  return `/api/gamification/me`;
+};
+
+export const getGamificationMe = async (
+  options?: RequestInit,
+): Promise<GamificationMeResponse> => {
+  return customFetch<GamificationMeResponse>(getGetGamificationMeUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGamificationMeQueryKey = () => {
+  return [`/api/gamification/me`] as const;
+};
+
+export const getGetGamificationMeQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGamificationMe>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGamificationMe>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetGamificationMeQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGamificationMe>>
+  > = ({ signal }) => getGamificationMe({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGamificationMe>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGamificationMeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGamificationMe>>
+>;
+export type GetGamificationMeQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get current tenant's XP, rank, badges, challenges, and streak (admin)
+ */
+
+export function useGetGamificationMe<
+  TData = Awaited<ReturnType<typeof getGamificationMe>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGamificationMe>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGamificationMeQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get all badge definitions with earned state for current tenant (admin)
+ */
+export const getGetGamificationBadgesUrl = () => {
+  return `/api/gamification/badges`;
+};
+
+export const getGamificationBadges = async (
+  options?: RequestInit,
+): Promise<BadgesResponse> => {
+  return customFetch<BadgesResponse>(getGetGamificationBadgesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGamificationBadgesQueryKey = () => {
+  return [`/api/gamification/badges`] as const;
+};
+
+export const getGetGamificationBadgesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGamificationBadges>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGamificationBadges>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetGamificationBadgesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGamificationBadges>>
+  > = ({ signal }) => getGamificationBadges({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGamificationBadges>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGamificationBadgesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGamificationBadges>>
+>;
+export type GetGamificationBadgesQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get all badge definitions with earned state for current tenant (admin)
+ */
+
+export function useGetGamificationBadges<
+  TData = Awaited<ReturnType<typeof getGamificationBadges>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGamificationBadges>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGamificationBadgesQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -4,6 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { sendRsvpNotification, sendRsvpGroupNotification, sendCarpoolAdminNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { verifyRsvpSignature } from "../lib/rsvpToken";
+import { awardXP } from "../lib/gamification";
 
 const router: IRouter = Router();
 
@@ -161,6 +162,7 @@ router.post("/", async (req, res) => {
       }).catch(() => {});
 
       req.log.info({ email: normalizedEmail, eventTitle, digestId, carpoolMatches: priorRsvps.length, verifiedBySignature }, "RSVP recorded");
+      awardXP(tenantId, "rsvp", 10, { eventTitle, digestId }).catch(() => {});
     }
 
     const totalRsvps = await db
