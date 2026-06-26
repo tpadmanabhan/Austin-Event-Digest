@@ -38,7 +38,7 @@ const CATEGORY_KEYS = [
   { name: "Civics",   emoji: "🏛️", sources: ["Meetup", "Eventbrite"], border: "#f59e0b", bg: "#fffbeb", badge: "#fef3c7", badgeText: "#b45309" },
 ] as const;
 
-export default function PlatformHome() {
+function PlatformHomeInner() {
   const { t } = useLang();
   const { data: tenants, isLoading: loadingTenants } = useTenantList();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,7 +89,7 @@ export default function PlatformHome() {
   }
 
   return (
-    <PlatformLayout>
+    <>
       {/* FEATURE INTEREST MODAL */}
       <Dialog open={featureModalOpen} onOpenChange={(open) => {
         setFeatureModalOpen(open);
@@ -624,6 +624,14 @@ export default function PlatformHome() {
       </section>
 
       <LaunchCityModal open={isModalOpen} onOpenChange={setIsModalOpen} />
+    </>
+  );
+}
+
+export default function PlatformHome() {
+  return (
+    <PlatformLayout>
+      <PlatformHomeInner />
     </PlatformLayout>
   );
 }
