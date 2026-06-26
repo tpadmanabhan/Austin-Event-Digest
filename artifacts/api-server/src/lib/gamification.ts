@@ -134,22 +134,21 @@ async function updateChallengeProgress(tenantId: number, reason: string): Promis
     const justCompleted = newValue >= challenge.targetValue && updated.completed_at === null;
 
     if (justCompleted) {
-      // Mark completed atomically — only succeeds once per (tenant, challenge)
-      await db
-        .update(challengeProgressTable)
-        .set({ completedAt: new Date() })
-        .where(and(
-          eq(challengeProgressTable.id, updated.id),
-          sql`${challengeProgressTable.completedAt} IS NULL`,
-        ));
-
-      // Award completion XP in the same scope so it can't fire twice
-      await db.insert(xpLedgerTable).values({
-        tenantId,
-        amount: challenge.xpReward,
-        reason: "challenge_complete",
-        metadata: { challengeKey: challenge.challengeKey, title: challenge.title },
-      });
+      // Atomic CTE: mark completed AND insert XP in one statement.
+      // The INSERT runs only if the UPDATE actually changes completed_at from NULL,
+      // so concurrent requests that both reach this branch can't both award XP.
+      const metadataJson = JSON.stringify({ challengeKey: challenge.challengeKey, title: challenge.title });
+      await db.execute(sql`
+        WITH completion AS (
+          UPDATE challenge_progress
+          SET completed_at = NOW()
+          WHERE id = ${updated.id} AND completed_at IS NULL
+          RETURNING id
+        )
+        INSERT INTO xp_ledger (tenant_id, amount, reason, metadata)
+        SELECT ${tenantId}, ${challenge.xpReward}, 'challenge_complete', ${metadataJson}::jsonb
+        WHERE EXISTS (SELECT 1 FROM completion)
+      `);
       logger.info({ tenantId, challengeKey: challenge.challengeKey, xp: challenge.xpReward }, "Challenge completed — XP awarded");
     }
   }
@@ -395,5 +394,21 @@ export async function getOrCreateStreak(tenantId: number) {
     .from(streaksTable)
     .where(eq(streaksTable.tenantId, tenantId))
     .limit(1);
-  return streak ?? { currentStreak: 0, longestStreak: 0, lastActiveWeek: null };
+
+  if (!streak) return { currentStreak: 0, longestStreak: 0, lastActiveWeek: null };
+
+  const currentWeek = getISOWeekString();
+  // Streak is still valid if the tenant was active THIS week or LAST week.
+  // (Last week = they haven't acted yet this week but haven't broken the chain.)
+  // Any gap beyond one week means the streak is broken — report 0 without mutating
+  // the DB (the stored value is overwritten the next time updateStreak is called).
+  const isStillActive =
+    streak.lastActiveWeek === currentWeek ||
+    isConsecutiveWeek(streak.lastActiveWeek, currentWeek);
+
+  return {
+    currentStreak: isStillActive ? streak.currentStreak : 0,
+    longestStreak: streak.longestStreak,
+    lastActiveWeek: streak.lastActiveWeek,
+  };
 }
