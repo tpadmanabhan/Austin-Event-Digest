@@ -413,8 +413,19 @@ async function runGamificationMigration(): Promise<void> {
       description TEXT NOT NULL,
       target_value INTEGER NOT NULL,
       xp_reward INTEGER NOT NULL,
-      reason_filter TEXT NOT NULL
+      reason_filter TEXT NOT NULL,
+      CONSTRAINT weekly_challenges_week_key UNIQUE (week_of, challenge_key)
     )
+  `);
+  // Backfill unique constraint onto tables created before this constraint was added
+  await db.execute(sql`
+    DO $do$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'weekly_challenges_week_key'
+      ) THEN
+        ALTER TABLE weekly_challenges ADD CONSTRAINT weekly_challenges_week_key UNIQUE (week_of, challenge_key);
+      END IF;
+    END $do$
   `);
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS challenge_progress (

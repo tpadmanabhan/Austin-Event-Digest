@@ -80,26 +80,22 @@ const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
 // ── Challenge seeder ─────────────────────────────────────────────────────────
 
 export async function seedWeeklyChallengesIfNeeded(weekOf: string): Promise<void> {
-  const existing = await db
-    .select({ id: weeklyChallengesTable.id })
-    .from(weeklyChallengesTable)
-    .where(eq(weeklyChallengesTable.weekOf, weekOf))
-    .limit(1);
-
-  if (existing.length > 0) return;
-
+  // Use ON CONFLICT DO NOTHING so concurrent first-requests of a new week
+  // don't race to create duplicate rows. The unique constraint on
+  // (week_of, challenge_key) ensures exactly one row per template per week.
   for (const t of CHALLENGE_TEMPLATES) {
-    await db.insert(weeklyChallengesTable).values({
-      weekOf,
-      challengeKey: t.key,
-      title: t.title,
-      description: t.description,
-      targetValue: t.targetValue,
-      xpReward: t.xpReward,
-      reasonFilter: t.reasonFilter,
-    });
+    await db.insert(weeklyChallengesTable)
+      .values({
+        weekOf,
+        challengeKey: t.key,
+        title: t.title,
+        description: t.description,
+        targetValue: t.targetValue,
+        xpReward: t.xpReward,
+        reasonFilter: t.reasonFilter,
+      })
+      .onConflictDoNothing();
   }
-  logger.info({ weekOf, count: CHALLENGE_TEMPLATES.length }, "Seeded weekly challenges");
 }
 
 // ── Challenge progress ───────────────────────────────────────────────────────
@@ -117,35 +113,35 @@ async function updateChallengeProgress(tenantId: number, reason: string): Promis
     ));
 
   for (const challenge of challenges) {
-    const [existing] = await db
-      .select()
-      .from(challengeProgressTable)
-      .where(and(
-        eq(challengeProgressTable.tenantId, tenantId),
-        eq(challengeProgressTable.challengeId, challenge.id),
-      ))
-      .limit(1);
+    // Atomic upsert: increment current_value by 1, but only when not yet completed.
+    // ON CONFLICT ensures concurrent requests serialise on the unique constraint
+    // (tenant_id, challenge_id) and each increments exactly once rather than
+    // racing to produce duplicate progress rows or duplicate completion awards.
+    const [updated] = await db.execute(sql`
+      INSERT INTO challenge_progress (tenant_id, challenge_id, current_value)
+      VALUES (${tenantId}, ${challenge.id}, 1)
+      ON CONFLICT (tenant_id, challenge_id) DO UPDATE
+        SET current_value = challenge_progress.current_value + 1
+        WHERE challenge_progress.completed_at IS NULL
+      RETURNING id, current_value, completed_at
+    `) as unknown as Array<{ id: number; current_value: number; completed_at: string | null }>;
 
-    if (existing?.completedAt) continue;
+    if (!updated) continue; // already completed — DO UPDATE was skipped
 
-    const newValue = (existing?.currentValue ?? 0) + 1;
-    const completed = newValue >= challenge.targetValue;
+    const newValue = Number(updated.current_value);
+    const justCompleted = newValue >= challenge.targetValue && updated.completed_at === null;
 
-    if (existing) {
+    if (justCompleted) {
+      // Mark completed atomically — only succeeds once per (tenant, challenge)
       await db
         .update(challengeProgressTable)
-        .set({ currentValue: newValue, ...(completed ? { completedAt: new Date() } : {}) })
-        .where(eq(challengeProgressTable.id, existing.id));
-    } else {
-      await db.insert(challengeProgressTable).values({
-        tenantId,
-        challengeId: challenge.id,
-        currentValue: newValue,
-        ...(completed ? { completedAt: new Date() } : {}),
-      });
-    }
+        .set({ completedAt: new Date() })
+        .where(and(
+          eq(challengeProgressTable.id, updated.id),
+          sql`${challengeProgressTable.completedAt} IS NULL`,
+        ));
 
-    if (completed) {
+      // Award completion XP in the same scope so it can't fire twice
       await db.insert(xpLedgerTable).values({
         tenantId,
         amount: challenge.xpReward,
