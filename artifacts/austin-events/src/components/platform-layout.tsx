@@ -1,8 +1,10 @@
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
+import { LangProvider, useLang } from "@/contexts/lang-context";
 
-export function PlatformLayout({ children }: { children: ReactNode }) {
+function PlatformLayoutInner({ children }: { children: ReactNode }) {
+  const { t, toggleLang } = useLang();
+
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
@@ -22,18 +24,25 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
             </a>
 
             <nav className="flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={toggleLang}
+                className="hidden sm:inline-flex items-center justify-center rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+                aria-label="Toggle language"
+              >
+                {t.langToggle}
+              </button>
               <a
                 href="#how-it-works"
                 className="hidden md:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                How it works
+                {t.howItWorks}
               </a>
               <a
                 href="#launch"
                 className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
               >
-                <span className="sm:hidden">Launch</span>
-                <span className="hidden sm:inline">Launch your city</span>
+                <span className="sm:hidden">{t.launchShort}</span>
+                <span className="hidden sm:inline">{t.launchFull}</span>
               </a>
             </nav>
           </div>
@@ -62,11 +71,19 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} EventCarpooling. Helping cities connect in real life.
+              © {new Date().getFullYear()} EventCarpooling. {t.footerTagline}
             </p>
           </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+export function PlatformLayout({ children }: { children: ReactNode }) {
+  return (
+    <LangProvider>
+      <PlatformLayoutInner>{children}</PlatformLayoutInner>
+    </LangProvider>
   );
 }

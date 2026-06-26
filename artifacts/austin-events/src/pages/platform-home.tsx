@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Check, ExternalLink, ArrowRight, Users, Globe, Star, Bell, CheckCircle2, Loader2 } from "lucide-react";
 import { PlatformLayout } from "@/components/platform-layout";
+import { useLang } from "@/contexts/lang-context";
 import { LaunchCityModal } from "@/components/launch-city-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -29,101 +30,39 @@ function useTenantList() {
   });
 }
 
-const CATEGORIES = [
-  {
-    name: "Tech",
-    emoji: "💻",
-    description: "Startup meetups, AI demos, developer nights, and founder events.",
-    sources: ["Luma", "Meetup", "Eventbrite"],
-    border: "#3b82f6",
-    bg: "#eff6ff",
-    badge: "#dbeafe",
-    badgeText: "#1d4ed8",
-  },
-  {
-    name: "Arts",
-    emoji: "🎨",
-    description: "Live music, concerts, galleries, theater, film, and cultural events.",
-    sources: ["Luma", "Bandsintown", "Eventbrite"],
-    border: "#ec4899",
-    bg: "#fdf2f8",
-    badge: "#fce7f3",
-    badgeText: "#9d174d",
-  },
-  {
-    name: "Sports",
-    emoji: "🏃",
-    description: "Fitness groups, sports meetups, outdoor adventures, and watch parties.",
-    sources: ["Meetup", "Luma", "Eventbrite"],
-    border: "#14b8a6",
-    bg: "#f0fdfa",
-    badge: "#ccfbf1",
-    badgeText: "#0f766e",
-  },
-  {
-    name: "Wellness",
-    emoji: "🧘",
-    description: "Yoga classes, meditation circles, hiking groups, and outdoor fitness.",
-    sources: ["Luma", "Meetup", "Eventbrite"],
-    border: "#22c55e",
-    bg: "#f0fdf4",
-    badge: "#dcfce7",
-    badgeText: "#15803d",
-  },
-  {
-    name: "Civics",
-    emoji: "🏛️",
-    description: "City council meetings, neighborhood events, volunteer drives, and community org.",
-    sources: ["Meetup", "Eventbrite"],
-    border: "#f59e0b",
-    bg: "#fffbeb",
-    badge: "#fef3c7",
-    badgeText: "#b45309",
-  },
-];
-
-const STEPS = [
-  {
-    number: "01",
-    icon: "📍",
-    title: "Pick your city",
-    description: "Choose any city and we set up a dedicated subdomain at yourCity.eventcarpooling.com.",
-  },
-  {
-    number: "02",
-    icon: "📋",
-    title: "Choose your categories",
-    description: "Select which event types matter most — Tech, Arts, Sports, Wellness, or Civics.",
-  },
-  {
-    number: "03",
-    icon: "🚀",
-    title: "Go live",
-    description: "We automatically discover events from top sources and send a polished weekly digest.",
-  },
-  {
-    number: "04",
-    icon: "🚗",
-    title: "Establish Carpooling with Your Trusted Network",
-    description: "Coming soon — coordinate rides to events with people you already know and trust.",
-    comingSoon: true,
-  },
-];
-
-const FEATURES = [
-  "Weekly digest auto-generated",
-  "Subscribers managed for you",
-  "One-click newsletter send",
-  "RSVP & carpool coordination",
-];
+const CATEGORY_KEYS = [
+  { name: "Tech",     emoji: "💻", sources: ["Luma", "Meetup", "Eventbrite"], border: "#3b82f6", bg: "#eff6ff", badge: "#dbeafe", badgeText: "#1d4ed8" },
+  { name: "Arts",     emoji: "🎨", sources: ["Luma", "Bandsintown", "Eventbrite"], border: "#ec4899", bg: "#fdf2f8", badge: "#fce7f3", badgeText: "#9d174d" },
+  { name: "Sports",   emoji: "🏃", sources: ["Meetup", "Luma", "Eventbrite"], border: "#14b8a6", bg: "#f0fdfa", badge: "#ccfbf1", badgeText: "#0f766e" },
+  { name: "Wellness", emoji: "🧘", sources: ["Luma", "Meetup", "Eventbrite"], border: "#22c55e", bg: "#f0fdf4", badge: "#dcfce7", badgeText: "#15803d" },
+  { name: "Civics",   emoji: "🏛️", sources: ["Meetup", "Eventbrite"], border: "#f59e0b", bg: "#fffbeb", badge: "#fef3c7", badgeText: "#b45309" },
+] as const;
 
 export default function PlatformHome() {
+  const { t } = useLang();
   const { data: tenants, isLoading: loadingTenants } = useTenantList();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [featureEmail, setFeatureEmail] = useState("");
   const [featureStatus, setFeatureStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [featureError, setFeatureError] = useState("");
+
+  const STEPS = [
+    { number: "01", icon: "📍", title: t.step1Title, description: t.step1Desc },
+    { number: "02", icon: "📋", title: t.step2Title, description: t.step2Desc },
+    { number: "03", icon: "🚀", title: t.step3Title, description: t.step3Desc },
+    { number: "04", icon: "🚗", title: t.step4Title, description: t.step4Desc, comingSoon: true },
+  ];
+
+  const FEATURES = [t.feat1, t.feat2, t.feat3, t.feat4];
+
+  const CAT_DESCS: Record<string, string> = {
+    Tech: t.catTechDesc,
+    Arts: t.catArtsDesc,
+    Sports: t.catSportsDesc,
+    Wellness: t.catWellnessDesc,
+    Civics: t.catCivicsDesc,
+  };
 
   async function handleFeatureInterestSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -138,13 +77,13 @@ export default function PlatformHome() {
       });
       if (!res.ok) {
         const data = await res.json() as { message?: string };
-        setFeatureError(data.message || "Something went wrong. Please try again.");
+        setFeatureError(data.message || t.modalErrGeneric);
         setFeatureStatus("error");
       } else {
         setFeatureStatus("done");
       }
     } catch {
-      setFeatureError("Network error. Please try again.");
+      setFeatureError(t.modalErrNetwork);
       setFeatureStatus("error");
     }
   }
@@ -160,23 +99,23 @@ export default function PlatformHome() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Bell className="w-5 h-5 text-green-500" />
-              Stay in the loop
+              {t.modalTitle}
             </DialogTitle>
             <DialogDescription>
-              Get notified when new features launch on EventCarpooling.com — carpooling tools, new city editions, and more.
+              {t.modalDesc}
             </DialogDescription>
           </DialogHeader>
           {featureStatus === "done" ? (
             <div className="py-8 text-center space-y-3">
               <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-              <p className="font-semibold text-lg">You're on the list!</p>
-              <p className="text-muted-foreground text-sm">We've sent a confirmation to <strong>{featureEmail}</strong>. We'll be in touch as features roll out.</p>
-              <Button variant="outline" className="mt-2" onClick={() => setFeatureModalOpen(false)}>Close</Button>
+              <p className="font-semibold text-lg">{t.modalDone}</p>
+              <p className="text-muted-foreground text-sm">{t.modalDoneDesc1} <strong>{featureEmail}</strong>. {t.modalDoneDesc2}</p>
+              <Button variant="outline" className="mt-2" onClick={() => setFeatureModalOpen(false)}>{t.modalClose}</Button>
             </div>
           ) : (
             <form onSubmit={handleFeatureInterestSubmit} className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <label htmlFor="platform-feature-email" className="text-sm font-medium">Your email address</label>
+                <label htmlFor="platform-feature-email" className="text-sm font-medium">{t.modalEmailLabel}</label>
                 <Input
                   id="platform-feature-email"
                   type="email"
@@ -191,12 +130,12 @@ export default function PlatformHome() {
               </div>
               <Button type="submit" className="w-full" disabled={featureStatus === "submitting" || !featureEmail.trim()}>
                 {featureStatus === "submitting" ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</>
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t.modalSending}</>
                 ) : (
-                  "Notify me about feature updates"
+                  t.modalSubmit
                 )}
               </Button>
-              <p className="text-xs text-muted-foreground text-center">No spam, ever. Unsubscribe anytime.</p>
+              <p className="text-xs text-muted-foreground text-center">{t.modalNoSpam}</p>
             </form>
           )}
         </DialogContent>
@@ -269,19 +208,17 @@ export default function PlatformHome() {
                 className="h-5 w-auto object-contain"
               />
               <span className="text-sm font-semibold" style={{ color: "#4ade80" }}>
-                Automated city newsletters, powered by real data
+                {t.heroBadge}
               </span>
             </div>
 
             <h1 className="font-serif font-bold text-white mb-6 leading-[1.15]" style={{ fontSize: "clamp(32px, 4.5vw, 60px)" }}>
-              Your city or neighborhood deserves its own events newsletter.{" "}
-              <span className="italic" style={{ color: "#4ade80" }}>Be the Superconnector!</span>
+              {t.heroH1a}{" "}
+              <span className="italic" style={{ color: "#4ade80" }}>{t.heroH1b}</span>
             </h1>
 
             <p className="text-lg mb-10 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
-              Launch a weekly events digest for any city in minutes. We automatically discover events
-              from Luma, Meetup, Eventbrite, Bandsintown, and more — then send a beautifully curated
-              email to your subscribers. Carpooling functionality will be enabled with your trusted network!
+              {t.heroSub}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center flex-wrap mb-8">
@@ -293,7 +230,7 @@ export default function PlatformHome() {
                   boxShadow: "0 8px 24px rgba(22,163,74,0.4)",
                 }}
               >
-                Launch your city <ArrowRight className="w-5 h-5" />
+                {t.heroCta} <ArrowRight className="w-5 h-5" />
               </button>
               <a
                 href="https://austin.eventcarpooling.com"
@@ -325,7 +262,7 @@ export default function PlatformHome() {
                   🎸
                 </span>
                 <span className="flex flex-col items-start leading-tight">
-                  <span className="text-xs font-medium" style={{ color: "#94a3b8" }}>Live now ·</span>
+                  <span className="text-xs font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
                   <span>Raj's Austin Events</span>
                 </span>
                 <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
@@ -344,7 +281,7 @@ export default function PlatformHome() {
                 }}
               >
                 <Bell className="w-3.5 h-3.5" style={{ color: "#4ade80" }} />
-                Want to be notified about feature updates?
+                {t.heroNotify}
               </button>
             </div>
 
@@ -354,9 +291,9 @@ export default function PlatformHome() {
               style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 40 }}
             >
               {[
-                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "1+", label: "Cities live" },
-                { icon: <Star className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "5", label: "Event categories" },
-                { icon: <Users className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "10+", label: "Data sources" },
+                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "1+", label: t.statCities },
+                { icon: <Star className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "5", label: t.statCategories },
+                { icon: <Users className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "10+", label: t.statSources },
               ].map((stat, i) => (
                 <div
                   key={i}
@@ -381,12 +318,12 @@ export default function PlatformHome() {
               className="inline-block rounded-full px-3.5 py-1 text-xs font-bold uppercase tracking-widest mb-4"
               style={{ background: "#dcfce7", color: "#15803d" }}
             >
-              How it works
+              {t.howBadge}
             </div>
             <h2 className="font-serif text-4xl font-bold mb-3" style={{ color: "#0f172a" }}>
-              From zero to newsletter in minutes
+              {t.howH2}
             </h2>
-            <p style={{ color: "#64748b" }}>Four steps to give your city its own events digest.</p>
+            <p style={{ color: "#64748b" }}>{t.howSub}</p>
           </div>
 
           <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-0">
@@ -430,7 +367,7 @@ export default function PlatformHome() {
                     className="inline-block text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-2"
                     style={{ background: "#fef3c7", color: "#b45309" }}
                   >
-                    Coming soon
+                    {t.comingSoon}
                   </span>
                 )}
                 <div
@@ -462,18 +399,18 @@ export default function PlatformHome() {
               className="inline-block rounded-full px-3.5 py-1 text-xs font-bold uppercase tracking-widest mb-4"
               style={{ background: "#dcfce7", color: "#15803d" }}
             >
-              Categories
+              {t.catBadge}
             </div>
             <h2 className="font-serif text-4xl font-bold mb-3" style={{ color: "#0f172a" }}>
-              Five categories, dozens of sources
+              {t.catH2}
             </h2>
             <p style={{ color: "#64748b" }}>
-              Pick the categories that define your city. We pull from the top platforms automatically.
+              {t.catSub}
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {CATEGORIES.map((cat, i) => (
+            {CATEGORY_KEYS.map((cat, i) => (
               <motion.div
                 key={cat.name}
                 initial={{ opacity: 0, y: 20 }}
@@ -497,7 +434,7 @@ export default function PlatformHome() {
                     </div>
                     <h3 className="font-serif text-lg font-bold" style={{ color: "#0f172a" }}>{cat.name}</h3>
                   </div>
-                  <p className="text-sm leading-relaxed mb-4" style={{ color: "#475569" }}>{cat.description}</p>
+                  <p className="text-sm leading-relaxed mb-4" style={{ color: "#475569" }}>{CAT_DESCS[cat.name]}</p>
                 </div>
                 <div
                   className="px-6 pb-5 pt-3 flex flex-wrap gap-1.5"
@@ -525,7 +462,7 @@ export default function PlatformHome() {
               className="rounded-2xl p-6 flex flex-col justify-center gap-4"
               style={{ border: "2px dashed #e2e8f0", background: "#f8fafc" }}
             >
-              <h3 className="font-serif text-lg font-bold" style={{ color: "#0f172a" }}>And it all just works</h3>
+              <h3 className="font-serif text-lg font-bold" style={{ color: "#0f172a" }}>{t.catJustWorks}</h3>
               <ul className="space-y-3">
                 {FEATURES.map(f => (
                   <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: "#475569" }}>
@@ -552,11 +489,11 @@ export default function PlatformHome() {
               className="inline-block rounded-full px-3.5 py-1 text-xs font-bold uppercase tracking-widest mb-4"
               style={{ background: "#dcfce7", color: "#15803d" }}
             >
-              Live cities
+              {t.liveBadge}
             </div>
-            <h2 className="font-serif text-4xl font-bold mb-3" style={{ color: "#0f172a" }}>Live cities</h2>
+            <h2 className="font-serif text-4xl font-bold mb-3" style={{ color: "#0f172a" }}>{t.liveH2}</h2>
             <p style={{ color: "#64748b" }}>
-              These cities are already sending weekly newsletters. Yours could be next.
+              {t.liveSub}
             </p>
           </div>
 
@@ -625,8 +562,8 @@ export default function PlatformHome() {
                 >
                   <MapPin className="w-5 h-5" style={{ color: "#16a34a" }} />
                 </div>
-                <div className="font-bold" style={{ color: "#16a34a" }}>Your city could be next</div>
-                <div className="text-sm" style={{ color: "#64748b" }}>Join the platform and launch in minutes</div>
+                <div className="font-bold" style={{ color: "#16a34a" }}>{t.liveYourCityNext}</div>
+                <div className="text-sm" style={{ color: "#64748b" }}>{t.liveJoinMinutes}</div>
               </div>
             </div>
           ) : (
@@ -641,8 +578,8 @@ export default function PlatformHome() {
                 >
                   <MapPin className="w-5 h-5" style={{ color: "#16a34a" }} />
                 </div>
-                <div className="font-bold" style={{ color: "#16a34a" }}>Your city could be first</div>
-                <div className="text-sm" style={{ color: "#64748b" }}>Launch today and start the newsletter wave</div>
+                <div className="font-bold" style={{ color: "#16a34a" }}>{t.liveYourCityFirst}</div>
+                <div className="text-sm" style={{ color: "#64748b" }}>{t.liveStartWave}</div>
               </div>
             </div>
           )}
@@ -669,20 +606,19 @@ export default function PlatformHome() {
             viewport={{ once: true }}
           >
             <h2 className="font-serif text-5xl font-bold text-white mb-5 leading-tight">
-              Ready to launch your city?
+              {t.ctaH2}
             </h2>
             <p className="text-lg mb-10 leading-relaxed" style={{ color: "#bbf7d0" }}>
-              Join the platform and give your city the newsletter it deserves.
-              Setup takes under five minutes.
+              {t.ctaSub}
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
               className="inline-flex items-center gap-2.5 rounded-full bg-white px-10 py-4 text-base font-bold transition-all hover:-translate-y-0.5"
               style={{ color: "#16a34a", boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}
             >
-              Get started — it's free <ArrowRight className="w-5 h-5" />
+              {t.ctaButton} <ArrowRight className="w-5 h-5" />
             </button>
-            <p className="text-sm mt-4" style={{ color: "#86efac" }}>No credit card required.</p>
+            <p className="text-sm mt-4" style={{ color: "#86efac" }}>{t.ctaNoCard}</p>
           </motion.div>
         </div>
       </section>
