@@ -166,7 +166,7 @@ router.get("/tenants/check-slug", requirePlatformRoot, async (req, res) => {
 });
 
 router.post("/tenants", requirePlatformRoot, async (req, res) => {
-  const { cityName, slug, adminEmail, adminPassword, categories, accentColor } = req.body ?? {};
+  const { cityName, slug, adminEmail, adminPassword, categories, accentColor, referrerSlug } = req.body ?? {};
 
   if (!cityName || typeof cityName !== "string" || cityName.trim().length < 2) {
     res.status(400).json({ error: "invalid_request", message: "cityName must be at least 2 characters" });
@@ -249,8 +249,22 @@ router.post("/tenants", requirePlatformRoot, async (req, res) => {
       categories: tenantRow.categories,
     };
 
-    req.log.info({ slug, city: trimmedCity, emailVerification: emailVerificationEnabled }, "New tenant created via onboarding");
-    awardXP(tenantRow.id, "tenant_referral", 50, { slug, city: trimmedCity }).catch(() => {});
+    req.log.info({ slug, city: trimmedCity, emailVerification: emailVerificationEnabled, referrerSlug }, "New tenant created via onboarding");
+
+    // Award referral XP to the REFERRING city (not the new tenant).
+    // referrerSlug is optional — if omitted or invalid, no XP is awarded.
+    if (referrerSlug && typeof referrerSlug === "string") {
+      db.select({ id: tenantsTable.id })
+        .from(tenantsTable)
+        .where(eq(tenantsTable.slug, referrerSlug))
+        .limit(1)
+        .then(([referrer]) => {
+          if (referrer) {
+            awardXP(referrer.id, "tenant_referral", 50, { referredSlug: slug, referredCity: trimmedCity }).catch(() => {});
+          }
+        })
+        .catch(() => {});
+    }
 
     if (emailVerificationEnabled) {
       try {

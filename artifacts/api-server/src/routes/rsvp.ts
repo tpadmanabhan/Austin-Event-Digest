@@ -4,7 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { sendRsvpNotification, sendRsvpGroupNotification, sendCarpoolAdminNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { verifyRsvpSignature } from "../lib/rsvpToken";
-import { awardXP } from "../lib/gamification";
+import { awardXP, updateStreak } from "../lib/gamification";
 
 const router: IRouter = Router();
 
@@ -162,7 +162,11 @@ router.post("/", async (req, res) => {
       }).catch(() => {});
 
       req.log.info({ email: normalizedEmail, eventTitle, digestId, carpoolMatches: priorRsvps.length, verifiedBySignature }, "RSVP recorded");
+      // Award +10 XP per carpool RSVP. All events in this newsletter are eligible for
+      // carpool matching (no featured-only filter — events don't carry a featured flag).
       awardXP(tenantId, "rsvp", 10, { eventTitle, digestId }).catch(() => {});
+      // A week with at least one RSVP counts as an active week for streak purposes.
+      updateStreak(tenantId).catch(() => {});
     }
 
     const totalRsvps = await db
