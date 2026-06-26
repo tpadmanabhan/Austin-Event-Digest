@@ -288,6 +288,14 @@ export async function awardXP(
     return;
   }
 
+  // For streak-affecting activities, update streak BEFORE badge evaluation so that
+  // streak-based badges (on_a_roll, streak_master) see the fresh streak count.
+  if (reason === "rsvp" || reason === "digest_event") {
+    await updateStreak(tenantId).catch(err =>
+      logger.warn({ err, tenantId, reason }, "Streak update failed — non-fatal"),
+    );
+  }
+
   // Run challenge progress and badge checks independently: a failure in one must
   // not prevent the other from running, since both are additive side-effects.
   await updateChallengeProgress(tenantId, reason).catch(err =>

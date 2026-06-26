@@ -14,7 +14,7 @@ import { sendEmail, buildDigestEmailHtml } from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
 import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } from "../lib/eventSources";
 import { requireAdmin } from "../middleware/requireAdmin";
-import { awardXP, updateStreak } from "../lib/gamification";
+import { awardXP } from "../lib/gamification";
 
 const router: IRouter = Router();
 
@@ -172,9 +172,9 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     // Award XP for each event in the digest and update the weekly streak (fire-and-forget)
     const eventCount = events.length;
     if (eventCount > 0) {
+      // updateStreak is called inside awardXP for "digest_event" before badge check.
       awardXP(req.tenant!.id, "digest_event", eventCount * 5, { digestId: digest.id, eventCount }).catch(() => {});
     }
-    updateStreak(req.tenant!.id).catch(() => {});
   } catch (err) {
     req.log.error({ err }, "Error generating digest");
     res.status(500).json({ error: "server_error", message: "Failed to generate digest" });
