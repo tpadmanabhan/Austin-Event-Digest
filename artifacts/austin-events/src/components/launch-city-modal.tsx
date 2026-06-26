@@ -66,6 +66,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
   const [adminPassword, setAdminPassword] = useState("");
   const [accentColor, setAccentColor] = useState("#7c3aed");
   const [categories, setCategories] = useState<string[]>(["Tech"]);
+  const [targetAudience, setTargetAudience] = useState("Friends");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [verifyEmailSent, setVerifyEmailSent] = useState(false);
@@ -87,6 +88,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
     setAdminPassword("");
     setAccentColor("#7c3aed");
     setCategories(["Tech"]);
+    setTargetAudience("Friends");
     setIsSubmitting(false);
     setSubmitError("");
     setVerifyEmailSent(false);
@@ -113,7 +115,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
       const res = await fetch("/api/tenants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cityName: cityName.trim(), slug, adminEmail, adminPassword, categories, accentColor }),
+        body: JSON.stringify({ cityName: cityName.trim(), slug, adminEmail, adminPassword, categories, accentColor, targetAudience }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -208,6 +210,20 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                   className="rounded-xl"
                   disabled
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor={`${formId}-audience`} className="text-sm font-semibold">Target Audience</label>
+                <select
+                  id={`${formId}-audience`}
+                  value={targetAudience}
+                  onChange={e => setTargetAudience(e.target.value)}
+                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="Friends">Friends</option>
+                  <option value="Family">Family</option>
+                  <option value="Business">Business</option>
+                </select>
               </div>
 
               <div className="hidden">
