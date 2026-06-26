@@ -43,7 +43,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <button
                 onClick={toggleMute}
                 title={muted ? "Unmute music" : "Mute music"}
-                className="flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-card text-muted-foreground hover:text-primary hover:border-primary/40 transition-all"
+                className="hidden sm:flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-card text-muted-foreground hover:text-primary hover:border-primary/40 transition-all"
               >
                 {muted ? <VolumeX className="w-4 h-4" /> : <Music className="w-4 h-4" />}
               </button>
