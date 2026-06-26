@@ -2,7 +2,6 @@ import { Router, type IRouter } from "express";
 import { requireAdmin } from "../middleware/requireAdmin";
 import {
   getLeaderboard,
-  getTenantTotalXP,
   getActiveChallengesWithProgress,
   getBadgesWithEarnedState,
   getOrCreateStreak,

@@ -117,16 +117,18 @@ async function updateChallengeProgress(tenantId: number, reason: string): Promis
     // ON CONFLICT ensures concurrent requests serialise on the unique constraint
     // (tenant_id, challenge_id) and each increments exactly once rather than
     // racing to produce duplicate progress rows or duplicate completion awards.
-    const [updated] = await db.execute(sql`
+    // db.execute returns { rows: [...] }, not a plain array.
+    const result = await db.execute(sql`
       INSERT INTO challenge_progress (tenant_id, challenge_id, current_value)
       VALUES (${tenantId}, ${challenge.id}, 1)
       ON CONFLICT (tenant_id, challenge_id) DO UPDATE
         SET current_value = challenge_progress.current_value + 1
         WHERE challenge_progress.completed_at IS NULL
       RETURNING id, current_value, completed_at
-    `) as unknown as Array<{ id: number; current_value: number; completed_at: string | null }>;
+    `);
+    const updated = result.rows[0] as { id: number; current_value: number; completed_at: string | null } | undefined;
 
-    if (!updated) continue; // already completed — DO UPDATE was skipped
+    if (!updated) continue; // already completed — DO UPDATE WHERE was skipped, no row returned
 
     const newValue = Number(updated.current_value);
     const justCompleted = newValue >= challenge.targetValue && updated.completed_at === null;
@@ -282,11 +284,19 @@ export async function awardXP(
 ): Promise<void> {
   try {
     await db.insert(xpLedgerTable).values({ tenantId, amount, reason, metadata: metadata ?? null });
-    await updateChallengeProgress(tenantId, reason);
-    await checkAndAwardBadges(tenantId);
   } catch (err) {
-    logger.warn({ err, tenantId, reason, amount }, "Failed to award XP — non-fatal");
+    logger.warn({ err, tenantId, reason, amount }, "Failed to insert XP ledger row — non-fatal");
+    return;
   }
+
+  // Run challenge progress and badge checks independently: a failure in one must
+  // not prevent the other from running, since both are additive side-effects.
+  await updateChallengeProgress(tenantId, reason).catch(err =>
+    logger.warn({ err, tenantId, reason }, "Challenge progress update failed — non-fatal"),
+  );
+  await checkAndAwardBadges(tenantId).catch(err =>
+    logger.warn({ err, tenantId }, "Badge check failed — non-fatal"),
+  );
 }
 
 // ── Query helpers (used by gamification routes) ──────────────────────────────
