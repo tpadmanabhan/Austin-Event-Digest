@@ -391,6 +391,106 @@ function PlatformHomeInner() {
         </div>
       </section>
 
+      {/* SUPERCONNECTOR COMING SOON */}
+      <section className="py-20 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #3b0764 40%, #1e1b4b 100%)" }}>
+        {/* decorative blobs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div style={{ position: "absolute", top: "-80px", left: "-80px", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", bottom: "-60px", right: "-60px", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(250,204,21,0.2) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 65%)" }} />
+        </div>
+
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {/* top badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-8"
+            style={{ background: "rgba(250,204,21,0.15)", color: "#fde047", border: "1px solid rgba(250,204,21,0.3)" }}
+          >
+            <span>⚡</span> New Feature
+          </motion.div>
+
+          {/* trophy */}
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.1 }}
+            className="text-7xl mb-6 select-none"
+          >
+            🏆
+          </motion.div>
+
+          {/* headline */}
+          <motion.h2
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55, delay: 0.15 }}
+            className="font-serif font-black leading-tight mb-4"
+            style={{ fontSize: "clamp(2.2rem, 6vw, 4rem)", color: "#fff", letterSpacing: "-0.02em" }}
+          >
+            Superconnector
+            <br />
+            <span style={{ background: "linear-gradient(90deg, #a855f7, #facc15, #f97316, #a855f7)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              Gamification
+            </span>
+          </motion.h2>
+
+          {/* coming soon pill */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.25 }}
+            className="inline-flex items-center gap-2 rounded-full px-6 py-2 mb-8 font-black text-lg uppercase tracking-widest"
+            style={{ background: "linear-gradient(90deg, #7c3aed, #a855f7)", color: "#fff", boxShadow: "0 0 32px rgba(168,85,247,0.5), 0 0 64px rgba(168,85,247,0.2)" }}
+          >
+            ✨ Coming Soon!
+          </motion.div>
+
+          {/* description */}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="text-lg leading-relaxed max-w-2xl mx-auto mb-12"
+            style={{ color: "rgba(255,255,255,0.7)" }}
+          >
+            City operators will earn XP, climb leaderboards, unlock badges, and compete in weekly challenges — turning community building into a game.
+          </motion.p>
+
+          {/* feature chips */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.38 }}
+            className="flex flex-wrap justify-center gap-3"
+          >
+            {[
+              { icon: "⚡", label: "XP & Ranks" },
+              { icon: "🔥", label: "Streaks" },
+              { icon: "🎖️", label: "Badges" },
+              { icon: "📅", label: "Weekly Challenges" },
+              { icon: "🏅", label: "City Leaderboard" },
+            ].map((f) => (
+              <span
+                key={f.label}
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
+                style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+              >
+                {f.icon} {f.label}
+              </span>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* CATEGORY SHOWCASE */}
       <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
