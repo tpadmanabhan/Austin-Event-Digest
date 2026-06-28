@@ -91,7 +91,7 @@ export default function AdminDashboard() {
   const [lastGeneratedDigest, setLastGeneratedDigest] = useState<{ eventCount: number; digestId: number } | null>(null);
 
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
-  const [testEmail, setTestEmail] = useState("");
+  const [testEmail, setTestEmail] = useState("aiimplementationclubaustin@gmail.com");
 
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
@@ -429,7 +429,7 @@ export default function AdminDashboard() {
                 </div>
                 <Button
                   className="w-full rounded-xl"
-                  disabled={isSending}
+                  disabled={isSending || !testEmail}
                   onClick={() => {
                     send(
                       { data: { digestId: latest.id, testEmail } },
@@ -623,8 +623,8 @@ export default function AdminDashboard() {
                               variant="outline"
                               size="sm"
                               className="rounded-lg shadow-none"
-                              disabled={isSending}
-                              title={`Send draft to ${testEmail}`}
+                              disabled={isSending || !testEmail}
+                              title={testEmail ? `Send draft to ${testEmail}` : "Set a test email in Settings"}
                               onClick={() => {
                                 send(
                                   { data: { digestId: digest.id, testEmail } },
