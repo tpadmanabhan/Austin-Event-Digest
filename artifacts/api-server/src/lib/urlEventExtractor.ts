@@ -116,7 +116,6 @@ If no events are found for this week, return an empty array: []`;
     const response = await client.chat.completions.create({
       model: "gpt-5-mini",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.2,
       max_completion_tokens: 3000,
     });
 
