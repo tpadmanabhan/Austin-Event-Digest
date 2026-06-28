@@ -491,6 +491,33 @@ function PlatformHomeInner() {
         </div>
       </section>
 
+      {/* JAPAN LAUNCH */}
+      <section className="py-16" style={{ background: "linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%)" }}>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-5 py-1.5 mb-6 text-xs font-bold uppercase tracking-widest"
+              style={{ background: "rgba(147,197,253,0.15)", color: "#93c5fd", border: "1px solid rgba(147,197,253,0.3)" }}
+            >
+              Coming Soon
+            </div>
+            <div className="text-5xl mb-4">🗾</div>
+            <h2 className="font-serif font-black text-3xl sm:text-4xl mb-5" style={{ color: "#eff6ff", letterSpacing: "-0.02em" }}>
+              Japan Launch
+            </h2>
+            <p className="text-lg leading-relaxed" style={{ color: "#bfdbfe" }}>
+              EventCarpooling.com is expanding to Japan — bringing the same weekly event digest, carpool RSVP, and city community features that power Austin to cities across Japan. Local organizers will be able to launch their own city newsletter, curate weekly events, grow a subscriber base, and earn XP on the global leaderboard.{" "}
+              <strong style={{ color: "#eff6ff" }}>Tokyo, Osaka, Kyoto — watch this space.</strong>
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* CATEGORY SHOWCASE */}
       <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
