@@ -81,8 +81,8 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string): Gener
   ];
   
   const intro = customNotes
-    ? `Happy Sunday, Austin! Here's Raj's curated guide to the best events happening in Austin the week of ${dateRange}.\n\n${customNotes}\n\nAs always, get out there and enjoy this amazing city! 🤠`
-    : `Happy Sunday, Austin! Here's your weekly roundup of the best events happening in our city the week of ${dateRange}.\n\nWe've got an incredible mix this week — live music, outdoor adventures, arts and culture, and of course great food. Austin never disappoints, and this week is no exception. Get out there and enjoy it!`;
+    ? `Happy Sunday, Austin! Here's Raj's curated guide to the best events happening in Austin this week.\n\n${customNotes}\n\nAs always, get out there and enjoy this amazing city! 🤠`
+    : `Happy Sunday, Austin! Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Austin never disappoints, and this week is no exception. Get out there and enjoy it!`;
 
   return {
     subject: `🤠 Raj's Austin Events — Week of ${dateRange}`,
