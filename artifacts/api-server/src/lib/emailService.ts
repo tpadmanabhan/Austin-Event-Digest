@@ -333,12 +333,46 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
     </div>
 
-    <!-- Coming Soon Teaser -->
-    <div style="background:#fef9c3; border:1px solid #fde68a; border-radius:12px; padding:18px 20px; margin-bottom:24px; text-align:center;">
-      <p style="margin:0; color:#92400e; font-size:14px; line-height:1.6;">
-        <strong>Coming Soon:</strong> Become the events and carpooling person for your city or neighborhood —
-        <a href="https://eventcarpooling.com" style="color:#b45309; font-weight:700; text-decoration:underline;">eventcarpooling.com</a>
+    <!-- Superconnector Feature Block -->
+    <div style="background:linear-gradient(135deg,#1c1917 0%,#292524 60%,#3b1f0a 100%); border-radius:16px; padding:28px 24px; margin-bottom:24px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <tr>
+          <td style="vertical-align:middle; padding-right:16px; width:56px;">
+            <img src="https://austin.eventcarpooling.com/eventcarpooling-logo.png" alt="EventCarpooling" width="48" height="48" style="display:block; border-radius:10px;" />
+          </td>
+          <td style="vertical-align:middle;">
+            <p style="margin:0 0 2px; color:#fbbf24; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Upcoming Feature</p>
+            <p style="margin:0; color:#fef3c7; font-size:18px; font-weight:800; letter-spacing:-0.3px;">🏆 Superconnector</p>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:16px 0 14px; color:#d6d3d1; font-size:14px; line-height:1.7;">
+        Cities on EventCarpooling.com now earn XP — and <strong style="color:#fbbf24;">compete</strong>. Every action that builds your community counts:
       </p>
+
+      <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+        <tr>
+          <td style="padding:5px 8px 5px 0; color:#fbbf24; font-size:14px; font-weight:700; white-space:nowrap;">+50 XP</td>
+          <td style="padding:5px 0; color:#d6d3d1; font-size:14px;">Send your weekly digest</td>
+          <td style="padding:5px 8px 5px 16px; color:#fbbf24; font-size:14px; font-weight:700; white-space:nowrap;">+20 XP</td>
+          <td style="padding:5px 0; color:#d6d3d1; font-size:14px;">Land an RSVP</td>
+        </tr>
+        <tr>
+          <td style="padding:5px 8px 5px 0; color:#fbbf24; font-size:14px; font-weight:700; white-space:nowrap;">+10 XP</td>
+          <td style="padding:5px 0; color:#d6d3d1; font-size:14px;">New subscriber joins</td>
+          <td style="padding:5px 8px 5px 16px; color:#fbbf24; font-size:14px; font-weight:700; white-space:nowrap;">+100 XP</td>
+          <td style="padding:5px 0; color:#d6d3d1; font-size:14px;">Refer another city</td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 16px; color:#d6d3d1; font-size:14px; line-height:1.7;">
+        Cities rank on a <strong style="color:#fef3c7;">live leaderboard</strong>. Publish every week to build a streak — unlocking badges and climbing the rankings. Weekly challenges reset every Sunday with fresh bonus XP. The more you show up for Austin, the higher Austin climbs.
+      </p>
+
+      <div style="text-align:center;">
+        <a href="https://eventcarpooling.com" style="display:inline-block; background:#fbbf24; color:#1c1917; font-size:14px; font-weight:700; text-decoration:none; padding:12px 28px; border-radius:100px; letter-spacing:-0.2px;">Learn more at EventCarpooling.com →</a>
+      </div>
     </div>
 
     <!-- Featured Event -->
