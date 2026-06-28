@@ -10,7 +10,7 @@ export const T = {
     footerTagline: "Helping cities connect in real life.",
     langToggle: "🇯🇵 日本語",
 
-    heroBadge: "Automated city newsletters, powered by real data",
+    heroBadge: "🚗 Events newsletter + carpooling, for your city",
     heroH1a: "Your city or neighborhood deserves its own events newsletter.",
     heroH1b: "Be the Superconnector!",
     heroSub: "Launch a weekly events digest for any city in minutes. We automatically discover events from Luma, Meetup, Eventbrite, Bandsintown, and more — then send a beautifully curated email to your subscribers. Carpooling functionality will be enabled with your trusted network!",
