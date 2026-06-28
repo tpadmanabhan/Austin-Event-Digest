@@ -558,13 +558,29 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-lg shadow-none"
+                              disabled={isSending}
+                              title={`Send draft to ${testEmail}`}
+                              onClick={() => {
+                                send(
+                                  { data: { digestId: digest.id, testEmail } },
+                                  { onSuccess: () => toast({ title: `Draft sent to ${testEmail}` }),
+                                    onError: (err) => toast({ variant: "destructive", title: "Failed to send draft", description: err.message }) }
+                                );
+                              }}
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-1.5" /> Draft to me
+                            </Button>
                             <Button 
                               variant="secondary" 
                               size="sm" 
                               className="rounded-lg shadow-none"
                               onClick={() => setSendDialogTarget(digest.id)}
                             >
-                              <Send className="w-3.5 h-3.5 mr-2" /> Send...
+                              <Send className="w-3.5 h-3.5 mr-2" /> Send to all…
                             </Button>
                             <Button
                               variant="ghost"
