@@ -166,20 +166,10 @@ const LangContext = createContext<LangContextValue>({
 });
 
 export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>(() => {
-    try {
-      return (localStorage.getItem("ec-lang") as Lang) || "en";
-    } catch {
-      return "en";
-    }
-  });
+  const [lang, setLang] = useState<Lang>("en");
 
   const toggleLang = () => {
-    setLang(prev => {
-      const next: Lang = prev === "en" ? "ja" : "en";
-      try { localStorage.setItem("ec-lang", next); } catch {}
-      return next;
-    });
+    setLang(prev => prev === "en" ? "ja" : "en");
   };
 
   return (
