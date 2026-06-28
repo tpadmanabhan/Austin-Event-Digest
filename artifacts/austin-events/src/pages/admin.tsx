@@ -404,6 +404,41 @@ export default function AdminDashboard() {
               </div>
             </div>
           ))}
+
+          {/* Quick-action: draft latest digest to Raj */}
+          {digestsData?.digests && digestsData.digests.length > 0 && (() => {
+            const latest = digestsData.digests[0];
+            return (
+              <div className="bg-primary/5 border-2 border-primary/20 p-6 rounded-2xl shadow-sm flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
+                    <Eye className="w-6 h-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">Latest Draft</p>
+                    <p className="text-xs text-muted-foreground truncate">{latest.subject}</p>
+                  </div>
+                </div>
+                <Button
+                  className="w-full rounded-xl"
+                  disabled={isSending}
+                  onClick={() => {
+                    send(
+                      { data: { digestId: latest.id, testEmail } },
+                      {
+                        onSuccess: () => toast({ title: `Draft sent to ${testEmail}` }),
+                        onError: (err) => toast({ variant: "destructive", title: "Failed", description: err.message }),
+                      }
+                    );
+                  }}
+                >
+                  {isSending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Eye className="w-4 h-4 mr-2" />}
+                  Send Draft to My Email
+                </Button>
+                <p className="text-xs text-center text-muted-foreground truncate">{testEmail}</p>
+              </div>
+            );
+          })()}
           {/* Active Categories card */}
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
             <div className="flex items-center gap-3 mb-3">
