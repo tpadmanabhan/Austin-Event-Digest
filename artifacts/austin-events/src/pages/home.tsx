@@ -163,7 +163,7 @@ export default function Home() {
       </div>
 
       {/* HERO SECTION */}
-      <section className="relative overflow-hidden bg-background py-16 sm:py-24 lg:py-32">
+      <section className="relative overflow-hidden bg-background py-6 sm:py-10">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary)_0%,transparent_40%)] opacity-5" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -175,17 +175,17 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="max-w-2xl"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-6 border border-secondary/20">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4 border border-secondary/20">
                 <Sparkles className="w-4 h-4" />
                 <span>The best of {cityShortName}, hand-picked for you</span>
               </div>
               
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold font-serif text-balance text-foreground mb-6 leading-[1.1]">
+              <h1 className="text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1]">
                 Stop scrolling. <br/>
                 Start <span className="text-primary italic">experiencing</span> {cityShortName}.
               </h1>
               
-              <p className="text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed max-w-xl">
+              <p className="text-base text-muted-foreground mb-5 leading-relaxed max-w-xl">
                 Every Monday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in {cityShortName} this week. Carpooling functionality will be enabled with your trusted network!
               </p>
 
