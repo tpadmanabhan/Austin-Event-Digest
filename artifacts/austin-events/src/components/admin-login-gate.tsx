@@ -42,6 +42,7 @@ export function AdminLoginGate({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaUnavailable, setCaptchaUnavailable] = useState(false);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   useEffect(() => {
@@ -55,10 +56,10 @@ export function AdminLoginGate({ children }: { children: React.ReactNode }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!captchaToken) return;
+    if (!captchaToken && !captchaUnavailable) return;
     setError("");
     setLoading(true);
-    const token = await login(password, captchaToken);
+    const token = await login(password, captchaToken ?? "");
     setLoading(false);
     if (token) {
       sessionStorage.setItem(TOKEN_KEY, token);
@@ -96,14 +97,16 @@ export function AdminLoginGate({ children }: { children: React.ReactNode }) {
             autoFocus
             className="h-11"
           />
-          <TurnstileWithRef
-            turnstileRef={turnstileRef}
-            onSuccess={setCaptchaToken}
-            onError={() => setCaptchaToken(null)}
-            onExpire={() => setCaptchaToken(null)}
-          />
+          {!captchaUnavailable && (
+            <TurnstileWithRef
+              turnstileRef={turnstileRef}
+              onSuccess={setCaptchaToken}
+              onError={() => { setCaptchaToken(null); setCaptchaUnavailable(true); }}
+              onExpire={() => setCaptchaToken(null)}
+            />
+          )}
           {error && <p className="text-sm text-destructive text-center">{error}</p>}
-          <Button type="submit" disabled={loading || !password || !captchaToken} className="h-11">
+          <Button type="submit" disabled={loading || !password || (!captchaToken && !captchaUnavailable)} className="h-11">
             {loading ? "Checking…" : "Sign in"}
           </Button>
         </form>

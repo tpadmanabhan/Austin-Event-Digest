@@ -370,18 +370,13 @@ async function migrateAustinAdminPassword(): Promise<void> {
     return;
   }
 
-  if (austin.passwordHash) {
-    logger.debug("Austin tenant already has a passwordHash — skipping migration");
-    return;
-  }
-
   const hashed = await hashPassword(adminPassword);
   await db
     .update(tenantsTable)
     .set({ passwordHash: hashed })
     .where(eq(tenantsTable.slug, "austin"));
 
-  logger.info("Migrated ADMIN_PASSWORD → Austin tenant passwordHash");
+  logger.info("Synced ADMIN_PASSWORD → Austin tenant passwordHash");
 }
 
 async function runGamificationMigration(): Promise<void> {
