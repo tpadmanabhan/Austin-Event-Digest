@@ -445,18 +445,10 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
     }
 
     let recipients: Array<{ email: string; name: string | null }> = [];
-    // Build the public-facing site URL for RSVP links in emails.
-    // x-forwarded-host is the most accurate source — it reflects the exact subdomain
-    // the admin request arrived on (e.g. austin.eventcarpooling.com), whereas
-    // REPLIT_DOMAINS[0] is the platform root (eventcarpooling.com) which has no tenant.
-    // Priority: explicit SITE_URL → x-forwarded-host → REPLIT_DOMAINS → host header
-    const forwardedHost = req.get("x-forwarded-host");
-    const replitDomain = process.env.REPLIT_DOMAINS?.split(",").find(d => d.trim() !== "eventcarpooling.com")?.trim()
-      || process.env.REPLIT_DOMAINS?.split(",")[0]?.trim();
-    const siteUrl = process.env.SITE_URL
-      || (forwardedHost ? `https://${forwardedHost}` : null)
-      || (replitDomain ? `https://${replitDomain}` : null)
-      || `https://${req.get("host")}`;
+    // Always use the tenant's canonical subdomain for RSVP/unsubscribe links in emails.
+    // This is the only reliable approach — header-based inference can return the platform
+    // root domain (eventcarpooling.com) which has no tenant and breaks the carpool flow.
+    const siteUrl = process.env.SITE_URL || `https://${req.tenant!.slug}.eventcarpooling.com`;
 
     if (testEmail) {
       recipients = [{ email: testEmail, name: null }];
