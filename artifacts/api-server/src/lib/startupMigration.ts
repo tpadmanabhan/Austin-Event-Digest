@@ -371,10 +371,9 @@ async function migrateAustinAdminPassword(): Promise<void> {
   }
 
   const hashed = await hashPassword(adminPassword);
-  await db
-    .update(tenantsTable)
-    .set({ passwordHash: hashed })
-    .where(eq(tenantsTable.slug, "austin"));
+  await db.execute(
+    sql`UPDATE tenants SET password_hash = ${hashed} WHERE slug = 'austin'`
+  );
 
   logger.info("Synced ADMIN_PASSWORD → Austin tenant passwordHash");
 }
@@ -460,7 +459,7 @@ export async function runStartupMigration(): Promise<void> {
   try {
     await migrateAustinAdminPassword();
   } catch (err) {
-    logger.warn({ err }, "Admin password migration failed (non-fatal)");
+    logger.error({ err }, "Admin password migration FAILED — password may not be updated");
   }
 
   try {
