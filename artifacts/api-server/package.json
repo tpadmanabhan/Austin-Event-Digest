@@ -19,6 +19,7 @@
     "imapflow": "^1.2.18",
     "mailparser": "^3.9.6",
     "nodemailer": "^8.0.4",
+    "openai": "^6.45.0",
     "pino": "^9",
     "pino-http": "^10"
   },

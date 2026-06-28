@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
@@ -82,12 +82,47 @@ export default function AdminDashboard() {
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [customNotes, setCustomNotes] = useState("");
   const [weekOfInput, setWeekOfInput] = useState(currentSunday);
+
+  const [sourceUrls, setSourceUrls] = useState<string[]>(["", "", "", "", ""]);
+  const [sourceWeekOf, setSourceWeekOf] = useState(currentSunday);
+  const [isGeneratingFromSources, setIsGeneratingFromSources] = useState(false);
+  const [sourceResults, setSourceResults] = useState<Array<{ url: string; eventCount: number; error?: string }> | null>(null);
   const [lastGeneratedDigest, setLastGeneratedDigest] = useState<{ eventCount: number; digestId: number } | null>(null);
 
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
   const [testEmail, setTestEmail] = useState("");
 
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+
+  const onGenerateFromSources = async () => {
+    const urls = sourceUrls.filter(u => u.trim().startsWith("http"));
+    if (urls.length === 0) {
+      toast({ variant: "destructive", title: "No valid URLs", description: "Enter at least one URL starting with http." });
+      return;
+    }
+    setIsGeneratingFromSources(true);
+    setSourceResults(null);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch("/api/events/digest/generate-from-sources", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ urls, weekOf: sourceWeekOf }),
+      });
+      const data = await res.json() as { digest?: { id: number; events?: unknown[] }; sourceResults?: Array<{ url: string; eventCount: number; error?: string }>; message?: string };
+      if (!res.ok) throw new Error(data.message || "Failed to generate");
+      const eventCount = Array.isArray(data.digest?.events) ? data.digest.events.length : 0;
+      const digestId = data.digest?.id ?? null;
+      if (digestId !== null) setLastGeneratedDigest({ eventCount, digestId });
+      setSourceResults(data.sourceResults ?? []);
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      toast({ title: `Digest generated — ${eventCount} events found!` });
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Failed to generate", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsGeneratingFromSources(false);
+    }
+  };
 
   const onDelete = (digestId: number) => {
     deleteDigest(digestId, {
@@ -406,6 +441,82 @@ export default function AdminDashboard() {
           </TabsList>
           
           <TabsContent value="digests" className="space-y-6 mt-0">
+            {/* SOURCE URL FORM */}
+            <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-border flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Globe className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">Generate from Event Sources</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Paste up to 5 event page URLs (Luma, Eventbrite, Meetup, org sites, etc.) and AI will extract this week's events</p>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {sourceUrls.map((url, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">{i + 1}</div>
+                      <Input
+                        type="url"
+                        placeholder={i === 0 ? "https://lu.ma/austin" : i === 1 ? "https://eventbrite.com/d/tx--austin/events/" : i === 2 ? "https://meetup.com/find/?location=Austin" : `https://example.com/events`}
+                        value={url}
+                        onChange={e => setSourceUrls(prev => prev.map((v, j) => j === i ? e.target.value : v))}
+                        className="rounded-xl text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end pt-2 border-t border-border">
+                  <div className="space-y-1.5 flex-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Week (Sunday)</label>
+                    <Input
+                      type="date"
+                      value={sourceWeekOf}
+                      onChange={e => setSourceWeekOf(e.target.value)}
+                      className="rounded-xl w-44"
+                    />
+                    {sourceWeekOf && (
+                      <p className="text-xs text-muted-foreground">
+                        Events from <strong>{format(new Date(sourceWeekOf + "T12:00:00"), "MMM d")}</strong> – <strong>{format(new Date(new Date(sourceWeekOf + "T12:00:00").getTime() + 6 * 24 * 60 * 60 * 1000), "MMM d, yyyy")}</strong>
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    onClick={onGenerateFromSources}
+                    disabled={isGeneratingFromSources || sourceUrls.every(u => !u.trim())}
+                    className="rounded-xl gap-2 shrink-0"
+                  >
+                    {isGeneratingFromSources ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Extracting events…</>
+                    ) : (
+                      <><Sparkles className="w-4 h-4" /> Generate from Sources</>
+                    )}
+                  </Button>
+                </div>
+
+                {sourceResults && (
+                  <div className="pt-2 space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Source Results</p>
+                    <div className="grid gap-1.5">
+                      {sourceResults.map((r, i) => (
+                        <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${r.error ? "bg-destructive/5 border border-destructive/20" : r.eventCount > 0 ? "bg-green-50 border border-green-200" : "bg-muted/50 border border-border"}`}>
+                          <Link className="w-3 h-3 shrink-0 text-muted-foreground" />
+                          <span className="truncate flex-1 font-mono text-muted-foreground">{r.url}</span>
+                          {r.error ? (
+                            <span className="text-destructive font-medium shrink-0">Failed</span>
+                          ) : (
+                            <span className={`font-semibold shrink-0 ${r.eventCount > 0 ? "text-green-700" : "text-muted-foreground"}`}>{r.eventCount} event{r.eventCount !== 1 ? "s" : ""}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap">

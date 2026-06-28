@@ -15,6 +15,7 @@ import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from 
 import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } from "../lib/eventSources";
 import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
+import { extractEventsFromSources } from "../lib/urlEventExtractor";
 
 const router: IRouter = Router();
 
@@ -303,6 +304,62 @@ router.get("/debug/emails", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error fetching debug emails");
     res.status(500).json({ error: "server_error", message: String(err) });
+  }
+});
+
+// Generate a digest from user-supplied event source URLs (AI-powered scraping)
+router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
+  const { urls, weekOf: weekOfStr } = req.body as { urls?: unknown; weekOf?: string };
+
+  if (!Array.isArray(urls) || urls.length === 0) {
+    res.status(400).json({ error: "invalid_request", message: "urls[] array is required" });
+    return;
+  }
+
+  const validUrls = (urls as unknown[]).filter((u): u is string => typeof u === "string" && u.startsWith("http")).slice(0, 5);
+  if (validUrls.length === 0) {
+    res.status(400).json({ error: "invalid_request", message: "No valid URLs provided" });
+    return;
+  }
+
+  try {
+    const weekOf = weekOfStr ? new Date(weekOfStr) : getNextSunday();
+    const { events, results } = await extractEventsFromSources(validUrls, weekOf);
+
+    const tenantCategories = (req.tenant!.categories as string[]) || [];
+    const deduped = deduplicateEvents(events);
+    const filtered = tenantCategories.length > 0 ? filterByTenantCategories(deduped, tenantCategories) : deduped;
+    const finalEvents = filtered.length > 0 ? filtered : deduped;
+
+    const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
+    const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
+    const label = `${weekOf.toLocaleDateString("en-US", opts)}–${weekEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
+    const subject = `🤠 ${req.tenant!.city} Events: ${label}`;
+    const sourceList = validUrls.map(u => `• ${u}`).join("\n");
+    const successCount = results.filter(r => r.events.length > 0).length;
+    const intro = `Happy Sunday! Here's your curated guide to events in ${req.tenant!.city} the week of ${label}.\n\nThis digest was generated from ${successCount} event source${successCount !== 1 ? "s" : ""}:\n${sourceList}\n\nGet out there and enjoy it! 🤠`;
+
+    const eventsToSave = finalEvents.length > 0 ? finalEvents : (() => {
+      const fallback = generateSampleDigest(weekOf);
+      return fallback.events;
+    })();
+
+    const [digest] = await db
+      .insert(digestsTable)
+      .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: eventsToSave, sentCount: 0 })
+      .returning();
+
+    req.log.info({ sources: validUrls.length, events: eventsToSave.length }, "Generated digest from URL sources");
+
+    if (eventsToSave.length > 0) {
+      awardXP(req.tenant!.id, "digest_event", eventsToSave.length * 5, { digestId: digest.id, eventCount: eventsToSave.length }).catch(() => {});
+    }
+
+    const response = GenerateDigestResponse.parse({ digest: digestToApi(digest) });
+    res.json({ ...response, sourceResults: results.map(r => ({ url: r.url, eventCount: r.events.length, error: r.error })) });
+  } catch (err) {
+    req.log.error({ err }, "Error generating digest from sources");
+    res.status(500).json({ error: "server_error", message: "Failed to generate digest from sources" });
   }
 });
 
