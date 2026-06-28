@@ -11,7 +11,7 @@ export const T = {
     langToggle: "🇯🇵 日本語",
 
     heroBadge: "🚗 Events newsletter + carpooling, for your city",
-    heroH1a: "Your city or neighborhood deserves its own events newsletter.",
+    heroH1a: "Your city or neighborhood deserves its own events newsletter — with carpooling built in.",
     heroH1b: "Be the Superconnector!",
     heroSub: "Launch a weekly events digest for any city in minutes. We automatically discover events from Luma, Meetup, Eventbrite, Bandsintown, and more — then send a beautifully curated email to your subscribers. Carpooling functionality will be enabled with your trusted network!",
     heroCta: "Launch your city",
