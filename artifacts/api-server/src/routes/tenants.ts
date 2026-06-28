@@ -193,7 +193,7 @@ router.post("/tenants", requirePlatformRoot, async (req, res) => {
     return;
   }
 
-  const allowedCategories = new Set(["Tech", "Music", "Food", "Wellness", "Civics"]);
+  const allowedCategories = new Set(["Tech", "Music", "Food", "Wellness", "Civics", "Sports"]);
   if (!Array.isArray(categories) || categories.length === 0 || !categories.every((c: unknown) => typeof c === "string" && allowedCategories.has(c))) {
     res.status(400).json({ error: "invalid_request", message: "categories must be a non-empty array of valid category names" });
     return;
