@@ -307,9 +307,10 @@ router.get("/debug/emails", requireAdmin, async (req, res) => {
   }
 });
 
-// Generate a digest from user-supplied event source URLs (AI-powered scraping)
+// Generate a digest from user-supplied event source URLs (AI-powered scraping).
+// Optional: pass digestId to merge extracted events into an existing digest instead of creating a new one.
 router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
-  const { urls, weekOf: weekOfStr } = req.body as { urls?: unknown; weekOf?: string };
+  const { urls, weekOf: weekOfStr, digestId: targetDigestId } = req.body as { urls?: unknown; weekOf?: string; digestId?: number };
 
   if (!Array.isArray(urls) || urls.length === 0) {
     res.status(400).json({ error: "invalid_request", message: "urls[] array is required" });
@@ -331,30 +332,62 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
     const filtered = tenantCategories.length > 0 ? filterByTenantCategories(deduped, tenantCategories) : deduped;
     const finalEvents = filtered.length > 0 ? filtered : deduped;
 
-    const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
-    const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
-    const label = `${weekOf.toLocaleDateString("en-US", opts)}–${weekEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-    const subject = `🤠 ${req.tenant!.city} Events: ${label}`;
-    const intro = `Hey ${req.tenant!.city.split(",")[0]}! With the help of AI, I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest for the week of ${label} — get out there and enjoy it! 🤠`;
+    const sourceResults = results.map(r => ({ url: r.url, eventCount: r.events.length, error: r.error }));
 
-    const eventsToSave = finalEvents.length > 0 ? finalEvents : (() => {
-      const fallback = generateSampleDigest(weekOf);
-      return fallback.events;
-    })();
+    // No events found — return without creating/modifying a digest
+    if (finalEvents.length === 0) {
+      req.log.warn({ sources: validUrls.length }, "No events extracted from URL sources");
+      res.json({ digest: null, eventsFound: 0, sourceResults });
+      return;
+    }
 
-    const [digest] = await db
-      .insert(digestsTable)
-      .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: eventsToSave, sentCount: 0 })
-      .returning();
+    let digest;
 
-    req.log.info({ sources: validUrls.length, events: eventsToSave.length }, "Generated digest from URL sources");
+    if (typeof targetDigestId === "number") {
+      // Merge mode: add new events into an existing digest (deduplicated)
+      const [existing] = await db
+        .select()
+        .from(digestsTable)
+        .where(and(eq(digestsTable.id, targetDigestId), eq(digestsTable.tenantId, req.tenant!.id)))
+        .limit(1);
 
-    if (eventsToSave.length > 0) {
-      awardXP(req.tenant!.id, "digest_event", eventsToSave.length * 5, { digestId: digest.id, eventCount: eventsToSave.length }).catch(() => {});
+      if (!existing) {
+        res.status(404).json({ error: "not_found", message: "Target digest not found" });
+        return;
+      }
+
+      const merged = deduplicateEvents([...(existing.events as any[]), ...finalEvents]);
+      const [updated] = await db
+        .update(digestsTable)
+        .set({ events: merged })
+        .where(and(eq(digestsTable.id, targetDigestId), eq(digestsTable.tenantId, req.tenant!.id)))
+        .returning();
+
+      digest = updated;
+      req.log.info({ digestId: targetDigestId, added: finalEvents.length, total: merged.length }, "Merged URL-sourced events into existing digest");
+    } else {
+      // Create mode: insert a new digest
+      const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
+      const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
+      const label = `${weekOf.toLocaleDateString("en-US", opts)}–${weekEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
+      const subject = `🤠 ${req.tenant!.city} Events: ${label}`;
+      const intro = `Hey ${req.tenant!.city.split(",")[0]}! With the help of AI, I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest for the week of ${label} — get out there and enjoy it! 🤠`;
+
+      const [newDigest] = await db
+        .insert(digestsTable)
+        .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: finalEvents, sentCount: 0 })
+        .returning();
+
+      digest = newDigest;
+      req.log.info({ sources: validUrls.length, events: finalEvents.length }, "Generated new digest from URL sources");
+    }
+
+    if (finalEvents.length > 0) {
+      awardXP(req.tenant!.id, "digest_event", finalEvents.length * 5, { digestId: digest.id, eventCount: finalEvents.length }).catch(() => {});
     }
 
     const response = GenerateDigestResponse.parse({ digest: digestToApi(digest) });
-    res.json({ ...response, sourceResults: results.map(r => ({ url: r.url, eventCount: r.events.length, error: r.error })) });
+    res.json({ ...response, eventsFound: finalEvents.length, sourceResults });
   } catch (err) {
     req.log.error({ err }, "Error generating digest from sources");
     res.status(500).json({ error: "server_error", message: "Failed to generate digest from sources" });

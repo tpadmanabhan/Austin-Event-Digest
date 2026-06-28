@@ -85,6 +85,7 @@ export default function AdminDashboard() {
 
   const [sourceUrls, setSourceUrls] = useState<string[]>(["", "", "", "", ""]);
   const [sourceWeekOf, setSourceWeekOf] = useState(currentSunday);
+  const [sourceTargetDigestId, setSourceTargetDigestId] = useState<number | null>(null);
   const [isGeneratingFromSources, setIsGeneratingFromSources] = useState(false);
   const [sourceResults, setSourceResults] = useState<Array<{ url: string; eventCount: number; error?: string }> | null>(null);
   const [lastGeneratedDigest, setLastGeneratedDigest] = useState<{ eventCount: number; digestId: number } | null>(null);
@@ -104,19 +105,26 @@ export default function AdminDashboard() {
     setSourceResults(null);
     try {
       const token = sessionStorage.getItem("admin_token");
+      const body: Record<string, unknown> = { urls, weekOf: sourceWeekOf };
+      if (sourceTargetDigestId !== null) body.digestId = sourceTargetDigestId;
       const res = await fetch("/api/events/digest/generate-from-sources", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ urls, weekOf: sourceWeekOf }),
+        body: JSON.stringify(body),
       });
-      const data = await res.json() as { digest?: { id: number; events?: unknown[] }; sourceResults?: Array<{ url: string; eventCount: number; error?: string }>; message?: string };
+      const data = await res.json() as { digest?: { id: number; events?: unknown[] } | null; eventsFound?: number; sourceResults?: Array<{ url: string; eventCount: number; error?: string }>; message?: string };
       if (!res.ok) throw new Error(data.message || "Failed to generate");
-      const eventCount = Array.isArray(data.digest?.events) ? data.digest.events.length : 0;
-      const digestId = data.digest?.id ?? null;
-      if (digestId !== null) setLastGeneratedDigest({ eventCount, digestId });
       setSourceResults(data.sourceResults ?? []);
-      queryClient.invalidateQueries({ queryKey: ["digests"] });
-      toast({ title: `Digest generated — ${eventCount} events found!` });
+      const eventsFound = data.eventsFound ?? (Array.isArray(data.digest?.events) ? data.digest.events.length : 0);
+      if (eventsFound === 0) {
+        toast({ variant: "destructive", title: "No events extracted", description: "These URLs couldn't be scraped (likely JavaScript-rendered pages). Try a direct event listing URL or Eventbrite/Meetup." });
+      } else {
+        const digestId = data.digest?.id ?? null;
+        if (digestId !== null) setLastGeneratedDigest({ eventCount: eventsFound, digestId });
+        queryClient.invalidateQueries({ queryKey: ["digests"] });
+        const action = sourceTargetDigestId !== null ? "merged into digest" : "new digest created";
+        toast({ title: `${eventsFound} event${eventsFound !== 1 ? "s" : ""} extracted — ${action}!` });
+      }
     } catch (err: unknown) {
       toast({ variant: "destructive", title: "Failed to generate", description: err instanceof Error ? err.message : String(err) });
     } finally {
@@ -518,6 +526,24 @@ export default function AdminDashboard() {
                       </p>
                     )}
                   </div>
+                  <div className="space-y-1.5 flex-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add to existing digest (optional)</label>
+                    <select
+                      value={sourceTargetDigestId ?? ""}
+                      onChange={e => setSourceTargetDigestId(e.target.value ? Number(e.target.value) : null)}
+                      className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">— Create new digest —</option>
+                      {digestsData?.digests?.map(d => (
+                        <option key={d.id} value={d.id}>
+                          #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
+                        </option>
+                      ))}
+                    </select>
+                    {sourceTargetDigestId !== null && (
+                      <p className="text-xs text-muted-foreground">Extracted events will be merged into digest #{sourceTargetDigestId}</p>
+                    )}
+                  </div>
                   <Button
                     onClick={onGenerateFromSources}
                     disabled={isGeneratingFromSources || sourceUrls.every(u => !u.trim())}
@@ -526,7 +552,7 @@ export default function AdminDashboard() {
                     {isGeneratingFromSources ? (
                       <><Loader2 className="w-4 h-4 animate-spin" /> Extracting events…</>
                     ) : (
-                      <><Sparkles className="w-4 h-4" /> Generate from Sources</>
+                      <><Sparkles className="w-4 h-4" /> {sourceTargetDigestId !== null ? "Extract & Merge" : "Generate from Sources"}</>
                     )}
                   </Button>
                 </div>
