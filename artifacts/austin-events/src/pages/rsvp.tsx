@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
 import { CheckCircle2, XCircle, Loader2, ArrowLeft, Car } from "lucide-react";
 import { Layout } from "@/components/layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 function decodeParam(val: string | null): string {
   if (!val) return "";
@@ -20,21 +23,29 @@ export default function RsvpPage() {
   const name = decodeParam(params.get("n"));
   const sig = params.get("s") || undefined;
 
-  const [status, setStatus] = useState<"loading" | "success" | "already" | "error">("loading");
+  const [nameInput, setNameInput] = useState(name || "");
+  const [emailInput, setEmailInput] = useState(email || "");
+  const [status, setStatus] = useState<"form" | "loading" | "success" | "already" | "error">("form");
   const [count, setCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
 
-  useEffect(() => {
-    if (!digestId || !eventTitle || !email || !sig) {
-      setStatus("error");
-      setErrorMsg("Invalid RSVP link.");
-      return;
-    }
+  const hasValidParams = !!(digestId && eventTitle && (email || !sig));
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!emailInput.trim()) return;
+    setStatus("loading");
 
     fetch("/api/rsvp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ digestId, eventTitle, email, name: name || undefined, sig }),
+      body: JSON.stringify({
+        digestId,
+        eventTitle,
+        email: emailInput.trim(),
+        name: nameInput.trim() || undefined,
+        sig,
+      }),
     })
       .then(async r => {
         const data = await r.json();
@@ -50,21 +61,80 @@ export default function RsvpPage() {
         setStatus("error");
         setErrorMsg("Something went wrong. Please try again.");
       });
-  }, []);
+  }
 
   return (
     <Layout>
       <div className="min-h-[70vh] flex items-center justify-center px-4 py-20">
-        <div className="max-w-md w-full text-center">
+        <div className="max-w-md w-full">
+
+          {status === "form" && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Car className="w-8 h-8 text-primary" />
+                </div>
+                <h1 className="font-serif text-3xl font-bold text-foreground mb-2">Carpool RSVP</h1>
+                {eventTitle && (
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Interested in carpooling to:<br />
+                    <span className="font-semibold text-foreground">{eventTitle}</span>
+                  </p>
+                )}
+              </div>
+
+              {!hasValidParams ? (
+                <div className="text-center text-muted-foreground">
+                  <XCircle className="w-10 h-10 text-destructive mx-auto mb-3" />
+                  <p>This link appears to be invalid. Please use the link from your newsletter email.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Your name</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Jane Smith"
+                      value={nameInput}
+                      onChange={e => setNameInput(e.target.value)}
+                      autoComplete="name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Your email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={emailInput}
+                      onChange={e => setEmailInput(e.target.value)}
+                      required
+                      autoComplete="email"
+                      readOnly={!!email && !!sig}
+                      className={email && sig ? "bg-muted cursor-default" : ""}
+                    />
+                    {email && sig && (
+                      <p className="text-xs text-muted-foreground">Email is tied to your newsletter subscription.</p>
+                    )}
+                  </div>
+                  <Button type="submit" className="w-full" size="lg">
+                    🚗 Count me in for carpooling!
+                  </Button>
+                </form>
+              )}
+            </div>
+          )}
+
           {status === "loading" && (
-            <div className="space-y-4">
+            <div className="text-center space-y-4">
               <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
               <p className="text-muted-foreground text-lg">Recording your RSVP…</p>
             </div>
           )}
 
           {(status === "success" || status === "already") && (
-            <div className="space-y-6">
+            <div className="space-y-6 text-center">
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
                 <Car className="w-10 h-10 text-primary" />
               </div>
@@ -95,7 +165,7 @@ export default function RsvpPage() {
           )}
 
           {status === "error" && (
-            <div className="space-y-6">
+            <div className="space-y-6 text-center">
               <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
                 <XCircle className="w-10 h-10 text-destructive" />
               </div>
@@ -103,10 +173,11 @@ export default function RsvpPage() {
                 <h1 className="font-serif text-3xl font-bold text-foreground mb-2">Oops!</h1>
                 <p className="text-muted-foreground text-lg">{errorMsg}</p>
               </div>
+              <Button variant="outline" onClick={() => setStatus("form")}>Try again</Button>
             </div>
           )}
 
-          <div className="mt-10">
+          <div className="mt-10 text-center">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm font-medium"

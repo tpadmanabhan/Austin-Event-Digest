@@ -30,7 +30,6 @@ timeoutMs = 20000
 [userenv.shared]
 GMAIL_USER = "aiimplementationclubaustin@gmail.com"
 VITE_TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
-SITE_URL = "https://eventcarpooling.com"
 
 [userenv.development]
 DEFAULT_TENANT_SLUG = "austin"
