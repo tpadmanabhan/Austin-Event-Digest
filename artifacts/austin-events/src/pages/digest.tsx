@@ -52,14 +52,14 @@ function getEventDateRange(events: any[]): string {
 }
 
 function getWeekMFDateRange(weekOfStr: string): string {
-  const monday = parseISO(weekOfStr.substring(0, 10));
-  const friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
-  const year = friday.getFullYear();
-  if (monday.getMonth() === friday.getMonth()) {
-    return `${format(monday, "MMMM")} ${monday.getDate()}–${friday.getDate()}, ${year}`;
+  const sunday = parseISO(weekOfStr.substring(0, 10));
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
+  const year = saturday.getFullYear();
+  if (sunday.getMonth() === saturday.getMonth()) {
+    return `${format(sunday, "MMMM")} ${sunday.getDate()}–${saturday.getDate()}, ${year}`;
   }
-  return `${format(monday, "MMMM d")} – ${format(friday, "MMMM d")}, ${year}`;
+  return `${format(sunday, "MMMM d")} – ${format(saturday, "MMMM d")}, ${year}`;
 }
 
 type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";

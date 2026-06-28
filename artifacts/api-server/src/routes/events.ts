@@ -335,9 +335,7 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
     const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
     const label = `${weekOf.toLocaleDateString("en-US", opts)}–${weekEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
     const subject = `🤠 ${req.tenant!.city} Events: ${label}`;
-    const sourceList = validUrls.map(u => `• ${u}`).join("\n");
-    const successCount = results.filter(r => r.events.length > 0).length;
-    const intro = `Happy Sunday! Here's your curated guide to events in ${req.tenant!.city} the week of ${label}.\n\nThis digest was generated from ${successCount} event source${successCount !== 1 ? "s" : ""}:\n${sourceList}\n\nGet out there and enjoy it! 🤠`;
+    const intro = `Hey ${req.tenant!.city.split(",")[0]}! With the help of AI, I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest for the week of ${label} — get out there and enjoy it! 🤠`;
 
     const eventsToSave = finalEvents.length > 0 ? finalEvents : (() => {
       const fallback = generateSampleDigest(weekOf);
