@@ -27,8 +27,9 @@ async function fetchPageText(url: string): Promise<string> {
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; EventDigestBot/1.0)",
-        "Accept": "text/html,application/xhtml+xml,*/*",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
       },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -116,7 +117,7 @@ If no events are found for this week, return an empty array: []`;
       model: "gpt-5-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
-      max_tokens: 3000,
+      max_completion_tokens: 3000,
     });
 
     const raw = response.choices[0]?.message?.content?.trim() || "[]";
