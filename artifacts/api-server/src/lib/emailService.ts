@@ -109,7 +109,7 @@ export function buildWelcomeEmailHtml(name?: string | null): string {
         You're officially on the list for Austin's most interesting week-ahead digest. 🎉
       </p>
       <p style="margin:0 0 24px;color:#44403c;font-size:15px;line-height:1.75;">
-        <strong>Every Monday morning</strong> you'll get a hand-picked roundup of the best things happening in Austin <strong>Monday through Friday</strong> — so you can plan your week before it starts.
+        <strong>Every Sunday</strong> you'll get a hand-picked roundup of the best things happening in Austin <strong>Sunday through Saturday</strong> — so you can plan your whole week before it starts.
       </p>
 
       <!-- What to expect -->

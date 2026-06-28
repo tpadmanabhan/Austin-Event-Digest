@@ -39,7 +39,7 @@ export function SubscribeForm() {
         form.reset();
         toast({
           title: "You're on the list! 🎉",
-          description: "Keep an eye on your inbox this Monday.",
+          description: "Keep an eye on your inbox this Sunday.",
         });
       } else {
         toast({
@@ -68,7 +68,7 @@ export function SubscribeForm() {
           <CheckCircle2 className="w-8 h-8" />
         </div>
         <h3 className="font-serif text-2xl font-bold mb-2">You're on the list!</h3>
-        <p className="text-muted-foreground">Get ready for your first digest this Monday.</p>
+        <p className="text-muted-foreground">Get ready for your first digest this Sunday.</p>
       </div>
     );
   }

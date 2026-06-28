@@ -34,7 +34,7 @@ export default function AdminDashboard() {
   const [firstRunDigestId, setFirstRunDigestId] = useState<number | null>(null);
   const [firstRunPreviewHtml, setFirstRunPreviewHtml] = useState<string | null>(null);
   const [firstRunPreviewLoading, setFirstRunPreviewLoading] = useState(false);
-  const [firstRunTestEmail, setFirstRunTestEmail] = useState("");
+  const [firstRunTestEmail, setFirstRunTestEmail] = useState("aiimplementationclubaustin@gmail.com");
 
   async function fetchPreviewHtml(digestId: number) {
     setFirstRunPreviewLoading(true);
@@ -90,7 +90,7 @@ export default function AdminDashboard() {
   const [lastGeneratedDigest, setLastGeneratedDigest] = useState<{ eventCount: number; digestId: number } | null>(null);
 
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
-  const [testEmail, setTestEmail] = useState("");
+  const [testEmail, setTestEmail] = useState("aiimplementationclubaustin@gmail.com");
 
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 

@@ -186,7 +186,7 @@ export default function Home() {
               </h1>
               
               <p className="text-base text-muted-foreground mb-5 leading-relaxed max-w-xl">
-                Every Monday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in {cityShortName} this week. Carpooling functionality will be enabled with your trusted network!
+                Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in {cityShortName} for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!
               </p>
 
               <div className="mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl">
