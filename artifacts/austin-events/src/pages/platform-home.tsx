@@ -410,7 +410,7 @@ function PlatformHomeInner() {
             className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-8"
             style={{ background: "rgba(250,204,21,0.15)", color: "#fde047", border: "1px solid rgba(250,204,21,0.3)" }}
           >
-            <span>⚡</span> New Feature
+            <span>⚡</span> {t.gameBadge}
           </motion.div>
 
           {/* trophy */}
@@ -433,10 +433,10 @@ function PlatformHomeInner() {
             className="font-serif font-black leading-tight mb-4"
             style={{ fontSize: "clamp(2.2rem, 6vw, 4rem)", color: "#fff", letterSpacing: "-0.02em" }}
           >
-            Superconnector
+            {t.gameH2a}
             <br />
             <span style={{ background: "linear-gradient(90deg, #a855f7, #facc15, #f97316, #a855f7)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              Gamification
+              {t.gameH2b}
             </span>
           </motion.h2>
 
@@ -449,7 +449,7 @@ function PlatformHomeInner() {
             className="inline-flex items-center gap-2 rounded-full px-6 py-2 mb-8 font-black text-lg uppercase tracking-widest"
             style={{ background: "linear-gradient(90deg, #7c3aed, #a855f7)", color: "#fff", boxShadow: "0 0 32px rgba(168,85,247,0.5), 0 0 64px rgba(168,85,247,0.2)" }}
           >
-            ✨ Coming Soon!
+            {t.gameComingSoon}
           </motion.div>
 
           {/* description */}
@@ -461,7 +461,7 @@ function PlatformHomeInner() {
             className="text-lg leading-relaxed max-w-2xl mx-auto mb-12"
             style={{ color: "rgba(255,255,255,0.7)" }}
           >
-            City operators will earn XP, climb leaderboards, unlock badges, and compete in weekly challenges — turning community building into a game.
+            {t.gameDesc}
           </motion.p>
 
           {/* feature chips */}
@@ -473,11 +473,11 @@ function PlatformHomeInner() {
             className="flex flex-wrap justify-center gap-3"
           >
             {[
-              { icon: "⚡", label: "XP & Ranks" },
-              { icon: "🔥", label: "Streaks" },
-              { icon: "🎖️", label: "Badges" },
-              { icon: "📅", label: "Weekly Challenges" },
-              { icon: "🏅", label: "City Leaderboard" },
+              { icon: "⚡", label: t.gameChip1 },
+              { icon: "🔥", label: t.gameChip2 },
+              { icon: "🎖️", label: t.gameChip3 },
+              { icon: "📅", label: t.gameChip4 },
+              { icon: "🏅", label: t.gameChip5 },
             ].map((f) => (
               <span
                 key={f.label}
