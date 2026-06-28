@@ -62,6 +62,18 @@ function Router() {
         <ScrollToTop />
         <Switch>
           <Route path="/" component={PlatformHome} />
+          <Route path="/digest/:id">
+            {(params) => {
+              window.location.replace(`https://austin.eventcarpooling.com/digest/${params.id}`);
+              return null;
+            }}
+          </Route>
+          <Route path="/rsvp">
+            {() => {
+              window.location.replace(`https://austin.eventcarpooling.com${window.location.pathname}${window.location.search}`);
+              return null;
+            }}
+          </Route>
           <Route component={NotFound} />
         </Switch>
       </>
