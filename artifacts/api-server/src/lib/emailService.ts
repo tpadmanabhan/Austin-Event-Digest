@@ -243,9 +243,20 @@ export function buildDigestEmailHtml(digest: {
 
   function parseSortKey(dateStr: string): number {
     const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
-    if (!m) return 9999;
+    if (!m) return 9999 * 10000;
     const month = MONTH_IDX[m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase().substring(0, 2)] ?? 0;
-    return month * 100 + parseInt(m[2], 10);
+    const day = parseInt(m[2], 10);
+    const timeM = dateStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    let minutes = 0;
+    if (timeM) {
+      let hour = parseInt(timeM[1], 10);
+      const min = parseInt(timeM[2], 10);
+      const isPm = timeM[3].toUpperCase() === "PM";
+      if (isPm && hour !== 12) hour += 12;
+      if (!isPm && hour === 12) hour = 0;
+      minutes = hour * 60 + min;
+    }
+    return (month * 31 + day) * 1440 + minutes;
   }
 
   const buildEventCard = (event: (typeof digest.events)[number], featured = false) => {
