@@ -32,6 +32,9 @@ export function Layout({ children }: { children: ReactNode }) {
                       In Real Life
                     </span>
                   </span>
+                  <span className="inline-flex items-center rounded-full bg-amber-400 px-2 py-0.5 leading-none">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-900">Beta</span>
+                  </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
                   Weekly Digest
