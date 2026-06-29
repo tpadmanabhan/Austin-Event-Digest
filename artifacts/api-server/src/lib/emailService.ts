@@ -335,7 +335,7 @@ export function buildDigestEmailHtml(digest: {
     </div>
 
     <!-- Superconnector Feature Block -->
-    <div style="background:linear-gradient(135deg,#1c1917 0%,#292524 60%,#3b1f0a 100%); border-radius:16px; padding:28px 24px; margin-bottom:24px;">
+    <div style="background:linear-gradient(135deg,#064e3b 0%,#065f46 55%,#047857 100%); border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="vertical-align:middle; padding-right:16px; width:56px;">
@@ -343,32 +343,32 @@ export function buildDigestEmailHtml(digest: {
           </td>
           <td style="vertical-align:middle;">
             <p style="margin:0 0 2px; color:#fbbf24; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Upcoming Feature</p>
-            <p style="margin:0; color:#fef3c7; font-size:18px; font-weight:800; letter-spacing:-0.3px;">🏆 Superconnector</p>
+            <p style="margin:0; color:#ecfdf5; font-size:18px; font-weight:800; letter-spacing:-0.3px;">🏆 Superconnector</p>
           </td>
         </tr>
       </table>
 
-      <p style="margin:16px 0 14px; color:#d6d3d1; font-size:14px; line-height:1.7;">
+      <p style="margin:16px 0 14px; color:#d1fae5; font-size:14px; line-height:1.7;">
         Cities on EventCarpooling.com now earn XP — and <strong style="color:#fbbf24;">compete</strong>. Every action that builds your community counts:
       </p>
 
       <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
         <tr>
           <td style="padding:5px 8px 5px 0; color:#fbbf24; font-size:14px; font-weight:700; white-space:nowrap;">+50 XP</td>
-          <td style="padding:5px 0; color:#d6d3d1; font-size:14px;">Send your weekly digest</td>
+          <td style="padding:5px 0; color:#d1fae5; font-size:14px;">Send your weekly digest</td>
           <td style="padding:5px 8px 5px 16px; color:#fbbf24; font-size:14px; font-weight:700; white-space:nowrap;">+20 XP</td>
-          <td style="padding:5px 0; color:#d6d3d1; font-size:14px;">Land an RSVP</td>
+          <td style="padding:5px 0; color:#d1fae5; font-size:14px;">Land an RSVP</td>
         </tr>
         <tr>
           <td style="padding:5px 8px 5px 0; color:#fbbf24; font-size:14px; font-weight:700; white-space:nowrap;">+10 XP</td>
-          <td style="padding:5px 0; color:#d6d3d1; font-size:14px;">New subscriber joins</td>
+          <td style="padding:5px 0; color:#d1fae5; font-size:14px;">New subscriber joins</td>
           <td style="padding:5px 8px 5px 16px; color:#fbbf24; font-size:14px; font-weight:700; white-space:nowrap;">+100 XP</td>
-          <td style="padding:5px 0; color:#d6d3d1; font-size:14px;">Refer another city</td>
+          <td style="padding:5px 0; color:#d1fae5; font-size:14px;">Refer another city</td>
         </tr>
       </table>
 
-      <p style="margin:0 0 16px; color:#d6d3d1; font-size:14px; line-height:1.7;">
-        Cities rank on a <strong style="color:#fef3c7;">live leaderboard</strong>. Publish every week to build a streak — unlocking badges and climbing the rankings. Weekly challenges reset every Sunday with fresh bonus XP. The more you show up for Austin, the higher Austin climbs.
+      <p style="margin:0 0 16px; color:#d1fae5; font-size:14px; line-height:1.7;">
+        Cities rank on a <strong style="color:#ecfdf5;">live leaderboard</strong>. Publish every week to build a streak — unlocking badges and climbing the rankings. Weekly challenges reset every Sunday with fresh bonus XP. The more you show up for Austin, the higher Austin climbs.
       </p>
 
       <div style="text-align:center;">
@@ -377,21 +377,21 @@ export function buildDigestEmailHtml(digest: {
     </div>
 
     <!-- Japan Launch Feature Block -->
-    <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%); border-radius:16px; padding:24px; margin-bottom:24px;">
+    <div style="background:linear-gradient(135deg,#064e3b 0%,#065f46 55%,#047857 100%); border-radius:16px; padding:24px; margin-bottom:24px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="vertical-align:middle; padding-right:14px; width:48px;">
             <div style="width:44px; height:44px; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:26px; text-align:center; line-height:44px;">🇯🇵</div>
           </td>
           <td style="vertical-align:middle;">
-            <p style="margin:0 0 2px; color:#93c5fd; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Coming Soon</p>
-            <p style="margin:0; color:#eff6ff; font-size:18px; font-weight:800; letter-spacing:-0.3px;">🗾 Japan Launch</p>
+            <p style="margin:0 0 2px; color:#a7f3d0; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Coming Soon</p>
+            <p style="margin:0; color:#ecfdf5; font-size:18px; font-weight:800; letter-spacing:-0.3px;">🗾 Japan Launch</p>
           </td>
         </tr>
       </table>
 
-      <p style="margin:16px 0 0; color:#bfdbfe; font-size:14px; line-height:1.7;">
-        EventCarpooling.com is expanding to Japan — bringing the same weekly event digest, carpool RSVP, and city community features that power Austin to cities across Japan. Local organizers will be able to launch their own city newsletter, curate weekly events, grow a subscriber base, and earn XP on the global leaderboard. <strong style="color:#eff6ff;">Tokyo, Osaka, Kyoto — watch this space.</strong>
+      <p style="margin:16px 0 0; color:#d1fae5; font-size:14px; line-height:1.7;">
+        EventCarpooling.com is expanding to Japan — bringing the same weekly event digest, carpool RSVP, and city community features that power Austin to cities across Japan. Local organizers will be able to launch their own city newsletter, curate weekly events, grow a subscriber base, and earn XP on the global leaderboard. <strong style="color:#ecfdf5;">Tokyo, Osaka, Kyoto — watch this space.</strong>
       </p>
     </div>
 
