@@ -193,7 +193,7 @@ export default function Home() {
                 <p className="text-foreground/90 leading-relaxed text-base italic">
                   "Hey Austin! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy Austin 🤠"
                 </p>
-                <p className="mt-3 text-sm font-semibold text-primary not-italic">— Raj</p>
+                <p className="mt-3 text-sm font-semibold text-primary not-italic">— <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a></p>
               </div>
 
               <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60 scroll-mt-24">

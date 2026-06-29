@@ -404,7 +404,7 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
-      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by Raj from Austin, TX</p>
+      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by <a href="https://customersuccessforgood.com/" style="color:#15803d; text-decoration:none;">Raj</a> from Austin, TX</p>
       <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at Raj's Austin Events.</p>
       ${unsubscribeUrl ? `<p style="margin:12px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a8a29e; font-size:11px; text-decoration:underline;">Unsubscribe</a></p>` : ""}
     </div>
