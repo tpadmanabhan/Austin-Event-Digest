@@ -330,7 +330,8 @@ export function buildDigestEmailHtml(digest: {
     <!-- Intro -->
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:16px;">
       <p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>
-      <p style="margin:0; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
+      <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
+      <p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— <a href="https://customersuccessforgood.com/" style="color:#15803d; text-decoration:none;">Raj</a></p>
     </div>
 
     <!-- Superconnector Feature Block -->
