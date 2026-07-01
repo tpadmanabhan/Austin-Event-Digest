@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { createHmac } from "crypto";
 import { db, tenantsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { hashPassword } from "../lib/passwordHash";
 import { requirePlatformRoot } from "../middleware/resolveTenant";
 import { sendEmail } from "../lib/emailService";
@@ -223,6 +223,9 @@ router.post("/tenants", requirePlatformRoot, async (req, res) => {
     const tenantName = `${trimmedCity} Events`;
     const color = typeof accentColor === "string" && /^#[0-9a-fA-F]{6}$/.test(accentColor) ? accentColor : "#7c3aed";
     const emailVerificationEnabled = isEmailVerificationEnabled();
+
+    // Ensure the sequence is ahead of the actual max ID (guards against manual inserts)
+    await db.execute(sql`SELECT setval(pg_get_serial_sequence('tenants', 'id'), COALESCE((SELECT MAX(id) FROM tenants), 0) + 1, false)`);
 
     const [tenantRow] = await db
       .insert(tenantsTable)
