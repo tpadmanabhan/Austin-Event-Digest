@@ -11,8 +11,8 @@ export const T = {
     langToggle: "🇯🇵 日本語",
 
     heroBadge: "🚗 Events newsletter + carpooling, for your city",
-    heroH1a: "Your city or neighborhood deserves its own events newsletter — with carpooling built in.",
-    heroH1b: "Be the Superconnector!",
+    heroH1a: "AI that Brings People Together",
+    heroH1b: "with Your Help",
     heroSub: "Launch a weekly events digest for any city in minutes. We automatically discover events from Luma, Meetup, Eventbrite, Bandsintown, and more — then send a beautifully curated email to your subscribers. Carpooling functionality will be enabled with your trusted network!",
     heroCta: "Launch your city",
     heroLiveNow: "Live now ·",
@@ -99,8 +99,8 @@ export const T = {
     langToggle: "🇺🇸 English",
 
     heroBadge: "🚗 イベントニュースレター＋カープール、あなたの街に",
-    heroH1a: "あなたの街やコミュニティに、カープール機能内蔵の独自イベントニュースレターを。",
-    heroH1b: "スーパーコネクターになろう！",
+    heroH1a: "AIが人々をつなぐ",
+    heroH1b: "あなたの力で",
     heroSub: "数分で任意の都市向けウィークリーイベントダイジェストを開始。LumaやMeetup、Eventbrite、Bandsintownなど複数のソースから自動でイベントを収集し、洗練されたメールを購読者に届けます。信頼できる仲間とのカープール機能も近日登場！",
     heroCta: "あなたの街を立ち上げる",
     heroLiveNow: "公開中 ·",
