@@ -51,20 +51,51 @@ export function PDFRedesign() {
       {/* NAV */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 50,
-        background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)",
+        background: "#fff",
         borderBottom: "1px solid #e5e7eb",
-        padding: "0 40px",
-        display: "flex", alignItems: "center", justifyContent: "space-between", height: 60,
+        display: "flex", alignItems: "stretch", justifyContent: "space-between", height: 72,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <img src="/__mockup/images/eventcarpooling-logo.png" alt="EventCarpooling" style={{ width: 44, height: 44, objectFit: "contain" }} />
-          <span style={{ fontSize: 15, fontWeight: 700, color: "#111", letterSpacing: "-0.02em" }}>event carpooling</span>
-          <span style={{ marginLeft: 4, fontSize: 10, fontWeight: 700, background: "#fef3c7", color: "#b45309", padding: "2px 8px", borderRadius: 20, letterSpacing: "0.06em", textTransform: "uppercase", border: "1px solid #fde68a" }}>Beta</span>
+        {/* Navy logo card — matches the screenshot header */}
+        <div style={{
+          background: "#1a2744",
+          padding: "0 28px",
+          display: "flex", alignItems: "center", gap: 14,
+          borderRadius: "0 8px 8px 0",
+          position: "relative",
+          minWidth: 320,
+        }}>
+          <img
+            src="/__mockup/images/eventcarpooling-logo.png"
+            alt="EventCarpooling"
+            style={{ width: 56, height: 56, objectFit: "contain", flexShrink: 0 }}
+          />
+          <div>
+            <div style={{ lineHeight: 1.1 }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#fff", display: "block" }}>event</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#f59e0b", display: "block" }}>carpooling</span>
+            </div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: 3 }}>
+              LESS UBER · MORE NEIGHBOR
+            </div>
+          </div>
+          {/* BETA badge inside the card */}
+          <span style={{
+            position: "absolute", bottom: 8, right: 10,
+            fontSize: 9, fontWeight: 700, background: "#f59e0b", color: "#1a2744",
+            padding: "2px 7px", borderRadius: 4, letterSpacing: "0.08em", textTransform: "uppercase",
+          }}>BETA</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", letterSpacing: "0.1em", textTransform: "uppercase" }}>LESS UBER · MORE NEIGHBOR</span>
-          <button style={{ background: "#111", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-            Start your city
+
+        {/* Right side nav */}
+        <div style={{ display: "flex", alignItems: "center", gap: 24, paddingRight: 32 }}>
+          <span style={{ fontSize: 13, color: "#6b7280", cursor: "pointer" }}>JP 日本語</span>
+          <a href="#how-it-works" style={{ fontSize: 14, color: "#374151", fontWeight: 500, textDecoration: "none" }}>How it works</a>
+          <button style={{
+            background: "#15803d", color: "#fff", border: "none",
+            borderRadius: 8, padding: "10px 22px", fontSize: 14, fontWeight: 700, cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(21,128,61,0.3)",
+          }}>
+            Launch your city
           </button>
         </div>
       </nav>
