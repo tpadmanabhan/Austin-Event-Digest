@@ -86,8 +86,8 @@ export function Improved() {
           </div>
 
           <h1 style={{ fontSize: "clamp(32px, 4.5vw, 60px)", fontWeight: 800, color: "#fff", margin: "0 0 24px", lineHeight: 1.15, fontFamily: "'Georgia', serif" }}>
-            Your city or neighborhood deserves its own events newsletter.{" "}
-            <span style={{ color: "#4ade80", fontStyle: "italic" }}>Be the Superconnector!</span>
+            AI that Brings People Together{" "}
+            <span style={{ color: "#4ade80", fontStyle: "italic" }}>with Your Help</span>
           </h1>
 
           <p style={{ fontSize: 18, color: "#94a3b8", margin: "0 0 40px", lineHeight: 1.7, maxWidth: 600, marginLeft: "auto", marginRight: "auto" }}>
