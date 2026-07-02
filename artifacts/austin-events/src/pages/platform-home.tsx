@@ -1,13 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Check, ExternalLink, ArrowRight, Users, Globe, Star, Bell, CheckCircle2, Loader2 } from "lucide-react";
+import { MapPin, Check, ExternalLink, ArrowRight, Users, Globe, Star } from "lucide-react";
 import { PlatformLayout } from "@/components/platform-layout";
 import { useLang } from "@/contexts/lang-context";
 import { LaunchCityModal } from "@/components/launch-city-modal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 interface TenantSummary {
   slug: string;
@@ -42,10 +39,6 @@ function PlatformHomeInner() {
   const { t } = useLang();
   const { data: tenants, isLoading: loadingTenants } = useTenantList();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [featureModalOpen, setFeatureModalOpen] = useState(false);
-  const [featureEmail, setFeatureEmail] = useState("");
-  const [featureStatus, setFeatureStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
-  const [featureError, setFeatureError] = useState("");
 
   const STEPS = [
     { number: "01", icon: "📍", title: t.step1Title, description: t.step1Desc },
@@ -64,83 +57,8 @@ function PlatformHomeInner() {
     Civics: t.catCivicsDesc,
   };
 
-  async function handleFeatureInterestSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!featureEmail.trim()) return;
-    setFeatureStatus("submitting");
-    setFeatureError("");
-    try {
-      const res = await fetch("/api/newsletter/feature-interest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: featureEmail.trim() }),
-      });
-      if (!res.ok) {
-        const data = await res.json() as { message?: string };
-        setFeatureError(data.message || t.modalErrGeneric);
-        setFeatureStatus("error");
-      } else {
-        setFeatureStatus("done");
-      }
-    } catch {
-      setFeatureError(t.modalErrNetwork);
-      setFeatureStatus("error");
-    }
-  }
-
   return (
     <>
-      {/* FEATURE INTEREST MODAL */}
-      <Dialog open={featureModalOpen} onOpenChange={(open) => {
-        setFeatureModalOpen(open);
-        if (!open) { setFeatureStatus("idle"); setFeatureEmail(""); setFeatureError(""); }
-      }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <Bell className="w-5 h-5 text-green-500" />
-              {t.modalTitle}
-            </DialogTitle>
-            <DialogDescription>
-              {t.modalDesc}
-            </DialogDescription>
-          </DialogHeader>
-          {featureStatus === "done" ? (
-            <div className="py-8 text-center space-y-3">
-              <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-              <p className="font-semibold text-lg">{t.modalDone}</p>
-              <p className="text-muted-foreground text-sm">{t.modalDoneDesc1} <strong>{featureEmail}</strong>. {t.modalDoneDesc2}</p>
-              <Button variant="outline" className="mt-2" onClick={() => setFeatureModalOpen(false)}>{t.modalClose}</Button>
-            </div>
-          ) : (
-            <form onSubmit={handleFeatureInterestSubmit} className="space-y-4 pt-2">
-              <div className="space-y-1.5">
-                <label htmlFor="platform-feature-email" className="text-sm font-medium">{t.modalEmailLabel}</label>
-                <Input
-                  id="platform-feature-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={featureEmail}
-                  onChange={(e) => setFeatureEmail(e.target.value)}
-                  required
-                  disabled={featureStatus === "submitting"}
-                  autoComplete="email"
-                />
-                {featureError && <p className="text-xs text-destructive">{featureError}</p>}
-              </div>
-              <Button type="submit" className="w-full" disabled={featureStatus === "submitting" || !featureEmail.trim()}>
-                {featureStatus === "submitting" ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t.modalSending}</>
-                ) : (
-                  t.modalSubmit
-                )}
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">{t.modalNoSpam}</p>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* HERO */}
       <section
         className="relative overflow-hidden text-center"
@@ -286,22 +204,6 @@ function PlatformHomeInner() {
                   <span className="text-xs font-bold tracking-widest uppercase" style={{ color }}>{label}</span>
                 </div>
               ))}
-            </div>
-
-            {/* Feature interest CTA */}
-            <div className="mb-14">
-              <button
-                onClick={() => setFeatureModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all hover:-translate-y-0.5"
-                style={{
-                  background: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.18)",
-                  color: "#e2e8f0",
-                }}
-              >
-                <Bell className="w-3.5 h-3.5" style={{ color: "#4ade80" }} />
-                {t.heroNotify}
-              </button>
             </div>
 
             {/* Stats row */}
