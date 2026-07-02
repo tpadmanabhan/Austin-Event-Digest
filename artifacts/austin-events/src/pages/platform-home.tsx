@@ -269,6 +269,25 @@ function PlatformHomeInner() {
               </a>
             </div>
 
+            {/* Persona chips */}
+            <div className="flex flex-wrap justify-center gap-3 mt-8 mb-2">
+              {[
+                { label: "NEW IN TOWN", emoji: "📦", bg: "rgba(217,119,6,0.18)", border: "rgba(217,119,6,0.45)", color: "#fbbf24" },
+                { label: "NO LONGER DRIVES", emoji: "🚌", bg: "rgba(59,130,246,0.18)", border: "rgba(59,130,246,0.45)", color: "#60a5fa" },
+                { label: "SOCCER SEASON", emoji: "⚽", bg: "rgba(34,197,94,0.18)", border: "rgba(34,197,94,0.45)", color: "#4ade80" },
+                { label: "SKIPPING SURGE", emoji: "💸", bg: "rgba(168,85,247,0.18)", border: "rgba(168,85,247,0.45)", color: "#c084fc" },
+              ].map(({ label, emoji, bg, border, color }) => (
+                <div
+                  key={label}
+                  className="inline-flex items-center gap-2 rounded-full px-4 py-2"
+                  style={{ background: bg, border: `1px solid ${border}` }}
+                >
+                  <span className="text-base leading-none">{emoji}</span>
+                  <span className="text-xs font-bold tracking-widest uppercase" style={{ color }}>{label}</span>
+                </div>
+              ))}
+            </div>
+
             {/* Feature interest CTA */}
             <div className="mb-14">
               <button
