@@ -553,52 +553,80 @@ function PlatformHomeInner() {
             </div>
           ) : tenants && tenants.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tenants.map((tenant, i) => (
-                <motion.a
-                  key={tenant.slug}
-                  href={`https://${tenant.slug}.eventcarpooling.com`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="group flex flex-col rounded-2xl overflow-hidden bg-white border border-border hover:border-primary/40 hover:shadow-md transition-all"
-                  style={{ textDecoration: "none" }}
-                >
-                  {/* accent top bar */}
-                  <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${tenant.accentColor}, ${tenant.accentColor}99)` }} />
-                  <div className="p-6 flex flex-col gap-3 flex-1">
-                    <div className="flex items-start justify-between">
-                      <div
-                        className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg text-4xl"
-                        style={
-                          tenant.slug?.includes("austin")
-                            ? { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 6px 20px rgba(49,46,129,0.45)" }
-                            : { background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)`, color: "#fff", fontSize: "1.5rem", fontWeight: 700, fontFamily: "Georgia, serif" }
-                        }
-                      >
-                        {tenant.slug?.includes("austin") ? "🎸" : tenant.name.charAt(0)}
+              {tenants.map((tenant, i) => {
+                const isComingSoon = tenant.slug === "austincares";
+                const CardEl = isComingSoon ? motion.div : motion.a;
+                const cardProps = isComingSoon
+                  ? {}
+                  : { href: `https://${tenant.slug}.eventcarpooling.com` };
+
+                let iconContent: React.ReactNode;
+                let iconStyle: React.CSSProperties;
+                if (tenant.slug === "austin") {
+                  iconContent = "🎸";
+                  iconStyle = { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 6px 20px rgba(49,46,129,0.45)" };
+                } else if (isComingSoon) {
+                  iconContent = (
+                    <div className="flex flex-col items-center justify-center gap-0.5">
+                      <span style={{ fontSize: "2rem", lineHeight: 1 }}>🫶</span>
+                      <span style={{ fontSize: "0.5rem", fontWeight: 800, letterSpacing: "0.12em", color: "#fff", textTransform: "uppercase", lineHeight: 1 }}>Give Back</span>
+                    </div>
+                  );
+                  iconStyle = { background: "linear-gradient(135deg, #15803d, #22c55e)", boxShadow: "0 6px 20px rgba(21,128,61,0.45)" };
+                } else {
+                  iconContent = tenant.name.charAt(0);
+                  iconStyle = { background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)`, color: "#fff", fontSize: "1.5rem", fontWeight: 700, fontFamily: "Georgia, serif" };
+                }
+
+                return (
+                  <CardEl
+                    key={tenant.slug}
+                    {...cardProps}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className={`group flex flex-col rounded-2xl overflow-hidden bg-white border border-border transition-all${isComingSoon ? " cursor-default" : " hover:border-primary/40 hover:shadow-md"}`}
+                    style={{ textDecoration: "none" }}
+                  >
+                    {/* accent top bar */}
+                    <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${tenant.accentColor}, ${tenant.accentColor}99)` }} />
+                    <div className="p-6 flex flex-col gap-3 flex-1">
+                      <div className="flex items-start justify-between">
+                        <div
+                          className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg text-4xl"
+                          style={iconStyle}
+                        >
+                          {iconContent}
+                        </div>
+                        {isComingSoon ? (
+                          <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#fef9c3", color: "#a16207", border: "1px solid #fde047" }}>
+                            Coming Soon
+                          </span>
+                        ) : (
+                          <ExternalLink className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+                        )}
                       </div>
-                      <ExternalLink className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+                      <div>
+                        <h3 className="font-serif font-bold" style={{ color: "#0f172a" }}>{tenant.name}</h3>
+                        <p className="text-sm" style={{ color: "#64748b" }}>{tenant.city}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mt-auto">
+                        {tenant.categories.slice(0, 4).map(cat => (
+                          <span key={cat} className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                            {cat}
+                          </span>
+                        ))}
+                        {tenant.categories.length > 4 && (
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                            +{tenant.categories.length - 4} more
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-serif font-bold" style={{ color: "#0f172a" }}>{tenant.name}</h3>
-                      <p className="text-sm" style={{ color: "#64748b" }}>{tenant.city}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 mt-auto">
-                      {tenant.categories.slice(0, 4).map(cat => (
-                        <span key={cat} className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                          {cat}
-                        </span>
-                      ))}
-                      {tenant.categories.length > 4 && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                          +{tenant.categories.length - 4} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </motion.a>
-              ))}
+                  </CardEl>
+                );
+              })}
               {/* "Your city" placeholder */}
               <div
                 className="flex flex-col items-center justify-center gap-3 rounded-2xl p-8 text-center"
