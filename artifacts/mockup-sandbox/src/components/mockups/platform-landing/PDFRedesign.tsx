@@ -57,7 +57,7 @@ export function PDFRedesign() {
         display: "flex", alignItems: "center", justifyContent: "space-between", height: 60,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <img src="/__mockup/images/eventcarpooling-logo.png" alt="EventCarpooling" style={{ width: 32, height: 32, objectFit: "contain" }} />
+          <img src="/__mockup/images/eventcarpooling-logo.png" alt="EventCarpooling" style={{ width: 44, height: 44, objectFit: "contain" }} />
           <span style={{ fontSize: 15, fontWeight: 700, color: "#111", letterSpacing: "-0.02em" }}>event carpooling</span>
           <span style={{ marginLeft: 4, fontSize: 10, fontWeight: 700, background: "#fef3c7", color: "#b45309", padding: "2px 8px", borderRadius: 20, letterSpacing: "0.06em", textTransform: "uppercase", border: "1px solid #fde68a" }}>Beta</span>
         </div>
@@ -95,7 +95,7 @@ export function PDFRedesign() {
           </h1>
 
           <p style={{ fontSize: 18, color: "#475569", lineHeight: 1.7, margin: "0 0 48px", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
-            A weekly digest of your city's best events — and neighbors to ride there with. Free to join. Built for people, not billionaires.
+            A weekly digest of your city's best events — and neighbors to ride there with.
           </p>
 
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
@@ -106,13 +106,19 @@ export function PDFRedesign() {
             }}>
               Get your city's digest
             </button>
-            <button style={{
-              background: "#fff", color: "#0f172a",
-              border: "2px solid #e5e7eb",
-              borderRadius: 10, padding: "14px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer",
-            }}>
-              Launch a city →
-            </button>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+              <button style={{
+                background: "#fff", color: "#0f172a",
+                border: "2px solid #e5e7eb",
+                borderRadius: 10, padding: "14px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer",
+              }}>
+                Launch a city →
+              </button>
+              <a href="https://austin.eventcarpooling.com" target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 12, color: "#15803d", fontWeight: 600, textDecoration: "none", letterSpacing: "0.01em" }}>
+                ↗ See Austin's digest
+              </a>
+            </div>
           </div>
         </div>
 
