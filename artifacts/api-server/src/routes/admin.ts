@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, rsvpsTable, digestsTable, tenantsTable, adminOtpsTable, type InsertTenant } from "@workspace/db";
-import { eq, and, gte } from "drizzle-orm";
+import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { sql as drizzleSql } from "drizzle-orm";
 import { createHash, randomInt } from "crypto";
 import { sendRsvpGroupNotification, buildDigestEmailHtml, sendWelcomeEmail, sendEmail } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
@@ -89,6 +90,18 @@ function isOtpRateLimited(key: string): boolean {
   return false;
 }
 
+// Verify attempt tracking — limited to 10 per tenant+IP per 15 min
+const otpVerifyAttemptMap = new Map<string, number[]>();
+const OTP_VERIFY_MAX = 10;
+
+function isVerifyAttemptLimited(key: string): boolean {
+  const now = Date.now();
+  const prev = (otpVerifyAttemptMap.get(key) || []).filter(t => now - t < OTP_RATE_LIMIT_WINDOW_MS);
+  if (prev.length >= OTP_VERIFY_MAX) return true;
+  otpVerifyAttemptMap.set(key, [...prev, now]);
+  return false;
+}
+
 // Request OTP — sends a 6-digit code to the tenant's adminEmail
 router.post("/request-otp", async (req, res) => {
   if (!req.tenant) {
@@ -129,13 +142,13 @@ router.post("/request-otp", async (req, res) => {
     const otpHash = createHash("sha256").update(code).digest("hex");
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    // Replace any existing OTP for this tenant
-    await db.delete(adminOtpsTable).where(eq(adminOtpsTable.tenantId, req.tenant.id));
-    await db.insert(adminOtpsTable).values({
-      tenantId: req.tenant.id,
-      otpHash,
-      expiresAt,
-    });
+    // Atomically upsert — unique index on tenant_id enforces single active OTP
+    await db.insert(adminOtpsTable)
+      .values({ tenantId: req.tenant.id, otpHash, expiresAt })
+      .onConflictDoUpdate({
+        target: adminOtpsTable.tenantId,
+        set: { otpHash, expiresAt, createdAt: new Date() },
+      });
 
     // Send OTP email
     const cityName = req.tenant.name;
@@ -185,22 +198,35 @@ router.post("/verify-otp", async (req, res) => {
     return;
   }
 
+  // Attempt throttling — prevents brute-force guessing of 6-digit codes
+  const attemptKey = `${req.tenant.id}:${req.ip ?? "unknown"}`;
+  if (isVerifyAttemptLimited(attemptKey)) {
+    res.status(429).json({ error: "too_many_attempts", message: "Too many attempts. Please wait before trying again." });
+    return;
+  }
+
   if (!req.tenant.adminEmail || email.toLowerCase() !== req.tenant.adminEmail.toLowerCase()) {
     res.status(401).json({ error: "unauthorized", message: "Invalid code" });
     return;
   }
 
   try {
-    const now = new Date();
+    // Fetch latest un-expired OTP at DB level — unique index guarantees at most one row
     const [stored] = await db
       .select()
       .from(adminOtpsTable)
-      .where(eq(adminOtpsTable.tenantId, req.tenant.id))
+      .where(
+        and(
+          eq(adminOtpsTable.tenantId, req.tenant.id),
+          gte(adminOtpsTable.expiresAt, drizzleSql`NOW()`)
+        )
+      )
+      .orderBy(desc(adminOtpsTable.createdAt), desc(adminOtpsTable.id))
       .limit(1);
 
-    if (!stored || stored.expiresAt < now) {
-      // Clean up expired record
-      if (stored) await db.delete(adminOtpsTable).where(eq(adminOtpsTable.id, stored.id));
+    if (!stored) {
+      // Also clean up any lingering expired rows
+      await db.delete(adminOtpsTable).where(eq(adminOtpsTable.tenantId, req.tenant.id));
       res.status(401).json({ error: "unauthorized", message: "Code expired or not found. Please request a new one." });
       return;
     }
@@ -211,7 +237,7 @@ router.post("/verify-otp", async (req, res) => {
       return;
     }
 
-    // Consume the OTP
+    // Consume the OTP (single-use)
     await db.delete(adminOtpsTable).where(eq(adminOtpsTable.id, stored.id));
 
     const token = adminTokenForEmail(req.tenant.adminEmail);

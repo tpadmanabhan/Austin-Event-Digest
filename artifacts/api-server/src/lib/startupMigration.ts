@@ -388,6 +388,10 @@ async function runAdminOtpMigration(): Promise<void> {
       created_at TIMESTAMP NOT NULL DEFAULT NOW()
     )
   `);
+  // Enforce single active OTP per tenant (idempotent)
+  await db.execute(sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS admin_otps_tenant_id_unique ON admin_otps (tenant_id)
+  `);
   logger.info("admin_otps table ready");
 }
 
