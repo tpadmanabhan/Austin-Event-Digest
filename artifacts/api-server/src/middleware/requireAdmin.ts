@@ -12,11 +12,16 @@ export function adminTokenForHash(passwordHash: string): string {
 
 /**
  * Derives the admin session token for an email-based admin.
- * Stable as long as RSVP_HMAC_SECRET doesn't change.
+ * Includes tenantId in the signing input so tokens are tenant-scoped:
+ * the same adminEmail address on two different tenants yields different tokens.
+ * Requires RSVP_HMAC_SECRET to be set — fails closed (returns null) when missing.
  */
-export function adminTokenForEmail(adminEmail: string): string {
-  const secret = process.env.RSVP_HMAC_SECRET || "email-admin-dev-fallback";
-  return createHmac("sha256", secret).update(`admin-email:${adminEmail.toLowerCase()}`).digest("hex");
+export function adminTokenForEmail(adminEmail: string, tenantId: number): string | null {
+  const secret = process.env.RSVP_HMAC_SECRET;
+  if (!secret) return null;
+  return createHmac("sha256", secret)
+    .update(`admin-email:${tenantId}:${adminEmail.toLowerCase()}`)
+    .digest("hex");
 }
 
 function verifyAdminToken(token: string | undefined, req: Request): boolean {
@@ -28,10 +33,10 @@ function verifyAdminToken(token: string | undefined, req: Request): boolean {
     if (token === expected) return true;
   }
 
-  // Email-based admin
-  if (req.tenant?.adminEmail) {
-    const expected = adminTokenForEmail(req.tenant.adminEmail);
-    if (token === expected) return true;
+  // Email-based admin (requires RSVP_HMAC_SECRET to be configured)
+  if (req.tenant?.adminEmail && req.tenant.id) {
+    const expected = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
+    if (expected && token === expected) return true;
   }
 
   return false;

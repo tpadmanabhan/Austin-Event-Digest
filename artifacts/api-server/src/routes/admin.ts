@@ -69,9 +69,9 @@ router.post("/verify", (req, res) => {
   }
 
   // Check email-based token
-  if (req.tenant?.adminEmail) {
-    const expected = adminTokenForEmail(req.tenant.adminEmail);
-    if (token === expected) { res.json({ valid: true }); return; }
+  if (req.tenant?.adminEmail && req.tenant.id) {
+    const expected = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
+    if (expected && token === expected) { res.json({ valid: true }); return; }
   }
 
   res.status(401).json({ valid: false });
@@ -240,7 +240,12 @@ router.post("/verify-otp", async (req, res) => {
     // Consume the OTP (single-use)
     await db.delete(adminOtpsTable).where(eq(adminOtpsTable.id, stored.id));
 
-    const token = adminTokenForEmail(req.tenant.adminEmail);
+    const token = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
+    if (!token) {
+      req.log.error({ tenantId: req.tenant.id }, "RSVP_HMAC_SECRET not set — email admin login disabled");
+      res.status(500).json({ error: "server_error", message: "Email admin login is not configured on this server" });
+      return;
+    }
     req.log.info({ tenantId: req.tenant.id }, "Email OTP verified — admin session granted");
     res.json({ token });
   } catch (err) {
