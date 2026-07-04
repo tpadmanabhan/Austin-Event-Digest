@@ -8,6 +8,7 @@ export interface TenantConfig {
   accentColor: string;
   categories: string[];
   firstRun: boolean;
+  hasEmailAdmin: boolean;
 }
 
 const TenantContext = createContext<TenantConfig | null>(null);

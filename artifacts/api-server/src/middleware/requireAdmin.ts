@@ -10,19 +10,34 @@ export function adminTokenForHash(passwordHash: string): string {
   return createHmac("sha256", passwordHash).update("admin-session").digest("hex");
 }
 
+/**
+ * Derives the admin session token for an email-based admin.
+ * Stable as long as RSVP_HMAC_SECRET doesn't change.
+ */
+export function adminTokenForEmail(adminEmail: string): string {
+  const secret = process.env.RSVP_HMAC_SECRET || "email-admin-dev-fallback";
+  return createHmac("sha256", secret).update(`admin-email:${adminEmail.toLowerCase()}`).digest("hex");
+}
+
 function verifyAdminToken(token: string | undefined, req: Request): boolean {
   if (!token) return false;
 
-  // Require the tenant's passwordHash to be set — no global ADMIN_PASSWORD fallback.
-  // If passwordHash is null the tenant hasn't finished setup; treat as unauthorized.
-  if (!req.tenant?.passwordHash) return false;
+  // Password-based admin
+  if (req.tenant?.passwordHash) {
+    const expected = adminTokenForHash(req.tenant.passwordHash);
+    if (token === expected) return true;
+  }
 
-  const expected = adminTokenForHash(req.tenant.passwordHash);
-  return token === expected;
+  // Email-based admin
+  if (req.tenant?.adminEmail) {
+    const expected = adminTokenForEmail(req.tenant.adminEmail);
+    if (token === expected) return true;
+  }
+
+  return false;
 }
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  // Accept token from the Authorization header (preferred) or request body (legacy)
   const authHeader = req.headers.authorization;
   const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
   const bodyToken = typeof req.body?.token === "string" ? (req.body.token as string) : undefined;

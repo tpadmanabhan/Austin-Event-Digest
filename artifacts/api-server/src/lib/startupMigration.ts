@@ -378,6 +378,19 @@ async function migrateAustinAdminPassword(): Promise<void> {
   logger.info("Synced ADMIN_PASSWORD → Austin tenant passwordHash");
 }
 
+async function runAdminOtpMigration(): Promise<void> {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS admin_otps (
+      id SERIAL PRIMARY KEY,
+      tenant_id INTEGER NOT NULL REFERENCES tenants(id),
+      otp_hash TEXT NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
+  logger.info("admin_otps table ready");
+}
+
 async function runGamificationMigration(): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS xp_ledger (
@@ -448,6 +461,12 @@ export async function runStartupMigration(): Promise<void> {
     await runTenantMigration();
   } catch (err) {
     logger.warn({ err }, "Tenant migration failed (non-fatal) — DB may already be up-to-date");
+  }
+
+  try {
+    await runAdminOtpMigration();
+  } catch (err) {
+    logger.warn({ err }, "Admin OTP migration failed (non-fatal) — table may already exist");
   }
 
   try {

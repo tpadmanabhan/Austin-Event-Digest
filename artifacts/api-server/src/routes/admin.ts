@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
-import { db, rsvpsTable, digestsTable, tenantsTable, type InsertTenant } from "@workspace/db";
+import { db, rsvpsTable, digestsTable, tenantsTable, adminOtpsTable, type InsertTenant } from "@workspace/db";
 import { eq, and, gte } from "drizzle-orm";
-import { sendRsvpGroupNotification, buildDigestEmailHtml, sendWelcomeEmail } from "../lib/emailService";
+import { createHash, randomInt } from "crypto";
+import { sendRsvpGroupNotification, buildDigestEmailHtml, sendWelcomeEmail, sendEmail } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
-import { requireAdmin, adminTokenForHash } from "../middleware/requireAdmin";
+import { requireAdmin, adminTokenForHash, adminTokenForEmail } from "../middleware/requireAdmin";
 import { verifyPassword } from "../lib/passwordHash";
 
 const router: IRouter = Router();
@@ -55,18 +56,171 @@ router.post("/login", async (req, res) => {
 router.post("/verify", (req, res) => {
   const { token } = req.body ?? {};
 
-  if (!req.tenant?.passwordHash) {
-    res.status(401).json({ valid: false });
-    return;
-  }
-
   if (!token || typeof token !== "string") {
     res.status(401).json({ valid: false });
     return;
   }
 
-  const expected = adminTokenForHash(req.tenant.passwordHash);
-  res.json({ valid: token === expected });
+  // Check password-based token
+  if (req.tenant?.passwordHash) {
+    const expected = adminTokenForHash(req.tenant.passwordHash);
+    if (token === expected) { res.json({ valid: true }); return; }
+  }
+
+  // Check email-based token
+  if (req.tenant?.adminEmail) {
+    const expected = adminTokenForEmail(req.tenant.adminEmail);
+    if (token === expected) { res.json({ valid: true }); return; }
+  }
+
+  res.status(401).json({ valid: false });
+});
+
+// ── OTP rate limiting ──────────────────────────────────────────────────────
+const otpRateLimitMap = new Map<string, number[]>();
+const OTP_RATE_LIMIT_MAX = 5;
+const OTP_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function isOtpRateLimited(key: string): boolean {
+  const now = Date.now();
+  const prev = (otpRateLimitMap.get(key) || []).filter(t => now - t < OTP_RATE_LIMIT_WINDOW_MS);
+  if (prev.length >= OTP_RATE_LIMIT_MAX) return true;
+  otpRateLimitMap.set(key, [...prev, now]);
+  return false;
+}
+
+// Request OTP — sends a 6-digit code to the tenant's adminEmail
+router.post("/request-otp", async (req, res) => {
+  if (!req.tenant) {
+    res.status(404).json({ error: "not_found", message: "Admin login requires a city subdomain" });
+    return;
+  }
+
+  const captchaOk = await verifyTurnstileToken(req.body?.captchaToken, req.ip);
+  if (!captchaOk) {
+    res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
+    return;
+  }
+
+  const { email } = req.body ?? {};
+  if (!email || typeof email !== "string" || !email.includes("@")) {
+    res.status(400).json({ error: "invalid_request", message: "email is required" });
+    return;
+  }
+
+  // Rate limit by tenant + IP to prevent abuse
+  const rateLimitKey = `${req.tenant.id}:${req.ip ?? "unknown"}`;
+  if (isOtpRateLimited(rateLimitKey)) {
+    // Return generic response to avoid timing attacks
+    res.json({ success: true });
+    return;
+  }
+
+  // Always return success to prevent email enumeration
+  if (!req.tenant.adminEmail || email.toLowerCase() !== req.tenant.adminEmail.toLowerCase()) {
+    req.log.info({ tenantId: req.tenant.id }, "OTP requested for non-admin email (ignored)");
+    res.json({ success: true });
+    return;
+  }
+
+  try {
+    // Generate 6-digit code
+    const code = String(randomInt(100000, 999999));
+    const otpHash = createHash("sha256").update(code).digest("hex");
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Replace any existing OTP for this tenant
+    await db.delete(adminOtpsTable).where(eq(adminOtpsTable.tenantId, req.tenant.id));
+    await db.insert(adminOtpsTable).values({
+      tenantId: req.tenant.id,
+      otpHash,
+      expiresAt,
+    });
+
+    // Send OTP email
+    const cityName = req.tenant.name;
+    await sendEmail({
+      to: req.tenant.adminEmail,
+      subject: `Your ${cityName} admin login code: ${code}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"></head>
+        <body style="font-family:system-ui,sans-serif;background:#f5f5f5;margin:0;padding:32px 16px;">
+          <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:40px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            <p style="font-size:32px;text-align:center;margin:0 0 16px;">🔐</p>
+            <h1 style="font-size:22px;font-weight:700;text-align:center;color:#111;margin:0 0 8px;">Admin login code</h1>
+            <p style="color:#555;font-size:15px;text-align:center;margin:0 0 24px;">Use this code to sign in to your <strong>${cityName}</strong> admin panel. It expires in 10 minutes.</p>
+            <div style="text-align:center;margin:0 0 24px;">
+              <span style="display:inline-block;background:#f4f0ff;color:#7c3aed;font-size:36px;font-weight:900;letter-spacing:8px;padding:16px 32px;border-radius:12px;font-family:monospace;">${code}</span>
+            </div>
+            <p style="color:#999;font-size:12px;text-align:center;margin:0;line-height:1.6;">
+              If you didn't request this, you can safely ignore this email.<br>
+              Do not share this code with anyone.
+            </p>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    req.log.info({ tenantId: req.tenant.id }, "OTP sent to admin email");
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "Error sending OTP");
+    res.status(500).json({ error: "server_error", message: "Failed to send login code" });
+  }
+});
+
+// Verify OTP — exchange code for admin session token
+router.post("/verify-otp", async (req, res) => {
+  if (!req.tenant) {
+    res.status(404).json({ error: "not_found", message: "Requires a city subdomain" });
+    return;
+  }
+
+  const { email, otp } = req.body ?? {};
+  if (!email || typeof email !== "string" || !otp || typeof otp !== "string") {
+    res.status(400).json({ error: "invalid_request", message: "email and otp are required" });
+    return;
+  }
+
+  if (!req.tenant.adminEmail || email.toLowerCase() !== req.tenant.adminEmail.toLowerCase()) {
+    res.status(401).json({ error: "unauthorized", message: "Invalid code" });
+    return;
+  }
+
+  try {
+    const now = new Date();
+    const [stored] = await db
+      .select()
+      .from(adminOtpsTable)
+      .where(eq(adminOtpsTable.tenantId, req.tenant.id))
+      .limit(1);
+
+    if (!stored || stored.expiresAt < now) {
+      // Clean up expired record
+      if (stored) await db.delete(adminOtpsTable).where(eq(adminOtpsTable.id, stored.id));
+      res.status(401).json({ error: "unauthorized", message: "Code expired or not found. Please request a new one." });
+      return;
+    }
+
+    const submittedHash = createHash("sha256").update(otp.trim()).digest("hex");
+    if (submittedHash !== stored.otpHash) {
+      res.status(401).json({ error: "unauthorized", message: "Invalid code" });
+      return;
+    }
+
+    // Consume the OTP
+    await db.delete(adminOtpsTable).where(eq(adminOtpsTable.id, stored.id));
+
+    const token = adminTokenForEmail(req.tenant.adminEmail);
+    req.log.info({ tenantId: req.tenant.id }, "Email OTP verified — admin session granted");
+    res.json({ token });
+  } catch (err) {
+    req.log.error({ err }, "Error verifying OTP");
+    res.status(500).json({ error: "server_error", message: "Failed to verify code" });
+  }
 });
 
 // Re-send carpool match notifications for all RSVPs on an event
