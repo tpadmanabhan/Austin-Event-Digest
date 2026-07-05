@@ -443,7 +443,7 @@ export function buildDigestEmailHtml(digest: {
         </tr>
       </table>
       <p style="margin:0; color:#d1fae5; font-size:14px; line-height:1.7;">
-        If you care about making Austin a better city, this one's for you. <strong style="color:#ecfdf5;">Watch this space.</strong>
+        If you care about making Austin a better city, this one's for you. <strong style="color:#ecfdf5;"><a href="https://austincares.eventcarpooling.com" style="color:#ecfdf5; text-decoration:underline;">Watch this space.</a></strong>
       </p>
     </div>
 
