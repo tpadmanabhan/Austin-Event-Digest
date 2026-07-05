@@ -442,12 +442,9 @@ export function buildDigestEmailHtml(digest: {
           <td style="padding:4px 0; color:#d1fae5; font-size:14px;">Board-level recruiting</td>
         </tr>
       </table>
-      <p style="margin:0 0 16px; color:#d1fae5; font-size:14px; line-height:1.7;">
+      <p style="margin:0; color:#d1fae5; font-size:14px; line-height:1.7;">
         If you care about making Austin a better city, this one's for you. <strong style="color:#ecfdf5;">Watch this space.</strong>
       </p>
-      <div style="text-align:center;">
-        <a href="https://eventcarpooling.com" style="display:inline-block; background:#fbbf24; color:#1c1917; font-size:14px; font-weight:700; text-decoration:none; padding:12px 28px; border-radius:100px; letter-spacing:-0.2px;">Learn more at EventCarpooling.com →</a>
-      </div>
     </div>
 
     <!-- Featured Event -->
