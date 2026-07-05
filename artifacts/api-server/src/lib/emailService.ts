@@ -411,11 +411,13 @@ export function buildDigestEmailHtml(digest: {
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="vertical-align:middle; padding-right:14px; width:48px;">
-            <div style="width:44px; height:44px; border-radius:10px; background:#fff; text-align:center; line-height:44px; font-size:26px;">🤝</div>
+            <div style="width:44px; height:44px; border-radius:10px; background:#fff; overflow:hidden;">
+              <img src="https://eventcarpooling.com/austin-cares-logo.png" alt="Austin Cares" width="44" height="44" style="display:block; width:44px; height:44px; object-fit:cover;" />
+            </div>
           </td>
           <td style="vertical-align:middle;">
             <p style="margin:0 0 2px; color:#a7f3d0; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Coming Soon</p>
-            <p style="margin:0; color:#ecfdf5; font-size:18px; font-weight:800; letter-spacing:-0.3px;">❤️ Austin Cares Newsletter</p>
+            <p style="margin:0; color:#ecfdf5; font-size:18px; font-weight:800; letter-spacing:-0.3px;">Austin Cares Newsletter</p>
           </td>
         </tr>
       </table>

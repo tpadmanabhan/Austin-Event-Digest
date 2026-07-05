@@ -8,15 +8,15 @@ export default function AustinCaresComingSoon() {
         >
           {/* Header */}
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl flex-shrink-0 shadow-md">
-              🤝
+            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-md overflow-hidden">
+              <img src="/austin-cares-logo.png" alt="Austin Cares" className="w-full h-full object-cover" />
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: "#a7f3d0" }}>
                 Coming Soon
               </p>
               <p className="text-xl font-extrabold tracking-tight" style={{ color: "#ecfdf5" }}>
-                ❤️ Austin Cares Newsletter
+                Austin Cares Newsletter
               </p>
             </div>
           </div>
