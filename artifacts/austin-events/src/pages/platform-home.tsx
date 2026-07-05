@@ -555,10 +555,8 @@ function PlatformHomeInner() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {tenants.map((tenant, i) => {
                 const isComingSoon = tenant.slug === "austincares";
-                const CardEl = isComingSoon ? motion.div : motion.a;
-                const cardProps = isComingSoon
-                  ? {}
-                  : { href: `https://${tenant.slug}.eventcarpooling.com` };
+                const CardEl = motion.a;
+                const cardProps = { href: `https://${tenant.slug}.eventcarpooling.com` };
 
                 let iconContent: React.ReactNode;
                 let iconStyle: React.CSSProperties;
