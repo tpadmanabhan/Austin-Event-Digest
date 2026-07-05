@@ -56,8 +56,12 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
 
 function Router() {
   const { isPlatformRoot, citySlug } = useDomain();
+  const [location] = useLocation();
 
   if (citySlug === "austincares") {
+    if (location === "/admin" || location.startsWith("/admin/")) {
+      return <CityRoutes citySlug="austincares" />;
+    }
     return <AustinCaresComingSoon />;
   }
 
