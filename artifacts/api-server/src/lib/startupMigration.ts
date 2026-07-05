@@ -495,6 +495,15 @@ export async function runStartupMigration(): Promise<void> {
   }
 
   try {
+    await db.execute(
+      sql`UPDATE tenants SET admin_email = 'aiimplementationclubaustin@gmail.com' WHERE slug = 'austin' AND (admin_email IS NULL OR admin_email != 'aiimplementationclubaustin@gmail.com')`
+    );
+    logger.info("Austin admin email set to aiimplementationclubaustin@gmail.com");
+  } catch (err) {
+    logger.warn({ err }, "Austin admin email migration failed (non-fatal)");
+  }
+
+  try {
     // De-duplicate every week: keep the digest with the most events (highest event count),
     // breaking ties by lowest id. Delete all others.
     const allDigests = await db

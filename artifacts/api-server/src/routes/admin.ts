@@ -420,7 +420,7 @@ router.post("/dismiss-first-run", requireAdmin, async (req, res) => {
 
 // Update tenant settings (name, accentColor, categories)
 router.patch("/settings", requireAdmin, async (req, res) => {
-  const { name, accentColor, categories } = req.body ?? {};
+  const { name, accentColor, categories, adminEmail } = req.body ?? {};
   const tenantId = req.tenant!.id;
 
   const updates: Record<string, unknown> = {};
@@ -448,6 +448,14 @@ router.patch("/settings", requireAdmin, async (req, res) => {
       return;
     }
     updates.categories = categories;
+  }
+
+  if (adminEmail !== undefined) {
+    if (typeof adminEmail !== "string" || !adminEmail.includes("@")) {
+      res.status(400).json({ error: "invalid_request", message: "adminEmail must be a valid email address" });
+      return;
+    }
+    updates.adminEmail = adminEmail.trim().toLowerCase();
   }
 
   if (Object.keys(updates).length === 0) {
