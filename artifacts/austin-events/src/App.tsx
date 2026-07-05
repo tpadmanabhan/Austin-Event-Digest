@@ -13,6 +13,7 @@ import RsvpPage from "./pages/rsvp";
 import UnsubscribePage from "./pages/unsubscribe";
 import NotFound from "@/pages/not-found";
 import PlatformHome from "./pages/platform-home";
+import AustinCaresComingSoon from "./pages/austin-cares-coming-soon";
 import { TenantProvider } from "./contexts/tenant-context";
 import { useDomain } from "./hooks/use-domain";
 
@@ -55,6 +56,10 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
 
 function Router() {
   const { isPlatformRoot, citySlug } = useDomain();
+
+  if (citySlug === "austincares") {
+    return <AustinCaresComingSoon />;
+  }
 
   if (isPlatformRoot) {
     return (
