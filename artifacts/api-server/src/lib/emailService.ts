@@ -406,6 +406,50 @@ export function buildDigestEmailHtml(digest: {
       </p>
     </div>
 
+    <!-- Austin Cares Newsletter Block -->
+    <div style="background:linear-gradient(135deg,#064e3b 0%,#065f46 55%,#047857 100%); border-radius:16px; padding:24px; margin-bottom:24px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <tr>
+          <td style="vertical-align:middle; padding-right:14px; width:48px;">
+            <div style="width:44px; height:44px; border-radius:10px; background:#fff; text-align:center; line-height:44px; font-size:26px;">🤝</div>
+          </td>
+          <td style="vertical-align:middle;">
+            <p style="margin:0 0 2px; color:#a7f3d0; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Coming Soon</p>
+            <p style="margin:0; color:#ecfdf5; font-size:18px; font-weight:800; letter-spacing:-0.3px;">❤️ Austin Cares Newsletter</p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:16px 0 14px; color:#d1fae5; font-size:14px; line-height:1.7;">
+        A dedicated newsletter for the heart of Austin — <strong style="color:#ecfdf5;">Austin Cares</strong> will cover:
+      </p>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+        <tr>
+          <td style="padding:4px 8px 4px 0; color:#fbbf24; font-size:16px; width:24px;">🏛️</td>
+          <td style="padding:4px 12px 4px 0; color:#d1fae5; font-size:14px;">Civics &amp; community</td>
+          <td style="padding:4px 8px 4px 0; color:#fbbf24; font-size:16px; width:24px;">🙌</td>
+          <td style="padding:4px 0; color:#d1fae5; font-size:14px;">Volunteering opportunities</td>
+        </tr>
+        <tr>
+          <td style="padding:4px 8px 4px 0; color:#fbbf24; font-size:16px;">💡</td>
+          <td style="padding:4px 12px 4px 0; color:#d1fae5; font-size:14px;">Tech-for-good networking</td>
+          <td style="padding:4px 8px 4px 0; color:#fbbf24; font-size:16px;">💰</td>
+          <td style="padding:4px 0; color:#d1fae5; font-size:14px;">Fundraising campaigns</td>
+        </tr>
+        <tr>
+          <td style="padding:4px 8px 4px 0; color:#fbbf24; font-size:16px;">💼</td>
+          <td style="padding:4px 12px 4px 0; color:#d1fae5; font-size:14px;">Nonprofit job listings</td>
+          <td style="padding:4px 8px 4px 0; color:#fbbf24; font-size:16px;">🏆</td>
+          <td style="padding:4px 0; color:#d1fae5; font-size:14px;">Board-level recruiting</td>
+        </tr>
+      </table>
+      <p style="margin:0 0 16px; color:#d1fae5; font-size:14px; line-height:1.7;">
+        If you care about making Austin a better city, this one's for you. <strong style="color:#ecfdf5;">Watch this space.</strong>
+      </p>
+      <div style="text-align:center;">
+        <a href="https://eventcarpooling.com" style="display:inline-block; background:#fbbf24; color:#1c1917; font-size:14px; font-weight:700; text-decoration:none; padding:12px 28px; border-radius:100px; letter-spacing:-0.2px;">Learn more at EventCarpooling.com →</a>
+      </div>
+    </div>
+
     <!-- Featured Event -->
     ${featuredCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">⭐ Special Event</h2>${featuredCards}` : ""}
 
