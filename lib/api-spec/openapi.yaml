@@ -378,6 +378,11 @@ components:
           nullable: true
         featured:
           type: boolean
+        isPost:
+          type: boolean
+        deadline:
+          type: string
+          nullable: true
       required:
         - title
         - date

@@ -16,4 +16,6 @@ export interface EventItem {
   imageUrl?: string | null;
   source?: string | null;
   featured?: boolean;
+  isPost?: boolean;
+  deadline?: string | null;
 }
