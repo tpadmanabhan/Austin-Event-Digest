@@ -4,7 +4,7 @@ import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { useAllDigests, useLatestDigest } from "@/hooks/use-events";
 import { format, parseISO } from "date-fns";
-import { Calendar, ArrowLeft, Star } from "lucide-react";
+import { Calendar, ArrowLeft, Star, Leaf, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
@@ -223,7 +223,11 @@ export default function DigestView() {
         </div>
 
         {(() => {
-          const upcomingEvents = digest.events.filter((e: any) => e.featured || isEventTodayOrLater(e.date, e));
+          const communityPosts = digest.events.filter((e: any) => e.isPost === true);
+          const upcomingEvents = digest.events.filter((e: any) =>
+            !e.isPost &&
+            (e.featured || isEventTodayOrLater(e.date, e))
+          );
           const visibleEvents = categoryFilter === "All"
             ? upcomingEvents
             : upcomingEvents.filter((e: any) => {
@@ -273,6 +277,54 @@ export default function DigestView() {
                             </span>
                           </div>
                           <EventCard event={featEvent} digestId={digest.id} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {communityPosts.length > 0 && (
+                <section className="mb-12">
+                  <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
+                    <span className="w-8 h-1 bg-green-500 rounded-full"></span>
+                    <Leaf className="w-6 h-6 text-green-500" />
+                    Community Spotlight
+                  </h2>
+                  <div className="flex flex-col gap-6">
+                    {communityPosts.map((post: any, pi: number) => (
+                      <div key={pi} className="relative rounded-3xl border-2 border-green-400/60 bg-gradient-to-br from-green-50/80 via-card to-card dark:from-green-950/30 shadow-lg shadow-green-100/40 dark:shadow-green-900/20">
+                        <div className="h-1 rounded-t-3xl bg-gradient-to-r from-green-400 via-emerald-300 to-green-400" />
+                        <div className="p-6 sm:p-8">
+                          <div className="flex justify-end mb-3">
+                            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-green-500 text-white shadow-sm">
+                              <Leaf className="w-3 h-3" />
+                              Community Post
+                            </span>
+                          </div>
+                          <h3 className="font-serif text-xl font-bold text-foreground mb-3">{post.title}</h3>
+                          {post.description && (
+                            <p className="text-muted-foreground leading-relaxed mb-4">{post.description}</p>
+                          )}
+                          {post.deadline && (
+                            <div className="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 rounded-full px-4 py-1.5 text-sm font-semibold mb-4">
+                              <Calendar className="w-3.5 h-3.5" />
+                              Apply by {post.deadline}
+                            </div>
+                          )}
+                          {post.link && (
+                            <div className="mt-2">
+                              <a
+                                href={post.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+                                style={{ background: "linear-gradient(135deg, #16a34a, #22c55e)", boxShadow: "0 4px 14px rgba(22,163,74,0.35)" }}
+                              >
+                                Apply Now <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
