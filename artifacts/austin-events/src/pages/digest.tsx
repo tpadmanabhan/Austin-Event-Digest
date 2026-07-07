@@ -242,22 +242,6 @@ export default function DigestView() {
             .filter((e: any) => !e.featured)
             .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
 
-          if (visibleEvents.length === 0) {
-            return (
-              <div className="text-center py-20">
-                <p className="text-4xl mb-4">{CAT_CONFIG[categoryFilter].emoji}</p>
-                <p className="text-xl font-serif font-bold text-foreground mb-2">No {categoryFilter} events this week</p>
-                <p className="text-muted-foreground text-sm mb-6">Check back next issue for {categoryFilter.toLowerCase()} events.</p>
-                <button
-                  onClick={() => setCategoryFilter("All")}
-                  className="text-primary text-sm font-medium hover:underline"
-                >
-                  View all events →
-                </button>
-              </div>
-            );
-          }
-
           return (
             <>
               {featuredEvents.length > 0 && (
@@ -380,11 +364,25 @@ export default function DigestView() {
                   <span className="w-8 h-1 bg-primary rounded-full"></span>
                   This Week's Curated Events
                 </h2>
-                <div className="grid sm:grid-cols-2 gap-8">
-                  {regularEvents.map((event, i) => (
-                    <EventCard key={i} event={event} digestId={digest.id} />
-                  ))}
-                </div>
+                {visibleEvents.length === 0 ? (
+                  <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
+                    <p className="text-4xl mb-4">{CAT_CONFIG[categoryFilter].emoji}</p>
+                    <p className="text-xl font-serif font-bold text-foreground mb-2">No {categoryFilter} events this week</p>
+                    <p className="text-muted-foreground text-sm mb-6">Check back next issue for {categoryFilter.toLowerCase()} events.</p>
+                    <button
+                      onClick={() => setCategoryFilter("All")}
+                      className="text-primary text-sm font-medium hover:underline"
+                    >
+                      View all events →
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-8">
+                    {regularEvents.map((event, i) => (
+                      <EventCard key={i} event={event} digestId={digest.id} />
+                    ))}
+                  </div>
+                )}
               </section>
             </>
           );
