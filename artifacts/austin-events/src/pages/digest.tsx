@@ -270,7 +270,7 @@ export default function DigestView() {
                 </section>
               )}
 
-              {businessSpotlights.length > 0 && (
+              {categoryFilter === "All" && businessSpotlights.length > 0 && (
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
                     <span className="w-8 h-1 bg-sky-500 rounded-full"></span>
@@ -311,7 +311,7 @@ export default function DigestView() {
                 </section>
               )}
 
-              {communityPosts.length > 0 && (
+              {categoryFilter === "All" && communityPosts.length > 0 && (
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
                     <span className="w-8 h-1 bg-green-500 rounded-full"></span>

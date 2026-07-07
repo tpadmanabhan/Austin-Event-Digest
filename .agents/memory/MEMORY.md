@@ -5,3 +5,4 @@
 - [Newsletter parser formats](newsletter-parsers.md) — each newsletter has a unique format; TIME_LINE must extract only time (not " @ Venue" trailing content); DATE_COLON_LINE needs [a-z]* for full month names
 - [Custom date range digests](custom-date-range.md) — generate endpoint supports optional weekEnd param (bypasses Zod schema) for multi-day ranges; use /api/events/digest/import to push cleaned data to production
 - [Production admin token](prod-admin-token.md) — bcrypt hash rotates on every redeploy; query prod DB for fresh password_hash then HMAC it to get a valid Bearer token
+- [Digest 61 spotlights](digest-61-spotlights.md) — RacFit (Business) + Food & Climate Grants (Community) must be PATCHed into digest 61 (7/12) when generated
