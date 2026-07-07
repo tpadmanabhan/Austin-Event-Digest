@@ -17,5 +17,6 @@ export interface EventItem {
   source?: string | null;
   featured?: boolean;
   isPost?: boolean;
+  isBusinessSpotlight?: boolean;
   deadline?: string | null;
 }

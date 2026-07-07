@@ -380,6 +380,8 @@ components:
           type: boolean
         isPost:
           type: boolean
+        isBusinessSpotlight:
+          type: boolean
         deadline:
           type: string
           nullable: true
