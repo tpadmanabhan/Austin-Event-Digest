@@ -30,3 +30,9 @@ id = "TWXnDibZuxozYl_A7h-OC"
 uri = "file://screenshots/headline-v2.jpg"
 type = "image"
 title = "Updated headline"
+
+[[outputs]]
+id = "XvgKaFEBI636MCQh5kEM3"
+uri = "file://attached_assets/screenshots/logo_less_uber.png"
+type = "image"
+title = "Event Carpooling — Less Uber · More Neighbor logo"
