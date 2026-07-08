@@ -71,6 +71,14 @@ export const T = {
     gameChip4: "Weekly Challenges",
     gameChip5: "City Leaderboard",
 
+    rideH2: "The Ride",
+    rideBadge: "Upcoming Feature",
+    rideDesc: "A community rides safety net matching people who can't drive with trusted neighbors who can — so seniors reach their appointments, students make it to class, and no one misses what matters because they couldn't get there.",
+    rideChip1: "Medical Appointments",
+    rideChip2: "School & Classes",
+    rideChip3: "Groceries & Pharmacy",
+    rideChip4: "Job Interviews",
+
     japanH2: "Japan Launch",
     japanDesc: "EventCarpooling.com is expanding to Japan — bringing the same weekly event digest, carpool RSVP, and city community features that power Austin to cities across Japan. Local organizers will be able to launch their own city newsletter, curate weekly events, grow a subscriber base, and earn XP on the global leaderboard.",
     japanStrong: "Tokyo, Osaka, Kyoto — watch this space.",
@@ -160,6 +168,14 @@ export const T = {
     gameChip3: "バッジ",
     gameChip4: "ウィークリーチャレンジ",
     gameChip5: "都市リーダーボード",
+
+    rideH2: "ザ・ライド",
+    rideBadge: "近日公開機能",
+    rideDesc: "運転できない人と信頼できる近隣ドライバーをつなぐコミュニティの乗り物セーフティネット — 高齢者が診察に行け、学生が授業に出られ、大切な場所に誰も取り残されません。",
+    rideChip1: "医療の受診",
+    rideChip2: "通学・授業",
+    rideChip3: "食料品・薬局",
+    rideChip4: "就職面接",
 
     japanH2: "日本上陸",
     japanDesc: "EventCarpooling.comが日本に進出します — オースティンを支える毎週のイベントダイジェスト、カープールRSVP、都市コミュニティ機能を日本全国の都市へ。地域オーガナイザーは独自の都市ニュースレターを立ち上げ、週次イベントを厳選し、購読者を増やし、グローバルリーダーボードでXPを獲得できます。",

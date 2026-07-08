@@ -420,6 +420,52 @@ function PlatformHomeInner() {
         </div>
       </section>
 
+      {/* THE RIDE — UPCOMING FEATURE */}
+      <section className="py-16 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0f2c1e 0%, #1a3a28 50%, #0d2318 100%)" }}>
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div style={{ position: "absolute", top: "-60px", right: "-60px", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(52,211,153,0.2) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", bottom: "-40px", left: "-40px", width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)" }} />
+        </div>
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-5 py-1.5 mb-6 text-xs font-bold uppercase tracking-widest"
+              style={{ background: "rgba(52,211,153,0.15)", color: "#6ee7b7", border: "1px solid rgba(52,211,153,0.3)" }}
+            >
+              🚗 {t.rideBadge}
+            </div>
+            <div className="text-5xl mb-4">🤝</div>
+            <h2 className="font-serif font-black text-3xl sm:text-4xl mb-5" style={{ color: "#ecfdf5", letterSpacing: "-0.02em" }}>
+              {t.rideH2}
+            </h2>
+            <p className="text-lg leading-relaxed mb-8" style={{ color: "#a7f3d0" }}>
+              {t.rideDesc}
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              {[
+                { icon: "🏥", label: t.rideChip1 },
+                { icon: "🎓", label: t.rideChip2 },
+                { icon: "🛒", label: t.rideChip3 },
+                { icon: "💼", label: t.rideChip4 },
+              ].map((f) => (
+                <span
+                  key={f.label}
+                  className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
+                  style={{ background: "rgba(255,255,255,0.07)", color: "rgba(167,243,208,0.9)", border: "1px solid rgba(52,211,153,0.2)" }}
+                >
+                  {f.icon} {f.label}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* JAPAN LAUNCH */}
       <section className="py-16" style={{ background: "linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%)" }}>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

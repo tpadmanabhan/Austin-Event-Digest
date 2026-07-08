@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<!-- saved from url=(0053)file:///C:/Users/rajse/Downloads/rides-landing_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Ride — no one left without a way there</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="./The Ride — no one left without a way there_files/css2" rel="stylesheet">
+<style>
+  :root{
+    --night:#1B2340;
+    --night-2:#2A2E5A;
+    --dawn:#E8A65C;
+    --dawn-deep:#D98A3D;
+    --rose:#C56B5C;
+    --paper:#FBF8F2;
+    --paper-2:#F3EEE3;
+    --ink:#232838;
+    --muted:#5C6274;
+    --line:#E2DCCE;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+  .serif{font-family:'Spectral',Georgia,serif}
+
+  /* nav */
+  nav{position:absolute;top:0;left:0;right:0;z-index:10}
+  nav .wrap{display:flex;justify-content:space-between;align-items:center;padding-top:22px}
+  .logo{font-family:'Spectral',serif;font-weight:600;font-size:21px;color:var(--paper);letter-spacing:-.01em}
+  .logo b{color:var(--dawn)}
+  nav a.ghost{color:var(--paper);opacity:.85;text-decoration:none;font-size:15px;font-weight:500}
+  nav a.ghost:hover{opacity:1}
+
+  /* hero */
+  .hero{
+    background:
+      radial-gradient(120% 90% at 78% 8%, rgba(232,166,92,.34) 0%, rgba(232,166,92,0) 46%),
+      linear-gradient(168deg, var(--night) 0%, var(--night-2) 62%, #3A3564 100%);
+    color:var(--paper);
+    padding:150px 0 96px;
+    position:relative;
+    overflow:hidden;
+  }
+  .horizon{position:absolute;left:0;right:0;bottom:0;height:120px;
+    background:linear-gradient(0deg, rgba(232,166,92,.20), transparent);}
+  .eyebrow{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--dawn);font-weight:600;margin-bottom:26px}
+  .hero h1{font-family:'Spectral',serif;font-weight:500;font-size:clamp(34px,6vw,60px);line-height:1.08;letter-spacing:-.015em;max-width:15ch}
+  .hero h1 em{font-style:italic;color:var(--dawn)}
+  .promise{margin-top:26px;font-size:clamp(18px,2.3vw,21px);max-width:52ch;color:#DDE0EC}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:40px}
+  .btn{display:inline-block;text-decoration:none;font-weight:600;font-size:16px;padding:15px 26px;border-radius:12px;transition:transform .15s ease,box-shadow .15s ease}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-dawn{background:var(--dawn);color:var(--night);box-shadow:0 8px 24px rgba(232,166,92,.34)}
+  .btn-line{background:transparent;color:var(--paper);border:1.5px solid rgba(255,255,255,.4)}
+  .btn-line:hover{border-color:var(--paper)}
+
+  /* problem / manifesto */
+  .manifesto{padding:88px 0}
+  .manifesto .lead{font-family:'Spectral',serif;font-size:clamp(24px,3.4vw,33px);line-height:1.32;font-weight:400;max-width:24ch;letter-spacing:-.01em}
+  .manifesto .body{max-width:60ch;margin-top:26px;font-size:18px;color:#3B4152}
+  .manifesto .body p{margin-bottom:18px}
+  .named{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+  .named span{background:var(--paper-2);border:1px solid var(--line);border-radius:100px;padding:8px 16px;font-size:14.5px;font-weight:500}
+  .slot{margin-top:40px;border-left:3px solid var(--dawn);background:linear-gradient(90deg,rgba(232,166,92,.08),transparent);padding:20px 24px;border-radius:0 10px 10px 0}
+  .slot .tag{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--dawn-deep);font-weight:600}
+  .slot .q{font-family:'Spectral',serif;font-style:italic;font-size:21px;line-height:1.4;margin-top:8px;color:var(--ink)}
+  .slot .src{font-size:14px;color:var(--muted);margin-top:12px}
+  .slot .src a{color:var(--dawn-deep)}
+
+  /* how it works */
+  .how{background:var(--night);color:var(--paper);padding:84px 0}
+  .how h2{font-family:'Spectral',serif;font-size:clamp(26px,3.6vw,36px);font-weight:500;letter-spacing:-.01em;max-width:20ch}
+  .how .sub{color:#C9CCDB;max-width:54ch;margin-top:14px;font-size:18px}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:48px}
+  .step{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:26px 24px}
+  .step .n{font-family:'Spectral',serif;font-size:15px;color:var(--dawn);font-weight:600;letter-spacing:.08em}
+  .step h3{font-size:19px;font-weight:600;margin:12px 0 8px}
+  .step p{color:#C4C8D8;font-size:15.5px;line-height:1.55}
+
+  /* two paths */
+  .paths{padding:88px 0}
+  .paths .head{text-align:center;max-width:34ch;margin:0 auto 46px}
+  .paths .head h2{font-family:'Spectral',serif;font-size:clamp(26px,3.6vw,36px);font-weight:500;letter-spacing:-.01em}
+  .paths .head p{color:var(--muted);margin-top:12px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .card{border:1px solid var(--line);border-radius:20px;padding:34px 30px;background:var(--paper);transition:box-shadow .2s ease,transform .2s ease;display:flex;flex-direction:column}
+  .card:hover{box-shadow:0 18px 44px rgba(35,40,56,.10);transform:translateY(-3px)}
+  .card.inst{background:linear-gradient(170deg,#20284A,#2E2F5B);color:var(--paper);border-color:transparent}
+  .card .kicker{font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:14px}
+  .card.inst .kicker{color:var(--dawn)}
+  .card.fam .kicker{color:var(--rose)}
+  .card h3{font-family:'Spectral',serif;font-size:26px;font-weight:500;line-height:1.2;letter-spacing:-.01em}
+  .card p{margin-top:14px;font-size:16px;flex-grow:1}
+  .card.inst p{color:#CFD2E1}
+  .card.fam p{color:#3B4152}
+  .card ul{list-style:none;margin:20px 0 26px}
+  .card li{font-size:15px;padding-left:26px;position:relative;margin-bottom:10px}
+  .card li::before{content:"→";position:absolute;left:0;font-weight:600}
+  .card.inst li::before{color:var(--dawn)}
+  .card.fam li::before{color:var(--rose)}
+  .card .go{text-decoration:none;font-weight:600;font-size:16px;padding:14px 24px;border-radius:11px;text-align:center;transition:transform .15s ease}
+  .card .go:hover{transform:translateY(-2px)}
+  .card.inst .go{background:var(--dawn);color:var(--night)}
+  .card.fam .go{background:var(--ink);color:var(--paper)}
+
+  /* trust */
+  .trust{background:var(--paper-2);padding:80px 0}
+  .trust h2{font-family:'Spectral',serif;font-size:clamp(24px,3.4vw,32px);font-weight:500;max-width:24ch;letter-spacing:-.01em}
+  .trust .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:40px}
+  .trust .t .ic{width:40px;height:40px;border-radius:10px;background:var(--night);color:var(--dawn);display:flex;align-items:center;justify-content:center;font-family:'Spectral',serif;font-size:20px;font-weight:600;margin-bottom:14px}
+  .trust .t h4{font-size:17.5px;font-weight:600;margin-bottom:6px}
+  .trust .t p{font-size:15px;color:var(--muted);line-height:1.55}
+
+  /* close */
+  .close{padding:96px 0;text-align:center}
+  .close .big{font-family:'Spectral',serif;font-style:italic;font-size:clamp(26px,4vw,40px);font-weight:400;line-height:1.25;max-width:20ch;margin:0 auto;letter-spacing:-.01em}
+  .close .btn{margin-top:38px}
+
+  footer{background:var(--night);color:#AAB0C4;padding:40px 0;font-size:14px}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;align-items:center}
+  footer .logo{font-size:18px}
+  footer a{color:#AAB0C4;text-decoration:none}
+  footer a:hover{color:var(--paper)}
+
+  @media(max-width:720px){
+    .steps{grid-template-columns:1fr}
+    .cards{grid-template-columns:1fr}
+    .trust .grid{grid-template-columns:1fr}
+    .hero{padding:128px 0 72px}
+  }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <div class="logo">The<b>Ride</b></div>
+  <a href="file:///C:/Users/rajse/Downloads/rides-landing_1.html#paths" class="ghost">Get started</a>
+</div></nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">A community rides safety net</div>
+    <h1 class="serif">No one should miss what matters because they <em>couldn't get there.</em></h1>
+    <p class="promise">Not the dialysis appointment. Not the first day of class. Not the pharmacy, the food bank, the job interview. We match people who can't drive with trusted neighbors who can.</p>
+    <div class="cta-row">
+      <a href="file:///C:/Users/rajse/Downloads/rides-landing_1.html#paths" class="btn btn-dawn">Get someone a ride</a>
+      <a href="file:///C:/Users/rajse/Downloads/rides-landing_1.html#how" class="btn btn-line">See how it works</a>
+    </div>
+  </div>
+  <div class="horizon"></div>
+</header>
+
+<section class="manifesto">
+  <div class="wrap">
+    <p class="lead serif">When the systems we relied on run dry, we are left with the oldest resource of all — each other.</p>
+    <div class="body">
+      <p>Rideshare was supposed to be the answer. Then the prices climbed, the surge hit hardest at the worst moments, and the people who needed a ride most — those who can't drive, can't afford $40 each way, can't wait an hour — were quietly priced out of their own lives.</p>
+      <p>Students are unable to reach school. Seniors are missing medical appointments and struggling to access medications and groceries. The autonomous vehicles and delivery drones exist — the technology is here — yet it's aimed at commerce, not at the people who need it most. For the most vulnerable among us, transportation <em>is</em> access: to health, to school, to dignity.</p>
+      <p>So we stopped trying to out-build the platforms and started rebuilding the thing they replaced: the neighbor who shows up. Coordinated, reliable, and accountable — but human at its core.</p>
+    </div>
+    <div class="named">
+      <span>Seniors getting to medical care</span>
+      <span>Students getting to school</span>
+      <span>Families reaching groceries &amp; pharmacies</span>
+      <span>Workers reaching the interview</span>
+    </div>
+
+    <div class="slot">
+      <div class="tag">From the founding essay</div>
+      <a href="https://customersuccessforgood.com/2026/07/08/transportation-and-the-affordability-crisis-articles/" style="text-decoration:none;color:inherit">
+        <div class="q serif">"Imagine that pool of water running dry. What happens when we exhaust our resources and have only each other to rely on—while AI promises solutions it never delivers? This is why I believe humans will need each other more than ever."</div>
+      </a>
+      <div class="src"><a href="https://customersuccessforgood.com/2026/07/08/transportation-and-the-affordability-crisis-articles/">Transportation and the Affordability Crisis →</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="wrap">
+    <h2 class="serif">Built around the trips that can't be missed.</h2>
+    <p class="sub">Not spontaneous, not discretionary — the recurring, essential journeys where predictability makes trusted matching possible.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="n">01 — The rider</div>
+        <h3>A standing need</h3>
+        <p>Dialysis three mornings a week. Class five days a week. The same clinic, the same route, the same time. We plan around what repeats.</p>
+      </div>
+      <div class="step">
+        <div class="n">02 — The driver</div>
+        <h3>A trusted neighbor</h3>
+        <p>Background-checked volunteers and community drivers — retirees, work-study students, faith and civic groups — matched to riders near them.</p>
+      </div>
+      <div class="step">
+        <div class="n">03 — The safety net</div>
+        <h3>Reliability, guaranteed</h3>
+        <p>Confirmation loops and backup coverage, so a driver falling through never becomes a rider stranded. The promise is the product.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="paths" id="paths">
+  <div class="wrap">
+    <div class="head">
+      <h2 class="serif">Two ways in.</h2>
+      <p>Whether you're funding rides for a community or arranging them for someone you love.</p>
+    </div>
+    <div class="cards">
+      <div class="card inst">
+        <div class="kicker">For institutions</div>
+        <h3 class="serif">Fund rides for the people you serve</h3>
+        <p>Health plans, Area Agencies on Aging, universities, and clinics already carry the cost when people can't get there. Turn missed appointments and dropped enrollments into rides that show up.</p>
+        <ul>
+          <li>Non-emergency medical transportation that actually arrives</li>
+          <li>Attendance &amp; adherence reporting built in</li>
+          <li>Lower cost than commercial rideshare contracts</li>
+        </ul>
+        <a href="file:///C:/Users/rajse/Downloads/rides-landing_1.html#" class="go">Book a partnership call</a>
+      </div>
+      <div class="card fam">
+        <div class="kicker">For families</div>
+        <h3 class="serif">Arrange rides for someone you love</h3>
+        <p>Set up dependable, recurring rides for a parent or relative who can't drive — with drivers you can trust and the peace of mind of knowing they made it.</p>
+        <ul>
+          <li>Recurring rides to appointments, errands, and community</li>
+          <li>Trip confirmations so you know they arrived</li>
+          <li>No app for them to fight with — just a ride that comes</li>
+        </ul>
+        <a href="file:///C:/Users/rajse/Downloads/rides-landing_1.html#" class="go">Set up a ride</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="trust">
+  <div class="wrap">
+    <h2 class="serif">For these riders, reliability isn't a feature. It's the whole thing.</h2>
+    <div class="grid">
+      <div class="t">
+        <div class="ic">✓</div>
+        <h4>Every driver vetted</h4>
+        <p>Background checks, verified identity, and community references before anyone gives a first ride.</p>
+      </div>
+      <div class="t">
+        <div class="ic">↻</div>
+        <h4>Backup by design</h4>
+        <p>If a driver can't make it, coverage kicks in automatically. A missed ride is treated as the emergency it is.</p>
+      </div>
+      <div class="t">
+        <div class="ic">♡</div>
+        <h4>Accountable, not anonymous</h4>
+        <p>Riders and drivers build ongoing relationships — the same trusted face, not a different stranger each time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="close">
+  <div class="wrap">
+    <p class="big serif">This is why I believe humans will need each other more than ever.</p>
+    <a href="file:///C:/Users/rajse/Downloads/rides-landing_1.html#paths" class="btn btn-dawn">Get someone a ride</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="logo">The<b style="color:var(--dawn)">Ride</b></div>
+    <div>A community rides safety net · Austin, TX</div>
+    <a href="https://customersuccessforgood.com/2026/07/08/transportation-and-the-affordability-crisis-articles/">Read the founding essay →</a>
+  </div>
+</footer>
+
+
+
+</body></html>
