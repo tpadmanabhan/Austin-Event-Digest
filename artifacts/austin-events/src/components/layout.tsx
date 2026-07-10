@@ -9,6 +9,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { muted, toggleMute } = useAudio();
   const tenant = useTenant();
+  const isAustinCares = tenant.slug === "austincares";
 
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
@@ -17,10 +18,18 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="flex h-14 items-center justify-between">
             <Link href="/" className="flex items-center gap-2 group">
               <div
-                className="h-8 w-8 shrink-0 rounded-xl flex items-center justify-center text-lg transition-transform group-hover:-translate-y-0.5"
-                style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
+                className="h-8 w-8 shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5"
+                style={isAustinCares ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
-                🎸
+                {isAustinCares ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/austin-cares-brand-icon.jpg`}
+                    alt={tenant.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  "🎸"
+                )}
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
@@ -90,10 +99,18 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3 opacity-80">
               <div
-                className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-2xl"
-                style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
+                className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden"
+                style={isAustinCares ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
-                🎸
+                {isAustinCares ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/austin-cares-brand-icon.jpg`}
+                    alt={tenant.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  "🎸"
+                )}
               </div>
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} {tenant.name}. Handcrafted in {tenant.city.split(",")[0]}.
