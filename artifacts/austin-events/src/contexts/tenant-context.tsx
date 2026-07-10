@@ -67,10 +67,24 @@ export function TenantProvider({ slug, children }: { slug: string; children: Rea
     if (tenant?.accentColor) {
       document.documentElement.style.setProperty("--color-primary", tenant.accentColor);
     }
+    if (tenant?.slug === "austincares") {
+      document.documentElement.style.setProperty("--color-secondary", "#1e40af");
+      document.documentElement.style.setProperty("--color-accent", "#3b82f6");
+      document.documentElement.style.setProperty("--color-ring", "#2563eb");
+      document.documentElement.style.setProperty("--color-background", "#eff6ff");
+      document.documentElement.style.setProperty("--color-foreground", "#0f172a");
+      document.documentElement.style.setProperty("--color-muted", "#dbeafe");
+    }
     return () => {
       document.documentElement.style.removeProperty("--color-primary");
+      document.documentElement.style.removeProperty("--color-secondary");
+      document.documentElement.style.removeProperty("--color-accent");
+      document.documentElement.style.removeProperty("--color-ring");
+      document.documentElement.style.removeProperty("--color-background");
+      document.documentElement.style.removeProperty("--color-foreground");
+      document.documentElement.style.removeProperty("--color-muted");
     };
-  }, [tenant?.accentColor]);
+  }, [tenant?.accentColor, tenant?.slug]);
 
   if (isLoading) return <CityLoadingSkeleton />;
   if (error?.message === "NOT_FOUND") return <CityNotFoundPage />;
