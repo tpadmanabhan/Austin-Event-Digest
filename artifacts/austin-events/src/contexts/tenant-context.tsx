@@ -64,27 +64,33 @@ export function TenantProvider({ slug, children }: { slug: string; children: Rea
   });
 
   useEffect(() => {
-    if (tenant?.accentColor) {
-      document.documentElement.style.setProperty("--color-primary", tenant.accentColor);
-    }
     if (tenant?.slug === "austincares") {
-      document.documentElement.style.setProperty("--color-secondary", "#1e40af");
-      document.documentElement.style.setProperty("--color-accent", "#3b82f6");
-      document.documentElement.style.setProperty("--color-ring", "#2563eb");
-      document.documentElement.style.setProperty("--color-background", "#eff6ff");
-      document.documentElement.style.setProperty("--color-foreground", "#0f172a");
-      document.documentElement.style.setProperty("--color-muted", "#dbeafe");
+      document.documentElement.style.setProperty("--primary", "217 91% 50%");
+      document.documentElement.style.setProperty("--secondary", "224 76% 33%");
+      document.documentElement.style.setProperty("--accent", "213 94% 60%");
+      document.documentElement.style.setProperty("--ring", "217 91% 50%");
+      document.documentElement.style.setProperty("--background", "214 100% 97%");
+      document.documentElement.style.setProperty("--foreground", "222 47% 11%");
+      document.documentElement.style.setProperty("--muted", "214 95% 93%");
+      document.documentElement.style.setProperty("--sidebar-primary", "217 91% 50%");
+      document.documentElement.style.setProperty("--sidebar-ring", "217 91% 50%");
+      document.documentElement.style.setProperty("--sidebar", "214 100% 97%");
+      document.documentElement.style.setProperty("--sidebar-foreground", "222 47% 11%");
     }
     return () => {
-      document.documentElement.style.removeProperty("--color-primary");
-      document.documentElement.style.removeProperty("--color-secondary");
-      document.documentElement.style.removeProperty("--color-accent");
-      document.documentElement.style.removeProperty("--color-ring");
-      document.documentElement.style.removeProperty("--color-background");
-      document.documentElement.style.removeProperty("--color-foreground");
-      document.documentElement.style.removeProperty("--color-muted");
+      document.documentElement.style.removeProperty("--primary");
+      document.documentElement.style.removeProperty("--secondary");
+      document.documentElement.style.removeProperty("--accent");
+      document.documentElement.style.removeProperty("--ring");
+      document.documentElement.style.removeProperty("--background");
+      document.documentElement.style.removeProperty("--foreground");
+      document.documentElement.style.removeProperty("--muted");
+      document.documentElement.style.removeProperty("--sidebar-primary");
+      document.documentElement.style.removeProperty("--sidebar-ring");
+      document.documentElement.style.removeProperty("--sidebar");
+      document.documentElement.style.removeProperty("--sidebar-foreground");
     };
-  }, [tenant?.accentColor, tenant?.slug]);
+  }, [tenant?.slug]);
 
   if (isLoading) return <CityLoadingSkeleton />;
   if (error?.message === "NOT_FOUND") return <CityNotFoundPage />;

@@ -6,3 +6,4 @@
 - [Custom date range digests](custom-date-range.md) — generate endpoint supports optional weekEnd param (bypasses Zod schema) for multi-day ranges; use /api/events/digest/import to push cleaned data to production
 - [Production admin token](prod-admin-token.md) — bcrypt hash rotates on every redeploy; query prod DB for fresh password_hash then HMAC it to get a valid Bearer token
 - [Digest 61 spotlights](digest-61-spotlights.md) — RacFit (Business) + Food & Climate Grants (Community) must be PATCHed into digest 61 (7/12) when generated
+- [Tailwind @theme inline runtime overrides](tailwind-theme-inline-runtime-vars.md) — @theme inline bakes utilities to raw vars; override --primary/--secondary etc directly, not --color-*
