@@ -185,7 +185,11 @@ export default function Home() {
               
               <h1 className="text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1]">
                 Stop scrolling. <br/>
-                Start <span className="text-primary italic">experiencing</span> {cityShortName}.
+                {isAustinCares ? (
+                  <>Start <span className="text-primary italic">helping</span>.</>
+                ) : (
+                  <>Start <span className="text-primary italic">experiencing</span> {cityShortName}.</>
+                )}
               </h1>
               
               <p className="text-base text-muted-foreground mb-5 leading-relaxed max-w-xl">
