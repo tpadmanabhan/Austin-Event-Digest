@@ -90,6 +90,12 @@ uri = "file://attached_assets/generated_images/austin_cares_hero_blue_v14.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "dYRFkDmOUPxCllr6tj9TF"
+uri = "file://attached_assets/generated_images/austin_cares_hero_blue_v15.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "b7kqdKX42Y2RLl4dmFCK1"
 uri = "file://project-plan.md"
