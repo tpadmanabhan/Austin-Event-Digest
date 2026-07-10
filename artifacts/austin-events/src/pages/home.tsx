@@ -193,7 +193,7 @@ export default function Home() {
 
               <div className="mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl">
                 <p className="text-foreground/90 leading-relaxed text-base italic">
-                  "Hey Austin! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy Austin 🤠"
+                  "Hey {cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy {cityShortName} 🤠"
                 </p>
                 <p className="mt-3 text-sm font-semibold text-primary not-italic">— <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a></p>
               </div>
@@ -211,8 +211,8 @@ export default function Home() {
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />
               <img 
-                src={`${import.meta.env.BASE_URL}images/austin-hero.png`} 
-                alt="Austin Texas stylized illustration" 
+                src={`${import.meta.env.BASE_URL}images/${tenant.slug === "austincares" ? "austin-cares-hero.png" : "austin-hero.png"}`} 
+                alt={tenant.slug === "austincares" ? "High school student leaders taking charge" : "Austin Texas stylized illustration"} 
                 className="relative rounded-3xl shadow-2xl border border-border object-cover aspect-[4/3] w-full"
               />
             </motion.div>
