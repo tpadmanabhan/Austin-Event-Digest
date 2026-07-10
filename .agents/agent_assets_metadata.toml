@@ -1,5 +1,10 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "iR-2B6Bar5RM5BGJbx3nD"
+uri = "file://artifacts/austin-events/public/images/austin-cares-hero.png"
+type = "image"
+title = "generated_image"
 
 [[outputs]]
 id = "b7kqdKX42Y2RLl4dmFCK1"

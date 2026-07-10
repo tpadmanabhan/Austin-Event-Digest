@@ -6,6 +6,14 @@ export default function AustinCaresComingSoon() {
           style={{ background: "linear-gradient(135deg,#064e3b 0%,#065f46 55%,#047857 100%)" }}
           className="rounded-3xl p-8 sm:p-10"
         >
+          <div className="rounded-2xl overflow-hidden mb-7 shadow-lg border" style={{ borderColor: "rgba(255,255,255,0.15)" }}>
+            <img
+              src="/images/austin-cares-hero.png"
+              alt="High school student leaders taking charge"
+              className="w-full object-cover aspect-[4/3]"
+            />
+          </div>
+
           {/* Header */}
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-md overflow-hidden">
