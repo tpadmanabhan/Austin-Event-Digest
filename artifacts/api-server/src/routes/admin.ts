@@ -418,6 +418,36 @@ router.post("/dismiss-first-run", requireAdmin, async (req, res) => {
   }
 });
 
+// Fetch current tenant settings (for prefilling the admin settings form)
+router.get("/settings", requireAdmin, async (req, res) => {
+  const tenantId = req.tenant!.id;
+  try {
+    const [tenant] = await db
+      .select({
+        slug: tenantsTable.slug,
+        name: tenantsTable.name,
+        city: tenantsTable.city,
+        accentColor: tenantsTable.accentColor,
+        categories: tenantsTable.categories,
+        digestTitle: tenantsTable.digestTitle,
+        adminEmail: tenantsTable.adminEmail,
+      })
+      .from(tenantsTable)
+      .where(eq(tenantsTable.id, tenantId))
+      .limit(1);
+
+    if (!tenant) {
+      res.status(404).json({ error: "not_found", message: "Tenant not found" });
+      return;
+    }
+
+    res.json({ tenant });
+  } catch (err) {
+    req.log.error({ err }, "Error fetching tenant settings");
+    res.status(500).json({ error: "server_error", message: "Failed to fetch settings" });
+  }
+});
+
 // Update tenant settings (name, accentColor, categories)
 router.patch("/settings", requireAdmin, async (req, res) => {
   const { name, accentColor, categories, adminEmail, digestTitle } = req.body ?? {};

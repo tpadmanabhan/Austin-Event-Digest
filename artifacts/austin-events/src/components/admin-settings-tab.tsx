@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
-import { Save, Palette, Check, Tag } from "lucide-react";
+import { Save, Palette, Check, Tag, Mail } from "lucide-react";
 
 const ALL_CATEGORIES = [
   { name: "Tech",     emoji: "💻", description: "Startup meetups, AI demos, developer nights." },
@@ -24,9 +24,36 @@ export function AdminSettingsTab() {
   const [categories, setCategories] = useState<string[]>(tenant.categories);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [adminEmail, setAdminEmail] = useState("");
+  const [initialAdminEmail, setInitialAdminEmail] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadEmail() {
+      try {
+        const token = sessionStorage.getItem("admin_token");
+        const res = await fetch("/api/admin/settings", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) return;
+        const data = await res.json() as { tenant?: { adminEmail?: string | null } };
+        const email = data.tenant?.adminEmail ?? "";
+        if (!cancelled) {
+          setAdminEmail(email);
+          setInitialAdminEmail(email);
+        }
+      } catch {
+        // non-critical
+      }
+    }
+    loadEmail();
+    return () => { cancelled = true; };
+  }, []);
+
   const isDirty =
     name !== tenant.name ||
     accentColor !== tenant.accentColor ||
+    adminEmail !== initialAdminEmail ||
     JSON.stringify([...categories].sort()) !== JSON.stringify([...tenant.categories].sort());
 
   function toggleCategory(cat: string) {
@@ -54,7 +81,12 @@ export function AdminSettingsTab() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ name: name.trim(), accentColor, categories }),
+        body: JSON.stringify({
+          name: name.trim(),
+          accentColor,
+          categories,
+          ...(adminEmail.trim() && adminEmail.trim() !== initialAdminEmail ? { adminEmail: adminEmail.trim() } : {}),
+        }),
       });
 
       const data = await res.json();
@@ -65,6 +97,8 @@ export function AdminSettingsTab() {
 
       // Apply the new accent color immediately
       document.documentElement.style.setProperty("--color-primary", accentColor);
+
+      if (adminEmail.trim()) setInitialAdminEmail(adminEmail.trim());
 
       // Invalidate tenant config so the rest of the app picks up the changes
       await queryClient.invalidateQueries({ queryKey: ["tenant-config", tenant.slug] });
@@ -89,6 +123,24 @@ export function AdminSettingsTab() {
           onChange={e => setName(e.target.value)}
           className="rounded-xl max-w-sm"
           placeholder="Austin Events"
+        />
+      </div>
+
+      {/* Admin email */}
+      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Mail className="w-5 h-5 text-primary" />
+          <h3 className="font-serif font-bold text-lg">Admin email</h3>
+        </div>
+        <p className="text-sm text-muted-foreground -mt-2">
+          Used for admin login and as the default address when sending yourself a draft digest.
+        </p>
+        <Input
+          type="email"
+          value={adminEmail}
+          onChange={e => setAdminEmail(e.target.value)}
+          className="rounded-xl max-w-sm"
+          placeholder="you@example.com"
         />
       </div>
 

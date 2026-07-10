@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Layout } from "@/components/layout";
 import { useNewsletterSubscriptions } from "@/hooks/use-newsletter";
 import { useAllDigests, useGenerateDigest, useSendDigest, useDeleteDigest } from "@/hooks/use-events";
@@ -91,9 +91,30 @@ export default function AdminDashboard() {
   const [lastGeneratedDigest, setLastGeneratedDigest] = useState<{ eventCount: number; digestId: number } | null>(null);
 
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
-  const [testEmail, setTestEmail] = useState("aiimplementationclubaustin@gmail.com");
+  const [testEmail, setTestEmail] = useState("");
 
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAdminEmail() {
+      try {
+        const token = sessionStorage.getItem("admin_token");
+        const res = await fetch("/api/admin/settings", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) return;
+        const data = await res.json() as { tenant?: { adminEmail?: string | null } };
+        if (!cancelled && data.tenant?.adminEmail) {
+          setTestEmail(data.tenant.adminEmail);
+        }
+      } catch {
+        // non-critical — admin can type their email manually
+      }
+    }
+    loadAdminEmail();
+    return () => { cancelled = true; };
+  }, []);
 
   const onGenerateFromSources = async () => {
     const urls = sourceUrls.filter(u => u.trim().startsWith("http"));
