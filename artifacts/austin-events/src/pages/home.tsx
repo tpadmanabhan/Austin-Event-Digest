@@ -207,7 +207,25 @@ export default function Home() {
                 <p className="mt-3 text-sm font-semibold text-primary not-italic">
                   —{" "}
                   {isAustinCares ? (
-                    <>Rohan 🇫🇷🇺🇸</>
+                    <span className="inline-flex items-center gap-1.5">
+                      Rohan
+                      <img
+                        src="https://flagcdn.com/20x15/fr.png"
+                        srcSet="https://flagcdn.com/40x30/fr.png 2x"
+                        width={20}
+                        height={15}
+                        alt="France flag"
+                        className="inline-block rounded-[2px] align-middle"
+                      />
+                      <img
+                        src="https://flagcdn.com/20x15/us.png"
+                        srcSet="https://flagcdn.com/40x30/us.png 2x"
+                        width={20}
+                        height={15}
+                        alt="United States flag"
+                        className="inline-block rounded-[2px] align-middle"
+                      />
+                    </span>
                   ) : (
                     <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
                   )}
