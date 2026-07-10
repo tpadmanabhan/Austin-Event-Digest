@@ -420,7 +420,7 @@ router.post("/dismiss-first-run", requireAdmin, async (req, res) => {
 
 // Update tenant settings (name, accentColor, categories)
 router.patch("/settings", requireAdmin, async (req, res) => {
-  const { name, accentColor, categories, adminEmail } = req.body ?? {};
+  const { name, accentColor, categories, adminEmail, digestTitle } = req.body ?? {};
   const tenantId = req.tenant!.id;
 
   const updates: Record<string, unknown> = {};
@@ -458,6 +458,14 @@ router.patch("/settings", requireAdmin, async (req, res) => {
     updates.adminEmail = adminEmail.trim().toLowerCase();
   }
 
+  if (digestTitle !== undefined) {
+    if (digestTitle !== null && (typeof digestTitle !== "string" || digestTitle.trim().length === 0)) {
+      res.status(400).json({ error: "invalid_request", message: "digestTitle must be a non-empty string or null" });
+      return;
+    }
+    updates.digestTitle = digestTitle === null ? null : digestTitle.trim();
+  }
+
   if (Object.keys(updates).length === 0) {
     res.status(400).json({ error: "invalid_request", message: "No valid fields to update" });
     return;
@@ -474,6 +482,7 @@ router.patch("/settings", requireAdmin, async (req, res) => {
         city: tenantsTable.city,
         accentColor: tenantsTable.accentColor,
         categories: tenantsTable.categories,
+        digestTitle: tenantsTable.digestTitle,
       });
     res.json({ tenant: updated });
   } catch (err) {

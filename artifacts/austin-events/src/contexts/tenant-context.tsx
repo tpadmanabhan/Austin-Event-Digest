@@ -7,6 +7,7 @@ export interface TenantConfig {
   city: string;
   accentColor: string;
   categories: string[];
+  digestTitle: string | null;
   firstRun: boolean;
   hasEmailAdmin: boolean;
 }

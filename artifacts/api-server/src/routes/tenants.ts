@@ -95,6 +95,7 @@ router.get("/tenant/config", async (req, res) => {
         city: tenantsTable.city,
         accentColor: tenantsTable.accentColor,
         categories: tenantsTable.categories,
+        digestTitle: tenantsTable.digestTitle,
         firstRun: tenantsTable.firstRun,
         adminEmail: tenantsTable.adminEmail,
       })

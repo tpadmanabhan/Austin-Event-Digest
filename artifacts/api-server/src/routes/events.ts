@@ -133,7 +133,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
       const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
       const label = `${weekOf.toLocaleDateString("en-US", opts)}–${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-      subject = `🤠 ${req.tenant!.city} Events: ${label}`;
+      subject = `🤠 ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
     } else {
       subject = fallback.subject;
     }
@@ -370,7 +370,7 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
       const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
       const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
       const label = `${weekOf.toLocaleDateString("en-US", opts)}–${weekEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-      const subject = `🤠 ${req.tenant!.city} Events: ${label}`;
+      const subject = `🤠 ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
       const intro = `Hey ${req.tenant!.city.split(",")[0]}! With the help of AI, I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest — get out there and enjoy it! 🤠`;
 
       const [newDigest] = await db

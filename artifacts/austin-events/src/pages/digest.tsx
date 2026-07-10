@@ -118,6 +118,7 @@ export default function DigestView() {
   const isLatest = idStr === "latest";
   const tenant = useTenant();
   const cityShortName = tenant.city.split(",")[0];
+  const isAustinCares = tenant.slug === "austincares";
   
   const { data: latestData, isLoading: loadingLatest } = useLatestDigest();
   const { data: allData, isLoading: loadingAll } = useAllDigests();
@@ -188,13 +189,21 @@ export default function DigestView() {
               const range = getWeekMFDateRange(digest.weekOf);
               const emojiMatch = digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
               const emoji = emojiMatch ? emojiMatch[1] : "";
-              return `${emoji}${cityShortName} Events: ${range}`;
+              const titleBase = tenant.digestTitle || `${cityShortName} Events`;
+              return `${emoji}${titleBase}: ${range}`;
             })()}
           </h1>
           
           <div className="prose prose-lg prose-p:text-muted-foreground prose-p:leading-relaxed max-w-none bg-card p-8 rounded-3xl border border-border shadow-sm">
             <p className="whitespace-pre-wrap">{digest.intro}</p>
-            <p className="mt-3 text-sm font-semibold text-primary not-italic">— <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a></p>
+            <p className="mt-3 text-sm font-semibold text-primary not-italic">
+              —{" "}
+              {isAustinCares ? (
+                "Rohan"
+              ) : (
+                <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
+              )}
+            </p>
           </div>
         </header>
 
