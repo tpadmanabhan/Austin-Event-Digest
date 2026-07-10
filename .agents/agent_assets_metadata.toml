@@ -18,6 +18,18 @@ uri = "file://attached_assets/generated_images/austin_cares_hero_blue_v2.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "s5uQLNbW_i3cIZsurP2Uw"
+uri = "file://attached_assets/generated_images/austin_cares_hero_blue_v3.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "hofmJbjHizv-5iRNsGDuI"
+uri = "file://attached_assets/generated_images/austin_cares_hero_blue_v4.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "b7kqdKX42Y2RLl4dmFCK1"
 uri = "file://project-plan.md"
