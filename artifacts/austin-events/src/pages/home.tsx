@@ -189,7 +189,9 @@ export default function Home() {
               </h1>
               
               <p className="text-base text-muted-foreground mb-5 leading-relaxed max-w-xl">
-                Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in {cityShortName} for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!
+                {isAustinCares
+                  ? "Every Sunday, a curated list of volunteering opportunities, school events, networking activities, and high school club stuff will be published for the week ahead."
+                  : `Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in ${cityShortName} for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!`}
               </p>
 
               <div className="mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl">
