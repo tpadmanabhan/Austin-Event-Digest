@@ -201,7 +201,7 @@ export default function Home() {
               <div className="mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl">
                 <p className="text-foreground/90 leading-relaxed text-base italic">
                   {isAustinCares
-                    ? `"Hey crew! I've got the AI scouring inboxes and combing through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, ${cityShortName} 😎"`
+                    ? `"Hey crew! I've got the AI scouring inboxes and combing through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek 😎"`
                     : `"Hey ${cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`}
                 </p>
                 <p className="mt-3 text-sm font-semibold text-primary not-italic">
