@@ -334,6 +334,7 @@ async function runTenantMigration(): Promise<void> {
   await db.execute(sql`
     ALTER TABLE subscribers
       DROP CONSTRAINT IF EXISTS subscribers_email_key,
+      DROP CONSTRAINT IF EXISTS subscribers_email_unique,
       DROP CONSTRAINT IF EXISTS subscribers_tenant_email
   `);
   await db.execute(sql`
