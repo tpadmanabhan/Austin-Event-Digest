@@ -64,7 +64,7 @@ router.post("/subscribe", async (req, res) => {
           },
         });
         res.json(response);
-        sendWelcomeEmail(email, name ?? updated[0].name).catch(() => {});
+        sendWelcomeEmail(email, name ?? updated[0].name, req.tenant).catch(() => {});
         sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? updated[0].name, isResubscribe: true, adminEmail: req.tenant!.adminEmail }).catch(() => {});
         return;
       }
@@ -91,7 +91,7 @@ router.post("/subscribe", async (req, res) => {
 
     const response = SubscribeToNewsletterResponse.parse({
       success: true,
-      message: "You're subscribed! You'll receive Raj's Austin Events every Sunday.",
+      message: `You're subscribed! You'll receive ${req.tenant?.digestTitle || req.tenant?.name || "the"} digest every Sunday.`,
       subscriber: {
         id: newSub.id,
         email: newSub.email,
@@ -101,7 +101,7 @@ router.post("/subscribe", async (req, res) => {
       },
     });
     res.json(response);
-    sendWelcomeEmail(email, name ?? null).catch(() => {});
+    sendWelcomeEmail(email, name ?? null, req.tenant).catch(() => {});
     sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? null, adminEmail: req.tenant!.adminEmail }).catch(() => {});
     awardXP(tenantId, "subscriber", 3, { email }).catch(() => {});
   } catch (err) {

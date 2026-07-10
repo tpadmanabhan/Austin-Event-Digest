@@ -83,14 +83,28 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
   }
 }
 
-export function buildWelcomeEmailHtml(name?: string | null): string {
+export interface WelcomeEmailTenant {
+  slug: string;
+  name: string;
+  city: string;
+  digestTitle?: string | null;
+}
+
+export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmailTenant | null): string {
   const greeting = name ? `Hey ${name}! 👋` : "Hey there! 👋";
+  const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
+  const cityLabel = tenant?.city || "Austin, TX";
+  const siteUrl = tenant?.slug ? `https://${tenant.slug}.eventcarpooling.com` : "https://austin.eventcarpooling.com";
+  const curatorLine = tenant && tenant.slug !== "austin"
+    ? `Curated with ❤️ for ${escapeHtml(tenant.city || tenant.name)}`
+    : "Curated with ❤️ by Raj from Austin, TX";
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>You're in! Raj's Austin Events</title>
+  <title>You're in! ${escapeHtml(digestName)}</title>
 </head>
 <body style="margin:0;padding:0;background:#fafaf9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <div style="max-width:580px;margin:0 auto;padding:32px 16px;">
@@ -98,18 +112,18 @@ export function buildWelcomeEmailHtml(name?: string | null): string {
     <!-- Header -->
     <div style="background:linear-gradient(135deg,#1c1917 0%,#292524 60%,#3b1f0a 100%);border-radius:20px;padding:40px 32px 32px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;">
       <div style="font-size:44px;margin-bottom:8px;line-height:1;">🤠</div>
-      <h1 style="margin:0 0 6px;color:#fbbf24;font-size:28px;font-weight:800;letter-spacing:-0.5px;">Raj's Austin Events</h1>
-      <p style="margin:0;color:#a8a29e;font-size:14px;letter-spacing:0.5px;text-transform:uppercase;">Weekly Digest · Austin, TX</p>
+      <h1 style="margin:0 0 6px;color:#fbbf24;font-size:28px;font-weight:800;letter-spacing:-0.5px;">${escapeHtml(digestName)}</h1>
+      <p style="margin:0;color:#a8a29e;font-size:14px;letter-spacing:0.5px;text-transform:uppercase;">Weekly Digest · ${escapeHtml(cityLabel)}</p>
     </div>
 
     <!-- Main card -->
     <div style="background:#ffffff;border:1px solid #e7e5e4;border-radius:16px;padding:32px;margin-bottom:16px;">
       <p style="margin:0 0 16px;color:#1c1917;font-size:18px;font-weight:700;">${greeting}</p>
       <p style="margin:0 0 16px;color:#44403c;font-size:15px;line-height:1.75;">
-        You're officially on the list for Austin's most interesting week-ahead digest. 🎉
+        You're officially on the list for ${escapeHtml(cityLabel)}'s most interesting week-ahead digest. 🎉
       </p>
       <p style="margin:0 0 24px;color:#44403c;font-size:15px;line-height:1.75;">
-        <strong>Every Sunday</strong> you'll get a hand-picked roundup of the best things happening in Austin <strong>Sunday through Saturday</strong> — so you can plan your whole week before it starts.
+        <strong>Every Sunday</strong> you'll get a hand-picked roundup of the best things happening <strong>Sunday through Saturday</strong> — so you can plan your whole week before it starts.
       </p>
 
       <!-- What to expect -->
@@ -133,14 +147,14 @@ export function buildWelcomeEmailHtml(name?: string | null): string {
 
       <!-- CTA -->
       <div style="text-align:center;">
-        <a href="https://austin.eventcarpooling.com" style="display:inline-block;background:#fbbf24;color:#1c1917;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">Browse this week's events →</a>
+        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#fbbf24;color:#1c1917;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">Browse this week's events →</a>
       </div>
     </div>
 
     <!-- Footer -->
     <div style="text-align:center;padding:4px 0 16px;">
-      <p style="margin:0 0 6px;color:#78716c;font-size:13px;">Curated with ❤️ by Raj from Austin, TX</p>
-      <p style="margin:0;color:#a8a29e;font-size:12px;">You subscribed at austin.eventcarpooling.com — <a href="https://austin.eventcarpooling.com" style="color:#a8a29e;">unsubscribe anytime</a></p>
+      <p style="margin:0 0 6px;color:#78716c;font-size:13px;">${curatorLine}</p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">You subscribed at ${escapeHtml(tenant?.slug ? `${tenant.slug}.eventcarpooling.com` : "austin.eventcarpooling.com")} — <a href="${escapeHtml(siteUrl)}" style="color:#a8a29e;">unsubscribe anytime</a></p>
     </div>
 
   </div>
@@ -148,11 +162,12 @@ export function buildWelcomeEmailHtml(name?: string | null): string {
 </html>`;
 }
 
-export async function sendWelcomeEmail(to: string, name?: string | null): Promise<void> {
-  const html = buildWelcomeEmailHtml(name);
+export async function sendWelcomeEmail(to: string, name?: string | null, tenant?: WelcomeEmailTenant | null): Promise<void> {
+  const html = buildWelcomeEmailHtml(name, tenant);
+  const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
   const result = await sendEmail({
     to,
-    subject: "You're in! 🤠 Welcome to Raj's Austin Events",
+    subject: `You're in! 🤠 Welcome to ${digestName}`,
     html,
   });
   if (result.success) {
