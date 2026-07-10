@@ -18,14 +18,14 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className={`flex items-center justify-between ${isAustinCares ? "h-20" : "h-14"}`}>
             <Link href="/" className="flex items-center gap-2 group">
               <div
-                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-14" : "h-8 w-8"}`}
+                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : "h-8 w-8"}`}
                 style={isAustinCares ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
                 {isAustinCares ? (
                   <img
                     src={`${import.meta.env.BASE_URL}images/austin-cares-brand-icon.jpg`}
                     alt={tenant.name}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover object-center"
                   />
                 ) : (
                   "🎸"
@@ -99,7 +99,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3 opacity-80">
               <div
-                className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-20 h-20" : "w-10 h-10"}`}
+                className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-40 h-20" : "w-10 h-10"}`}
                 style={isAustinCares ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
                 {isAustinCares ? (
