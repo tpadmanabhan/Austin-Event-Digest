@@ -15,10 +15,10 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-14 items-center justify-between">
+          <div className={`flex items-center justify-between ${isAustinCares ? "h-20" : "h-14"}`}>
             <Link href="/" className="flex items-center gap-2 group">
               <div
-                className="h-8 w-8 shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5"
+                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-14" : "h-8 w-8"}`}
                 style={isAustinCares ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
                 {isAustinCares ? (
@@ -99,7 +99,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3 opacity-80">
               <div
-                className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden"
+                className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-20 h-20" : "w-10 h-10"}`}
                 style={isAustinCares ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
                 {isAustinCares ? (
