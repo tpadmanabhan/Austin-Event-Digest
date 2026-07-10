@@ -20,12 +20,17 @@ function formatDate(d: Date): string {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 }
 
-async function fetchPageText(url: string): Promise<string> {
+// A page render is considered "thin" (likely a JS shell that never got hydrated)
+// when the cleaned text is too short to plausibly contain real event listings.
+const THIN_TEXT_THRESHOLD = 400;
+
+async function fetchRawHtmlText(url: string): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
     const res = await fetch(url, {
       signal: controller.signal,
+      redirect: "follow",
       headers: {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -34,7 +39,7 @@ async function fetchPageText(url: string): Promise<string> {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
-    const text = html
+    return html
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
       .replace(/<[^>]+>/g, " ")
@@ -46,10 +51,56 @@ async function fetchPageText(url: string): Promise<string> {
       .replace(/&#39;/g, "'")
       .replace(/\s{3,}/g, "  ")
       .trim();
-    return text.slice(0, 12000);
   } finally {
     clearTimeout(timeout);
   }
+}
+
+// Fallback for JavaScript-rendered pages: routes the request through a free
+// headless-rendering reader proxy (r.jina.ai) that executes the page's JS and
+// returns the hydrated content as plain text/markdown.
+async function fetchRenderedPageText(url: string): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  try {
+    const res = await fetch(`https://r.jina.ai/${url}`, {
+      signal: controller.signal,
+      headers: {
+        "Accept": "text/plain",
+      },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    return text.trim();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchPageText(url: string): Promise<string> {
+  let text = "";
+  try {
+    text = await fetchRawHtmlText(url);
+  } catch (err) {
+    logger.warn({ url, err }, "Raw fetch failed, falling back to rendered fetch");
+  }
+
+  if (text.length < THIN_TEXT_THRESHOLD) {
+    try {
+      const rendered = await fetchRenderedPageText(url);
+      if (rendered.length > text.length) {
+        text = rendered;
+      }
+    } catch (err) {
+      logger.warn({ url, err }, "Rendered fallback fetch failed");
+    }
+  }
+
+  if (!text) {
+    throw new Error("Failed to fetch page content via raw or rendered fetch");
+  }
+
+  return text.slice(0, 12000);
 }
 
 function categorizEvent(title: string, description: string): string {
