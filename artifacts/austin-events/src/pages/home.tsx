@@ -219,7 +219,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="relative hidden lg:block"
+              className={`relative ${isAustinCares ? "block order-first lg:order-none" : "hidden lg:block"}`}
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />
               <img 
