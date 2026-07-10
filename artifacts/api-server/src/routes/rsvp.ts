@@ -159,6 +159,7 @@ router.post("/", async (req, res) => {
         eventDate: event.date,
         eventVenue: event.venue,
         totalRsvps: priorRsvps.length + 1,
+        adminEmail: req.tenant!.adminEmail,
       }).catch(() => {});
 
       req.log.info({ email: normalizedEmail, eventTitle, digestId, carpoolMatches: priorRsvps.length, verifiedBySignature }, "RSVP recorded");

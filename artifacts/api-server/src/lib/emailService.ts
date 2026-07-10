@@ -475,6 +475,7 @@ export async function sendNewSubscriberAdminNotification(opts: {
   subscriberEmail: string;
   subscriberName?: string | null;
   isResubscribe?: boolean;
+  adminEmail?: string | null;
 }): Promise<void> {
   const label = opts.isResubscribe ? "Re-subscribed" : "New Subscriber";
   const nameLine = opts.subscriberName ? `<p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Name:</strong> ${opts.subscriberName}</p>` : "";
@@ -504,7 +505,7 @@ export async function sendNewSubscriberAdminNotification(opts: {
   `;
 
   const result = await sendEmail({
-    to: ADMIN_NOTIFY_EMAIL,
+    to: opts.adminEmail || ADMIN_NOTIFY_EMAIL,
     subject: `📬 ${label}: ${opts.subscriberEmail}`,
     html,
   });
@@ -523,6 +524,7 @@ export async function sendCarpoolAdminNotification(opts: {
   eventDate: string;
   eventVenue: string;
   totalRsvps: number;
+  adminEmail?: string | null;
 }): Promise<void> {
   const name = opts.rsvperName || opts.rsvperEmail.split("@")[0];
   const html = `
@@ -550,7 +552,7 @@ export async function sendCarpoolAdminNotification(opts: {
   `;
 
   const result = await sendEmail({
-    to: ADMIN_NOTIFY_EMAIL,
+    to: opts.adminEmail || ADMIN_NOTIFY_EMAIL,
     subject: `🚗 Carpool RSVP: ${name} → ${opts.eventTitle.substring(0, 50)}`,
     html,
   });

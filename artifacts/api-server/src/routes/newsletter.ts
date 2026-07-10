@@ -65,7 +65,7 @@ router.post("/subscribe", async (req, res) => {
         });
         res.json(response);
         sendWelcomeEmail(email, name ?? updated[0].name).catch(() => {});
-        sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? updated[0].name, isResubscribe: true }).catch(() => {});
+        sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? updated[0].name, isResubscribe: true, adminEmail: req.tenant!.adminEmail }).catch(() => {});
         return;
       }
 
@@ -102,7 +102,7 @@ router.post("/subscribe", async (req, res) => {
     });
     res.json(response);
     sendWelcomeEmail(email, name ?? null).catch(() => {});
-    sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? null }).catch(() => {});
+    sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? null, adminEmail: req.tenant!.adminEmail }).catch(() => {});
     awardXP(tenantId, "subscriber", 3, { email }).catch(() => {});
   } catch (err) {
     req.log.error({ err }, "Error subscribing");
