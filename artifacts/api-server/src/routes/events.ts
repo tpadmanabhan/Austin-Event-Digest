@@ -269,6 +269,96 @@ router.patch("/digest/:id/meta", requireAdmin, async (req, res) => {
   }
 });
 
+// Fetch basic og:/JSON-LD metadata from a URL for spotlight entries
+async function fetchUrlMeta(url: string): Promise<{ title: string; description: string; imageUrl: string | null }> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(10000),
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
+      },
+    });
+    if (!res.ok) return { title: "", description: "", imageUrl: null };
+    const html = await res.text();
+    const og = (prop: string) => {
+      const m = html.match(new RegExp(`<meta[^>]+property=["']og:${prop}["'][^>]+content=["']([^"']+)["']`, "i"))
+        || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${prop}["']`, "i"));
+      return m ? m[1].trim() : "";
+    };
+    const titleTag = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    return {
+      title: og("title") || (titleTag ? titleTag[1].trim() : ""),
+      description: og("description"),
+      imageUrl: og("image") || null,
+    };
+  } catch {
+    return { title: "", description: "", imageUrl: null };
+  }
+}
+
+router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+  const { url, type, title: titleOverride, description: descOverride, deadline } = req.body || {};
+  if (typeof url !== "string" || !url.startsWith("http")) {
+    res.status(400).json({ error: "invalid_request", message: "url is required and must start with http" });
+    return;
+  }
+  if (type !== "business" && type !== "community") {
+    res.status(400).json({ error: "invalid_request", message: "type must be 'business' or 'community'" });
+    return;
+  }
+  try {
+    const [existing] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .limit(1);
+    if (!existing) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+
+    const meta = await fetchUrlMeta(url);
+    const title = (typeof titleOverride === "string" && titleOverride.trim()) ? titleOverride.trim() : meta.title;
+    const description = (typeof descOverride === "string" && descOverride.trim()) ? descOverride.trim() : meta.description;
+
+    const spotlight: EventItem = {
+      title: title || url,
+      date: "",
+      venue: "",
+      description: description || "",
+      link: url,
+      imageUrl: meta.imageUrl,
+      category: type === "business" ? "Tech & Business" : "Community",
+      source: url,
+      featured: false,
+      ...(type === "business" ? { isBusinessSpotlight: true } : { isPost: true }),
+      ...(type === "community" && typeof deadline === "string" && deadline.trim() ? { deadline: deadline.trim() } : {}),
+    } as EventItem;
+
+    const currentEvents = (existing.events as EventItem[]) || [];
+    const updatedEvents = [...currentEvents, spotlight];
+
+    const [updated] = await db
+      .update(digestsTable)
+      .set({ events: updatedEvents })
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .returning();
+
+    req.log.info({ digestId: id, type, url }, "Spotlight added to digest");
+    res.json({ success: true, digest: digestToApi(updated) });
+  } catch (err) {
+    req.log.error({ err }, "Error adding spotlight to digest");
+    res.status(500).json({ error: "server_error", message: "Failed to add spotlight" });
+  }
+});
+
 router.delete("/digest/:id", requireAdmin, async (req, res) => {
   const id = parseInt(req.params["id"] as string, 10);
   if (isNaN(id)) {

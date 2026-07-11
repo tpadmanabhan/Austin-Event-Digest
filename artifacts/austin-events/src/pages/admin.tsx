@@ -90,6 +90,17 @@ export default function AdminDashboard() {
   const [sourceResults, setSourceResults] = useState<Array<{ url: string; eventCount: number; error?: string }> | null>(null);
   const [lastGeneratedDigest, setLastGeneratedDigest] = useState<{ eventCount: number; digestId: number } | null>(null);
 
+  const [spotlightDigestId, setSpotlightDigestId] = useState<number | null>(null);
+  const [bizUrl, setBizUrl] = useState("");
+  const [bizTitle, setBizTitle] = useState("");
+  const [bizDesc, setBizDesc] = useState("");
+  const [isAddingBiz, setIsAddingBiz] = useState(false);
+  const [commUrl, setCommUrl] = useState("");
+  const [commTitle, setCommTitle] = useState("");
+  const [commDesc, setCommDesc] = useState("");
+  const [commDeadline, setCommDeadline] = useState("");
+  const [isAddingComm, setIsAddingComm] = useState(false);
+
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
   const [testEmail, setTestEmail] = useState("");
 
@@ -150,6 +161,43 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Failed to generate", description: err instanceof Error ? err.message : String(err) });
     } finally {
       setIsGeneratingFromSources(false);
+    }
+  };
+
+  const onAddSpotlight = async (type: "business" | "community") => {
+    const url = type === "business" ? bizUrl : commUrl;
+    const title = type === "business" ? bizTitle : commTitle;
+    const desc = type === "business" ? bizDesc : commDesc;
+    if (!url.trim().startsWith("http")) {
+      toast({ variant: "destructive", title: "Invalid URL", description: "Enter a URL starting with http." });
+      return;
+    }
+    if (!spotlightDigestId) {
+      toast({ variant: "destructive", title: "Select a digest", description: "Choose which digest to add this spotlight to." });
+      return;
+    }
+    type === "business" ? setIsAddingBiz(true) : setIsAddingComm(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const body: Record<string, string> = { url: url.trim(), type };
+      if (title.trim()) body.title = title.trim();
+      if (desc.trim()) body.description = desc.trim();
+      if (type === "community" && commDeadline.trim()) body.deadline = commDeadline.trim();
+      const res = await fetch(`/api/events/digest/${spotlightDigestId}/spotlight`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json() as { success?: boolean; message?: string };
+      if (!res.ok) throw new Error(data.message || "Failed to add spotlight");
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      toast({ title: `${type === "business" ? "Business" : "Community"} spotlight added to digest #${spotlightDigestId}!` });
+      if (type === "business") { setBizUrl(""); setBizTitle(""); setBizDesc(""); }
+      else { setCommUrl(""); setCommTitle(""); setCommDesc(""); setCommDeadline(""); }
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Failed to add spotlight", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      type === "business" ? setIsAddingBiz(false) : setIsAddingComm(false);
     }
   };
 
@@ -596,6 +644,129 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* BUSINESS SPOTLIGHT CARD */}
+            <div className="bg-card rounded-2xl border border-sky-200 dark:border-sky-900 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-sky-200 dark:border-sky-900 bg-sky-50/60 dark:bg-sky-950/30 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-sky-500/10 flex items-center justify-center shrink-0">
+                  <Trophy className="w-4 h-4 text-sky-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm text-sky-800 dark:text-sky-200">Business Spotlight</h3>
+                  <p className="text-xs text-sky-600/80 dark:text-sky-400/80 mt-0.5">Feature a local business — title &amp; description auto-filled from the URL</p>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add to Digest</label>
+                  <select
+                    value={spotlightDigestId ?? ""}
+                    onChange={e => setSpotlightDigestId(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">— Select a digest —</option>
+                    {digestsData?.digests?.map(d => (
+                      <option key={d.id} value={d.id}>
+                        #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Input
+                  type="url"
+                  placeholder="https://example.com/business-story"
+                  value={bizUrl}
+                  onChange={e => setBizUrl(e.target.value)}
+                  className="rounded-xl text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Title (auto-filled from URL)"
+                  value={bizTitle}
+                  onChange={e => setBizTitle(e.target.value)}
+                  className="rounded-xl text-sm"
+                />
+                <Textarea
+                  placeholder="Description (auto-filled from URL)"
+                  value={bizDesc}
+                  onChange={e => setBizDesc(e.target.value)}
+                  className="rounded-xl text-sm resize-none"
+                  rows={3}
+                />
+                <Button
+                  onClick={() => onAddSpotlight("business")}
+                  disabled={isAddingBiz || !bizUrl.trim()}
+                  className="rounded-xl gap-2 bg-sky-500 hover:bg-sky-600 text-white"
+                >
+                  {isAddingBiz ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <><Trophy className="w-4 h-4" /> Add Business Spotlight</>}
+                </Button>
+              </div>
+            </div>
+
+            {/* COMMUNITY SPOTLIGHT CARD */}
+            <div className="bg-card rounded-2xl border border-green-200 dark:border-green-900 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-green-200 dark:border-green-900 bg-green-50/60 dark:bg-green-950/30 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0 text-lg">
+                  🌿
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm text-green-800 dark:text-green-200">Community Spotlight</h3>
+                  <p className="text-xs text-green-600/80 dark:text-green-400/80 mt-0.5">Feature a grant, program, or community initiative — title &amp; description auto-filled from the URL</p>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add to Digest</label>
+                  <select
+                    value={spotlightDigestId ?? ""}
+                    onChange={e => setSpotlightDigestId(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">— Select a digest —</option>
+                    {digestsData?.digests?.map(d => (
+                      <option key={d.id} value={d.id}>
+                        #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Input
+                  type="url"
+                  placeholder="https://example.com/community-grant"
+                  value={commUrl}
+                  onChange={e => setCommUrl(e.target.value)}
+                  className="rounded-xl text-sm"
+                />
+                <Input
+                  type="text"
+                  placeholder="Title (auto-filled from URL)"
+                  value={commTitle}
+                  onChange={e => setCommTitle(e.target.value)}
+                  className="rounded-xl text-sm"
+                />
+                <Textarea
+                  placeholder="Description (auto-filled from URL)"
+                  value={commDesc}
+                  onChange={e => setCommDesc(e.target.value)}
+                  className="rounded-xl text-sm resize-none"
+                  rows={3}
+                />
+                <Input
+                  type="text"
+                  placeholder="Application deadline (e.g. August 18, 2026)"
+                  value={commDeadline}
+                  onChange={e => setCommDeadline(e.target.value)}
+                  className="rounded-xl text-sm"
+                />
+                <Button
+                  onClick={() => onAddSpotlight("community")}
+                  disabled={isAddingComm || !commUrl.trim()}
+                  className="rounded-xl gap-2 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {isAddingComm ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>🌿 Add Community Spotlight</>}
+                </Button>
               </div>
             </div>
 
