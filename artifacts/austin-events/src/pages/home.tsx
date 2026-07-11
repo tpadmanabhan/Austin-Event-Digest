@@ -192,12 +192,6 @@ export default function Home() {
                 )}
               </h1>
               
-              {!isAustinCares && (
-                <p className="text-2xl sm:text-3xl font-bold font-serif text-foreground mb-3">
-                  A Luddite's Dream
-                </p>
-              )}
-
               <p className="text-base text-muted-foreground mb-5 leading-relaxed max-w-xl">
                 {isAustinCares
                   ? "Every Sunday, a curated list of volunteering opportunities, school events, networking activities, and high school club stuff will be published for the week ahead."
