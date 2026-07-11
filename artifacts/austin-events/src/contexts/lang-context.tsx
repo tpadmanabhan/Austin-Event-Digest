@@ -17,7 +17,7 @@ export const T = {
     heroSlogan: "Stop scrolling. Start living.",
     heroMission: "We help solve personalized event discovery and the logistics to get there. Be the change agent in your community.",
     heroLuddite: "A Luddite's Dream",
-    heroLudditeDesc: "Let's build tools that enhance human skills, not replace it. Focus on technologies in service of people, not the reverse.",
+    heroLudditeDesc: "Let's build tools that enhance human skills, not replace them. Focus on technologies in service of people, not the reverse.",
     heroCta: "Launch your city",
     heroLiveNow: "Live now ·",
     heroNotify: "Want to be notified about feature updates?",
