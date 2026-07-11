@@ -143,12 +143,12 @@ function PlatformHomeInner() {
               {t.heroSlogan}
             </p>
 
-            <p className="text-2xl font-bold mb-4 max-w-2xl mx-auto" style={{ color: "#f1f5f9" }}>
-              A Luddite's Dream
+            <p className="text-base mb-4 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
+              {t.heroMission}
             </p>
 
-            <p className="text-base mb-10 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
-              {t.heroMission}
+            <p className="text-2xl font-bold mb-10 max-w-2xl mx-auto" style={{ color: "#f1f5f9" }}>
+              A Luddite's Dream
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center flex-wrap mb-8">
