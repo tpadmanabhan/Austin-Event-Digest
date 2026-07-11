@@ -148,7 +148,7 @@ function PlatformHomeInner() {
             </p>
 
             <p className="text-2xl font-bold mb-10 max-w-2xl mx-auto" style={{ color: "#f1f5f9" }}>
-              A Luddite's Dream
+              {t.heroLuddite}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center flex-wrap mb-8">
