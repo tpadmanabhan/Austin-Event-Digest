@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Star, Bell, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowRight, Sparkles, Star, Bell, CheckCircle2, Loader2, Trophy, ExternalLink, Leaf, Calendar } from "lucide-react";
 
 import { useLatestDigest } from "@/hooks/use-events";
 import { Layout } from "@/components/layout";
@@ -310,7 +310,13 @@ export default function Home() {
             </div>
           ) : latestDigest?.events ? (
             (() => {
-              const upcomingEvents = latestDigest.events.filter((e: any) => e.featured || isEventTodayOrLater(e.date));
+              const businessSpotlights = latestDigest.events.filter((e: any) => e.isBusinessSpotlight === true);
+              const communityPosts = latestDigest.events.filter((e: any) => e.isPost === true);
+              const upcomingEvents = latestDigest.events.filter((e: any) =>
+                !e.isPost &&
+                !e.isBusinessSpotlight &&
+                (e.featured || isEventTodayOrLater(e.date))
+              );
               const visibleEvents = categoryFilter === "All"
                 ? upcomingEvents
                 : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
@@ -346,6 +352,102 @@ export default function Home() {
                       ))}
                     </div>
                   )}
+                  {categoryFilter === "All" && businessSpotlights.length > 0 && (
+                    <div className="flex flex-col gap-6">
+                      <h3 className="font-serif text-2xl font-bold flex items-center gap-3">
+                        <span className="w-8 h-1 bg-sky-500 rounded-full"></span>
+                        <Trophy className="w-6 h-6 text-sky-500" />
+                        Business Spotlight
+                      </h3>
+                      {businessSpotlights.map((biz: any, bi: number) => (
+                        <motion.div
+                          key={bi}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: bi * 0.1 }}
+                        >
+                          <div className="relative rounded-3xl border-2 border-sky-400/60 bg-gradient-to-br from-sky-50/80 via-card to-card dark:from-sky-950/30 shadow-lg shadow-sky-100/40 dark:shadow-sky-900/20">
+                            <div className="h-1 rounded-t-3xl bg-gradient-to-r from-sky-400 via-cyan-300 to-sky-400" />
+                            <div className="p-6 sm:p-8">
+                              <div className="flex justify-end mb-3">
+                                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-sky-500 text-white shadow-sm">
+                                  <Trophy className="w-3 h-3" />
+                                  Business Spotlight
+                                </span>
+                              </div>
+                              <h4 className="font-serif text-xl font-bold text-foreground mb-3">{biz.title}</h4>
+                              {biz.description && (
+                                <p className="text-muted-foreground leading-relaxed mb-4 whitespace-pre-wrap">{biz.description}</p>
+                              )}
+                              {biz.link && (
+                                <a
+                                  href={biz.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+                                  style={{ background: "linear-gradient(135deg, #0284c7, #38bdf8)", boxShadow: "0 4px 14px rgba(2,132,199,0.35)" }}
+                                >
+                                  Visit Website <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                  {categoryFilter === "All" && communityPosts.length > 0 && (
+                    <div className="flex flex-col gap-6">
+                      <h3 className="font-serif text-2xl font-bold flex items-center gap-3">
+                        <span className="w-8 h-1 bg-green-500 rounded-full"></span>
+                        <Leaf className="w-6 h-6 text-green-500" />
+                        Community Spotlight
+                      </h3>
+                      {communityPosts.map((post: any, pi: number) => (
+                        <motion.div
+                          key={pi}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: pi * 0.1 }}
+                        >
+                          <div className="relative rounded-3xl border-2 border-green-400/60 bg-gradient-to-br from-green-50/80 via-card to-card dark:from-green-950/30 shadow-lg shadow-green-100/40 dark:shadow-green-900/20">
+                            <div className="h-1 rounded-t-3xl bg-gradient-to-r from-green-400 via-emerald-300 to-green-400" />
+                            <div className="p-6 sm:p-8">
+                              <div className="flex justify-end mb-3">
+                                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-green-500 text-white shadow-sm">
+                                  <Leaf className="w-3 h-3" />
+                                  Community Post
+                                </span>
+                              </div>
+                              <h4 className="font-serif text-xl font-bold text-foreground mb-3">{post.title}</h4>
+                              {post.description && (
+                                <p className="text-muted-foreground leading-relaxed mb-4">{post.description}</p>
+                              )}
+                              {post.deadline && (
+                                <div className="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 rounded-full px-4 py-1.5 text-sm font-semibold mb-4">
+                                  <Calendar className="w-3.5 h-3.5" />
+                                  Apply by {post.deadline}
+                                </div>
+                              )}
+                              {post.link && (
+                                <a
+                                  href={post.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+                                  style={{ background: "linear-gradient(135deg, #16a34a, #22c55e)", boxShadow: "0 4px 14px rgba(22,163,74,0.35)" }}
+                                >
+                                  Apply Now <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
                   {regularEvents.length > 0 ? (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {regularEvents.slice(0, featuredEvents.length > 0 ? 2 : 3).map((event, i) => (
@@ -360,7 +462,7 @@ export default function Home() {
                         </motion.div>
                       ))}
                     </div>
-                  ) : featuredEvents.length === 0 ? (
+                  ) : featuredEvents.length === 0 && businessSpotlights.length === 0 && communityPosts.length === 0 ? (
                     <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-border">
                       <p className="text-4xl mb-3">{CAT_CONFIG[categoryFilter].emoji}</p>
                       <p className="text-lg font-serif font-bold text-foreground mb-2">No {CAT_CONFIG[categoryFilter].label} events this week</p>
