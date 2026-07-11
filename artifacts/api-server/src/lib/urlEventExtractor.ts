@@ -7,6 +7,27 @@ const client = new OpenAI({
   apiKey: process.env["AI_INTEGRATIONS_OPENAI_API_KEY"],
 });
 
+const EVENTBRITE_TOKEN = process.env.EVENTBRITE_TOKEN;
+
+// Domains whose pages are almost entirely JS-rendered — always use Jina.ai
+const JS_HEAVY_DOMAINS = [
+  "eventbrite.com",
+  "meetup.com",
+  "do512.com",
+  "lu.ma",
+  "luma.co",
+  "partiful.com",
+];
+
+function isJsHeavyDomain(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "");
+    return JS_HEAVY_DOMAINS.some(d => host === d || host.endsWith("." + d));
+  } catch {
+    return false;
+  }
+}
+
 function getWeekBounds(weekOf: Date): { start: Date; end: Date } {
   const start = new Date(weekOf);
   start.setHours(0, 0, 0, 0);
@@ -24,7 +45,7 @@ function formatDate(d: Date): string {
 // when the cleaned text is too short to plausibly contain real event listings.
 const THIN_TEXT_THRESHOLD = 400;
 
-async function fetchRawHtmlText(url: string): Promise<string> {
+async function fetchRawHtml(url: string): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
@@ -38,22 +59,156 @@ async function fetchRawHtmlText(url: string): Promise<string> {
       },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
-    return html
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&nbsp;/g, " ")
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/\s{3,}/g, "  ")
-      .trim();
+    return await res.text();
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s{3,}/g, "  ")
+    .trim();
+}
+
+// Extract og: meta tag value from raw HTML
+function extractOgMeta(html: string, property: string): string {
+  const m = html.match(new RegExp(`<meta[^>]+property=["']og:${property}["'][^>]+content=["']([^"']+)["']`, "i"))
+    || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${property}["']`, "i"));
+  return m ? m[1].trim() : "";
+}
+
+// Extract first JSON-LD block of @type Event from raw HTML
+function extractJsonLdEvent(html: string): Record<string, unknown> | null {
+  const blocks = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || [];
+  for (const block of blocks) {
+    const inner = block.replace(/<script[^>]*>/i, "").replace(/<\/script>/i, "").trim();
+    try {
+      const data = JSON.parse(inner) as unknown;
+      const candidates = Array.isArray(data) ? data : [data];
+      for (const item of candidates) {
+        if (item && typeof item === "object" && (item as Record<string, unknown>)["@type"] === "Event") {
+          return item as Record<string, unknown>;
+        }
+      }
+    } catch {
+    }
+  }
+  return null;
+}
+
+// Parse an ISO date string into a human-readable event date label
+function formatIsoEventDate(isoStr: unknown): string {
+  if (typeof isoStr !== "string") return "";
+  try {
+    const d = new Date(isoStr);
+    return d.toLocaleDateString("en-US", {
+      weekday: "long", month: "short", day: "numeric",
+      hour: "numeric", minute: "2-digit", timeZone: "America/Chicago",
+    });
+  } catch {
+    return String(isoStr);
+  }
+}
+
+// --- Eventbrite: direct API fetch for a single event by ID ---
+async function fetchEventbriteById(eventId: string): Promise<EventItem | null> {
+  if (!EVENTBRITE_TOKEN) return null;
+  try {
+    const res = await fetch(`https://www.eventbriteapi.com/v3/events/${eventId}/?expand=venue`, {
+      headers: { authorization: `Bearer ${EVENTBRITE_TOKEN}` },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const ev = await res.json() as Record<string, unknown>;
+    const name = (ev.name as Record<string, string> | undefined)?.text;
+    const startUtc = (ev.start as Record<string, string> | undefined)?.utc;
+    if (!name || !startUtc) return null;
+    const venue = ev.venue as Record<string, unknown> | undefined;
+    const venueName = (venue?.name as string | undefined) || "";
+    const venueAddr = ((venue?.address as Record<string, string> | undefined)?.localized_address_display) || "Austin, TX";
+    const desc = ((ev.description as Record<string, string> | undefined)?.text || "").substring(0, 400)
+      || `${name} at ${venueName || venueAddr}`;
+    return {
+      title: name.trim(),
+      date: formatIsoEventDate(startUtc),
+      venue: venueName ? `${venueName}, ${venueAddr}`.substring(0, 120) : venueAddr,
+      description: desc,
+      link: (ev.url as string | undefined) || null,
+      imageUrl: ((ev.logo as Record<string, string> | undefined)?.url) || null,
+      category: categorizEvent(name, desc),
+      source: "Eventbrite",
+      featured: false,
+    };
+  } catch (err) {
+    logger.warn({ eventId, err }, "Eventbrite API fetch failed");
+    return null;
+  }
+}
+
+// --- Eventbrite: parse a single event page via JSON-LD / og: tags in <head> ---
+async function extractEventbriteEventFromPage(url: string): Promise<EventItem | null> {
+  try {
+    const html = await fetchRawHtml(url);
+
+    // Try JSON-LD first (most structured)
+    const ld = extractJsonLdEvent(html);
+    if (ld) {
+      const title = (ld["name"] as string | undefined) || extractOgMeta(html, "title");
+      const startDate = ld["startDate"] as string | undefined;
+      const location = ld["location"] as Record<string, unknown> | undefined;
+      const venueName = (location?.["name"] as string | undefined) || "";
+      const venueAddr = ((location?.["address"] as Record<string, unknown> | undefined)?.["streetAddress"] as string | undefined)
+        || "Austin, TX";
+      const desc = (ld["description"] as string | undefined)?.substring(0, 400)
+        || extractOgMeta(html, "description");
+      const image = (ld["image"] as string | string[] | undefined);
+      const imageUrl = Array.isArray(image) ? image[0] : (image || extractOgMeta(html, "image") || null);
+      if (title) {
+        return {
+          title: title.trim(),
+          date: startDate ? formatIsoEventDate(startDate) : "",
+          venue: venueName ? `${venueName}, ${venueAddr}`.substring(0, 120) : venueAddr,
+          description: desc || title,
+          link: url,
+          imageUrl: imageUrl || null,
+          category: categorizEvent(title, desc || ""),
+          source: "Eventbrite",
+          featured: false,
+        };
+      }
+    }
+
+    // Fall back to og: tags
+    const title = extractOgMeta(html, "title");
+    const desc = extractOgMeta(html, "description");
+    const image = extractOgMeta(html, "image");
+    if (title) {
+      return {
+        title: title.replace(/ \| Eventbrite$/i, "").trim(),
+        date: "",
+        venue: "Austin, TX",
+        description: desc || title,
+        link: url,
+        imageUrl: image || null,
+        category: categorizEvent(title, desc),
+        source: "Eventbrite",
+        featured: false,
+      };
+    }
+  } catch (err) {
+    logger.warn({ url, err }, "Eventbrite page parse failed");
+  }
+  return null;
 }
 
 // Fallback for JavaScript-rendered pages: routes the request through a free
@@ -78,14 +233,19 @@ async function fetchRenderedPageText(url: string): Promise<string> {
 }
 
 async function fetchPageText(url: string): Promise<string> {
+  const forceJina = isJsHeavyDomain(url);
   let text = "";
-  try {
-    text = await fetchRawHtmlText(url);
-  } catch (err) {
-    logger.warn({ url, err }, "Raw fetch failed, falling back to rendered fetch");
+
+  if (!forceJina) {
+    try {
+      const html = await fetchRawHtml(url);
+      text = htmlToText(html);
+    } catch (err) {
+      logger.warn({ url, err }, "Raw fetch failed, falling back to rendered fetch");
+    }
   }
 
-  if (text.length < THIN_TEXT_THRESHOLD) {
+  if (forceJina || text.length < THIN_TEXT_THRESHOLD) {
     try {
       const rendered = await fetchRenderedPageText(url);
       if (rendered.length > text.length) {
@@ -108,7 +268,7 @@ function categorizEvent(title: string, description: string): string {
   if (/tech|startup|ai|developer|coding|hackathon|meetup|founder|product|saas|software/.test(text)) return "Tech & Business";
   if (/music|concert|band|live|jazz|blues|country|rock|indie|dj|festival/.test(text)) return "Music";
   if (/food|restaurant|dining|tasting|farmers market|brunch|coffee|beer|wine|cocktail|bar/.test(text)) return "Food & Markets";
-  if (/art|gallery|museum|film|theater|theatre|comedy|improv|poetry|culture|exhibition/.test(text)) return "Arts & Culture";
+  if (/art|gallery|museum|film|theater|theatre|comedy|improv|poetry|culture|exhibition|kirtan|cacao|dream/.test(text)) return "Arts & Culture";
   if (/yoga|fitness|run|hike|bike|swim|outdoor|nature|wellness|meditation|park/.test(text)) return "Outdoors & Fitness";
   if (/community|volunteer|civic|neighborhood|nonprofit|charity|social|networking/.test(text)) return "Community";
   return "Community";
@@ -123,6 +283,28 @@ export interface ExtractedSourceResult {
 export async function extractEventsFromUrl(url: string, weekOf: Date): Promise<ExtractedSourceResult> {
   const { start, end } = getWeekBounds(weekOf);
   const weekLabel = `${formatDate(start)} through ${formatDate(end)}`;
+
+  // --- Special case: Eventbrite single-event URL ---
+  const ebSingleMatch = url.match(/eventbrite\.com\/e\/[^/?#]+-(\d{8,})/i);
+  if (ebSingleMatch) {
+    const eventId = ebSingleMatch[1];
+
+    // Try API first if token available
+    const apiEvent = await fetchEventbriteById(eventId);
+    if (apiEvent) {
+      logger.info({ url, eventId }, "Extracted Eventbrite event via API");
+      return { url, events: [apiEvent] };
+    }
+
+    // Fallback: parse JSON-LD / og: tags from page HTML
+    const pageEvent = await extractEventbriteEventFromPage(url);
+    if (pageEvent) {
+      logger.info({ url }, "Extracted Eventbrite event via page metadata");
+      return { url, events: [pageEvent] };
+    }
+
+    logger.warn({ url }, "Eventbrite single-event extraction failed, falling through to AI");
+  }
 
   let pageText: string;
   try {
