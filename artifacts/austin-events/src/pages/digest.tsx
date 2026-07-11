@@ -98,8 +98,8 @@ function parseEventDateForSort(dateStr: string): number {
   if (!match) return 0;
   const month = MONTH_MAP[match[1]] ?? 0;
   const day = parseInt(match[2], 10);
-  // Extract time if present (e.g. "at 7:00 AM")
-  const timeMatch = dateStr.match(/at\s+(\d+):(\d+)\s*(AM|PM)/i);
+  // Extract time if present (e.g. "at 7:00 AM" or ", 7:00 PM")
+  const timeMatch = dateStr.match(/(?:at\s+|,\s*)(\d+):(\d+)\s*(AM|PM)/i);
   let hours = 0;
   let minutes = 0;
   if (timeMatch) {
