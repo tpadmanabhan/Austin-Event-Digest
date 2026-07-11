@@ -3,21 +3,9 @@ name: Digest 61 (7/12) spotlight events
 description: Spotlight events to copy into the 7/12 digest when it is generated
 ---
 
-When digest 61 (week of 2026-07-12) is created, PATCH these two events into it immediately:
+**Note:** Digest 60 (7/5) business spotlight was updated — RacFit replaced by TopSpin Tennis Academy (Cedar Park) with photo at `/images/topspin-academy.webp`.
 
-**Business Spotlight** (`isBusinessSpotlight: true`):
-```json
-{
-  "title": "RacFit — Tennis & Pickleball in Buda",
-  "date": "",
-  "venue": "Buda, TX (near Austin)",
-  "description": "\"Attention Racket Sports Fans: discovered a new business in Buda offering tennis and pickleball clinics. It's your best bet for indoor tennis in the Austin area that's not too expensive. Hope they clone this fitness center around town.\"\n— Raj",
-  "link": "https://www.goracfit.com/",
-  "category": "Sports",
-  "isBusinessSpotlight": true,
-  "imageUrl": null
-}
-```
+When digest 61 (week of 2026-07-12) is created, PATCH the community spotlight in immediately. Business spotlight TBD.
 
 **Community Spotlight** (`isPost: true`):
 ```json
@@ -34,4 +22,4 @@ When digest 61 (week of 2026-07-12) is created, PATCH these two events into it i
 }
 ```
 
-**Why:** User explicitly asked for both spotlights to carry over into the 7/12 newsletter.
+**Why:** User explicitly asked for the community spotlight to carry over into the 7/12 newsletter.
