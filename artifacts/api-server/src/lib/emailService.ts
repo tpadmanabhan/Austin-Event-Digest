@@ -223,6 +223,9 @@ export function buildDigestEmailHtml(digest: {
     imageUrl?: string | null;
     source?: string | null;
     featured?: boolean | null;
+    isBusinessSpotlight?: boolean | null;
+    isPost?: boolean | null;
+    deadline?: string | null;
   }>;
   digestId?: number;
   siteUrl?: string;
@@ -321,11 +324,32 @@ export function buildDigestEmailHtml(digest: {
   };
 
   const featuredEvents = digest.events.filter(e => e.featured);
-  const regularEvents = [...digest.events.filter(e => !e.featured)]
+  const bizSpotlights = digest.events.filter(e => !e.featured && e.isBusinessSpotlight);
+  const commSpotlights = digest.events.filter(e => !e.featured && e.isPost);
+  const regularEvents = [...digest.events.filter(e => !e.featured && !e.isBusinessSpotlight && !e.isPost)]
     .sort((a, b) => parseSortKey(a.date) - parseSortKey(b.date));
 
   const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
   const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
+
+  const buildSpotlightCard = (event: (typeof digest.events)[number], accentColor: string, labelText: string, labelEmoji: string) => {
+    const safeLink = safeHref(event.link);
+    return `
+    <div style="border:1.5px solid ${accentColor}33; border-radius:14px; padding:20px; margin-bottom:16px; background:#fff;">
+      <div style="display:inline-flex; align-items:center; gap:6px; background:${accentColor}18; border:1px solid ${accentColor}44; border-radius:20px; padding:3px 10px; margin-bottom:12px;">
+        <span style="font-size:13px;">${labelEmoji}</span>
+        <span style="color:${accentColor}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">${labelText}</span>
+      </div>
+      <h3 style="margin:0 0 8px; font-size:17px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
+      ${event.description ? `<p style="margin:0 0 12px; color:#44403c; font-size:14px; line-height:1.65;">${escapeHtml(event.description)}</p>` : ""}
+      ${event.deadline ? `<p style="margin:0 0 12px; color:#b45309; font-size:13px; font-weight:600;">⏰ Deadline: ${escapeHtml(event.deadline)}</p>` : ""}
+      ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:${accentColor}; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">Learn More →</a>` : ""}
+    </div>
+  `;
+  };
+
+  const bizSpotlightCards = bizSpotlights.map(e => buildSpotlightCard(e, "#0369a1", "Business Spotlight", "💼")).join("");
+  const commSpotlightCards = commSpotlights.map(e => buildSpotlightCard(e, "#15803d", "Community Spotlight", "🙌")).join("");
 
   return `
 <!DOCTYPE html>
@@ -424,9 +448,14 @@ export function buildDigestEmailHtml(digest: {
     <!-- Featured Event -->
     ${featuredCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">⭐ Special Event</h2>${featuredCards}` : ""}
 
+    <!-- Business Spotlights -->
+    ${bizSpotlightCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">💼 Business Spotlight</h2>${bizSpotlightCards}` : ""}
+
+    <!-- Community Spotlights -->
+    ${commSpotlightCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">🙌 Community Spotlight</h2>${commSpotlightCards}` : ""}
+
     <!-- Events -->
-    <h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>
-    ${eventCards}
+    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>${eventCards}` : ""}
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
