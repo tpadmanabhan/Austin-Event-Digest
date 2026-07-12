@@ -101,6 +101,7 @@ export default function AdminDashboard() {
   const [commDeadline, setCommDeadline] = useState("");
   const [isAddingComm, setIsAddingComm] = useState(false);
 
+  const [draftDigestId, setDraftDigestId] = useState<number | null>(null);
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
   const [testEmail, setTestEmail] = useState("");
 
@@ -155,6 +156,14 @@ export default function AdminDashboard() {
       // non-critical — localStorage may be unavailable or corrupt
     }
   }, [tenant.slug]);
+
+  // Keep draftDigestId pointed at the most recent digest when digests load/change,
+  // unless the user has already made a manual selection.
+  useEffect(() => {
+    if (digestsData?.digests && digestsData.digests.length > 0 && draftDigestId === null) {
+      setDraftDigestId(digestsData.digests[0].id);
+    }
+  }, [digestsData, draftDigestId]);
 
   const handleSaveUrls = () => {
     localStorage.setItem(`admin_source_urls_${tenant.slug}`, JSON.stringify(sourceUrls));
@@ -538,9 +547,9 @@ export default function AdminDashboard() {
             </div>
           ))}
 
-          {/* Quick-action: draft latest digest to Raj */}
+          {/* Quick-action: draft selected digest to admin */}
           {digestsData?.digests && digestsData.digests.length > 0 && (() => {
-            const latest = digestsData.digests[0];
+            const selected = digestsData.digests.find(d => d.id === draftDigestId) ?? digestsData.digests[0];
             return (
               <div className="bg-primary/5 border-2 border-primary/20 p-6 rounded-2xl shadow-sm flex flex-col gap-3">
                 <div className="flex items-center gap-3">
@@ -548,16 +557,27 @@ export default function AdminDashboard() {
                     <Eye className="w-6 h-6" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground">Latest Draft</p>
-                    <p className="text-xs text-muted-foreground truncate">{latest.subject}</p>
+                    <p className="text-sm font-semibold text-foreground">Send Draft</p>
+                    <p className="text-xs text-muted-foreground truncate">{selected.subject}</p>
                   </div>
                 </div>
+                <select
+                  value={draftDigestId ?? ""}
+                  onChange={e => setDraftDigestId(e.target.value ? Number(e.target.value) : null)}
+                  className="w-full rounded-xl border border-primary/20 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {digestsData.digests.map(d => (
+                    <option key={d.id} value={d.id}>
+                      #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
+                    </option>
+                  ))}
+                </select>
                 <Button
                   className="w-full rounded-xl"
-                  disabled={isSending || !testEmail}
+                  disabled={isSending || !testEmail || !selected}
                   onClick={() => {
                     send(
-                      { data: { digestId: latest.id, testEmail } },
+                      { data: { digestId: selected.id, testEmail } },
                       {
                         onSuccess: () => toast({ title: `Draft sent to ${testEmail}` }),
                         onError: (err) => toast({ variant: "destructive", title: "Failed", description: err.message }),
