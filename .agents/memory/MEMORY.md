@@ -7,3 +7,4 @@
 - [Production admin token](prod-admin-token.md) — bcrypt hash rotates on every redeploy; query prod DB for fresh password_hash then HMAC it to get a valid Bearer token
 - [Digest 61 spotlights](digest-61-spotlights.md) — RacFit (Business) + Food & Climate Grants (Community) must be PATCHed into digest 61 (7/12) when generated
 - [Tailwind @theme inline runtime overrides](tailwind-theme-inline-runtime-vars.md) — @theme inline bakes utilities to raw vars; override --primary/--secondary etc directly, not --color-*
+- [Admin page conventions](admin-page-conventions.md) — Save buttons + localStorage, spotlight "Create new digest" default, Send Draft week picker; apply to every current and future admin section

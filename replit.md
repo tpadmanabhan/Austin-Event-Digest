@@ -21,7 +21,7 @@ pnpm workspace monorepo using TypeScript. This is "Raj's Austin Events" — a pe
 
 1. **Landing page** with email subscription form and latest digest preview
 2. **Digest page** — view individual weekly digests with event cards
-3. **Admin panel** at `/admin` — generate new digests, manage subscribers, send newsletters
+3. **Admin panel** at `/admin` — generate new digests, manage subscribers, send newsletters, add spotlights
 4. **Email newsletters** via Resend (configure RESEND_API_KEY env var)
 
 ## Environment Variables
