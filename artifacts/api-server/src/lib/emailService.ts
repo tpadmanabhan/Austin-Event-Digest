@@ -177,6 +177,29 @@ export async function sendWelcomeEmail(to: string, name?: string | null, tenant?
   }
 }
 
+// Maps any stored category value to one of the 5 display labels
+function normalizeCategory(raw: string): string {
+  const c = (raw || "").toLowerCase();
+  if (c.includes("tech") || c.includes("business") || c.includes("startup")) return "Tech";
+  if (c.includes("wellness") || c.includes("meditation") || c.includes("yoga") || c.includes("mindfulness") || c.includes("pilates")) return "Wellness";
+  if (c.includes("sport") || c.includes("fitness") || c.includes("outdoor")) return "Sports";
+  if (c.includes("civic") || c.includes("community") || c.includes("volunteer") || c.includes("nonprofit")) return "Civics";
+  return "Arts";
+}
+
+// Category badge colors for email
+function categoryBadgeStyle(raw: string): string {
+  const cat = normalizeCategory(raw);
+  const styles: Record<string, string> = {
+    Tech:    "background:#6366f1; color:#fff;",
+    Arts:    "background:#ec4899; color:#fff;",
+    Sports:  "background:#f97316; color:#fff;",
+    Civics:  "background:#0ea5e9; color:#fff;",
+    Wellness:"background:#22c55e; color:#fff;",
+  };
+  return styles[cat] ?? "background:#6b7280; color:#fff;";
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -290,7 +313,7 @@ export function buildDigestEmailHtml(digest: {
       <div style="height:4px; background:linear-gradient(90deg,#fbbf24,#fde68a,#fbbf24);"></div>
       <div style="padding:24px;">
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
-          <div style="display:inline-block; background:#22c55e; color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(event.category)}</div>
+          <div style="display:inline-block; ${categoryBadgeStyle(event.category)} font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(normalizeCategory(event.category))}</div>
           <div style="display:inline-flex; align-items:center; gap:5px; background:#fbbf24; color:#451a03; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">⭐ Special Event</div>
         </div>
         <h3 style="margin:0 0 8px; font-size:19px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
@@ -309,7 +332,7 @@ export function buildDigestEmailHtml(digest: {
 
     return `
     <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-bottom:20px;">
-      <div style="display:inline-block; background:#22c55e; color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(event.category)}</div>
+      <div style="display:inline-block; ${categoryBadgeStyle(event.category)} font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(normalizeCategory(event.category))}</div>
       <h3 style="margin:0 0 8px; font-size:18px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
       <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${escapeHtml(event.date)}</p>
       <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}</p>

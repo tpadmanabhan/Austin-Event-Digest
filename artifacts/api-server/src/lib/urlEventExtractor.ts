@@ -263,15 +263,14 @@ async function fetchPageText(url: string): Promise<string> {
   return text.slice(0, 12000);
 }
 
+// Returns exactly one of the 5 display categories: Tech, Arts, Sports, Civics, Wellness
 function categorizEvent(title: string, description: string): string {
   const text = `${title} ${description}`.toLowerCase();
-  if (/tech|startup|ai|developer|coding|hackathon|meetup|founder|product|saas|software/.test(text)) return "Tech & Business";
-  if (/music|concert|band|live|jazz|blues|country|rock|indie|dj|festival/.test(text)) return "Music";
-  if (/food|restaurant|dining|tasting|farmers market|brunch|coffee|beer|wine|cocktail|bar/.test(text)) return "Food & Markets";
-  if (/art|gallery|museum|film|theater|theatre|comedy|improv|poetry|culture|exhibition|kirtan|cacao|dream/.test(text)) return "Arts & Culture";
-  if (/yoga|fitness|run|hike|bike|swim|outdoor|nature|wellness|meditation|park/.test(text)) return "Outdoors & Fitness";
-  if (/community|volunteer|civic|neighborhood|nonprofit|charity|social|networking/.test(text)) return "Community";
-  return "Community";
+  if (/tech|startup|ai\b|developer|coding|hackathon|founder|product|saas|software/.test(text)) return "Tech";
+  if (/yoga|meditation|mindfulness|pilates|wellness|health retreat/.test(text)) return "Wellness";
+  if (/fitness|run|hike|bike|swim|outdoor|nature|sport|cycling|crossfit/.test(text)) return "Sports";
+  if (/community|volunteer|civic|neighborhood|nonprofit|charity/.test(text)) return "Civics";
+  return "Arts";
 }
 
 export interface ExtractedSourceResult {

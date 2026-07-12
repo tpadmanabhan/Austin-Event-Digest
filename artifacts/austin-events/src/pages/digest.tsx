@@ -75,20 +75,18 @@ const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
 
 function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" {
   const cat = (event.category || "").toLowerCase().trim();
-  if (cat === "wellness" || cat === "meditation" || cat === "mindfulness" || cat === "yoga" || cat === "health") return "Wellness";
-  if (cat === "civics" || cat === "civic" || cat === "community" || cat === "government" || cat === "policy") return "Civics";
-  if (cat === "arts" || cat === "art" || cat === "music" || cat === "culture" || cat === "entertainment") return "Arts";
-  if (cat === "sports" || cat === "fitness" || cat === "outdoors") return "Sports";
-  if (cat === "tech" || cat === "technology" || cat === "business") return "Tech";
-  const titleOnly = ((event.title || "")).toLowerCase();
-  if (
-    titleOnly.includes("tech") || titleOnly.includes("business") || titleOnly.includes("startup") ||
-    titleOnly.includes("forum") || titleOnly.includes("coding") || titleOnly.includes("ai ")
-  ) return "Tech";
-  if (
-    titleOnly.includes("fitness") || titleOnly.includes("yoga") || titleOnly.includes("hike") ||
-    titleOnly.includes("cycling") || titleOnly.includes("swim") || titleOnly.includes("sport")
-  ) return "Sports";
+  // Handle both new single-word values and legacy multi-word stored values
+  if (cat.includes("tech") || cat.includes("business") || cat.includes("startup")) return "Tech";
+  if (cat.includes("wellness") || cat.includes("meditation") || cat.includes("mindfulness") || cat.includes("yoga") || cat.includes("pilates")) return "Wellness";
+  if (cat.includes("sports") || cat.includes("fitness") || cat.includes("outdoor") || cat.includes("sport")) return "Sports";
+  if (cat.includes("civics") || cat.includes("civic") || cat.includes("community") || cat.includes("volunteer") || cat.includes("nonprofit")) return "Civics";
+  if (cat.includes("arts") || cat.includes("music") || cat.includes("culture") || cat.includes("entertainment") || cat.includes("food") || cat.includes("learning")) return "Arts";
+  // Title-based fallbacks
+  const titleOnly = (event.title || "").toLowerCase();
+  if (titleOnly.includes("tech") || titleOnly.includes("startup") || titleOnly.includes("ai ") || titleOnly.includes("coding") || titleOnly.includes("forum")) return "Tech";
+  if (titleOnly.includes("yoga") || titleOnly.includes("meditation") || titleOnly.includes("wellness")) return "Wellness";
+  if (titleOnly.includes("fitness") || titleOnly.includes("hike") || titleOnly.includes("sport") || titleOnly.includes("cycling") || titleOnly.includes("swim")) return "Sports";
+  if (titleOnly.includes("volunteer") || titleOnly.includes("community") || titleOnly.includes("nonprofit")) return "Civics";
   return "Arts";
 }
 

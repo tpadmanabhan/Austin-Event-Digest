@@ -210,10 +210,11 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
 
   const getCategoryColor = (category: string) => {
     const cat = category.toLowerCase();
-    if (cat.includes("music")) return "bg-accent/20 text-accent-foreground border-accent/30";
-    if (cat.includes("food")) return "bg-primary/10 text-primary border-primary/20";
-    if (cat.includes("tech")) return "bg-secondary/10 text-secondary border-secondary/20";
-    return "bg-muted text-muted-foreground border-border";
+    if (cat.includes("tech") || cat.includes("business") || cat.includes("startup")) return "bg-secondary/10 text-secondary border-secondary/20";
+    if (cat.includes("wellness") || cat.includes("meditation") || cat.includes("yoga") || cat.includes("mindfulness")) return "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800";
+    if (cat.includes("sport") || cat.includes("fitness") || cat.includes("outdoor")) return "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800";
+    if (cat.includes("civic") || cat.includes("community") || cat.includes("volunteer") || cat.includes("nonprofit")) return "bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800";
+    return "bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800";
   };
 
   return (

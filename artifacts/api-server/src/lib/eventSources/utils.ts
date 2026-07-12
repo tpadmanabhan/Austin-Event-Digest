@@ -91,17 +91,19 @@ export function deduplicateEvents(events: EventItem[]): EventItem[] {
 }
 
 // Maps DB category names (canonical + aliases) to their guessCategory() equivalents
+// guessCategory() now returns exactly one of: "Tech", "Arts", "Sports", "Civics", "Wellness"
 const TENANT_TO_GUESS_CATEGORIES: Record<string, string[]> = {
-  "Tech": ["Tech & Business"],
-  "Music": ["Music"],
-  "Food": ["Food & Drink"],
-  "Food & Drink": ["Food & Drink"],
-  "Wellness": ["Outdoors & Fitness"],
-  "Wellness & Fitness": ["Outdoors & Fitness"],
-  "Civics": ["Community"],
-  "Community": ["Community"],
-  "Arts & Culture": ["Arts & Culture"],
-  "Learning": ["Learning"],
+  "Tech": ["Tech"],
+  "Tech & Business": ["Tech"],
+  "Music": ["Arts"],
+  "Food": ["Arts"],
+  "Food & Drink": ["Arts"],
+  "Wellness": ["Wellness"],
+  "Wellness & Fitness": ["Wellness", "Sports"],
+  "Civics": ["Civics"],
+  "Community": ["Civics"],
+  "Arts & Culture": ["Arts"],
+  "Learning": ["Arts"],
 };
 
 // Collapses aliased category names to a single canonical form used by adapters
@@ -146,15 +148,12 @@ export function isWithinDateRange(isoStr: string, weekOf: Date, weekEnd?: Date):
   }
 }
 
+// Returns exactly one of the 5 display categories: Tech, Arts, Sports, Civics, Wellness
 export function guessCategory(text: string): string {
   const lower = text.toLowerCase();
-  if (/music|concert|band|live|jazz|blues|country|rock|festival|open mic/.test(lower)) return "Music";
-  if (/food|eat|restaurant|taco|bbq|market|farm|chef|dinner|brunch|culinary|happy hour/.test(lower)) return "Food & Drink";
-  if (/art|gallery|exhibit|museum|film|movie|comedy|theater|theatre|performance|dance/.test(lower)) return "Arts & Culture";
-  if (/tech|startup|ai\b|code|developer|hackathon|meetup|entrepreneur|venture|founder/.test(lower)) return "Tech & Business";
-  if (/run|hike|bike|yoga|fitness|outdoor|park|trail|swim|sport|wellness/.test(lower)) return "Outdoors & Fitness";
-  if (/family|kid|child|community|volunteer|nonprofit|charity/.test(lower)) return "Community";
-  if (/class|learn|education|seminar|conference|summit|workshop/.test(lower)) return "Learning";
-  if (/language|exchange|cultural|international/.test(lower)) return "Cultural";
-  return "Events";
+  if (/tech|startup|ai\b|code|developer|hackathon|entrepreneur|venture|founder|saas|software|product hunt/.test(lower)) return "Tech";
+  if (/yoga|meditation|mindfulness|pilates|wellness|health retreat/.test(lower)) return "Wellness";
+  if (/run|hike|bike|fitness|gym|outdoor|trail|swim|sport|cycling|crossfit/.test(lower)) return "Sports";
+  if (/community|volunteer|nonprofit|charity|civic|neighborhood|advocacy|social impact/.test(lower)) return "Civics";
+  return "Arts";
 }

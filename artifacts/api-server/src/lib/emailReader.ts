@@ -138,17 +138,14 @@ const SECTION_HEADER = /^[\u{1F300}-\u{1FAFF}\u2600-\u27BF\u{1F000}-\u{1FFFF}✨
 const PROSE_OPENER = /^(it[\u2019']?s |see you |come (on |and |out )|join us|check (it |out|this)|we[\u2019']?re |you[\u2019']?re |don[\u2019']?t |there[\u2019']?s |they[\u2019']?re |we have |i[\u2019']?ll |as always|if you|this is a|this week|today |tonight:|tomorrow |a few |you can |the next |money is |want to |please |we are |while the|the party |our |their )/i;
 const ZERO_WIDTH_HEAVY = /[\u{1F600}-\u{1FFFF}\u200b\u200c\u200d\uFEFF]{3,}/u;
 
+// Returns exactly one of the 5 display categories: Tech, Arts, Sports, Civics, Wellness
 function guessCategory(text: string): string {
   const lower = text.toLowerCase();
-  if (/music|concert|band|live|jazz|blues|country|rock|festival|open mic/.test(lower)) return "Music";
-  if (/food|eat|restaurant|taco|bbq|market|farm|chef|dinner|brunch|culinary|happy hour/.test(lower)) return "Food & Drink";
-  if (/art|gallery|exhibit|museum|film|movie|comedy|theater|theatre|performance|dance/.test(lower)) return "Arts & Culture";
-  if (/tech|startup|ai|code|developer|hackathon|meetup|entrepreneur|venture|founder/.test(lower)) return "Tech & Business";
-  if (/run|hike|bike|yoga|fitness|outdoor|park|trail|swim|sport|wellness/.test(lower)) return "Outdoors & Fitness";
-  if (/family|kid|child|community|volunteer|nonprofit|charity/.test(lower)) return "Community";
-  if (/class|learn|education|seminar|conference|summit|workshop/.test(lower)) return "Learning";
-  if (/language|exchange|cultural|international/.test(lower)) return "Cultural";
-  return "Events";
+  if (/tech|startup|ai\b|code|developer|hackathon|entrepreneur|venture|founder|saas|software/.test(lower)) return "Tech";
+  if (/yoga|meditation|mindfulness|pilates|wellness|health retreat/.test(lower)) return "Wellness";
+  if (/run|hike|bike|fitness|gym|outdoor|trail|swim|sport|cycling|crossfit/.test(lower)) return "Sports";
+  if (/community|volunteer|nonprofit|charity|civic|neighborhood|advocacy|social impact/.test(lower)) return "Civics";
+  return "Arts";
 }
 
 // Parse Luma-style digest: Day header → time → event title → venue → Register
