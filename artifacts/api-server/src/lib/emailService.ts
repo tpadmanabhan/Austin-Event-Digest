@@ -359,10 +359,6 @@ export function buildDigestEmailHtml(digest: {
     const safeLink = safeHref(event.link);
     return `
     <div style="border:1.5px solid ${accentColor}33; border-radius:14px; padding:20px; margin-bottom:16px; background:#fff;">
-      <div style="display:inline-flex; align-items:center; gap:6px; background:${accentColor}18; border:1px solid ${accentColor}44; border-radius:20px; padding:3px 10px; margin-bottom:12px;">
-        <span style="font-size:13px;">${labelEmoji}</span>
-        <span style="color:${accentColor}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">${labelText}</span>
-      </div>
       <h3 style="margin:0 0 8px; font-size:17px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
       ${event.description ? `<p style="margin:0 0 12px; color:#44403c; font-size:14px; line-height:1.65;">${escapeHtml(event.description)}</p>` : ""}
       ${event.deadline ? `<p style="margin:0 0 12px; color:#b45309; font-size:13px; font-weight:600;">⏰ Deadline: ${escapeHtml(event.deadline)}</p>` : ""}
