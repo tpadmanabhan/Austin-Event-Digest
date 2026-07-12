@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe, BookmarkCheck } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
@@ -127,6 +127,50 @@ export default function AdminDashboard() {
     return () => { cancelled = true; };
   }, []);
 
+  // Load saved admin inputs from localStorage on mount
+  useEffect(() => {
+    const slug = tenant.slug;
+    try {
+      const savedUrls = localStorage.getItem(`admin_source_urls_${slug}`);
+      if (savedUrls) {
+        const parsed = JSON.parse(savedUrls) as string[];
+        if (Array.isArray(parsed)) setSourceUrls([...parsed.slice(0, 5), ...Array(5).fill("")].slice(0, 5));
+      }
+      const savedBiz = localStorage.getItem(`admin_biz_${slug}`);
+      if (savedBiz) {
+        const p = JSON.parse(savedBiz) as { url?: string; title?: string; desc?: string };
+        if (p.url) setBizUrl(p.url);
+        if (p.title) setBizTitle(p.title);
+        if (p.desc) setBizDesc(p.desc);
+      }
+      const savedComm = localStorage.getItem(`admin_comm_${slug}`);
+      if (savedComm) {
+        const p = JSON.parse(savedComm) as { url?: string; title?: string; desc?: string; deadline?: string };
+        if (p.url) setCommUrl(p.url);
+        if (p.title) setCommTitle(p.title);
+        if (p.desc) setCommDesc(p.desc);
+        if (p.deadline) setCommDeadline(p.deadline);
+      }
+    } catch {
+      // non-critical — localStorage may be unavailable or corrupt
+    }
+  }, [tenant.slug]);
+
+  const handleSaveUrls = () => {
+    localStorage.setItem(`admin_source_urls_${tenant.slug}`, JSON.stringify(sourceUrls));
+    toast({ title: "Source URLs saved", description: "They'll be pre-filled next time you visit." });
+  };
+
+  const handleSaveBiz = () => {
+    localStorage.setItem(`admin_biz_${tenant.slug}`, JSON.stringify({ url: bizUrl, title: bizTitle, desc: bizDesc }));
+    toast({ title: "Business spotlight saved", description: "URL, title & description will be pre-filled next visit." });
+  };
+
+  const handleSaveComm = () => {
+    localStorage.setItem(`admin_comm_${tenant.slug}`, JSON.stringify({ url: commUrl, title: commTitle, desc: commDesc, deadline: commDeadline }));
+    toast({ title: "Community spotlight saved", description: "URL, title & description will be pre-filled next visit." });
+  };
+
   const onGenerateFromSources = async () => {
     const urls = sourceUrls.filter(u => u.trim().startsWith("http"));
     if (urls.length === 0) {
@@ -172,18 +216,30 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Invalid URL", description: "Enter a URL starting with http." });
       return;
     }
-    if (!spotlightDigestId) {
-      toast({ variant: "destructive", title: "Select a digest", description: "Choose which digest to add this spotlight to." });
-      return;
-    }
     type === "business" ? setIsAddingBiz(true) : setIsAddingComm(true);
     try {
       const token = sessionStorage.getItem("admin_token");
+      let targetDigestId = spotlightDigestId;
+
+      // No digest selected — create a new empty one for the upcoming week
+      if (targetDigestId === null) {
+        const createRes = await fetch("/api/events/digest/create-empty", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ weekOf: currentSunday }),
+        });
+        const createData = await createRes.json() as { digest?: { id: number }; message?: string };
+        if (!createRes.ok) throw new Error(createData.message || "Failed to create digest");
+        targetDigestId = createData.digest!.id;
+        setSpotlightDigestId(targetDigestId);
+        queryClient.invalidateQueries({ queryKey: ["digests"] });
+      }
+
       const body: Record<string, string> = { url: url.trim(), type };
       if (title.trim()) body.title = title.trim();
       if (desc.trim()) body.description = desc.trim();
       if (type === "community" && commDeadline.trim()) body.deadline = commDeadline.trim();
-      const res = await fetch(`/api/events/digest/${spotlightDigestId}/spotlight`, {
+      const res = await fetch(`/api/events/digest/${targetDigestId}/spotlight`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify(body),
@@ -191,7 +247,7 @@ export default function AdminDashboard() {
       const data = await res.json() as { success?: boolean; message?: string };
       if (!res.ok) throw new Error(data.message || "Failed to add spotlight");
       queryClient.invalidateQueries({ queryKey: ["digests"] });
-      toast({ title: `${type === "business" ? "Business" : "Community"} spotlight added to digest #${spotlightDigestId}!` });
+      toast({ title: `${type === "business" ? "Business" : "Community"} spotlight added to digest #${targetDigestId}!` });
       if (type === "business") { setBizUrl(""); setBizTitle(""); setBizDesc(""); }
       else { setCommUrl(""); setCommTitle(""); setCommDesc(""); setCommDeadline(""); }
     } catch (err: unknown) {
@@ -579,6 +635,11 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+                <div className="flex justify-end">
+                  <Button variant="outline" size="sm" onClick={handleSaveUrls} className="rounded-xl gap-2 text-xs">
+                    <BookmarkCheck className="w-3.5 h-3.5" /> Save URLs
+                  </Button>
+                </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end pt-2 border-t border-border">
                   <div className="space-y-1.5 flex-1">
@@ -666,13 +727,16 @@ export default function AdminDashboard() {
                     onChange={e => setSpotlightDigestId(e.target.value ? Number(e.target.value) : null)}
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="">— Select a digest —</option>
+                    <option value="">— Create new digest —</option>
                     {digestsData?.digests?.map(d => (
                       <option key={d.id} value={d.id}>
                         #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
                       </option>
                     ))}
                   </select>
+                  {spotlightDigestId === null && (
+                    <p className="text-xs text-muted-foreground">A new digest for the week of {currentSunday} will be created automatically.</p>
+                  )}
                 </div>
                 <Input
                   type="url"
@@ -695,13 +759,18 @@ export default function AdminDashboard() {
                   className="rounded-xl text-sm resize-none"
                   rows={3}
                 />
-                <Button
-                  onClick={() => onAddSpotlight("business")}
-                  disabled={isAddingBiz || !bizUrl.trim()}
-                  className="rounded-xl gap-2 bg-sky-500 hover:bg-sky-600 text-white"
-                >
-                  {isAddingBiz ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <><Trophy className="w-4 h-4" /> Add Business Spotlight</>}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => onAddSpotlight("business")}
+                    disabled={isAddingBiz || !bizUrl.trim()}
+                    className="rounded-xl gap-2 bg-sky-500 hover:bg-sky-600 text-white flex-1"
+                  >
+                    {isAddingBiz ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <><Trophy className="w-4 h-4" /> Add Business Spotlight</>}
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={handleSaveBiz} title="Save for next visit" className="rounded-xl shrink-0 border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950">
+                    <BookmarkCheck className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -724,13 +793,16 @@ export default function AdminDashboard() {
                     onChange={e => setSpotlightDigestId(e.target.value ? Number(e.target.value) : null)}
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="">— Select a digest —</option>
+                    <option value="">— Create new digest —</option>
                     {digestsData?.digests?.map(d => (
                       <option key={d.id} value={d.id}>
                         #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
                       </option>
                     ))}
                   </select>
+                  {spotlightDigestId === null && (
+                    <p className="text-xs text-muted-foreground">A new digest for the week of {currentSunday} will be created automatically.</p>
+                  )}
                 </div>
                 <Input
                   type="url"
@@ -760,13 +832,18 @@ export default function AdminDashboard() {
                   onChange={e => setCommDeadline(e.target.value)}
                   className="rounded-xl text-sm"
                 />
-                <Button
-                  onClick={() => onAddSpotlight("community")}
-                  disabled={isAddingComm || !commUrl.trim()}
-                  className="rounded-xl gap-2 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  {isAddingComm ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>🌿 Add Community Spotlight</>}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => onAddSpotlight("community")}
+                    disabled={isAddingComm || !commUrl.trim()}
+                    className="rounded-xl gap-2 bg-green-600 hover:bg-green-700 text-white flex-1"
+                  >
+                    {isAddingComm ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>🌿 Add Community Spotlight</>}
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={handleSaveComm} title="Save for next visit" className="rounded-xl shrink-0 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950">
+                    <BookmarkCheck className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 

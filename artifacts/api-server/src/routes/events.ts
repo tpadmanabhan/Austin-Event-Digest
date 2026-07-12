@@ -397,6 +397,25 @@ router.get("/debug/emails", requireAdmin, async (req, res) => {
   }
 });
 
+// Create an empty digest for the upcoming week (no events). Used by admin spotlight flow.
+router.post("/digest/create-empty", requireAdmin, async (req, res) => {
+  const { weekOf: weekOfStr } = req.body as { weekOf?: string };
+  try {
+    const weekOf = weekOfStr ? new Date(weekOfStr) : getNextSunday();
+    const dateLabel = weekOf.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const subject = `Events — Week of ${dateLabel}`;
+    const intro = `Here's your curated digest for the week of ${dateLabel}.`;
+    const [inserted] = await db
+      .insert(digestsTable)
+      .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: [] })
+      .returning();
+    res.json({ success: true, digest: digestToApi(inserted) });
+  } catch (err) {
+    req.log.error({ err }, "Error creating empty digest");
+    res.status(500).json({ error: "server_error", message: "Failed to create digest" });
+  }
+});
+
 // Generate a digest from user-supplied event source URLs (AI-powered scraping).
 // Optional: pass digestId to merge extracted events into an existing digest instead of creating a new one.
 router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
