@@ -192,7 +192,7 @@ function categoryBadgeStyle(raw: string): string {
   const cat = normalizeCategory(raw);
   const styles: Record<string, string> = {
     Tech:    "background:#6366f1; color:#fff;",
-    Arts:    "background:#ec4899; color:#fff;",
+    Arts:    "background:#9c7c4a; color:#fff;",
     Sports:  "background:#f97316; color:#fff;",
     Civics:  "background:#0ea5e9; color:#fff;",
     Wellness:"background:#22c55e; color:#fff;",

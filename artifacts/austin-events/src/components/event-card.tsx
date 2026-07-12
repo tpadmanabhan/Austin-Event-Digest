@@ -214,7 +214,7 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
     if (cat.includes("wellness") || cat.includes("meditation") || cat.includes("yoga") || cat.includes("mindfulness")) return "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800";
     if (cat.includes("sport") || cat.includes("fitness") || cat.includes("outdoor")) return "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800";
     if (cat.includes("civic") || cat.includes("community") || cat.includes("volunteer") || cat.includes("nonprofit")) return "bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800";
-    return "bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800";
+    return "bg-[#f5ead8] text-[#7a5230] border-[#d4b896] dark:bg-[#4a3520]/30 dark:text-[#d4b896] dark:border-[#7a5230]";
   };
 
   return (

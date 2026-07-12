@@ -29,7 +29,7 @@ function useTenantList() {
 
 const CATEGORY_KEYS = [
   { name: "Tech",     emoji: "💻", sources: ["Luma", "Meetup", "Eventbrite"], border: "#3b82f6", bg: "#eff6ff", badge: "#dbeafe", badgeText: "#1d4ed8" },
-  { name: "Arts",     emoji: "🎨", sources: ["Luma", "Bandsintown", "Eventbrite"], border: "#ec4899", bg: "#fdf2f8", badge: "#fce7f3", badgeText: "#9d174d" },
+  { name: "Arts",     emoji: "🎨", sources: ["Luma", "Bandsintown", "Eventbrite"], border: "#9c7c4a", bg: "#fdf6ee", badge: "#ecdfc8", badgeText: "#6b4c26" },
   { name: "Sports",   emoji: "🏃", sources: ["Meetup", "Luma", "Eventbrite"], border: "#14b8a6", bg: "#f0fdfa", badge: "#ccfbf1", badgeText: "#0f766e" },
   { name: "Wellness", emoji: "🧘", sources: ["Luma", "Meetup", "Eventbrite"], border: "#22c55e", bg: "#f0fdf4", badge: "#dcfce7", badgeText: "#15803d" },
   { name: "Civics",   emoji: "🏛️", sources: ["Meetup", "Eventbrite"], border: "#f59e0b", bg: "#fffbeb", badge: "#fef3c7", badgeText: "#b45309" },
