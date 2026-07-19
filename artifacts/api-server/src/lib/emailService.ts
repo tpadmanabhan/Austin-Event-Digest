@@ -331,7 +331,9 @@ export function buildDigestEmailHtml(digest: {
     }
 
     return `
-    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-bottom:20px;">
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; margin-bottom:20px;">
+      ${event.imageUrl ? `<img src="${escapeHtml(event.imageUrl)}" alt="${escapeHtml(event.title)}" style="width:100%; max-height:220px; object-fit:cover; display:block;" />` : ""}
+      <div style="padding:20px;">
       <div style="display:inline-block; ${categoryBadgeStyle(event.category)} font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(normalizeCategory(event.category))}</div>
       <h3 style="margin:0 0 8px; font-size:18px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
       <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${escapeHtml(event.date)}</p>
@@ -341,6 +343,7 @@ export function buildDigestEmailHtml(digest: {
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
         ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#22c55e; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
         ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-flex; align-items:center; gap:6px; background:#15803d; color:#fff; padding:8px 16px; border-radius:8px; font-size:13px; text-decoration:none; font-weight:600;">🚗 I want to carpool!</a>` : ""}
+      </div>
       </div>
     </div>
   `;
