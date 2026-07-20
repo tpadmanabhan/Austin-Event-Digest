@@ -332,7 +332,8 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
           </p>
         )}
 
-        {digestId && (
+        {/* carpooling hidden temporarily */}
+        {false && digestId && (
           <RsvpBox
             digestId={digestId}
             eventTitle={event.title}
