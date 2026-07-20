@@ -46,7 +46,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
-                  {isAustinCares ? "BCRR Weekly Digest" : "Keep Austin Weird"}
+                  {isAustinCares ? "BCRR Weekly Digest" : "Make Austin Weird Again"}
                 </span>
               </div>
             </Link>
