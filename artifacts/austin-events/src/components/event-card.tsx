@@ -311,6 +311,19 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
           {event.description}
         </p>
 
+        {(event as any).zodiacSigns && (event as any).zodiacSigns.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {((event as any).zodiacSigns as string[]).map((sign) => (
+              <span
+                key={sign}
+                className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200 font-medium"
+              >
+                {sign}
+              </span>
+            ))}
+          </div>
+        )}
+
         {(event as any).source && (
           <p className="text-xs text-muted-foreground/60 italic mb-4">
             via{" "}
