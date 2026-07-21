@@ -163,7 +163,7 @@ export function SubscribeForm() {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <select
-              className="w-full h-12 rounded-xl bg-background/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full h-12 rounded-xl bg-background border border-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               {...form.register("birthMonth")}
               defaultValue=""
             >
