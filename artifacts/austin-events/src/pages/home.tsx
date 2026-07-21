@@ -206,7 +206,12 @@ export default function Home() {
                 <p className="text-foreground/90 leading-relaxed text-base italic">
                   {isAustinCares
                     ? `"Hey crew! I've got the AI scouring inboxes and combing through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek 😎"`
-                    : `"Hey ${cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`}
+                    : <>
+                        "Hey {cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. I've incorporated an algorithm to consider{" "}
+                        <a href="https://www.astrology.com/zodiac-signs" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-70 transition-opacity not-italic">zodiac signs</a>
+                        {" "}in everyday life to foster richer connections. Here's your curated digest — get out there and enjoy {cityShortName} 🤠"
+                      </>
+                  }
                 </p>
                 <p className="mt-3 text-sm font-semibold text-primary not-italic">
                   —{" "}
