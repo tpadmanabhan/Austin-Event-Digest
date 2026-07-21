@@ -11,7 +11,9 @@ interface SendEmailOptions {
   to: string | string[];
   subject: string;
   html: string;
+  text?: string;
   replyTo?: string;
+  headers?: Record<string, string>;
 }
 
 interface SendEmailResult {
@@ -35,7 +37,9 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
           to: Array.isArray(options.to) ? options.to : [options.to],
           subject: options.subject,
           html: options.html,
+          text: options.text,
           reply_to: options.replyTo,
+          headers: options.headers,
         }),
       });
 
@@ -72,7 +76,9 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
       to: recipients,
       subject: options.subject,
       html: options.html,
+      text: options.text,
       replyTo: options.replyTo,
+      headers: options.headers,
     });
 
     logger.info({ to: options.to }, "Email sent via Gmail SMTP");
