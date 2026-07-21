@@ -193,7 +193,13 @@ export default function DigestView() {
           </h1>
           
           <div className="prose prose-lg prose-p:text-muted-foreground prose-p:leading-relaxed max-w-none bg-card p-8 rounded-3xl border border-border shadow-sm">
-            <p className="whitespace-pre-wrap">{digest.intro}</p>
+            <p className="whitespace-pre-wrap">
+              {digest.intro.split(/(zodiac signs)/i).map((part, i) =>
+                /zodiac signs/i.test(part) ? (
+                  <a key={i} href="https://www.astrology.com/zodiac-signs" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-70 transition-opacity">{part}</a>
+                ) : part
+              )}
+            </p>
             <p className="mt-3 text-sm font-semibold text-primary not-italic">
               —{" "}
               {isAustinCares ? (
