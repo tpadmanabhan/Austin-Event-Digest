@@ -19,4 +19,5 @@ export interface EventItem {
   isPost?: boolean;
   isBusinessSpotlight?: boolean;
   deadline?: string | null;
+  zodiacSigns?: string[] | null;
 }
