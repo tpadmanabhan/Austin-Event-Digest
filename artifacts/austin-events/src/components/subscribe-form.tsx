@@ -85,15 +85,23 @@ export function SubscribeForm() {
       });
       const data = await res.json();
       if (res.ok) {
-        if (values.birthMonth && values.birthDay) {
-          setZodiacResult(getZodiacSign(values.birthMonth, values.birthDay));
+        const alreadySubscribed = data.message?.toLowerCase().includes("already subscribed");
+        if (alreadySubscribed) {
+          toast({
+            title: "Already subscribed!",
+            description: "That email is already on the list.",
+          });
+        } else {
+          if (values.birthMonth && values.birthDay) {
+            setZodiacResult(getZodiacSign(values.birthMonth, values.birthDay));
+          }
+          setSubscribed(true);
+          form.reset();
+          toast({
+            title: "You're on the list! 🎉",
+            description: "Keep an eye on your inbox this Sunday.",
+          });
         }
-        setSubscribed(true);
-        form.reset();
-        toast({
-          title: "You're on the list! 🎉",
-          description: "Keep an eye on your inbox this Sunday.",
-        });
       } else {
         toast({
           variant: "destructive",
