@@ -8,6 +8,8 @@ export const subscribersTable = pgTable("subscribers", {
   tenantId: integer("tenant_id").notNull().references(() => tenantsTable.id),
   email: text("email").notNull(),
   name: text("name"),
+  birthMonth: integer("birth_month"),
+  birthDay: integer("birth_day"),
   subscribedAt: timestamp("subscribed_at").defaultNow().notNull(),
   isActive: boolean("is_active").default(true).notNull(),
 }, (t) => [

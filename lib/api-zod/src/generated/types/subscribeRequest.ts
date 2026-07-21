@@ -8,5 +8,14 @@
 
 export interface SubscribeRequest {
   email: string;
-  name?: string;
+  /**
+   * @minimum 1
+   * @maximum 12
+   */
+  birthMonth?: number;
+  /**
+   * @minimum 1
+   * @maximum 31
+   */
+  birthDay?: number;
 }

@@ -11,13 +11,24 @@ export interface HealthStatus {
 
 export interface SubscribeRequest {
   email: string;
-  name?: string;
+  /**
+   * @minimum 1
+   * @maximum 12
+   */
+  birthMonth?: number;
+  /**
+   * @minimum 1
+   * @maximum 31
+   */
+  birthDay?: number;
 }
 
 export interface Subscriber {
   id: number;
   email: string;
   name?: string | null;
+  birthMonth?: number | null;
+  birthDay?: number | null;
   subscribedAt: string;
   isActive: boolean;
 }

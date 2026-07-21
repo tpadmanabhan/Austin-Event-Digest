@@ -18,9 +18,22 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary Subscribe to the newsletter
  */
+export const subscribeToNewsletterBodyBirthMonthMax = 12;
+
+export const subscribeToNewsletterBodyBirthDayMax = 31;
+
 export const SubscribeToNewsletterBody = zod.object({
   email: zod.string().email(),
-  name: zod.string().optional(),
+  birthMonth: zod
+    .number()
+    .min(1)
+    .max(subscribeToNewsletterBodyBirthMonthMax)
+    .optional(),
+  birthDay: zod
+    .number()
+    .min(1)
+    .max(subscribeToNewsletterBodyBirthDayMax)
+    .optional(),
 });
 
 export const SubscribeToNewsletterResponse = zod.object({
@@ -31,6 +44,8 @@ export const SubscribeToNewsletterResponse = zod.object({
       id: zod.number(),
       email: zod.string(),
       name: zod.string().nullish(),
+      birthMonth: zod.number().nullish(),
+      birthDay: zod.number().nullish(),
       subscribedAt: zod.coerce.date(),
       isActive: zod.boolean(),
     })
@@ -58,6 +73,8 @@ export const GetSubscribersResponse = zod.object({
       id: zod.number(),
       email: zod.string(),
       name: zod.string().nullish(),
+      birthMonth: zod.number().nullish(),
+      birthDay: zod.number().nullish(),
       subscribedAt: zod.coerce.date(),
       isActive: zod.boolean(),
     }),

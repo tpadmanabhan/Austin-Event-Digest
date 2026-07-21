@@ -28,7 +28,7 @@ router.post("/subscribe", async (req, res) => {
     return;
   }
 
-  const { email, name } = parseResult.data;
+  const { email, birthMonth, birthDay } = parseResult.data;
   const tenantId = req.tenant!.id;
 
   try {
@@ -43,7 +43,7 @@ router.post("/subscribe", async (req, res) => {
       if (!sub.isActive) {
         await db
           .update(subscribersTable)
-          .set({ isActive: true, name: name ?? sub.name })
+          .set({ isActive: true, birthMonth: birthMonth ?? sub.birthMonth, birthDay: birthDay ?? sub.birthDay })
           .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)));
 
         const updated = await db
@@ -59,13 +59,15 @@ router.post("/subscribe", async (req, res) => {
             id: updated[0].id,
             email: updated[0].email,
             name: updated[0].name,
+            birthMonth: updated[0].birthMonth,
+            birthDay: updated[0].birthDay,
             subscribedAt: updated[0].subscribedAt,
             isActive: updated[0].isActive,
           },
         });
         res.json(response);
-        sendWelcomeEmail(email, name ?? updated[0].name, req.tenant).catch(() => {});
-        sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? updated[0].name, isResubscribe: true, adminEmail: req.tenant!.adminEmail }).catch(() => {});
+        sendWelcomeEmail(email, updated[0].name, req.tenant).catch(() => {});
+        sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: updated[0].name, isResubscribe: true, adminEmail: req.tenant!.adminEmail }).catch(() => {});
         return;
       }
 
@@ -76,6 +78,8 @@ router.post("/subscribe", async (req, res) => {
           id: sub.id,
           email: sub.email,
           name: sub.name,
+          birthMonth: sub.birthMonth,
+          birthDay: sub.birthDay,
           subscribedAt: sub.subscribedAt,
           isActive: sub.isActive,
         },
@@ -86,7 +90,7 @@ router.post("/subscribe", async (req, res) => {
 
     const [newSub] = await db
       .insert(subscribersTable)
-      .values({ tenantId, email, name: name || null, isActive: true })
+      .values({ tenantId, email, birthMonth: birthMonth || null, birthDay: birthDay || null, isActive: true })
       .returning();
 
     const response = SubscribeToNewsletterResponse.parse({
@@ -96,13 +100,15 @@ router.post("/subscribe", async (req, res) => {
         id: newSub.id,
         email: newSub.email,
         name: newSub.name,
+        birthMonth: newSub.birthMonth,
+        birthDay: newSub.birthDay,
         subscribedAt: newSub.subscribedAt,
         isActive: newSub.isActive,
       },
     });
     res.json(response);
-    sendWelcomeEmail(email, name ?? null, req.tenant).catch(() => {});
-    sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: name ?? null, adminEmail: req.tenant!.adminEmail }).catch(() => {});
+    sendWelcomeEmail(email, null, req.tenant).catch(() => {});
+    sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: null, adminEmail: req.tenant!.adminEmail }).catch(() => {});
     awardXP(tenantId, "subscriber", 3, { email }).catch(() => {});
   } catch (err) {
     req.log.error({ err }, "Error subscribing");
