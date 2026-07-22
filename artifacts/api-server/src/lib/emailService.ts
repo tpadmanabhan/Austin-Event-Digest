@@ -329,7 +329,7 @@ export function buildDigestEmailHtml(digest: {
         ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
           ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#d97706; color:#fff; padding:9px 20px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
-          {/* carpool button hidden temporarily */}
+          ${rsvpLink ? `<a href="${rsvpLink}" style="display:inline-block; background:#fff; color:#d97706; border:1.5px solid #d97706; padding:9px 20px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">✨ Interested?</a>` : ""}
         </div>
       </div>
     </div>
@@ -348,7 +348,7 @@ export function buildDigestEmailHtml(digest: {
       ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
         ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#22c55e; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
-        {/* carpool button hidden temporarily */}
+        ${rsvpLink ? `<a href="${rsvpLink}" style="display:inline-block; background:#fff; color:#22c55e; border:1.5px solid #22c55e; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">✨ Interested?</a>` : ""}
       </div>
       </div>
     </div>
