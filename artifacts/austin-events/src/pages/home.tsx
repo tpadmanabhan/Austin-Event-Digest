@@ -209,7 +209,7 @@ export default function Home() {
                     : <>
                         "Hey {cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. I've incorporated an algorithm to consider{" "}
                         <a href="https://www.astrology.com/zodiac-signs" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-70 transition-opacity not-italic">zodiac signs</a>
-                        {" "}in everyday life to foster richer connections. Here's your curated digest — get out there and enjoy {cityShortName} 🤠"
+                        {" "}in events to foster richer connections. Here's your curated digest — get out there and enjoy {cityShortName} 🤠"
                       </>
                   }
                 </p>
