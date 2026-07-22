@@ -454,6 +454,48 @@ export function buildDigestEmailHtml(digest: {
       </div>
     </div>
 
+    <!-- Ride Feature Block -->
+    <div style="background:linear-gradient(135deg,#064e3b 0%,#065f46 55%,#047857 100%); border-radius:16px; padding:28px 24px; margin-bottom:24px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <tr>
+          <td style="vertical-align:middle; padding-right:16px; width:56px;">
+            <div style="width:48px; height:48px; border-radius:10px; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:28px; text-align:center; line-height:48px;">🤝</div>
+          </td>
+          <td style="vertical-align:middle;">
+            <p style="margin:0 0 2px; color:#6ee7b7; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">🚗 Upcoming Feature</p>
+            <p style="margin:0; color:#ecfdf5; font-size:18px; font-weight:800; letter-spacing:-0.3px;">The Ride</p>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:16px 0 14px; color:#a7f3d0; font-size:14px; line-height:1.7;">
+        A community rides safety net matching people who can't drive with trusted neighbors who can — so seniors reach their appointments, students make it to class, and no one misses what matters because they couldn't get there.
+      </p>
+
+      <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+        <tr>
+          <td style="padding:4px 8px 4px 0;">
+            <span style="display:inline-block; background:rgba(255,255,255,0.07); color:rgba(167,243,208,0.9); border:1px solid rgba(52,211,153,0.2); border-radius:100px; padding:6px 14px; font-size:13px; font-weight:600; white-space:nowrap;">🏥 Medical Appointments</span>
+          </td>
+          <td style="padding:4px 0 4px 8px;">
+            <span style="display:inline-block; background:rgba(255,255,255,0.07); color:rgba(167,243,208,0.9); border:1px solid rgba(52,211,153,0.2); border-radius:100px; padding:6px 14px; font-size:13px; font-weight:600; white-space:nowrap;">🎓 School &amp; Classes</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:4px 8px 4px 0;">
+            <span style="display:inline-block; background:rgba(255,255,255,0.07); color:rgba(167,243,208,0.9); border:1px solid rgba(52,211,153,0.2); border-radius:100px; padding:6px 14px; font-size:13px; font-weight:600; white-space:nowrap;">🛒 Groceries &amp; Pharmacy</span>
+          </td>
+          <td style="padding:4px 0 4px 8px;">
+            <span style="display:inline-block; background:rgba(255,255,255,0.07); color:rgba(167,243,208,0.9); border:1px solid rgba(52,211,153,0.2); border-radius:100px; padding:6px 14px; font-size:13px; font-weight:600; white-space:nowrap;">💼 Job Interviews</span>
+          </td>
+        </tr>
+      </table>
+
+      <div style="text-align:center;">
+        <a href="https://eventcarpooling.com" style="display:inline-block; background:#6ee7b7; color:#064e3b; font-size:14px; font-weight:700; text-decoration:none; padding:12px 28px; border-radius:100px; letter-spacing:-0.2px;">Learn more at EventCarpooling.com →</a>
+      </div>
+    </div>
+
     <!-- Japan Launch Feature Block -->
     <div style="background:linear-gradient(135deg,#064e3b 0%,#065f46 55%,#047857 100%); border-radius:16px; padding:24px; margin-bottom:24px;">
       <table style="width:100%; border-collapse:collapse;">
