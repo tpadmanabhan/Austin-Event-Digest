@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, ExternalLink, Music, Utensils, Laptop, Ticket, Car, CheckCircle2, Loader2 } from "lucide-react";
+import { Calendar, MapPin, ExternalLink, Music, Utensils, Laptop, Ticket, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { EventItem } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
@@ -110,12 +110,12 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
         <div className="flex items-center gap-2 text-primary text-sm font-semibold">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>
-            {confirmedName ? `You're in, ${confirmedName}! 🚗` : "You're in! 🚗"}
+            {confirmedName ? `You're in, ${confirmedName}! ✨` : "You're in! ✨"}
             <span className="font-normal text-muted-foreground ml-1">Other subscribers have been notified.</span>
           </span>
         </div>
         {count && count > 1 && (
-          <p className="text-xs text-muted-foreground mt-1 pl-6">{count} people interested in carpooling</p>
+          <p className="text-xs text-muted-foreground mt-1 pl-6">{count} people interested</p>
         )}
       </div>
     );
@@ -126,10 +126,9 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
       {!showForm ? (
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <Car className="w-4 h-4" />
-            Interested in carpooling?
+            <Sparkles className="w-4 h-4" />
             {count !== null && count > 0 && (
-              <span className="text-xs font-semibold text-primary ml-1">({count} interested)</span>
+              <span className="text-xs font-semibold text-primary">({count} interested)</span>
             )}
           </span>
           <Button
@@ -138,14 +137,14 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
             onClick={() => setShowForm(true)}
             className="shrink-0 text-xs font-semibold border-primary/40 text-primary hover:bg-primary/5"
           >
-            Yes, I'm in! 🚗
+            Interested?
           </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3">
           <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-            <Car className="w-4 h-4 text-primary" />
-            Carpool with others going!
+            <Sparkles className="w-4 h-4 text-primary" />
+            Let others know you're going!
           </p>
           <div className="grid grid-cols-2 gap-2">
             <Input
@@ -177,8 +176,8 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
               className="flex-1 text-xs disabled:opacity-50"
             >
               {status === "submitting"
-                ? <><Loader2 className="w-3 h-3 animate-spin mr-1" />Connecting…</>
-                : "Connect me with others 🚗"}
+                ? <><Loader2 className="w-3 h-3 animate-spin mr-1" />Submitting…</>
+                : "Count me in!"}
             </Button>
             <Button
               type="button"
@@ -345,8 +344,7 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
           </p>
         )}
 
-        {/* carpooling hidden temporarily */}
-        {false && digestId && (
+        {digestId && (
           <RsvpBox
             digestId={digestId}
             eventTitle={event.title}
