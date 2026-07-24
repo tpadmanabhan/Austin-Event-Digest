@@ -504,6 +504,17 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Austin admin email migration failed (non-fatal)");
   }
 
+  for (const slug of ["portland", "sacramento", "brushycreek"]) {
+    try {
+      await db.execute(
+        sql`UPDATE tenants SET admin_email = 'aiimplementationclubaustin@gmail.com', is_active = true, email_verified = true WHERE slug = ${slug} AND (admin_email IS NULL OR admin_email != 'aiimplementationclubaustin@gmail.com')`
+      );
+      logger.info({ slug }, "Admin email ensured for managed city tenant");
+    } catch (err) {
+      logger.warn({ err, slug }, "Managed city admin email migration failed (non-fatal)");
+    }
+  }
+
   try {
     // De-duplicate every week: keep the digest with the most events (highest event count),
     // breaking ties by lowest id. Delete all others.
