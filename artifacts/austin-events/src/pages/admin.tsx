@@ -323,9 +323,38 @@ export default function AdminDashboard() {
     { label: "Digests Created", value: digestsData?.digests?.length || 0, icon: Mail, color: "text-primary", bg: "bg-primary/10" },
   ];
 
+  const MANAGED_CITIES = [
+    { slug: "austin",      label: "Austin" },
+    { slug: "portland",    label: "Portland" },
+    { slug: "sacramento",  label: "Sacramento" },
+  ];
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        {/* City switcher — quick nav between managed subdomains */}
+        <div className="flex items-center gap-1 mb-8 p-1 bg-muted/50 border border-border rounded-xl w-fit">
+          {MANAGED_CITIES.map(city => {
+            const isActive = tenant.slug === city.slug;
+            return isActive ? (
+              <span
+                key={city.slug}
+                className="px-4 py-1.5 rounded-lg text-sm font-semibold bg-card shadow-sm text-foreground border border-border/60"
+              >
+                {city.label}
+              </span>
+            ) : (
+              <a
+                key={city.slug}
+                href={`https://${city.slug}.eventcarpooling.com/admin`}
+                className="px-4 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-card/60 transition-colors"
+              >
+                {city.label}
+              </a>
+            );
+          })}
+        </div>
 
         {/* FIRST-RUN BANNER — prompt state */}
         {tenant.firstRun && (
