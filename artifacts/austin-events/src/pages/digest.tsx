@@ -117,6 +117,7 @@ export default function DigestView() {
   const tenant = useTenant();
   const cityShortName = tenant.city.split(",")[0];
   const isAustinCares = tenant.slug === "austincares";
+  const isPortland = tenant.slug === "portland";
   
   const { data: latestData, isLoading: loadingLatest } = useLatestDigest();
   const { data: allData, isLoading: loadingAll } = useAllDigests();
@@ -204,6 +205,8 @@ export default function DigestView() {
               —{" "}
               {isAustinCares ? (
                 "Rohan"
+              ) : isPortland ? (
+                <a href="https://www.minervaventures.com/what-we-do" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Marianna</a>
               ) : (
                 <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
               )}
