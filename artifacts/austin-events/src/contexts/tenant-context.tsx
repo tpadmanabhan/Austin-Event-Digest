@@ -64,44 +64,11 @@ export function TenantProvider({ slug, children }: { slug: string; children: Rea
   });
 
   useEffect(() => {
-    if (tenant?.slug === "austincares") {
-      document.documentElement.style.setProperty("--primary", "217 91% 50%");
-      document.documentElement.style.setProperty("--secondary", "224 76% 33%");
-      document.documentElement.style.setProperty("--accent", "213 94% 60%");
-      document.documentElement.style.setProperty("--ring", "217 91% 50%");
-      document.documentElement.style.setProperty("--background", "214 100% 97%");
-      document.documentElement.style.setProperty("--foreground", "222 47% 11%");
-      document.documentElement.style.setProperty("--muted", "214 95% 93%");
-      document.documentElement.style.setProperty("--sidebar-primary", "217 91% 50%");
-      document.documentElement.style.setProperty("--sidebar-ring", "217 91% 50%");
-      document.documentElement.style.setProperty("--sidebar", "214 100% 97%");
-      document.documentElement.style.setProperty("--sidebar-foreground", "222 47% 11%");
-    } else if (tenant?.slug === "portland") {
-      // Trail Blazers red (#CE1141) palette
-      document.documentElement.style.setProperty("--primary", "349 83% 44%");
-      document.documentElement.style.setProperty("--secondary", "349 60% 28%");
-      document.documentElement.style.setProperty("--accent", "349 75% 58%");
-      document.documentElement.style.setProperty("--ring", "349 83% 44%");
-      document.documentElement.style.setProperty("--background", "349 60% 97%");
-      document.documentElement.style.setProperty("--foreground", "349 30% 10%");
-      document.documentElement.style.setProperty("--muted", "349 60% 92%");
-      document.documentElement.style.setProperty("--sidebar-primary", "349 83% 44%");
-      document.documentElement.style.setProperty("--sidebar-ring", "349 83% 44%");
-      document.documentElement.style.setProperty("--sidebar", "349 60% 97%");
-      document.documentElement.style.setProperty("--sidebar-foreground", "349 30% 10%");
+    if (tenant?.slug) {
+      document.documentElement.setAttribute("data-tenant", tenant.slug);
     }
     return () => {
-      document.documentElement.style.removeProperty("--primary");
-      document.documentElement.style.removeProperty("--secondary");
-      document.documentElement.style.removeProperty("--accent");
-      document.documentElement.style.removeProperty("--ring");
-      document.documentElement.style.removeProperty("--background");
-      document.documentElement.style.removeProperty("--foreground");
-      document.documentElement.style.removeProperty("--muted");
-      document.documentElement.style.removeProperty("--sidebar-primary");
-      document.documentElement.style.removeProperty("--sidebar-ring");
-      document.documentElement.style.removeProperty("--sidebar");
-      document.documentElement.style.removeProperty("--sidebar-foreground");
+      document.documentElement.removeAttribute("data-tenant");
     };
   }, [tenant?.slug]);
 

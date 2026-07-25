@@ -137,6 +137,68 @@
   --destructive-foreground: 0 0% 100%;
 }
 
+/* ── Portland: Trail Blazers red (#CE1141) ─────────────────────────────── */
+[data-tenant="portland"] {
+  --background: 349 60% 97%;
+  --foreground: 349 30% 10%;
+  --border: 349 40% 87%;
+  --input: 349 40% 87%;
+  --ring: 349 83% 44%;
+  --card: 0 0% 100%;
+  --card-foreground: 349 30% 10%;
+  --card-border: 349 40% 87%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 349 30% 10%;
+  --popover-border: 349 40% 87%;
+  --primary: 349 83% 44%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 349 60% 28%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 349 50% 92%;
+  --muted-foreground: 349 20% 44%;
+  --accent: 349 75% 58%;
+  --accent-foreground: 0 0% 100%;
+  --sidebar: 349 60% 97%;
+  --sidebar-foreground: 349 30% 10%;
+  --sidebar-border: 349 40% 87%;
+  --sidebar-primary: 349 83% 44%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 349 50% 92%;
+  --sidebar-accent-foreground: 349 30% 10%;
+  --sidebar-ring: 349 83% 44%;
+}
+
+/* ── AustinCares: blue ─────────────────────────────────────────────────── */
+[data-tenant="austincares"] {
+  --background: 214 100% 97%;
+  --foreground: 222 47% 11%;
+  --border: 214 60% 87%;
+  --input: 214 60% 87%;
+  --ring: 217 91% 50%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --card-border: 214 60% 87%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --popover-border: 214 60% 87%;
+  --primary: 217 91% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 224 76% 33%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 214 95% 93%;
+  --muted-foreground: 214 30% 50%;
+  --accent: 213 94% 60%;
+  --accent-foreground: 0 0% 100%;
+  --sidebar: 214 100% 97%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-border: 214 60% 87%;
+  --sidebar-primary: 217 91% 50%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 214 95% 93%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-ring: 217 91% 50%;
+}
+
 @layer base {
   * {
     @apply border-border;
