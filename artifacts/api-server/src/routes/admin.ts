@@ -394,6 +394,8 @@ router.get("/digest/:id/preview-html", requireAdmin, async (req, res) => {
         siteUrl,
       },
       "Preview Reader",
+      undefined,
+      req.tenant ?? undefined,
     );
 
     res.json({ html });

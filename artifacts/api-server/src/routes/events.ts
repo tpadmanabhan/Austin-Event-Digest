@@ -603,7 +603,7 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
         events: emailEvents,
         digestId: digest.id,
         siteUrl,
-      }, recipient.name, recipient.email);
+      }, recipient.name, recipient.email, req.tenant ?? undefined);
 
       const result = await sendEmail({
         to: recipient.email,

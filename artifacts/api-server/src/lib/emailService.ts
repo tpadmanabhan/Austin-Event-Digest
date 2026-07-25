@@ -258,7 +258,7 @@ export function buildDigestEmailHtml(digest: {
   }>;
   digestId?: number;
   siteUrl?: string;
-}, subscriberName?: string | null, subscriberEmail?: string | null): string {
+}, subscriberName?: string | null, subscriberEmail?: string | null, tenant?: { slug?: string | null; name?: string | null; city?: string | null; digestTitle?: string | null }): string {
   const weekDate = new Date(digest.weekOf).toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -267,6 +267,43 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const greeting = subscriberName ? `Hey ${escapeHtml(subscriberName)},` : "Hey there,";
+
+  const isPortland = tenant?.slug === "portland";
+  const theme = isPortland ? {
+    headerGradient: "linear-gradient(135deg, #1a0008 0%, #2d0010 60%, #420018 100%)",
+    primary: "#CE1141",
+    primaryBtn: "#CE1141",
+    primaryDark: "#8b0d2a",
+    primaryLight: "#fde8ec",
+    primaryMuted: "#f9d0d9",
+    textOnDark: "#fde8ec",
+    textMutedOnDark: "#f5b8c4",
+    linkColor: "#CE1141",
+    curatorName: "Marianna",
+    curatorUrl: "https://www.minervaventures.com/what-we-do",
+    cityGuideText: "Your weekly guide to what's happening in Portland",
+    digestDisplayName: tenant?.digestTitle || "Portland Events",
+    headerEmoji: "🌲",
+    eventBtnColor: "#CE1141",
+    eventBtnBorder: "#CE1141",
+  } : {
+    headerGradient: "linear-gradient(135deg, #064e3b 0%, #065f46 55%, #047857 100%)",
+    primary: "#15803d",
+    primaryBtn: "#15803d",
+    primaryDark: "#064e3b",
+    primaryLight: "#d1fae5",
+    primaryMuted: "#a7f3d0",
+    textOnDark: "#ecfdf5",
+    textMutedOnDark: "#a7f3d0",
+    linkColor: "#15803d",
+    curatorName: "Raj",
+    curatorUrl: "https://customersuccessforgood.com/",
+    cityGuideText: `Your weekly guide to what's happening in ${tenant?.city?.split(",")[0] || "Austin"}`,
+    digestDisplayName: tenant?.digestTitle || tenant?.name || "Raj's Austin Events",
+    headerEmoji: "🤠",
+    eventBtnColor: "#22c55e",
+    eventBtnBorder: "#22c55e",
+  };
 
   const unsubscribeUrl = digest.siteUrl && subscriberEmail
     ? `${digest.siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`
@@ -347,8 +384,8 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${escapeHtml(event.description)}</p>
       ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-        ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:#22c55e; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
-        ${rsvpLink ? `<a href="${rsvpLink}" style="display:inline-block; background:#fff; color:#22c55e; border:1.5px solid #22c55e; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">✨ Interested?</a>` : ""}
+        ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:${theme.eventBtnColor}; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">Learn More →</a>` : ""}
+        ${rsvpLink ? `<a href="${rsvpLink}" style="display:inline-block; background:#fff; color:${theme.eventBtnBorder}; border:1.5px solid ${theme.eventBtnBorder}; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">✨ Interested?</a>` : ""}
       </div>
       </div>
     </div>
@@ -391,8 +428,8 @@ export function buildDigestEmailHtml(digest: {
   <div style="max-width:600px; margin:0 auto; padding:20px;">
     
     <!-- Header -->
-    <div style="background:linear-gradient(135deg, #064e3b 0%, #065f46 55%, #047857 100%); border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
-      <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl && digest.digestId ? `<a href="${escapeHtml(digest.siteUrl)}/digest/${digest.digestId}" style="color:#fbbf24; text-decoration:none;">🤠 Raj's Austin Events</a>` : `<span style="color:#fbbf24;">🤠 Raj's Austin Events</span>`}</h1>
+    <div style="background:${theme.headerGradient}; border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
+      <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl && digest.digestId ? `<a href="${escapeHtml(digest.siteUrl)}/digest/${digest.digestId}" style="color:#fbbf24; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:#fbbf24;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
       <div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
         <div style="display:inline-block; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:6px; padding:2px 8px;">
           <span style="color:#fff; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase;">IRL — In Real Life</span>
@@ -401,19 +438,19 @@ export function buildDigestEmailHtml(digest: {
           <span style="color:#1c1917; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase;">Beta</span>
         </div>
       </div>
-      <p style="margin:0; color:#d1fae5; font-size:14px;">Your weekly guide to what's happening in Austin</p>
-      <p style="margin:8px 0 0; color:#a7f3d0; font-size:13px;">Week of ${weekDate}</p>
+      <p style="margin:0; color:${theme.textOnDark}; font-size:14px;">${theme.cityGuideText}</p>
+      <p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">Week of ${weekDate}</p>
     </div>
 
     <!-- Intro -->
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:16px;">
       <p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
-      <p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— <a href="https://customersuccessforgood.com/" style="color:#15803d; text-decoration:none;">Raj</a></p>
+      <p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— <a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a></p>
     </div>
 
     <!-- Superconnector Feature Block -->
-    <div style="background:linear-gradient(135deg,#064e3b 0%,#065f46 55%,#047857 100%); border-radius:16px; padding:28px 24px; margin-bottom:24px;">
+    <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="vertical-align:middle; padding-right:16px; width:56px;">
@@ -455,7 +492,7 @@ export function buildDigestEmailHtml(digest: {
     </div>
 
     <!-- Ride Feature Block -->
-    <div style="background:linear-gradient(135deg,#064e3b 0%,#065f46 55%,#047857 100%); border-radius:16px; padding:28px 24px; margin-bottom:24px;">
+    <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="vertical-align:middle; padding-right:16px; width:56px;">
@@ -497,7 +534,7 @@ export function buildDigestEmailHtml(digest: {
     </div>
 
     <!-- Japan Launch Feature Block -->
-    <div style="background:linear-gradient(135deg,#064e3b 0%,#065f46 55%,#047857 100%); border-radius:16px; padding:24px; margin-bottom:24px;">
+    <div style="background:${theme.headerGradient}; border-radius:16px; padding:24px; margin-bottom:24px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="vertical-align:middle; padding-right:14px; width:48px;">
@@ -522,9 +559,9 @@ export function buildDigestEmailHtml(digest: {
         In Real Life (IRL) events are having a moment — and it's not just nostalgia. As screens dominate more of our attention, people are craving genuine face-to-face connection more than ever. From neighborhood meetups to multi-day conferences, IRL gatherings are reshaping how communities form, how professionals network, and how ideas spread. The shift is changing everyday life in ways that online spaces simply can't replicate.
       </p>
       <ul style="margin:0; padding:0 0 0 18px; color:#57534e; font-size:14px; line-height:2;">
-        <li><a href="https://influencerdaily.com/irl-events-redefine-community-building/" style="color:#15803d; text-decoration:underline;">IRL Events Redefine Community Building in the Creator Economy</a> <span style="color:#a8a29e; font-size:12px;">— Influencer Daily</span></li>
-        <li><a href="https://www.forbes.com/sites/brucelee/2026/01/25/trend-towards-irl-events-with-more-authenticity-whats-behind-it/" style="color:#15803d; text-decoration:underline;">Trend Towards IRL Events With More Authenticity: What's Behind It?</a> <span style="color:#a8a29e; font-size:12px;">— Forbes</span></li>
-        <li><a href="https://tech.yahoo.com/ai/articles/ai-industrys-hottest-networking-event-095252785.html" style="color:#15803d; text-decoration:underline;">The AI Industry's Hottest Networking Event Is a Dinner Party</a> <span style="color:#a8a29e; font-size:12px;">— Yahoo Tech</span></li>
+        <li><a href="https://influencerdaily.com/irl-events-redefine-community-building/" style="color:${theme.linkColor}; text-decoration:underline;">IRL Events Redefine Community Building in the Creator Economy</a> <span style="color:#a8a29e; font-size:12px;">— Influencer Daily</span></li>
+        <li><a href="https://www.forbes.com/sites/brucelee/2026/01/25/trend-towards-irl-events-with-more-authenticity-whats-behind-it/" style="color:${theme.linkColor}; text-decoration:underline;">Trend Towards IRL Events With More Authenticity: What's Behind It?</a> <span style="color:#a8a29e; font-size:12px;">— Forbes</span></li>
+        <li><a href="https://tech.yahoo.com/ai/articles/ai-industrys-hottest-networking-event-095252785.html" style="color:${theme.linkColor}; text-decoration:underline;">The AI Industry's Hottest Networking Event Is a Dinner Party</a> <span style="color:#a8a29e; font-size:12px;">— Yahoo Tech</span></li>
       </ul>
     </div>
 
@@ -542,8 +579,8 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
-      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by <a href="https://customersuccessforgood.com/" style="color:#15803d; text-decoration:none;">Raj</a> from Austin, TX</p>
-      <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at Raj's Austin Events.</p>
+      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by <a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>${isPortland ? " from Portland, OR" : " from Austin, TX"}</p>
+      <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at ${escapeHtml(theme.digestDisplayName)}.</p>
       ${unsubscribeUrl ? `<p style="margin:12px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a8a29e; font-size:11px; text-decoration:underline;">Unsubscribe</a></p>` : ""}
     </div>
 
