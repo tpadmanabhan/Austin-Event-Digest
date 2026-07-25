@@ -613,9 +613,9 @@ function PlatformHomeInner() {
                 <div key={i} className="h-36 rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
-          ) : tenants && tenants.filter((t) => t.slug !== "austincares").length > 0 ? (
+          ) : tenants && tenants.filter((t) => t.slug === "austin").length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tenants.filter((t) => t.slug !== "austincares").map((tenant, i) => {
+              {tenants.filter((t) => t.slug === "austin").map((tenant, i) => {
                 const isComingSoon = tenant.slug === "austincares";
                 const CardEl = motion.a;
                 const cardProps = { href: `https://${tenant.slug}.eventcarpooling.com` };
