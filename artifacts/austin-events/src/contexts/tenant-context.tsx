@@ -76,6 +76,19 @@ export function TenantProvider({ slug, children }: { slug: string; children: Rea
       document.documentElement.style.setProperty("--sidebar-ring", "217 91% 50%");
       document.documentElement.style.setProperty("--sidebar", "214 100% 97%");
       document.documentElement.style.setProperty("--sidebar-foreground", "222 47% 11%");
+    } else if (tenant?.slug === "portland") {
+      // Trail Blazers red (#CE1141) palette
+      document.documentElement.style.setProperty("--primary", "349 83% 44%");
+      document.documentElement.style.setProperty("--secondary", "349 60% 28%");
+      document.documentElement.style.setProperty("--accent", "349 75% 58%");
+      document.documentElement.style.setProperty("--ring", "349 83% 44%");
+      document.documentElement.style.setProperty("--background", "349 60% 97%");
+      document.documentElement.style.setProperty("--foreground", "349 30% 10%");
+      document.documentElement.style.setProperty("--muted", "349 60% 92%");
+      document.documentElement.style.setProperty("--sidebar-primary", "349 83% 44%");
+      document.documentElement.style.setProperty("--sidebar-ring", "349 83% 44%");
+      document.documentElement.style.setProperty("--sidebar", "349 60% 97%");
+      document.documentElement.style.setProperty("--sidebar-foreground", "349 30% 10%");
     }
     return () => {
       document.documentElement.style.removeProperty("--primary");
