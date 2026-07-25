@@ -96,6 +96,18 @@ export default function Home() {
   const latestDigest = latestDigestRes?.digest;
   const cityShortName = tenant.city.split(",")[0];
   const isAustinCares = tenant.slug === "austincares";
+  const isPortland = tenant.slug === "portland";
+
+  const heroImage = isAustinCares
+    ? "austin-cares-hero.png"
+    : isPortland
+      ? "portland-hero.jpg"
+      : "austin-hero.png";
+  const heroAlt = isAustinCares
+    ? "High school student leaders taking charge"
+    : isPortland
+      ? "Portland Oregon skyline"
+      : "Austin Texas stylized illustration";
 
   return (
     <Layout>
@@ -246,12 +258,12 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className={`relative ${isAustinCares ? "block order-first lg:order-none" : "hidden lg:block"}`}
+              className={`relative ${isAustinCares ? "order-first lg:order-none" : ""} block`}
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />
               <img 
-                src={`${import.meta.env.BASE_URL}images/${isAustinCares ? "austin-cares-hero.png" : "austin-hero.png"}`} 
-                alt={isAustinCares ? "High school student leaders taking charge" : "Austin Texas stylized illustration"} 
+                src={`${import.meta.env.BASE_URL}images/${heroImage}`}
+                alt={heroAlt}
                 className="relative rounded-3xl shadow-2xl border border-border object-cover aspect-[4/3] w-full"
               />
             </motion.div>

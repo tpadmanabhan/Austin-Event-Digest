@@ -10,6 +10,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const { muted, toggleMute } = useAudio();
   const tenant = useTenant();
   const isAustinCares = tenant.slug === "austincares";
+  const isPortland = tenant.slug === "portland";
 
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
@@ -25,6 +26,12 @@ export function Layout({ children }: { children: ReactNode }) {
                   <img
                     src={`${import.meta.env.BASE_URL}images/austin-cares-brand-icon.jpg`}
                     alt={tenant.name}
+                    className="h-full w-full object-cover object-center"
+                  />
+                ) : isPortland ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/portland-logo.jpg`}
+                    alt="Portland"
                     className="h-full w-full object-cover object-center"
                   />
                 ) : (
@@ -46,7 +53,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
-                  {isAustinCares ? "BCRR Weekly Digest" : "Make Austin Weird Again"}
+                  {isAustinCares ? "BCRR Weekly Digest" : isPortland ? "Keep Portland Weird" : "Make Austin Weird Again"}
                 </span>
               </div>
             </Link>
@@ -100,12 +107,18 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-3 opacity-80">
               <div
                 className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-40 h-20" : "w-10 h-10"}`}
-                style={isAustinCares ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
+                style={isAustinCares || isPortland ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
                 {isAustinCares ? (
                   <img
                     src={`${import.meta.env.BASE_URL}images/austin-cares-brand-icon.jpg`}
                     alt={tenant.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : isPortland ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/portland-logo.jpg`}
+                    alt="Portland"
                     className="h-full w-full object-cover"
                   />
                 ) : (
