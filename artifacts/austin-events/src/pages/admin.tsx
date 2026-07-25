@@ -816,8 +816,9 @@ export default function AdminDashboard() {
                   >
                     {isAddingBiz ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <><Trophy className="w-4 h-4" /> Add Business Spotlight</>}
                   </Button>
-                  <Button variant="outline" size="icon" onClick={handleSaveBiz} title="Save for next visit" className="rounded-xl shrink-0 border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950">
+                  <Button variant="outline" onClick={handleSaveBiz} title="Save for next visit" className="rounded-xl shrink-0 border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950 gap-1.5">
                     <BookmarkCheck className="w-4 h-4" />
+                    Save
                   </Button>
                 </div>
               </div>
@@ -889,8 +890,9 @@ export default function AdminDashboard() {
                   >
                     {isAddingComm ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>🌿 Add Community Spotlight</>}
                   </Button>
-                  <Button variant="outline" size="icon" onClick={handleSaveComm} title="Save for next visit" className="rounded-xl shrink-0 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950">
+                  <Button variant="outline" onClick={handleSaveComm} title="Save for next visit" className="rounded-xl shrink-0 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 gap-1.5">
                     <BookmarkCheck className="w-4 h-4" />
+                    Save
                   </Button>
                 </div>
               </div>
