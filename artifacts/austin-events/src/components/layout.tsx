@@ -30,9 +30,9 @@ export function Layout({ children }: { children: ReactNode }) {
                   />
                 ) : isPortland ? (
                   <img
-                    src={`${import.meta.env.BASE_URL}images/portland-logo.jpg`}
-                    alt="Portland"
-                    className="h-full w-full object-cover object-center"
+                    src={`${import.meta.env.BASE_URL}images/portland-trailblazers-logo.png`}
+                    alt="Portland Trail Blazers"
+                    className="h-full w-full object-contain"
                   />
                 ) : (
                   "🎸"
@@ -117,9 +117,9 @@ export function Layout({ children }: { children: ReactNode }) {
                   />
                 ) : isPortland ? (
                   <img
-                    src={`${import.meta.env.BASE_URL}images/portland-logo.jpg`}
-                    alt="Portland"
-                    className="h-full w-full object-cover"
+                    src={`${import.meta.env.BASE_URL}images/portland-trailblazers-logo.png`}
+                    alt="Portland Trail Blazers"
+                    className="h-full w-full object-contain"
                   />
                 ) : (
                   "🎸"
