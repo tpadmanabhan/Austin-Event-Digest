@@ -93,6 +93,7 @@ export default function AdminDashboard() {
   const [sourceResults, setSourceResults] = useState<Array<{ url: string; eventCount: number; error?: string }> | null>(null);
   const [lastGeneratedDigest, setLastGeneratedDigest] = useState<{ eventCount: number; digestId: number } | null>(null);
 
+  const [expandedDigestId, setExpandedDigestId] = useState<number | null>(null);
   const [spotlightDigestId, setSpotlightDigestId] = useState<number | null>(null);
   const [bizUrl, setBizUrl] = useState("");
   const [bizTitle, setBizTitle] = useState("");
@@ -167,6 +168,15 @@ export default function AdminDashboard() {
       setDraftDigestId(digestsData.digests[0].id);
     }
   }, [digestsData, draftDigestId]);
+
+  // Auto-select the latest unsent digest for spotlight pickers so events
+  // land in the right place without requiring a manual selection.
+  useEffect(() => {
+    if (digestsData?.digests && digestsData.digests.length > 0 && spotlightDigestId === null) {
+      const latestDraft = digestsData.digests.find(d => !d.sentAt) ?? digestsData.digests[0];
+      setSpotlightDigestId(latestDraft.id);
+    }
+  }, [digestsData]); // intentionally omit spotlightDigestId so manual overrides stick
 
   const handleSaveUrls = () => {
     localStorage.setItem(`admin_source_urls_${tenant.slug}`, JSON.stringify(sourceUrls));
@@ -919,64 +929,112 @@ export default function AdminDashboard() {
                     ) : digestsData?.digests?.length === 0 ? (
                       <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">No digests created yet.</td></tr>
                     ) : digestsData?.digests?.map((digest) => (
-                      <tr key={digest.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="px-6 py-4 font-medium">
-                          {format(parseISO(new Date(digest.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")}
-                        </td>
-                        <td className="px-6 py-4 max-w-xs truncate">{digest.subject}</td>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-medium text-xs">
-                            {digest.events?.length || 0} events
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {digest.sentAt ? (
-                            <span className="inline-flex items-center gap-1.5 text-green-600 font-medium text-xs">
-                              <CheckCircle2 className="w-4 h-4" /> Sent to {digest.sentCount}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 text-amber-600 font-medium text-xs">
-                              <div className="w-2 h-2 rounded-full bg-amber-500" /> Draft
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="rounded-lg shadow-none"
-                              disabled={isSending || !testEmail}
-                              title={testEmail ? `Send draft to ${testEmail}` : "Set a test email in Settings"}
-                              onClick={() => {
-                                send(
-                                  { data: { digestId: digest.id, testEmail } },
-                                  { onSuccess: () => toast({ title: `Draft sent to ${testEmail}` }),
-                                    onError: (err) => toast({ variant: "destructive", title: "Failed to send draft", description: err.message }) }
-                                );
-                              }}
+                      <>
+                        <tr key={digest.id} className="hover:bg-muted/20 transition-colors">
+                          <td className="px-6 py-4 font-medium">
+                            {format(parseISO(new Date(digest.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")}
+                          </td>
+                          <td className="px-6 py-4 max-w-xs truncate">{digest.subject}</td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() => setExpandedDigestId(expandedDigestId === digest.id ? null : digest.id)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-medium text-xs hover:bg-secondary/20 transition-colors"
                             >
-                              <Eye className="w-3.5 h-3.5 mr-1.5" /> Draft to me
-                            </Button>
-                            <Button 
-                              variant="secondary" 
-                              size="sm" 
-                              className="rounded-lg shadow-none"
-                              onClick={() => setSendDialogTarget(digest.id)}
-                            >
-                              <Send className="w-3.5 h-3.5 mr-2" /> Send to all…
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="rounded-lg shadow-none text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={() => setDeleteTarget(digest.id)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
+                              {digest.events?.length || 0} events
+                              <span className="text-[10px]">{expandedDigestId === digest.id ? "▲" : "▼"}</span>
+                            </button>
+                          </td>
+                          <td className="px-6 py-4">
+                            {digest.sentAt ? (
+                              <span className="inline-flex items-center gap-1.5 text-green-600 font-medium text-xs">
+                                <CheckCircle2 className="w-4 h-4" /> Sent to {digest.sentCount}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 text-amber-600 font-medium text-xs">
+                                <div className="w-2 h-2 rounded-full bg-amber-500" /> Draft
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-lg shadow-none"
+                                disabled={isSending || !testEmail}
+                                title={testEmail ? `Send draft to ${testEmail}` : "Set a test email in Settings"}
+                                onClick={() => {
+                                  send(
+                                    { data: { digestId: digest.id, testEmail } },
+                                    { onSuccess: () => toast({ title: `Draft sent to ${testEmail}` }),
+                                      onError: (err) => toast({ variant: "destructive", title: "Failed to send draft", description: err.message }) }
+                                  );
+                                }}
+                              >
+                                <Eye className="w-3.5 h-3.5 mr-1.5" /> Draft to me
+                              </Button>
+                              <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                className="rounded-lg shadow-none"
+                                onClick={() => setSendDialogTarget(digest.id)}
+                              >
+                                <Send className="w-3.5 h-3.5 mr-2" /> Send to all…
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="rounded-lg shadow-none text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => setDeleteTarget(digest.id)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                        {expandedDigestId === digest.id && (
+                          <tr key={`${digest.id}-events`} className="bg-muted/30">
+                            <td colSpan={5} className="px-6 py-4">
+                              {(!digest.events || digest.events.length === 0) ? (
+                                <p className="text-xs text-muted-foreground italic">No events in this digest yet.</p>
+                              ) : (
+                                <div className="space-y-2">
+                                  {(digest.events as any[]).map((ev: any, i: number) => (
+                                    <div key={i} className="flex items-start gap-3 py-2 border-b border-border/40 last:border-0">
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <span className="text-sm font-semibold text-foreground truncate">{ev.title}</span>
+                                          {ev.isBusinessSpotlight && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[10px] font-bold uppercase tracking-wide">🏆 Business</span>
+                                          )}
+                                          {ev.isPost && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide">🌿 Community</span>
+                                          )}
+                                          {ev.featured && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wide">⭐ Featured</span>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                                          {ev.date && <span className="text-xs text-muted-foreground">{ev.date}</span>}
+                                          {ev.venue && <span className="text-xs text-muted-foreground">📍 {ev.venue}</span>}
+                                          {ev.category && (
+                                            <span className="inline-flex px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">{ev.category}</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      {ev.link && (
+                                        <a href={ev.link} target="_blank" rel="noopener noreferrer" className="shrink-0 text-[10px] text-primary underline underline-offset-2 hover:opacity-70">
+                                          Link ↗
+                                        </a>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </>
                     ))}
                   </tbody>
                 </table>
