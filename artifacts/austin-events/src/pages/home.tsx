@@ -97,17 +97,22 @@ export default function Home() {
   const cityShortName = tenant.city.split(",")[0];
   const isAustinCares = tenant.slug === "brushycreek";
   const isPortland = tenant.slug === "portland";
+  const isSacramento = tenant.slug === "sacramento";
 
   const heroImage = isAustinCares
     ? "austin-cares-hero.png"
     : isPortland
       ? "portland-hero.jpg"
-      : "austin-hero.png";
+      : isSacramento
+        ? "sacramento-hero.jpg"
+        : "austin-hero.png";
   const heroAlt = isAustinCares
     ? "High school student leaders taking charge"
     : isPortland
       ? "Portland Oregon skyline"
-      : "Austin Texas stylized illustration";
+      : isSacramento
+        ? "Sacramento California skyline"
+        : "Austin Texas stylized illustration";
 
   return (
     <Layout>
@@ -246,7 +251,7 @@ export default function Home() {
                   ) : isPortland ? (
                     <a href="https://www.minervaventures.com/what-we-do" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Marianna</a>
                   ) : (
-                    <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
+                    "Bob"
                   )}
                 </p>
               </div>

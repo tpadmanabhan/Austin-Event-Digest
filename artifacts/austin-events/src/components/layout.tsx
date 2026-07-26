@@ -11,6 +11,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const tenant = useTenant();
   const isAustinCares = tenant.slug === "brushycreek";
   const isPortland = tenant.slug === "portland";
+  const isSacramento = tenant.slug === "sacramento";
 
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
@@ -20,7 +21,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <Link href="/" className="flex items-center gap-2 group">
               <div
                 className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : "h-8 w-8"}`}
-                style={isAustinCares ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
+                style={isAustinCares || isPortland || isSacramento ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
                 {isAustinCares ? (
                   <img
@@ -32,6 +33,12 @@ export function Layout({ children }: { children: ReactNode }) {
                   <img
                     src={`${import.meta.env.BASE_URL}images/portland-trailblazers-logo.png`}
                     alt="Portland Trail Blazers"
+                    className="h-full w-full object-contain"
+                  />
+                ) : isSacramento ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/sacramento-kings-logo.png`}
+                    alt="Sacramento Kings"
                     className="h-full w-full object-contain"
                   />
                 ) : (
@@ -53,7 +60,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
-                  {isAustinCares ? "BCRR Weekly Digest" : isPortland ? "Keep Portland Weird" : "Make Austin Weird Again"}
+                  {isAustinCares ? "BCRR Weekly Digest" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : "Make Austin Weird Again"}
                 </span>
               </div>
             </Link>
@@ -107,7 +114,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-3 opacity-80">
               <div
                 className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-40 h-20" : "w-10 h-10"}`}
-                style={isAustinCares || isPortland ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
+                style={isAustinCares || isPortland || isSacramento ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
                 {isAustinCares ? (
                   <img
@@ -119,6 +126,12 @@ export function Layout({ children }: { children: ReactNode }) {
                   <img
                     src={`${import.meta.env.BASE_URL}images/portland-trailblazers-logo.png`}
                     alt="Portland Trail Blazers"
+                    className="h-full w-full object-contain"
+                  />
+                ) : isSacramento ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/sacramento-kings-logo.png`}
+                    alt="Sacramento Kings"
                     className="h-full w-full object-contain"
                   />
                 ) : (

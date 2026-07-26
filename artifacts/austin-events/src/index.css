@@ -168,6 +168,37 @@
   --sidebar-ring: 349 83% 44%;
 }
 
+/* ── Sacramento Kings: purple ──────────────────────────────────────────── */
+[data-tenant="sacramento"] {
+  --background: 270 60% 97%;
+  --foreground: 270 40% 10%;
+  --border: 270 40% 85%;
+  --input: 270 40% 85%;
+  --ring: 271 66% 34%;
+  --card: 0 0% 100%;
+  --card-foreground: 270 40% 10%;
+  --card-border: 270 40% 85%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 270 40% 10%;
+  --popover-border: 270 40% 85%;
+  --primary: 271 66% 34%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 271 50% 25%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 270 50% 92%;
+  --muted-foreground: 270 25% 45%;
+  --accent: 271 55% 50%;
+  --accent-foreground: 0 0% 100%;
+  --sidebar: 270 60% 97%;
+  --sidebar-foreground: 270 40% 10%;
+  --sidebar-border: 270 40% 85%;
+  --sidebar-primary: 271 66% 34%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 270 50% 92%;
+  --sidebar-accent-foreground: 270 40% 10%;
+  --sidebar-ring: 271 66% 34%;
+}
+
 /* ── AustinCares: blue ─────────────────────────────────────────────────── */
 [data-tenant="brushycreek"] {
   --background: 214 100% 97%;
