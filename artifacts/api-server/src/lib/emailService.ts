@@ -337,6 +337,8 @@ export function buildDigestEmailHtml(digest: {
     rideBtnColor: "#064e3b",
   };
 
+  const cityName = tenant?.city?.split(",")[0] ?? "Austin";
+
   const unsubscribeUrl = digest.siteUrl && subscriberEmail
     ? `${digest.siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`
     : null;
@@ -515,7 +517,7 @@ export function buildDigestEmailHtml(digest: {
       </table>
 
       <p style="margin:0 0 16px; color:${theme.textOnDark}; font-size:14px; line-height:1.7;">
-        Cities rank on a <strong style="color:${theme.textStrong};">live leaderboard</strong>. Publish every week to build a streak — unlocking badges and climbing the rankings. Weekly challenges reset every Sunday with fresh bonus XP. The more you show up for Austin, the higher Austin climbs.
+        Cities rank on a <strong style="color:${theme.textStrong};">live leaderboard</strong>. Publish every week to build a streak — unlocking badges and climbing the rankings. Weekly challenges reset every Sunday with fresh bonus XP. The more you show up for ${cityName}, the higher ${cityName} climbs.
       </p>
 
       <div style="text-align:center;">
