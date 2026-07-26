@@ -302,8 +302,8 @@ export function buildDigestEmailHtml(digest: {
     textMutedOnDark: "#c5b8e0",
     textStrong: "#ffffff",
     linkColor: "#9b72c8",
-    curatorName: "Raj",
-    curatorUrl: "https://customersuccessforgood.com/",
+    curatorName: "Bob",
+    curatorUrl: null,
     cityGuideText: "Your weekly guide to what's happening in Sacramento",
     digestDisplayName: tenant?.digestTitle || "Sacramento Events",
     headerEmoji: "👑",
@@ -478,7 +478,7 @@ export function buildDigestEmailHtml(digest: {
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:16px;">
       ${greeting ? `<p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>` : ""}
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
-      <p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— <a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a></p>
+      <p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>
     </div>
 
     <!-- Superconnector Feature Block -->
@@ -611,7 +611,7 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
-      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by <a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : " from Austin, TX"}</p>
+      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : " from Austin, TX"}</p>
       <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at ${escapeHtml(theme.digestDisplayName)}.</p>
       ${unsubscribeUrl ? `<p style="margin:12px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a8a29e; font-size:11px; text-decoration:underline;">Unsubscribe</a></p>` : ""}
     </div>
