@@ -250,8 +250,10 @@ export default function Home() {
                     </span>
                   ) : isPortland ? (
                     <a href="https://www.minervaventures.com/what-we-do" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Marianna</a>
-                  ) : (
+                  ) : isSacramento ? (
                     "Bob"
+                  ) : (
+                    <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
                   )}
                 </p>
               </div>
