@@ -546,16 +546,16 @@ export async function runStartupMigration(): Promise<void> {
   }
 
   try {
-    // De-duplicate every week: keep the digest with the most events (highest event count),
-    // breaking ties by lowest id. Delete all others.
+    // De-duplicate every week PER TENANT: keep the digest with the most events
+    // (highest event count), breaking ties by lowest id. Delete all others.
     const allDigests = await db
       .select()
       .from(digestsTable);
 
-    // Group by weekOf timestamp
-    const byWeek = new Map<number, typeof allDigests>();
+    // Group by (tenantId, weekOf) — never collapse digests across tenants
+    const byWeek = new Map<string, typeof allDigests>();
     for (const d of allDigests) {
-      const key = new Date(d.weekOf).getTime();
+      const key = `${d.tenantId}:${new Date(d.weekOf).getTime()}`;
       if (!byWeek.has(key)) byWeek.set(key, []);
       byWeek.get(key)!.push(d);
     }
