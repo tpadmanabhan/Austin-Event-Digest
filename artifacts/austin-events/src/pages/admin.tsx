@@ -689,7 +689,14 @@ export default function AdminDashboard() {
                       <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">{i + 1}</div>
                       <Input
                         type="url"
-                        placeholder={i === 0 ? "https://lu.ma/austin" : i === 1 ? "https://eventbrite.com/d/tx--austin/events/" : i === 2 ? "https://meetup.com/find/?location=Austin" : `https://example.com/events`}
+                        placeholder={(() => {
+                          const city = tenant.city.split(",")[0].trim();
+                          const citySlug = city.toLowerCase().replace(/\s+/g, "-");
+                          if (i === 0) return `https://lu.ma/${citySlug}`;
+                          if (i === 1) return `https://eventbrite.com/d/events/?location=${encodeURIComponent(city)}`;
+                          if (i === 2) return `https://meetup.com/find/?location=${encodeURIComponent(city)}`;
+                          return "https://example.com/events";
+                        })()}
                         value={url}
                         onChange={e => setSourceUrls(prev => prev.map((v, j) => j === i ? e.target.value : v))}
                         className="rounded-xl text-sm"
