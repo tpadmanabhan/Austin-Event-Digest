@@ -516,6 +516,18 @@ export async function runStartupMigration(): Promise<void> {
     }
   }
 
+  // Enforce canonical 5-category scheme across all tenants
+  try {
+    await db.execute(sql`
+      UPDATE tenants
+      SET categories = '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb
+      WHERE categories::text != '["Arts","Sports","Tech","Civics","Wellness"]'
+    `);
+    logger.info("Canonical categories enforced on all tenants");
+  } catch (err) {
+    logger.warn({ err }, "Category migration failed (non-fatal)");
+  }
+
   // Migrate austincares subscribers → brushycreek (idempotent)
   try {
     await db.execute(sql`
