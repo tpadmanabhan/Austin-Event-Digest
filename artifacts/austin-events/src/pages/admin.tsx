@@ -74,10 +74,13 @@ export default function AdminDashboard() {
   const currentSunday = useMemo(() => {
     const d = new Date();
     const day = d.getDay();
-    const diff = day === 0 ? 0 : 7 - day;
+    // Sacramento weeks start Saturday; all others start Sunday
+    const diff = tenant.slug === "sacramento"
+      ? (day === 6 ? 0 : 6 - day)   // next/current Saturday
+      : (day === 0 ? 0 : 7 - day);  // next/current Sunday
     d.setDate(d.getDate() + diff);
     return d.toISOString().substring(0, 10);
-  }, []);
+  }, [tenant.slug]);
 
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [customNotes, setCustomNotes] = useState("");

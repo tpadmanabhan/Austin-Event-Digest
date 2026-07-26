@@ -268,8 +268,8 @@ export function buildDigestEmailHtml(digest: {
 
   const greeting = subscriberName ? `Hey ${escapeHtml(subscriberName)},` : "";
 
-  const isPortland = tenant?.slug === "portland";
-  const theme = isPortland ? {
+  const slug = tenant?.slug;
+  const theme = slug === "portland" ? {
     headerGradient: "linear-gradient(135deg, #3d0010 0%, #5a0018 55%, #780020 100%)",
     primary: "#CE1141",
     primaryBtn: "#CE1141",
@@ -290,6 +290,28 @@ export function buildDigestEmailHtml(digest: {
     pillText: "rgba(253,216,224,0.9)",
     pillBorder: "rgba(206,17,65,0.35)",
     rideBtnBg: "#CE1141",
+    rideBtnColor: "#fff",
+  } : slug === "sacramento" ? {
+    headerGradient: "linear-gradient(135deg, #1a0a30 0%, #2d1260 55%, #3d1a80 100%)",
+    primary: "#5A2D81",
+    primaryBtn: "#5A2D81",
+    primaryDark: "#1a0a30",
+    primaryLight: "#ede8f5",
+    primaryMuted: "#d4c8ea",
+    textOnDark: "#ede8f5",
+    textMutedOnDark: "#c5b8e0",
+    textStrong: "#ffffff",
+    linkColor: "#9b72c8",
+    curatorName: "Raj",
+    curatorUrl: "https://customersuccessforgood.com/",
+    cityGuideText: "Your weekly guide to what's happening in Sacramento",
+    digestDisplayName: tenant?.digestTitle || "Sacramento Events",
+    headerEmoji: "👑",
+    eventBtnColor: "#5A2D81",
+    eventBtnBorder: "#5A2D81",
+    pillText: "rgba(237,232,245,0.9)",
+    pillBorder: "rgba(90,45,129,0.35)",
+    rideBtnBg: "#5A2D81",
     rideBtnColor: "#fff",
   } : {
     headerGradient: "linear-gradient(135deg, #064e3b 0%, #065f46 55%, #047857 100%)",
@@ -589,7 +611,7 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
-      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by <a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>${isPortland ? " from Portland, OR" : " from Austin, TX"}</p>
+      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by <a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : " from Austin, TX"}</p>
       <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at ${escapeHtml(theme.digestDisplayName)}.</p>
       ${unsubscribeUrl ? `<p style="margin:12px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a8a29e; font-size:11px; text-decoration:underline;">Unsubscribe</a></p>` : ""}
     </div>

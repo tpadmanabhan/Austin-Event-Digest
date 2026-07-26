@@ -15,6 +15,15 @@ function getNextSunday(from: Date = new Date()): Date {
   return d;
 }
 
+export function getNextSaturday(from: Date = new Date()): Date {
+  const d = new Date(from);
+  const day = d.getDay();
+  const diff = day === 6 ? 0 : 6 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 function formatDateRange(weekOf: Date): string {
   const start = new Date(weekOf);
   const end = new Date(weekOf);
