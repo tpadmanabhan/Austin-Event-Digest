@@ -116,7 +116,7 @@ export default function DigestView() {
   const isLatest = idStr === "latest";
   const tenant = useTenant();
   const cityShortName = tenant.city.split(",")[0];
-  const isAustinCares = tenant.slug === "austincares";
+  const isAustinCares = tenant.slug === "brushycreek";
   const isPortland = tenant.slug === "portland";
   
   const { data: latestData, isLoading: loadingLatest } = useLatestDigest();

@@ -9,7 +9,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { muted, toggleMute } = useAudio();
   const tenant = useTenant();
-  const isAustinCares = tenant.slug === "austincares";
+  const isAustinCares = tenant.slug === "brushycreek";
   const isPortland = tenant.slug === "portland";
 
   return (

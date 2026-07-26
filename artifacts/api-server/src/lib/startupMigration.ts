@@ -488,15 +488,6 @@ export async function runStartupMigration(): Promise<void> {
 
   try {
     await db.execute(
-      sql`UPDATE tenants SET admin_email = 'rohanvivier@gmail.com' WHERE slug = 'austincares' AND (admin_email IS NULL OR admin_email != 'rohanvivier@gmail.com')`
-    );
-    logger.info("Austincares admin email set to rohanvivier@gmail.com");
-  } catch (err) {
-    logger.warn({ err }, "Austincares admin email migration failed (non-fatal)");
-  }
-
-  try {
-    await db.execute(
       sql`UPDATE tenants SET admin_email = 'aiimplementationclubaustin@gmail.com' WHERE slug = 'austin' AND (admin_email IS NULL OR admin_email != 'aiimplementationclubaustin@gmail.com')`
     );
     logger.info("Austin admin email set to aiimplementationclubaustin@gmail.com");
@@ -504,7 +495,17 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Austin admin email migration failed (non-fatal)");
   }
 
-  for (const slug of ["portland", "sacramento", "brushycreek"]) {
+  // Brushy Creek is managed by Rohan (migrated from austincares)
+  try {
+    await db.execute(
+      sql`UPDATE tenants SET admin_email = 'rohanvivier@gmail.com', is_active = true, email_verified = true WHERE slug = 'brushycreek'`
+    );
+    logger.info("Brushy Creek admin email set to rohanvivier@gmail.com");
+  } catch (err) {
+    logger.warn({ err }, "Brushy Creek admin email migration failed (non-fatal)");
+  }
+
+  for (const slug of ["portland", "sacramento"]) {
     try {
       await db.execute(
         sql`UPDATE tenants SET admin_email = 'aiimplementationclubaustin@gmail.com', is_active = true, email_verified = true WHERE slug = ${slug} AND (admin_email IS NULL OR admin_email != 'aiimplementationclubaustin@gmail.com')`
@@ -513,6 +514,23 @@ export async function runStartupMigration(): Promise<void> {
     } catch (err) {
       logger.warn({ err, slug }, "Managed city admin email migration failed (non-fatal)");
     }
+  }
+
+  // Migrate austincares subscribers → brushycreek (idempotent)
+  try {
+    await db.execute(sql`
+      UPDATE subscribers s
+      SET tenant_id = (SELECT id FROM tenants WHERE slug = 'brushycreek')
+      WHERE s.tenant_id = (SELECT id FROM tenants WHERE slug = 'austincares')
+        AND NOT EXISTS (
+          SELECT 1 FROM subscribers s2
+          WHERE s2.tenant_id = (SELECT id FROM tenants WHERE slug = 'brushycreek')
+            AND s2.email = s.email
+        )
+    `);
+    logger.info("Migrated austincares subscribers to brushycreek");
+  } catch (err) {
+    logger.warn({ err }, "Austincares → brushycreek subscriber migration failed (non-fatal)");
   }
 
   try {

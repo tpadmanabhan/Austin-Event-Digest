@@ -95,7 +95,7 @@ export default function Home() {
 
   const latestDigest = latestDigestRes?.digest;
   const cityShortName = tenant.city.split(",")[0];
-  const isAustinCares = tenant.slug === "austincares";
+  const isAustinCares = tenant.slug === "brushycreek";
   const isPortland = tenant.slug === "portland";
 
   const heroImage = isAustinCares
