@@ -97,9 +97,9 @@ export interface WelcomeEmailTenant {
 }
 
 export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmailTenant | null): string {
-  const greeting = name ? `Hey ${name}! 👋` : "";
   const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
   const cityLabel = tenant?.city || "Austin, TX";
+  const greeting = `Hey ${cityLabel.split(",")[0]}! 👋`;
   const siteUrl = tenant?.slug ? `https://${tenant.slug}.eventcarpooling.com` : "https://austin.eventcarpooling.com";
   const curatorLine = tenant && tenant.slug !== "austin"
     ? `Curated with ❤️ for ${escapeHtml(tenant.city || tenant.name)}`
@@ -266,9 +266,9 @@ export function buildDigestEmailHtml(digest: {
     day: "numeric",
   });
 
-  const greeting = subscriberName ? `Hey ${escapeHtml(subscriberName)},` : "";
-
   const slug = tenant?.slug;
+  const cityName = tenant?.city?.split(",")[0] ?? "Austin";
+  const greeting = `Hey ${cityName}!`;
   const theme = slug === "portland" ? {
     headerGradient: "linear-gradient(135deg, #3d0010 0%, #5a0018 55%, #780020 100%)",
     primary: "#CE1141",
@@ -336,8 +336,6 @@ export function buildDigestEmailHtml(digest: {
     rideBtnBg: "#6ee7b7",
     rideBtnColor: "#064e3b",
   };
-
-  const cityName = tenant?.city?.split(",")[0] ?? "Austin";
 
   const unsubscribeUrl = digest.siteUrl && subscriberEmail
     ? `${digest.siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`
