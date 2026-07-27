@@ -166,41 +166,63 @@ function PlatformHomeInner() {
               >
                 {t.heroCta} <ArrowRight className="w-5 h-5" />
               </button>
-              <a
-                href="https://austin.eventcarpooling.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-sm font-semibold transition-all hover:-translate-y-0.5"
-                style={{
-                  background: "rgba(255,255,255,0.06)",
-                  borderColor: "rgba(255,255,255,0.15)",
-                  color: "#e2e8f0",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.11)";
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(99,179,237,0.4)";
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.06)";
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(255,255,255,0.15)";
-                }}
-              >
-                <span
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xl leading-none"
+              {[
+                {
+                  href: "https://austin.eventcarpooling.com",
+                  icon: "🎸",
+                  iconBg: "linear-gradient(135deg, #1e1b4b, #312e81)",
+                  iconShadow: "0 3px 10px rgba(49,46,129,0.5)",
+                  label: "Raj's Austin Events",
+                },
+                {
+                  href: "https://sacramento.eventcarpooling.com",
+                  icon: "👑",
+                  iconBg: "linear-gradient(135deg, #1a0a30, #5A2D81)",
+                  iconShadow: "0 3px 10px rgba(90,45,129,0.5)",
+                  label: "Sacramento Events",
+                },
+                {
+                  href: "https://austincares.eventcarpooling.com",
+                  icon: "🫶",
+                  iconBg: "linear-gradient(135deg, #14532d, #15803d)",
+                  iconShadow: "0 3px 10px rgba(21,128,61,0.5)",
+                  label: "Austin Cares",
+                },
+              ].map(city => (
+                <a
+                  key={city.href}
+                  href={city.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-sm font-semibold transition-all hover:-translate-y-0.5"
                   style={{
-                    background: "linear-gradient(135deg, #1e1b4b, #312e81)",
-                    boxShadow: "0 3px 10px rgba(49,46,129,0.5)",
+                    background: "rgba(255,255,255,0.06)",
+                    borderColor: "rgba(255,255,255,0.15)",
+                    color: "#e2e8f0",
+                    boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.11)";
+                    (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(99,179,237,0.4)";
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.06)";
+                    (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(255,255,255,0.15)";
                   }}
                 >
-                  🎸
-                </span>
-                <span className="flex flex-col items-start leading-tight">
-                  <span className="text-xs font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
-                  <span>Raj's Austin Events</span>
-                </span>
-                <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
-              </a>
+                  <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xl leading-none"
+                    style={{ background: city.iconBg, boxShadow: city.iconShadow }}
+                  >
+                    {city.icon}
+                  </span>
+                  <span className="flex flex-col items-start leading-tight">
+                    <span className="text-xs font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
+                    <span>{city.label}</span>
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
+                </a>
+              ))}
             </div>
 
             {/* Persona chips */}
@@ -228,7 +250,7 @@ function PlatformHomeInner() {
               style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 40 }}
             >
               {[
-                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "1+", label: t.statCities },
+                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "3", label: t.statCities },
                 { icon: <Star className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "5", label: t.statCategories },
                 { icon: <Users className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "10+", label: t.statSources },
               ].map((stat, i) => (
