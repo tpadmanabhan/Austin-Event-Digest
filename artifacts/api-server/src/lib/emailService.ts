@@ -303,7 +303,7 @@ export function buildDigestEmailHtml(digest: {
     textStrong: "#ffffff",
     linkColor: "#9b72c8",
     curatorName: "Bob",
-    curatorUrl: null,
+    curatorUrl: null as string | null,
     cityGuideText: "Your weekly guide to what's happening in Sacramento",
     digestDisplayName: tenant?.digestTitle || "Sacramento Events",
     headerEmoji: "👑",
@@ -313,6 +313,28 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(90,45,129,0.35)",
     rideBtnBg: "#5A2D81",
     rideBtnColor: "#fff",
+  } : slug === "bulverde" ? {
+    headerGradient: "linear-gradient(135deg, #1e2d14 0%, #2d4520 55%, #3a5828 100%)",
+    primary: "#5c7a3e",
+    primaryBtn: "#5c7a3e",
+    primaryDark: "#1e2d14",
+    primaryLight: "#e8f0dc",
+    primaryMuted: "#c8d9b0",
+    textOnDark: "#f5f0e8",
+    textMutedOnDark: "#c8d9b0",
+    textStrong: "#ffffff",
+    linkColor: "#5c7a3e",
+    curatorName: "",
+    curatorUrl: null as string | null,
+    cityGuideText: "Your weekly guide to what's happening in Bulverde",
+    digestDisplayName: tenant?.digestTitle || "Bulverde, TX Events",
+    headerEmoji: "🌿",
+    eventBtnColor: "#5c7a3e",
+    eventBtnBorder: "#5c7a3e",
+    pillText: "rgba(245,240,232,0.9)",
+    pillBorder: "rgba(92,122,62,0.35)",
+    rideBtnBg: "#c8d9b0",
+    rideBtnColor: "#1e2d14",
   } : {
     headerGradient: "linear-gradient(135deg, #064e3b 0%, #065f46 55%, #047857 100%)",
     primary: "#15803d",
@@ -375,6 +397,32 @@ export function buildDigestEmailHtml(digest: {
     return (month * 31 + day) * 1440 + minutes;
   }
 
+  function formatEventDate(dateStr: string): string {
+    if (!dateStr) return "Date TBD";
+    // Already human-readable — doesn't start with ISO YYYY-MM-DDT
+    if (!dateStr.match(/^\d{4}-\d{2}-\d{2}T/)) return dateStr;
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const datePart = d.toLocaleDateString("en-US", {
+        weekday: "short", month: "short", day: "numeric", year: "numeric",
+        timeZone: "America/Chicago",
+      });
+      const [, timePart] = dateStr.split("T");
+      const isMidnight = !timePart || timePart.startsWith("00:00");
+      if (!isMidnight) {
+        const t = d.toLocaleTimeString("en-US", {
+          hour: "numeric", minute: "2-digit",
+          timeZone: "America/Chicago",
+        });
+        return `${datePart} · ${t}`;
+      }
+      return datePart;
+    } catch {
+      return dateStr;
+    }
+  }
+
   const buildEventCard = (event: (typeof digest.events)[number], featured = false) => {
     const rsvpLink = digest.digestId && digest.siteUrl && subscriberEmail
       ? buildRsvpUrl(digest.siteUrl, digest.digestId, event.title, subscriberEmail, subscriberName)
@@ -392,7 +440,7 @@ export function buildDigestEmailHtml(digest: {
           <div style="display:inline-flex; align-items:center; gap:5px; background:#fbbf24; color:#451a03; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">⭐ Special Event</div>
         </div>
         <h3 style="margin:0 0 8px; font-size:19px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
-        <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${escapeHtml(event.date)}</p>
+        ${formatEventDate(event.date) !== "Date TBD" ? `<p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${formatEventDate(event.date)}</p>` : ""}
         <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}</p>
         <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${escapeHtml(event.description)}</p>
         ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
@@ -411,7 +459,7 @@ export function buildDigestEmailHtml(digest: {
       <div style="padding:20px;">
       <div style="display:inline-block; ${categoryBadgeStyle(event.category)} font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(normalizeCategory(event.category))}</div>
       <h3 style="margin:0 0 8px; font-size:18px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
-      <p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${escapeHtml(event.date)}</p>
+      ${formatEventDate(event.date) !== "Date TBD" ? `<p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${formatEventDate(event.date)}</p>` : ""}
       <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}</p>
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${escapeHtml(event.description)}</p>
       ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
@@ -478,7 +526,7 @@ export function buildDigestEmailHtml(digest: {
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:16px;">
       ${greeting ? `<p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>` : ""}
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
-      <p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>
+      ${theme.curatorName ? `<p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
     </div>
 
     <!-- Superconnector Feature Block -->
@@ -611,7 +659,7 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
-      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">Curated with ❤️ by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : " from Austin, TX"}</p>
+      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">${theme.curatorName ? `Curated with ❤️ by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : slug === "bulverde" ? " from Bulverde, TX" : " from Austin, TX"}` : `Curated with ❤️ for ${escapeHtml(cityName)}, TX`}</p>
       <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at ${escapeHtml(theme.digestDisplayName)}.</p>
       ${unsubscribeUrl ? `<p style="margin:12px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a8a29e; font-size:11px; text-decoration:underline;">Unsubscribe</a></p>` : ""}
     </div>
