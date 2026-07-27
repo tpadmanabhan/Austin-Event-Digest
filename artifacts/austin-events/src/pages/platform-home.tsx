@@ -635,10 +635,11 @@ function PlatformHomeInner() {
                 <div key={i} className="h-36 rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
-          ) : tenants && tenants.filter((t) => t.slug === "austin").length > 0 ? (
+          ) : tenants && tenants.filter((t) => ["austin", "sacramento", "austincares"].includes(t.slug)).length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tenants.filter((t) => t.slug === "austin").map((tenant, i) => {
-                const isComingSoon = tenant.slug === "austincares";
+              {tenants.filter((t) => ["austin", "sacramento", "austincares"].includes(t.slug))
+                .sort((a, b) => ["austin", "sacramento", "austincares"].indexOf(a.slug) - ["austin", "sacramento", "austincares"].indexOf(b.slug))
+                .map((tenant, i) => {
                 const CardEl = motion.a;
                 const cardProps = { href: `https://${tenant.slug}.eventcarpooling.com` };
 
@@ -647,14 +648,17 @@ function PlatformHomeInner() {
                 if (tenant.slug === "austin") {
                   iconContent = "🎸";
                   iconStyle = { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 6px 20px rgba(49,46,129,0.45)" };
-                } else if (isComingSoon) {
+                } else if (tenant.slug === "sacramento") {
+                  iconContent = "👑";
+                  iconStyle = { background: "linear-gradient(135deg, #1a0a30, #5A2D81)", boxShadow: "0 6px 20px rgba(90,45,129,0.45)" };
+                } else if (tenant.slug === "austincares") {
                   iconContent = (
                     <div className="flex flex-col items-center justify-center gap-0.5">
                       <span style={{ fontSize: "2rem", lineHeight: 1 }}>🫶</span>
                       <span style={{ fontSize: "0.5rem", fontWeight: 800, letterSpacing: "0.12em", color: "#fff", textTransform: "uppercase", lineHeight: 1 }}>Give Back</span>
                     </div>
                   );
-                  iconStyle = { background: "linear-gradient(135deg, #15803d, #22c55e)", boxShadow: "0 6px 20px rgba(21,128,61,0.45)" };
+                  iconStyle = { background: "linear-gradient(135deg, #14532d, #15803d)", boxShadow: "0 6px 20px rgba(21,128,61,0.45)" };
                 } else {
                   iconContent = tenant.name.charAt(0);
                   iconStyle = { background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)`, color: "#fff", fontSize: "1.5rem", fontWeight: 700, fontFamily: "Georgia, serif" };
@@ -668,7 +672,7 @@ function PlatformHomeInner() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
-                    className={`group flex flex-col rounded-2xl overflow-hidden bg-white border border-border transition-all${isComingSoon ? " cursor-default" : " hover:border-primary/40 hover:shadow-md"}`}
+                    className="group flex flex-col rounded-2xl overflow-hidden bg-white border border-border transition-all hover:border-primary/40 hover:shadow-md"
                     style={{ textDecoration: "none" }}
                   >
                     {/* accent top bar */}
@@ -681,13 +685,7 @@ function PlatformHomeInner() {
                         >
                           {iconContent}
                         </div>
-                        {isComingSoon ? (
-                          <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#fef9c3", color: "#a16207", border: "1px solid #fde047" }}>
-                            Coming Soon
-                          </span>
-                        ) : (
-                          <ExternalLink className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
-                        )}
+                        <ExternalLink className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
                       </div>
                       <div>
                         <h3 className="font-serif font-bold" style={{ color: "#0f172a" }}>{tenant.name}</h3>
