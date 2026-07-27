@@ -199,6 +199,37 @@
   --sidebar-ring: 271 66% 34%;
 }
 
+/* ── austincares: teal + warm cream (matches logo palette) ────────────── */
+[data-tenant="austincares"] {
+  --background: 37 60% 95%;       /* warm cream */
+  --foreground: 180 40% 12%;      /* deep teal-black */
+  --border: 37 30% 85%;
+  --input: 37 30% 85%;
+  --ring: 180 57% 27%;
+  --card: 0 0% 100%;
+  --card-foreground: 180 40% 12%;
+  --card-border: 37 30% 85%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 180 40% 12%;
+  --popover-border: 37 30% 85%;
+  --primary: 180 57% 27%;         /* teal #1E6E6E */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 18 74% 52%;        /* orange #E0592A */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 37 40% 90%;
+  --muted-foreground: 180 20% 40%;
+  --accent: 18 74% 52%;           /* orange accent */
+  --accent-foreground: 0 0% 100%;
+  --sidebar: 37 60% 95%;
+  --sidebar-foreground: 180 40% 12%;
+  --sidebar-border: 37 30% 85%;
+  --sidebar-primary: 180 57% 27%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 37 40% 90%;
+  --sidebar-accent-foreground: 180 40% 12%;
+  --sidebar-ring: 180 57% 27%;
+}
+
 /* ── AustinCares: blue ─────────────────────────────────────────────────── */
 [data-tenant="brushycreek"] {
   --background: 214 100% 97%;
