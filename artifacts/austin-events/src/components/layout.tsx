@@ -41,6 +41,12 @@ export function Layout({ children }: { children: ReactNode }) {
                     alt="Sacramento Kings"
                     className="h-full w-full object-contain"
                   />
+                ) : tenant.slug === "austincares" ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/austincares-logo.svg`}
+                    alt={tenant.name}
+                    className="h-full w-full object-contain"
+                  />
                 ) : (
                   "🎸"
                 )}
@@ -132,6 +138,12 @@ export function Layout({ children }: { children: ReactNode }) {
                   <img
                     src={`${import.meta.env.BASE_URL}images/sacramento-kings-logo.png`}
                     alt="Sacramento Kings"
+                    className="h-full w-full object-contain"
+                  />
+                ) : tenant.slug === "austincares" ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/austincares-logo.svg`}
+                    alt={tenant.name}
                     className="h-full w-full object-contain"
                   />
                 ) : (
