@@ -118,6 +118,7 @@ export default function DigestView() {
   const cityShortName = tenant.city.split(",")[0];
   const isAustinCares = tenant.slug === "brushycreek";
   const isPortland = tenant.slug === "portland";
+  const isBulverde = tenant.slug === "bulverde";
   
   const { data: latestData, isLoading: loadingLatest } = useLatestDigest();
   const { data: allData, isLoading: loadingAll } = useAllDigests();
@@ -201,22 +202,24 @@ export default function DigestView() {
                 ) : part
               )}
             </p>
-            <p className="mt-3 text-sm font-semibold text-primary not-italic">
-              —{" "}
-              {isAustinCares ? (
-                <span className="inline-flex items-center gap-1.5">
-                  Rohan
-                  <img src="https://flagcdn.com/20x15/fr.png" srcSet="https://flagcdn.com/40x30/fr.png 2x" width={20} height={15} alt="France flag" className="inline-block rounded-[2px] align-middle" />
-                  <img src="https://flagcdn.com/20x15/us.png" srcSet="https://flagcdn.com/40x30/us.png 2x" width={20} height={15} alt="United States flag" className="inline-block rounded-[2px] align-middle" />
-                </span>
-              ) : isPortland ? (
-                <a href="https://www.minervaventures.com/what-we-do" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Marianna</a>
-              ) : tenant.slug === "sacramento" ? (
-                "Bob"
-              ) : (
-                <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
-              )}
-            </p>
+            {!isBulverde && tenant.slug !== "austincares" && (
+              <p className="mt-3 text-sm font-semibold text-primary not-italic">
+                —{" "}
+                {isAustinCares ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    Rohan
+                    <img src="https://flagcdn.com/20x15/fr.png" srcSet="https://flagcdn.com/40x30/fr.png 2x" width={20} height={15} alt="France flag" className="inline-block rounded-[2px] align-middle" />
+                    <img src="https://flagcdn.com/20x15/us.png" srcSet="https://flagcdn.com/40x30/us.png 2x" width={20} height={15} alt="United States flag" className="inline-block rounded-[2px] align-middle" />
+                  </span>
+                ) : isPortland ? (
+                  <a href="https://www.minervaventures.com/what-we-do" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Marianna</a>
+                ) : tenant.slug === "sacramento" ? (
+                  "Bob"
+                ) : (
+                  <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
+                )}
+              </p>
+            )}
           </div>
         </header>
 
