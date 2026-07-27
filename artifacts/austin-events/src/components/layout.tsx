@@ -12,22 +12,29 @@ export function Layout({ children }: { children: ReactNode }) {
   const isAustinCares = tenant.slug === "brushycreek";
   const isPortland = tenant.slug === "portland";
   const isSacramento = tenant.slug === "sacramento";
+  const isBulverde = tenant.slug === "bulverde";
 
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={`flex items-center justify-between ${isAustinCares ? "h-20" : "h-14"}`}>
+          <div className={`flex items-center justify-between ${(isAustinCares || isBulverde) ? "h-20" : "h-14"}`}>
             <Link href="/" className="flex items-center gap-2 group">
               <div
-                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : "h-8 w-8"}`}
-                style={isAustinCares || isPortland || isSacramento ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
+                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-12 w-20" : "h-8 w-8"}`}
+                style={isAustinCares || isPortland || isSacramento || isBulverde ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
                 {isAustinCares ? (
                   <img
                     src={`${import.meta.env.BASE_URL}images/austin-cares-brand-icon.jpg`}
                     alt={tenant.name}
                     className="h-full w-full object-cover object-center"
+                  />
+                ) : isBulverde ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/bulverde-logo.png`}
+                    alt={tenant.name}
+                    className="h-full w-full object-contain"
                   />
                 ) : isPortland ? (
                   <img
@@ -66,7 +73,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
-                  {isAustinCares ? "BCRR Weekly Digest" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : "Make Austin Weird Again"}
+                  {isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : "Make Austin Weird Again"}
                 </span>
               </div>
             </Link>
@@ -119,14 +126,20 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-3 opacity-80">
               <div
-                className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-40 h-20" : "w-10 h-10"}`}
-                style={isAustinCares || isPortland || isSacramento ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
+                className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-40 h-20" : isBulverde ? "w-24 h-16" : "w-10 h-10"}`}
+                style={isAustinCares || isPortland || isSacramento || isBulverde ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
                 {isAustinCares ? (
                   <img
                     src={`${import.meta.env.BASE_URL}images/austin-cares-brand-icon.jpg`}
                     alt={tenant.name}
                     className="h-full w-full object-cover"
+                  />
+                ) : isBulverde ? (
+                  <img
+                    src={`${import.meta.env.BASE_URL}images/bulverde-logo.png`}
+                    alt={tenant.name}
+                    className="h-full w-full object-contain"
                   />
                 ) : isPortland ? (
                   <img

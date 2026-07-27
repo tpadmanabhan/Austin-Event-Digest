@@ -98,6 +98,7 @@ export default function Home() {
   const isAustinCares = tenant.slug === "brushycreek";
   const isPortland = tenant.slug === "portland";
   const isSacramento = tenant.slug === "sacramento";
+  const isBulverde = tenant.slug === "bulverde";
 
   const heroImage = isAustinCares
     ? "austin-cares-hero.png"
@@ -107,7 +108,9 @@ export default function Home() {
         ? "portland-hero.jpg"
         : isSacramento
           ? "sacramento-hero.jpg"
-          : "austin-hero.png";
+          : isBulverde
+            ? "bulverde-hero.jpg"
+            : "austin-hero.png";
   const heroAlt = isAustinCares
     ? "High school student leaders taking charge"
     : tenant.slug === "austincares"
@@ -116,7 +119,9 @@ export default function Home() {
         ? "Portland Oregon skyline"
         : isSacramento
           ? "Sacramento California skyline"
-          : "Austin Texas stylized illustration";
+          : isBulverde
+            ? "Bulverde Community Park, Texas Hill Country"
+            : "Austin Texas stylized illustration";
 
   return (
     <Layout>
@@ -277,7 +282,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className={`relative ${isAustinCares ? "order-first lg:order-none" : ""} block`}
+              className={`relative ${(isAustinCares || isBulverde) ? "order-first lg:order-none" : ""} block`}
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />
               <img 
