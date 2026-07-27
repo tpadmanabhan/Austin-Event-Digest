@@ -226,7 +226,7 @@ export default function Home() {
                     : `"Hey ${cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`
                   }
                 </p>
-                {(isAustinCares || isPortland || isSacramento) && (
+                {(isAustinCares || isPortland || isSacramento || tenant.slug === "austin") && (
                   <p className="mt-3 text-sm font-semibold text-primary not-italic">
                     —{" "}
                     {isAustinCares ? (
@@ -251,8 +251,10 @@ export default function Home() {
                       </span>
                     ) : isPortland ? (
                       <a href="https://www.minervaventures.com/what-we-do" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Marianna</a>
-                    ) : (
+                    ) : isSacramento ? (
                       "Bob"
+                    ) : (
+                      <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
                     )}
                   </p>
                 )}
