@@ -101,18 +101,22 @@ export default function Home() {
 
   const heroImage = isAustinCares
     ? "austin-cares-hero.png"
-    : isPortland
-      ? "portland-hero.jpg"
-      : isSacramento
-        ? "sacramento-hero.jpg"
-        : "austin-hero.png";
+    : tenant.slug === "austincares"
+      ? "austincares-hero.svg"
+      : isPortland
+        ? "portland-hero.jpg"
+        : isSacramento
+          ? "sacramento-hero.jpg"
+          : "austin-hero.png";
   const heroAlt = isAustinCares
     ? "High school student leaders taking charge"
-    : isPortland
-      ? "Portland Oregon skyline"
-      : isSacramento
-        ? "Sacramento California skyline"
-        : "Austin Texas stylized illustration";
+    : tenant.slug === "austincares"
+      ? "Austin Icons — Keep Austin Kind"
+      : isPortland
+        ? "Portland Oregon skyline"
+        : isSacramento
+          ? "Sacramento California skyline"
+          : "Austin Texas stylized illustration";
 
   return (
     <Layout>
