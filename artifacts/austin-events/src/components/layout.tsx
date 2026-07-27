@@ -22,7 +22,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <Link href="/" className="flex items-center gap-2 group">
               <div
                 className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-12 w-20" : "h-8 w-8"}`}
-                style={isAustinCares || isPortland || isSacramento || isBulverde ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
+                style={isAustinCares || isPortland || isSacramento ? undefined : isBulverde ? { background: "#2d4520", padding: "6px" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
                 {isAustinCares ? (
                   <img
@@ -127,7 +127,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-3 opacity-80">
               <div
                 className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-40 h-20" : isBulverde ? "w-24 h-16" : "w-10 h-10"}`}
-                style={isAustinCares || isPortland || isSacramento || isBulverde ? undefined : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
+                style={isAustinCares || isPortland || isSacramento ? undefined : isBulverde ? { background: "#2d4520", padding: "6px" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
                 {isAustinCares ? (
                   <img
