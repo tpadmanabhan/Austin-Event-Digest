@@ -311,21 +311,44 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
         </p>
 
         {(event as any).source && (
-          <p className="text-xs text-muted-foreground/60 italic mb-4">
-            via{" "}
+          <p className="text-xs text-muted-foreground/60 italic mb-4 flex items-center gap-1.5">
+            <span>via</span>
             {(() => {
-              const href = event.link || SOURCE_URLS[(event as any).source];
-              return href ? (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline underline-offset-2 hover:text-primary transition-colors not-italic"
-                >
-                  {(event as any).source}
-                </a>
-              ) : (
-                (event as any).source
+              const src = (event as any).source as string;
+              const href = event.link || SOURCE_URLS[src];
+              let faviconDomain = "";
+              try {
+                faviconDomain = new URL(src.startsWith("http") ? src : SOURCE_URLS[src] || "").hostname;
+              } catch { /* ignore */ }
+              const favicon = faviconDomain
+                ? `https://www.google.com/s2/favicons?domain=${faviconDomain}&sz=32`
+                : src === "Eventbrite"
+                  ? `https://www.google.com/s2/favicons?domain=eventbrite.com&sz=32`
+                  : null;
+              const label = SOURCE_URLS[src] ? src : src.startsWith("http") ? (() => { try { return new URL(src).hostname.replace(/^www\./, ""); } catch { return src; } })() : src;
+              return (
+                <>
+                  {favicon && (
+                    <img
+                      src={favicon}
+                      alt=""
+                      className="w-4 h-4 rounded-[3px] inline-block align-middle shrink-0"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                  )}
+                  {href ? (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2 hover:text-primary transition-colors not-italic"
+                    >
+                      {label}
+                    </a>
+                  ) : (
+                    label
+                  )}
+                </>
               );
             })()}
           </p>

@@ -446,7 +446,17 @@ export default function Home() {
                                   Business Spotlight
                                 </span>
                               </div>
-                              <h4 className="font-serif text-xl font-bold text-foreground mb-3">{biz.title}</h4>
+                              <div className="flex items-center gap-3 mb-3">
+                                {biz.link && (
+                                  <img
+                                    src={`https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(biz.link).hostname; } catch { return ""; } })()}&sz=64`}
+                                    alt=""
+                                    className="w-10 h-10 rounded-xl object-contain bg-white border border-border p-1.5 shrink-0 shadow-sm"
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                  />
+                                )}
+                                <h4 className="font-serif text-xl font-bold text-foreground">{biz.title}</h4>
+                              </div>
                               {biz.description && (
                                 <p className="text-muted-foreground leading-relaxed mb-4 whitespace-pre-wrap">{biz.description}</p>
                               )}
@@ -491,7 +501,17 @@ export default function Home() {
                                   Community Post
                                 </span>
                               </div>
-                              <h4 className="font-serif text-xl font-bold text-foreground mb-3">{post.title}</h4>
+                              <div className="flex items-center gap-3 mb-3">
+                                {post.link && (
+                                  <img
+                                    src={`https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(post.link).hostname; } catch { return ""; } })()}&sz=64`}
+                                    alt=""
+                                    className="w-10 h-10 rounded-xl object-contain bg-white border border-border p-1.5 shrink-0 shadow-sm"
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                  />
+                                )}
+                                <h4 className="font-serif text-xl font-bold text-foreground">{post.title}</h4>
+                              </div>
                               {post.description && (
                                 <p className="text-muted-foreground leading-relaxed mb-4">{post.description}</p>
                               )}
