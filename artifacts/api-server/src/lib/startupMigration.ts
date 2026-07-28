@@ -461,6 +461,18 @@ async function runGamificationMigration(): Promise<void> {
   logger.info("Gamification migration complete");
 }
 
+async function runGeocodeCacheMigration(): Promise<void> {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS venue_geocode_cache (
+      venue_text TEXT PRIMARY KEY,
+      lat        DOUBLE PRECISION,
+      lng        DOUBLE PRECISION,
+      geocoded_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
+  logger.info("venue_geocode_cache table ready");
+}
+
 export async function runStartupMigration(): Promise<void> {
   try {
     await runTenantMigration();
@@ -478,6 +490,12 @@ export async function runStartupMigration(): Promise<void> {
     await runGamificationMigration();
   } catch (err) {
     logger.warn({ err }, "Gamification migration failed (non-fatal) — tables may already exist");
+  }
+
+  try {
+    await runGeocodeCacheMigration();
+  } catch (err) {
+    logger.warn({ err }, "Geocode cache migration failed (non-fatal) — table may already exist");
   }
 
   try {

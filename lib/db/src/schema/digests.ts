@@ -13,6 +13,11 @@ export const EventItemSchema = z.object({
   imageUrl: z.string().nullable().optional(),
   source: z.string().nullable().optional(),
   featured: z.boolean().optional(),
+  isPost: z.boolean().optional(),
+  isBusinessSpotlight: z.boolean().optional(),
+  deadline: z.string().nullable().optional(),
+  lat: z.number().nullable().optional(),
+  lng: z.number().nullable().optional(),
 });
 
 export type EventItem = z.infer<typeof EventItemSchema>;

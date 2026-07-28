@@ -16,6 +16,7 @@ import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } fro
 import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
 import { extractEventsFromSources } from "../lib/urlEventExtractor";
+import { geocodeAndPatchDigest } from "../lib/geocodeVenue";
 
 const router: IRouter = Router();
 
@@ -169,6 +170,9 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
 
     const response = GenerateDigestResponse.parse({ digest: digestToApi(digest) });
     res.json(response);
+
+    // Geocode venue coordinates in the background (fire-and-forget)
+    geocodeAndPatchDigest(digest.id, events as Array<Record<string, unknown>>).catch(() => {});
 
     // Award XP for each event in the digest and update the weekly streak (fire-and-forget)
     const eventCount = events.length;
@@ -491,6 +495,9 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
       req.log.info({ sources: validUrls.length, events: finalEvents.length }, "Generated new digest from URL sources");
     }
 
+    // Geocode venue coordinates in the background (fire-and-forget)
+    geocodeAndPatchDigest(digest.id, (digest.events as Array<Record<string, unknown>>)).catch(() => {});
+
     if (finalEvents.length > 0) {
       awardXP(req.tenant!.id, "digest_event", finalEvents.length * 5, { digestId: digest.id, eventCount: finalEvents.length }).catch(() => {});
     }
@@ -526,6 +533,9 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
 
     const response = GenerateDigestResponse.parse({ digest: digestToApi(digest) });
     res.json(response);
+
+    // Geocode venue coordinates in the background (fire-and-forget)
+    geocodeAndPatchDigest(digest.id, events as Array<Record<string, unknown>>).catch(() => {});
   } catch (err) {
     req.log.error({ err }, "Error importing digest");
     res.status(500).json({ error: "server_error", message: "Failed to import digest" });
