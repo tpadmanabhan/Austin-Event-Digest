@@ -34,6 +34,8 @@ export default function PreferencesPage() {
   const [radius, setRadius] = useState<1 | 3 | 5>(3);
   const [walkableOnly, setWalkableOnly] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const [clearConfirm, setClearConfirm] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -203,18 +205,74 @@ export default function PreferencesPage() {
 
                     {/* Current location indicator */}
                     {prefs.anchorLat != null && (
-                      <div className="flex items-start gap-2 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 mb-4">
-                        <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-sm text-primary font-medium">
-                            {prefs.displayAddress
-                              ? `Currently: ${prefs.displayAddress}`
-                              : "Location already saved"}
-                          </p>
-                          <p className="text-xs text-primary/70 mt-0.5">
-                            Edit the field below to update
-                          </p>
+                      <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 mb-4">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-primary font-medium">
+                              {prefs.displayAddress
+                                ? `Currently: ${prefs.displayAddress}`
+                                : "Location already saved"}
+                            </p>
+                            <p className="text-xs text-primary/70 mt-0.5">
+                              Edit the field below to update
+                            </p>
+                          </div>
                         </div>
+
+                        {/* Clear location */}
+                        {!clearConfirm ? (
+                          <button
+                            type="button"
+                            onClick={() => setClearConfirm(true)}
+                            className="mt-3 text-xs text-primary/70 hover:text-destructive underline underline-offset-2 transition-colors"
+                          >
+                            Clear saved location
+                          </button>
+                        ) : (
+                          <div className="mt-3 flex items-center gap-3">
+                            <p className="text-xs text-destructive font-medium">Remove your saved location?</p>
+                            <button
+                              type="button"
+                              disabled={isClearing}
+                              onClick={async () => {
+                                setIsClearing(true);
+                                setErrorMessage("");
+                                try {
+                                  const res = await fetch(`${apiBase}/api/newsletter/preferences`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ email, token, clearLocation: true }),
+                                  });
+                                  const data = await res.json();
+                                  if (!res.ok || !data.success) {
+                                    if (res.status === 401) { setStage("unauthorized"); return; }
+                                    setErrorMessage(data.message || "Something went wrong.");
+                                    setClearConfirm(false);
+                                    return;
+                                  }
+                                  setSuccessMessage(data.message || "Location cleared.");
+                                  setStage("success");
+                                } catch {
+                                  setErrorMessage("Network error. Please try again.");
+                                  setClearConfirm(false);
+                                } finally {
+                                  setIsClearing(false);
+                                }
+                              }}
+                              className="text-xs font-semibold text-destructive hover:underline disabled:opacity-60"
+                            >
+                              {isClearing ? "Clearing…" : "Yes, clear it"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setClearConfirm(false)}
+                              className="text-xs text-muted-foreground hover:underline"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 

@@ -263,7 +263,7 @@ router.get("/preferences", async (req, res) => {
 });
 
 router.post("/preferences", async (req, res) => {
-  const { email: rawEmail, token, address, radiusMiles: rawRadius, walkableOnly: rawWalkable } = req.body || {};
+  const { email: rawEmail, token, address, radiusMiles: rawRadius, walkableOnly: rawWalkable, clearLocation } = req.body || {};
 
   const email = (rawEmail || "").toLowerCase().trim();
   if (!email || !verifySubscriberToken(email, token || "")) {
@@ -280,6 +280,25 @@ router.post("/preferences", async (req, res) => {
 
     if (!sub || !sub.isActive) {
       res.status(404).json({ error: "not_found", message: "Subscriber not found" });
+      return;
+    }
+
+    // Handle clear location request
+    if (clearLocation === true) {
+      await db
+        .update(subscribersTable)
+        .set({ anchorLat: null, anchorLng: null, anchorDisplayAddress: null })
+        .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, req.tenant!.id)));
+
+      req.log.info({ email }, "Subscriber location cleared");
+
+      res.json({
+        success: true,
+        message: "Location cleared. Your future digests will show all events.",
+        anchorLat: null,
+        anchorLng: null,
+        displayAddress: null,
+      });
       return;
     }
 
