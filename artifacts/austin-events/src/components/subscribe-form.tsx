@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, CheckCircle2, MapPin } from "lucide-react";
+import { Mail, CheckCircle2, MapPin, LocateFixed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,7 @@ export function SubscribeForm() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [radius, setRadius] = useState<1 | 3 | 5>(3);
   const [walkableOnly, setWalkableOnly] = useState(false);
+  const [geolocating, setGeolocating] = useState(false);
 
   const form = useForm<z.infer<typeof subscribeSchema>>({
     resolver: zodResolver(subscribeSchema),
@@ -120,21 +121,59 @@ export function SubscribeForm() {
             Your location <span className="font-normal text-muted-foreground">(optional)</span>
           </p>
           <p className="text-xs text-muted-foreground mb-3">
-            Enter a neighborhood, address, or landmark in Austin. Your weekly digest will show events sorted by distance from this spot.
+            Your weekly digest will show events sorted by distance from this spot.
           </p>
 
           <label className="block text-xs font-medium text-foreground mb-1.5">
-            Address or neighborhood
+            {radius === 1 ? "Your specific address or intersection" : "Address or neighborhood"}
           </label>
-          <Input
-            placeholder="e.g. East Austin, TX"
-            type="text"
-            className="h-11 rounded-xl bg-background"
-            autoComplete="street-address"
-            {...form.register("address")}
-          />
-          <p className="text-xs text-muted-foreground mt-1.5">
-            Add "Austin, TX" for best results (e.g. "Rainey Street, Austin TX")
+          <div className="flex gap-2">
+            <Input
+              placeholder={radius === 1 ? "e.g. 1200 E 6th St, Austin TX" : "e.g. East Austin, TX"}
+              type="text"
+              className="h-11 rounded-xl bg-background"
+              autoComplete="street-address"
+              {...form.register("address")}
+            />
+            {"geolocation" in navigator && (
+              <button
+                type="button"
+                title="Use my current location"
+                disabled={geolocating}
+                onClick={() => {
+                  setGeolocating(true);
+                  navigator.geolocation.getCurrentPosition(
+                    async (pos) => {
+                      try {
+                        const { latitude: lat, longitude: lng } = pos.coords;
+                        const r = await fetch(
+                          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+                        );
+                        const data = await r.json();
+                        const addr =
+                          data.address?.road
+                            ? `${data.address.road}${data.address.house_number ? " " + data.address.house_number : ""}, Austin TX`
+                            : data.display_name?.split(",").slice(0, 2).join(",") ?? "";
+                        form.setValue("address", addr);
+                      } catch {
+                        /* ignore */
+                      } finally {
+                        setGeolocating(false);
+                      }
+                    },
+                    () => setGeolocating(false)
+                  );
+                }}
+                className="h-11 w-11 shrink-0 rounded-xl border border-border bg-background flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors disabled:opacity-50"
+              >
+                <LocateFixed className={`w-4 h-4 ${geolocating ? "animate-pulse" : ""}`} />
+              </button>
+            )}
+          </div>
+          <p className={`text-xs mt-1.5 ${radius === 1 ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
+            {radius === 1
+              ? "⚠️ For walkability, a specific address or intersection is needed — a neighborhood name covers too large an area."
+              : 'Add "Austin, TX" for best results (e.g. "Rainey Street, Austin TX")'}
           </p>
         </div>
 
