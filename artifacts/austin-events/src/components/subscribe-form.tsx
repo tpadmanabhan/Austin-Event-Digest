@@ -17,7 +17,7 @@ const subscribeSchema = z.object({
 export function SubscribeForm() {
   const { toast } = useToast();
   const tenant = useTenant();
-  const isAustin = tenant.slug === "austin";
+  const isAustin = tenant.slug === "austin" || tenant.slug === "brushycreek";
   const [subscribed, setSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
