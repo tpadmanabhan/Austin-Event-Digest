@@ -173,11 +173,13 @@ export function SubscribeForm() {
               </button>
             )}
           </div>
-          <p className={`text-xs mt-1.5 ${radius === 1 ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
-            {radius === 1
-              ? "⚠️ For walkability, a specific address or intersection is needed — a neighborhood name covers too large an area."
-              : 'Add "Austin, TX" for best results (e.g. "Rainey Street, Austin TX")'}
-          </p>
+          {(radius === 1 || tenant.slug !== "brushycreek") && (
+            <p className={`text-xs mt-1.5 ${radius === 1 ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
+              {radius === 1
+                ? "⚠️ For walkability, a specific address or intersection is needed — a neighborhood name covers too large an area."
+                : 'Add "Austin, TX" for best results (e.g. "Rainey Street, Austin TX")'}
+            </p>
+          )}
         </div>
 
         {/* Radius picker */}
