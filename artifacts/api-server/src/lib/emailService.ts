@@ -542,6 +542,13 @@ export function buildDigestEmailHtml(digest: {
       ${theme.curatorName ? `<p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
     </div>
 
+    <!-- Location CTA -->
+    ${digest.preferencesUrl ? `
+    <div style="background:#fef9ec; border:1.5px solid #fbbf24; border-radius:14px; padding:18px 22px; margin-bottom:24px; text-align:center;">
+      <a href="${escapeHtml(digest.preferencesUrl)}" style="color:#1c1917; text-decoration:none; font-size:16px; font-weight:700; letter-spacing:-0.2px;">📍 See events near you →</a>
+      <p style="margin:6px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Set your neighborhood once — get distance-sorted events every week.</p>
+    </div>` : ""}
+
     <!-- Superconnector Feature Block -->
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <table style="width:100%; border-collapse:collapse;">
@@ -682,7 +689,6 @@ export function buildDigestEmailHtml(digest: {
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
       <p style="margin:0 0 6px; color:#78716c; font-size:13px;">${theme.curatorName ? `Curated with ❤️ by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : slug === "bulverde" ? " from Bulverde, TX" : " from Austin, TX"}` : `Curated with ❤️ for ${escapeHtml(cityName)}, TX`}</p>
       <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at ${escapeHtml(theme.digestDisplayName)}.</p>
-      ${digest.preferencesUrl ? `<p style="margin:0 0 8px;"><a href="${escapeHtml(digest.preferencesUrl)}" style="color:#57534e; font-size:12px; text-decoration:none;">📍 Set your location for nearby events →</a></p>` : ""}
       ${unsubscribeUrl ? `<p style="margin:12px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a8a29e; font-size:11px; text-decoration:underline;">Unsubscribe</a></p>` : ""}
     </div>
 
