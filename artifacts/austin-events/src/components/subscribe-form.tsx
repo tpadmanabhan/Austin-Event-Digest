@@ -18,6 +18,8 @@ export function SubscribeForm() {
   const [subscribed, setSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [radius, setRadius] = useState<1 | 3 | 5>(3);
+  const [walkableOnly, setWalkableOnly] = useState(false);
 
   const form = useForm<z.infer<typeof subscribeSchema>>({
     resolver: zodResolver(subscribeSchema),
@@ -28,13 +30,18 @@ export function SubscribeForm() {
     if (!captchaToken) return;
     setIsSubmitting(true);
     try {
+      const hasAddress = !!values.address?.trim();
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: values.email,
           captchaToken,
-          ...(values.address?.trim() ? { address: values.address.trim() } : {}),
+          ...(hasAddress ? {
+            address: values.address!.trim(),
+            radiusMiles: radius,
+            walkableOnly,
+          } : {}),
         }),
       });
       const data = await res.json();
@@ -92,6 +99,7 @@ export function SubscribeForm() {
         Get the weekly newsletter
       </h3>
 
+      {/* Email */}
       <div className="space-y-1.5">
         <Input
           placeholder="Email Address"
@@ -104,18 +112,82 @@ export function SubscribeForm() {
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+      {/* Location section */}
+      <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-4">
+        <div>
+          <p className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-1">
+            <MapPin className="w-4 h-4 text-primary" />
+            Your location <span className="font-normal text-muted-foreground">(optional)</span>
+          </p>
+          <p className="text-xs text-muted-foreground mb-3">
+            Enter a neighborhood, address, or landmark in Austin. Your weekly digest will show events sorted by distance from this spot.
+          </p>
+
+          <label className="block text-xs font-medium text-foreground mb-1.5">
+            Address or neighborhood
+          </label>
           <Input
-            placeholder="Your neighborhood (optional) — e.g. East Austin"
+            placeholder="e.g. East Austin, TX"
             type="text"
-            className="h-12 rounded-xl bg-background/50 pl-9"
+            className="h-11 rounded-xl bg-background"
             autoComplete="street-address"
             {...form.register("address")}
           />
+          <p className="text-xs text-muted-foreground mt-1.5">
+            Add "Austin, TX" for best results (e.g. "Rainey Street, Austin TX")
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground px-1">Get events sorted by distance in every digest</p>
+
+        {/* Radius picker */}
+        <div>
+          <label className="block text-xs font-medium text-foreground mb-2">
+            Show events within…
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {([1, 3, 5] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => {
+                  setRadius(r);
+                  if (r === 1) setWalkableOnly(true);
+                  else setWalkableOnly(false);
+                }}
+                className={`rounded-xl border py-2.5 text-sm font-semibold transition-all ${
+                  radius === r
+                    ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
+                    : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                {r} mi
+                {r === 1 && <span className="block text-xs font-normal opacity-75">walkable</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Walkable toggle */}
+        <div className="flex items-center justify-between bg-background rounded-xl px-3 py-2.5 border border-border">
+          <div>
+            <p className="text-xs font-medium text-foreground">Walkable only (≤ 1 mi)</p>
+            <p className="text-xs text-muted-foreground">Override radius — only show events within walking distance</p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={walkableOnly}
+            onClick={() => setWalkableOnly((v) => !v)}
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 ${
+              walkableOnly ? "bg-primary" : "bg-muted-foreground/30"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                walkableOnly ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       <TurnstileWidget

@@ -30,7 +30,7 @@ router.post("/subscribe", async (req, res) => {
     return;
   }
 
-  const { email, birthMonth, birthDay, address } = parseResult.data;
+  const { email, birthMonth, birthDay, address, radiusMiles, walkableOnly } = parseResult.data;
   const tenantId = req.tenant!.id;
   const isAustin = req.tenant?.slug === "austin";
 
@@ -119,7 +119,13 @@ router.post("/subscribe", async (req, res) => {
       geocodeVenue(address.trim()).then(async (coords) => {
         if (coords) {
           await db.update(subscribersTable)
-            .set({ anchorLat: coords.lat, anchorLng: coords.lng, anchorDisplayAddress: address.trim() })
+            .set({
+              anchorLat: coords.lat,
+              anchorLng: coords.lng,
+              anchorDisplayAddress: address.trim(),
+              radiusMiles: radiusMiles ?? 3,
+              walkableOnly: walkableOnly ?? false,
+            })
             .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)));
         }
       }).catch(() => {});

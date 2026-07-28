@@ -35,6 +35,8 @@ export const SubscribeToNewsletterBody = zod.object({
     .max(subscribeToNewsletterBodyBirthDayMax)
     .optional(),
   address: zod.string().max(200).optional(),
+  radiusMiles: zod.number().min(1).max(25).optional(),
+  walkableOnly: zod.boolean().optional(),
 });
 
 export const SubscribeToNewsletterResponse = zod.object({
