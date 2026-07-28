@@ -13,6 +13,7 @@ interface Preferences {
   anchorLng: number | null;
   radiusMiles: number;
   walkableOnly: boolean;
+  displayAddress: string | null;
 }
 
 type Stage = "loading" | "form" | "success" | "error" | "unauthorized";
@@ -27,6 +28,7 @@ export default function PreferencesPage() {
     anchorLng: null,
     radiusMiles: 3,
     walkableOnly: false,
+    displayAddress: null,
   });
   const [address, setAddress] = useState("");
   const [radius, setRadius] = useState<1 | 3 | 5>(3);
@@ -55,6 +57,10 @@ export default function PreferencesPage() {
           setPrefs(data.preferences);
           setRadius(([1, 3, 5].includes(data.preferences.radiusMiles) ? data.preferences.radiusMiles : 3) as 1 | 3 | 5);
           setWalkableOnly(data.preferences.walkableOnly ?? false);
+          // Pre-fill address input with the saved display address
+          if (data.preferences.displayAddress) {
+            setAddress(data.preferences.displayAddress);
+          }
         }
         setStage("form");
       })
@@ -197,11 +203,18 @@ export default function PreferencesPage() {
 
                     {/* Current location indicator */}
                     {prefs.anchorLat != null && (
-                      <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 mb-4">
-                        <MapPin className="w-4 h-4 text-primary shrink-0" />
-                        <p className="text-sm text-primary font-medium">
-                          Location already saved — enter a new one to update
-                        </p>
+                      <div className="flex items-start gap-2 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 mb-4">
+                        <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm text-primary font-medium">
+                            {prefs.displayAddress
+                              ? `Currently: ${prefs.displayAddress}`
+                              : "Location already saved"}
+                          </p>
+                          <p className="text-xs text-primary/70 mt-0.5">
+                            Edit the field below to update
+                          </p>
+                        </div>
                       </div>
                     )}
 
@@ -214,6 +227,7 @@ export default function PreferencesPage() {
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder={prefs.anchorLat != null ? "e.g. South Congress, Austin TX" : "e.g. East Austin, TX"}
                       className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                      autoComplete="street-address"
                     />
                     <p className="text-xs text-muted-foreground mt-1.5">
                       Add "Austin, TX" for best results (e.g. "Rainey Street, Austin TX")

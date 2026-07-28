@@ -17,6 +17,7 @@ export const subscribersTable = pgTable("subscribers", {
   anchorLng: doublePrecision("anchor_lng"),
   radiusMiles: integer("radius_miles").default(3).notNull(),
   walkableOnly: boolean("walkable_only").default(false).notNull(),
+  anchorDisplayAddress: text("anchor_display_address"),
 }, (t) => [
   unique("subscribers_tenant_email").on(t.tenantId, t.email),
 ]);

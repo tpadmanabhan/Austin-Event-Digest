@@ -241,6 +241,7 @@ router.get("/preferences", async (req, res) => {
         anchorLng: sub.anchorLng ?? null,
         radiusMiles: sub.radiusMiles ?? 3,
         walkableOnly: sub.walkableOnly ?? false,
+        displayAddress: sub.anchorDisplayAddress ?? null,
       },
     });
   } catch (err) {
@@ -282,12 +283,17 @@ router.post("/preferences", async (req, res) => {
     const radiusMiles = [1, 3, 5].includes(Number(rawRadius)) ? Number(rawRadius) : 3;
     const walkableOnly = rawWalkable === true || rawWalkable === "true";
 
+    // Store the typed address string as the display label when geocoding succeeds
+    const anchorDisplayAddress = anchorLat !== null && typeof address === "string" && address.trim()
+      ? address.trim()
+      : (anchorLat !== null ? (sub.anchorDisplayAddress ?? null) : null);
+
     await db
       .update(subscribersTable)
-      .set({ anchorLat, anchorLng, radiusMiles, walkableOnly })
+      .set({ anchorLat, anchorLng, radiusMiles, walkableOnly, anchorDisplayAddress })
       .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, req.tenant!.id)));
 
-    req.log.info({ email, anchorLat, anchorLng, radiusMiles, walkableOnly }, "Subscriber preferences saved");
+    req.log.info({ email, anchorLat, anchorLng, radiusMiles, walkableOnly, anchorDisplayAddress }, "Subscriber preferences saved");
 
     const found = anchorLat !== null;
     res.json({
@@ -297,6 +303,7 @@ router.post("/preferences", async (req, res) => {
         : "Preferences saved. We couldn't locate that address — try adding city and state.",
       anchorLat,
       anchorLng,
+      displayAddress: anchorDisplayAddress,
     });
   } catch (err) {
     req.log.error({ err }, "Error saving preferences");

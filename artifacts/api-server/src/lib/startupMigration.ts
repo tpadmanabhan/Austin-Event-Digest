@@ -466,6 +466,7 @@ async function runSubscriberLocationMigration(): Promise<void> {
   await db.execute(sql`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS anchor_lng DOUBLE PRECISION`);
   await db.execute(sql`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS radius_miles INTEGER NOT NULL DEFAULT 3`);
   await db.execute(sql`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS walkable_only BOOLEAN NOT NULL DEFAULT false`);
+  await db.execute(sql`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS anchor_display_address TEXT`);
   logger.info("Subscriber location columns ready");
 }
 
