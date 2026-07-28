@@ -389,6 +389,62 @@ router.delete("/digest/:id", requireAdmin, async (req, res) => {
   }
 });
 
+// GET geocode coverage for a digest (Austin/admin only)
+router.get("/digest/:id/geocode-coverage", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+  try {
+    const [digest] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .limit(1);
+    if (!digest) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+    const events = (digest.events as any[]) || [];
+    // Only count events that have a venue — spotlights/posts with no venue can't be geocoded
+    const withVenue = events.filter((e: any) => typeof e.venue === "string" && e.venue.trim());
+    const geocoded = withVenue.filter((e: any) => e.lat != null && e.lng != null).length;
+    const total = withVenue.length;
+    res.json({ total, geocoded, missing: total - geocoded });
+  } catch (err) {
+    req.log.error({ err }, "Error fetching geocode coverage");
+    res.status(500).json({ error: "server_error", message: "Failed to fetch geocode coverage" });
+  }
+});
+
+// POST re-geocode missing events in a digest (fire-and-forget)
+router.post("/digest/:id/regeocoded", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+  try {
+    const [digest] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .limit(1);
+    if (!digest) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+    const events = (digest.events as Array<Record<string, unknown>>) || [];
+    // Fire-and-forget — geocodeEvents skips events that already have lat set
+    geocodeAndPatchDigest(id, events).catch(() => {});
+    res.json({ success: true, message: "Geocoding started" });
+  } catch (err) {
+    req.log.error({ err }, "Error starting re-geocode");
+    res.status(500).json({ error: "server_error", message: "Failed to start re-geocode" });
+  }
+});
+
 // Debug: show raw emails + extracted events from Gmail inbox
 router.get("/debug/emails", requireAdmin, async (req, res) => {
   try {

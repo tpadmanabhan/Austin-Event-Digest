@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout";
 import { useNewsletterSubscriptions } from "@/hooks/use-newsletter";
 import { useAllDigests, useGenerateDigest, useSendDigest, useDeleteDigest } from "@/hooks/use-events";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe, BookmarkCheck } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe, BookmarkCheck, MapPin, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,6 +17,76 @@ import { useAdminRsvps } from "@/hooks/use-rsvps";
 import { SuperconnectorTab } from "@/components/superconnector-tab";
 
 type FirstRunStep = "generate" | "preview" | "ready";
+
+// ---------------------------------------------------------------------------
+// Geocode coverage badge — Austin only
+// ---------------------------------------------------------------------------
+interface GeocovData { total: number; geocoded: number; missing: number }
+
+function GeocovBadge({ digestId }: { digestId: number }) {
+  const [data, setData] = useState<GeocovData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [regeocoding, setRegeocoding] = useState(false);
+
+  const fetchCoverage = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/events/digest/${digestId}/geocode-coverage`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const json = await res.json() as GeocovData;
+        setData(json);
+      }
+    } catch {
+      // non-critical
+    } finally {
+      setLoading(false);
+    }
+  }, [digestId]);
+
+  useEffect(() => { fetchCoverage(); }, [fetchCoverage]);
+
+  const onReGeocode = async () => {
+    setRegeocoding(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      await fetch(`/api/events/digest/${digestId}/regeocoded`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      // Poll for updated coverage — geocoding is async so wait a few seconds
+      setTimeout(() => fetchCoverage().then(() => setRegeocoding(false)), 8000);
+    } catch {
+      setRegeocoding(false);
+    }
+  };
+
+  if (loading) return <span className="text-[10px] text-muted-foreground/60">…</span>;
+  if (!data || data.total === 0) return null;
+
+  const allGeocoded = data.missing === 0;
+  return (
+    <div className="flex items-center gap-1.5 mt-1">
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${allGeocoded ? "bg-green-50 text-green-700 border-green-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}>
+        <MapPin className="w-2.5 h-2.5" />
+        {data.geocoded}/{data.total} geocoded {allGeocoded ? "✓" : "⚠️"}
+      </span>
+      {!allGeocoded && (
+        <button
+          onClick={onReGeocode}
+          disabled={regeocoding}
+          title="Re-geocode missing events"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border hover:border-primary/40 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-2.5 h-2.5 ${regeocoding ? "animate-spin" : ""}`} />
+          {regeocoding ? "Geocoding…" : "Re-geocode"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const { toast } = useToast();
@@ -950,6 +1020,7 @@ export default function AdminDashboard() {
                               {digest.events?.length || 0} events
                               <span className="text-[10px]">{expandedDigestId === digest.id ? "▲" : "▼"}</span>
                             </button>
+                            {tenant.slug === "austin" && <GeocovBadge digestId={digest.id} />}
                           </td>
                           <td className="px-6 py-4">
                             {digest.sentAt ? (
