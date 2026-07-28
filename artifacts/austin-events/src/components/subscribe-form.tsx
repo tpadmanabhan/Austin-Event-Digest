@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { TurnstileWidget } from "@/components/turnstile-widget";
+import { useTenant } from "@/contexts/tenant-context";
 
 const subscribeSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -15,6 +16,8 @@ const subscribeSchema = z.object({
 
 export function SubscribeForm() {
   const { toast } = useToast();
+  const tenant = useTenant();
+  const isAustin = tenant.slug === "austin";
   const [subscribed, setSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -113,8 +116,8 @@ export function SubscribeForm() {
         )}
       </div>
 
-      {/* Location section */}
-      <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-4">
+      {/* Location section — Austin only */}
+      {isAustin && <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-4">
         <div>
           <p className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-1">
             <MapPin className="w-4 h-4 text-primary" />
@@ -227,7 +230,7 @@ export function SubscribeForm() {
             />
           </button>
         </div>
-      </div>
+      </div>}
 
       <TurnstileWidget
         onSuccess={setCaptchaToken}
