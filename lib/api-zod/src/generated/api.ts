@@ -34,6 +34,7 @@ export const SubscribeToNewsletterBody = zod.object({
     .min(1)
     .max(subscribeToNewsletterBodyBirthDayMax)
     .optional(),
+  address: zod.string().max(200).optional(),
 });
 
 export const SubscribeToNewsletterResponse = zod.object({

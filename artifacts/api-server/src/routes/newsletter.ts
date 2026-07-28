@@ -30,8 +30,9 @@ router.post("/subscribe", async (req, res) => {
     return;
   }
 
-  const { email, birthMonth, birthDay } = parseResult.data;
+  const { email, birthMonth, birthDay, address } = parseResult.data;
   const tenantId = req.tenant!.id;
+  const isAustin = req.tenant?.slug === "austin";
 
   try {
     const existing = await db
@@ -112,6 +113,17 @@ router.post("/subscribe", async (req, res) => {
     sendWelcomeEmail(email, null, req.tenant).catch(() => {});
     sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: null, adminEmail: req.tenant!.adminEmail }).catch(() => {});
     awardXP(tenantId, "subscriber", 3, { email }).catch(() => {});
+
+    // Fire-and-forget: geocode the address provided at subscribe time (Austin only)
+    if (isAustin && address?.trim()) {
+      geocodeVenue(address.trim()).then(async (coords) => {
+        if (coords) {
+          await db.update(subscribersTable)
+            .set({ anchorLat: coords.lat, anchorLng: coords.lng, anchorDisplayAddress: address.trim() })
+            .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)));
+        }
+      }).catch(() => {});
+    }
   } catch (err) {
     req.log.error({ err }, "Error subscribing");
     res.status(500).json({ error: "server_error", message: "Failed to subscribe" });

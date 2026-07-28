@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, CheckCircle2 } from "lucide-react";
+import { Mail, CheckCircle2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ import { TurnstileWidget } from "@/components/turnstile-widget";
 
 const subscribeSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
+  address: z.string().optional(),
 });
 
 export function SubscribeForm() {
@@ -20,7 +21,7 @@ export function SubscribeForm() {
 
   const form = useForm<z.infer<typeof subscribeSchema>>({
     resolver: zodResolver(subscribeSchema),
-    defaultValues: { email: "" },
+    defaultValues: { email: "", address: "" },
   });
 
   const onSubmit = async (values: z.infer<typeof subscribeSchema>) => {
@@ -30,7 +31,11 @@ export function SubscribeForm() {
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: values.email, captchaToken }),
+        body: JSON.stringify({
+          email: values.email,
+          captchaToken,
+          ...(values.address?.trim() ? { address: values.address.trim() } : {}),
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -97,6 +102,20 @@ export function SubscribeForm() {
         {form.formState.errors.email && (
           <p className="text-xs text-destructive px-1">{form.formState.errors.email.message}</p>
         )}
+      </div>
+
+      <div className="space-y-1.5">
+        <div className="relative">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Your neighborhood (optional) — e.g. East Austin"
+            type="text"
+            className="h-12 rounded-xl bg-background/50 pl-9"
+            autoComplete="street-address"
+            {...form.register("address")}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground px-1">Get events sorted by distance in every digest</p>
       </div>
 
       <TurnstileWidget
