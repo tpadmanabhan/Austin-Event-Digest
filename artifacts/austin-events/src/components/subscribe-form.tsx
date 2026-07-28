@@ -132,7 +132,7 @@ export function SubscribeForm() {
           </label>
           <div className="flex gap-2">
             <Input
-              placeholder={radius === 1 ? "e.g. 1200 E 6th St, Austin TX" : tenant.slug === "brushycreek" ? "e.g. Stone Canyon, Austin TX" : "e.g. East Austin, TX"}
+              placeholder={radius === 1 ? "e.g. 1200 E 6th St, Austin TX" : tenant.slug === "brushycreek" ? "e.g. Stone Canyon, Round Rock TX" : "e.g. East Austin, TX"}
               type="text"
               className="h-11 rounded-xl bg-background"
               autoComplete="street-address"
