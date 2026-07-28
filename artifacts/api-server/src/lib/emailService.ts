@@ -238,26 +238,33 @@ export function buildRsvpUrl(siteUrl: string, digestId: number, eventTitle: stri
   return `${siteUrl}/rsvp?d=${digestId}&e=${e}&em=${em}${n}${s}`;
 }
 
+type DigestEventItem = {
+  title: string;
+  date: string;
+  venue: string;
+  description: string;
+  category: string;
+  link?: string | null;
+  imageUrl?: string | null;
+  source?: string | null;
+  featured?: boolean | null;
+  isBusinessSpotlight?: boolean | null;
+  isPost?: boolean | null;
+  deadline?: string | null;
+  distanceMi?: number | null;
+  lat?: number | null;
+  lng?: number | null;
+};
+
 export function buildDigestEmailHtml(digest: {
   subject: string;
   intro: string;
   weekOf: Date | string;
-  events: Array<{
-    title: string;
-    date: string;
-    venue: string;
-    description: string;
-    category: string;
-    link?: string | null;
-    imageUrl?: string | null;
-    source?: string | null;
-    featured?: boolean | null;
-    isBusinessSpotlight?: boolean | null;
-    isPost?: boolean | null;
-    deadline?: string | null;
-  }>;
+  events: DigestEventItem[];
   digestId?: number;
   siteUrl?: string;
+  alsoNearby?: DigestEventItem[];
+  preferencesUrl?: string | null;
 }, subscriberName?: string | null, subscriberEmail?: string | null, tenant?: { slug?: string | null; name?: string | null; city?: string | null; digestTitle?: string | null }): string {
   const weekDate = new Date(digest.weekOf).toLocaleDateString("en-US", {
     weekday: "long",
@@ -441,7 +448,7 @@ export function buildDigestEmailHtml(digest: {
         </div>
         <h3 style="margin:0 0 8px; font-size:19px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
         ${formatEventDate(event.date) !== "Date TBD" ? `<p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${formatEventDate(event.date)}</p>` : ""}
-        <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}</p>
+        <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}${event.distanceMi != null ? ` <span style="color:#9ca3af; font-size:13px;">· ${event.distanceMi} mi</span>` : ""}</p>
         <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${escapeHtml(event.description)}</p>
         ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -460,7 +467,7 @@ export function buildDigestEmailHtml(digest: {
       <div style="display:inline-block; ${categoryBadgeStyle(event.category)} font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(normalizeCategory(event.category))}</div>
       <h3 style="margin:0 0 8px; font-size:18px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
       ${formatEventDate(event.date) !== "Date TBD" ? `<p style="margin:0 0 6px; color:#57534e; font-size:14px;">📅 ${formatEventDate(event.date)}</p>` : ""}
-      <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}</p>
+      <p style="margin:0 0 12px; color:#57534e; font-size:14px;">📍 ${escapeHtml(event.venue)}${event.distanceMi != null ? ` <span style="color:#9ca3af; font-size:13px;">· ${event.distanceMi} mi</span>` : ""}</p>
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.6;">${escapeHtml(event.description)}</p>
       ${event.source ? `<p style="margin:0 0 14px; color:#9ca3af; font-size:12px; font-style:italic;">via ${SOURCE_URLS[event.source] ? `<a href="${escapeHtml(SOURCE_URLS[event.source])}" style="color:#9ca3af; text-decoration:underline;">${escapeHtml(event.source)}</a>` : escapeHtml(event.source)}</p>` : ""}
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -475,11 +482,17 @@ export function buildDigestEmailHtml(digest: {
   const featuredEvents = digest.events.filter(e => e.featured);
   const bizSpotlights = digest.events.filter(e => !e.featured && e.isBusinessSpotlight);
   const commSpotlights = digest.events.filter(e => !e.featured && e.isPost);
-  const regularEvents = [...digest.events.filter(e => !e.featured && !e.isBusinessSpotlight && !e.isPost)]
-    .sort((a, b) => parseSortKey(a.date) - parseSortKey(b.date));
+  const regularEventsRaw = [...digest.events.filter(e => !e.featured && !e.isBusinessSpotlight && !e.isPost)];
+  const hasDistance = regularEventsRaw.some(e => e.distanceMi != null);
+  const regularEvents = hasDistance
+    ? regularEventsRaw.sort((a, b) => (a.distanceMi ?? Infinity) - (b.distanceMi ?? Infinity))
+    : regularEventsRaw.sort((a, b) => parseSortKey(a.date) - parseSortKey(b.date));
+
+  const alsoNearby = digest.alsoNearby ?? [];
 
   const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
   const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
+  const alsoNearbyCards = alsoNearby.map(e => buildEventCard(e, false)).join("");
 
   const buildSpotlightCard = (event: (typeof digest.events)[number], accentColor: string, labelText: string, labelEmoji: string) => {
     const safeLink = safeHref(event.link);
@@ -657,10 +670,19 @@ export function buildDigestEmailHtml(digest: {
     <!-- Events -->
     ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>${eventCards}` : ""}
 
+    <!-- Also Nearby -->
+    ${alsoNearbyCards ? `
+    <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:14px; padding:20px; margin-bottom:24px;">
+      <h2 style="margin:0 0 4px; color:#1c1917; font-size:18px; font-weight:700;">📍 Also Nearby</h2>
+      <p style="margin:0 0 16px; color:#78716c; font-size:13px;">These events are a bit further out — but still in Austin.</p>
+      ${alsoNearbyCards}
+    </div>` : ""}
+
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
       <p style="margin:0 0 6px; color:#78716c; font-size:13px;">${theme.curatorName ? `Curated with ❤️ by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : slug === "bulverde" ? " from Bulverde, TX" : " from Austin, TX"}` : `Curated with ❤️ for ${escapeHtml(cityName)}, TX`}</p>
       <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at ${escapeHtml(theme.digestDisplayName)}.</p>
+      ${digest.preferencesUrl ? `<p style="margin:0 0 8px;"><a href="${escapeHtml(digest.preferencesUrl)}" style="color:#57534e; font-size:12px; text-decoration:none;">📍 Set your location for nearby events →</a></p>` : ""}
       ${unsubscribeUrl ? `<p style="margin:12px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a8a29e; font-size:11px; text-decoration:underline;">Unsubscribe</a></p>` : ""}
     </div>
 

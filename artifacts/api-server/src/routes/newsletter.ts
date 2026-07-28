@@ -12,6 +12,8 @@ import { sendWelcomeEmail, sendNewSubscriberAdminNotification, sendFeatureIntere
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
+import { geocodeVenue } from "../lib/geocodeVenue";
+import { verifySubscriberToken } from "../lib/subscriberToken";
 
 const router: IRouter = Router();
 
@@ -205,6 +207,101 @@ router.post("/feature-interest", async (req, res) => {
     req.log.warn({ err, email }, "Feature interest email fire-and-forget error");
   });
   res.json({ success: true });
+});
+
+// ---------------------------------------------------------------------------
+// Subscriber location preferences (Austin only, token-authenticated)
+// ---------------------------------------------------------------------------
+
+router.get("/preferences", async (req, res) => {
+  const email = ((req.query.email as string) || "").toLowerCase().trim();
+  const token = (req.query.token as string) || "";
+
+  if (!email || !verifySubscriberToken(email, token)) {
+    res.status(401).json({ error: "unauthorized", message: "Invalid or expired link" });
+    return;
+  }
+
+  try {
+    const [sub] = await db
+      .select()
+      .from(subscribersTable)
+      .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, req.tenant!.id)))
+      .limit(1);
+
+    if (!sub || !sub.isActive) {
+      res.status(404).json({ error: "not_found", message: "Subscriber not found" });
+      return;
+    }
+
+    res.json({
+      success: true,
+      preferences: {
+        anchorLat: sub.anchorLat ?? null,
+        anchorLng: sub.anchorLng ?? null,
+        radiusMiles: sub.radiusMiles ?? 3,
+        walkableOnly: sub.walkableOnly ?? false,
+      },
+    });
+  } catch (err) {
+    req.log.error({ err }, "Error fetching preferences");
+    res.status(500).json({ error: "server_error", message: "Failed to fetch preferences" });
+  }
+});
+
+router.post("/preferences", async (req, res) => {
+  const { email: rawEmail, token, address, radiusMiles: rawRadius, walkableOnly: rawWalkable } = req.body || {};
+
+  const email = (rawEmail || "").toLowerCase().trim();
+  if (!email || !verifySubscriberToken(email, token || "")) {
+    res.status(401).json({ error: "unauthorized", message: "Invalid or expired link" });
+    return;
+  }
+
+  try {
+    const [sub] = await db
+      .select()
+      .from(subscribersTable)
+      .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, req.tenant!.id)))
+      .limit(1);
+
+    if (!sub || !sub.isActive) {
+      res.status(404).json({ error: "not_found", message: "Subscriber not found" });
+      return;
+    }
+
+    let anchorLat: number | null = sub.anchorLat ?? null;
+    let anchorLng: number | null = sub.anchorLng ?? null;
+
+    if (typeof address === "string" && address.trim()) {
+      const coords = await geocodeVenue(address.trim());
+      anchorLat = coords.lat;
+      anchorLng = coords.lng;
+    }
+
+    const radiusMiles = [1, 3, 5].includes(Number(rawRadius)) ? Number(rawRadius) : 3;
+    const walkableOnly = rawWalkable === true || rawWalkable === "true";
+
+    await db
+      .update(subscribersTable)
+      .set({ anchorLat, anchorLng, radiusMiles, walkableOnly })
+      .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, req.tenant!.id)));
+
+    req.log.info({ email, anchorLat, anchorLng, radiusMiles, walkableOnly }, "Subscriber preferences saved");
+
+    const found = anchorLat !== null;
+    res.json({
+      success: true,
+      message: found
+        ? "Location saved! Your future digests will show nearby events."
+        : "Preferences saved. We couldn't locate that address — try adding city and state.",
+      anchorLat,
+      anchorLng,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Error saving preferences");
+    res.status(500).json({ error: "server_error", message: "Failed to save preferences" });
+  }
 });
 
 export default router;

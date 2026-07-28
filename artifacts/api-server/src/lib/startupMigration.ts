@@ -461,6 +461,14 @@ async function runGamificationMigration(): Promise<void> {
   logger.info("Gamification migration complete");
 }
 
+async function runSubscriberLocationMigration(): Promise<void> {
+  await db.execute(sql`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS anchor_lat DOUBLE PRECISION`);
+  await db.execute(sql`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS anchor_lng DOUBLE PRECISION`);
+  await db.execute(sql`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS radius_miles INTEGER NOT NULL DEFAULT 3`);
+  await db.execute(sql`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS walkable_only BOOLEAN NOT NULL DEFAULT false`);
+  logger.info("Subscriber location columns ready");
+}
+
 async function runGeocodeCacheMigration(): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS venue_geocode_cache (
@@ -490,6 +498,12 @@ export async function runStartupMigration(): Promise<void> {
     await runGamificationMigration();
   } catch (err) {
     logger.warn({ err }, "Gamification migration failed (non-fatal) — tables may already exist");
+  }
+
+  try {
+    await runSubscriberLocationMigration();
+  } catch (err) {
+    logger.warn({ err }, "Subscriber location migration failed (non-fatal) — columns may already exist");
   }
 
   try {

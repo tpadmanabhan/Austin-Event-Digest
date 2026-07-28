@@ -17,6 +17,7 @@ import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
 import { extractEventsFromSources } from "../lib/urlEventExtractor";
 import { geocodeAndPatchDigest } from "../lib/geocodeVenue";
+import { signSubscriberToken } from "../lib/subscriberToken";
 
 const router: IRouter = Router();
 
@@ -542,6 +543,62 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// Distance helpers for Austin radius personalization
+// ---------------------------------------------------------------------------
+
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 3958.8; // Earth radius in miles
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Split events into main (within radius) and alsoNearby (beyond radius) for
+ * a subscriber who has saved an anchor location.
+ *
+ * - Spotlight / featured events always stay in main.
+ * - Regular events with no coordinates are placed at the end of main.
+ * - Regular events with coords beyond the radius go into alsoNearby.
+ * - distanceMi (rounded to 1 decimal) is attached to every regular event.
+ */
+function personalizeEventsForSubscriber(
+  events: any[],
+  anchorLat: number,
+  anchorLng: number,
+  radiusMiles: number,
+): { mainEvents: any[]; alsoNearby: any[] } {
+  const passThrough = events.filter(
+    (e) => e.featured || e.isBusinessSpotlight || e.isPost,
+  );
+  const regular = events.filter(
+    (e) => !e.featured && !e.isBusinessSpotlight && !e.isPost,
+  );
+
+  const withDist = regular.map((e) => ({
+    ...e,
+    distanceMi:
+      e.lat != null && e.lng != null
+        ? Math.round(haversine(anchorLat, anchorLng, e.lat, e.lng) * 10) / 10
+        : null,
+  }));
+
+  const within = withDist
+    .filter((e) => e.distanceMi == null || e.distanceMi <= radiusMiles)
+    .sort((a, b) => (a.distanceMi ?? Infinity) - (b.distanceMi ?? Infinity));
+
+  const beyond = withDist
+    .filter((e) => e.distanceMi != null && e.distanceMi > radiusMiles)
+    .sort((a, b) => a.distanceMi - b.distanceMi);
+
+  return { mainEvents: [...passThrough, ...within], alsoNearby: beyond };
+}
+
 router.post("/digest/send", requireAdmin, async (req, res) => {
   const parseResult = SendDigestBody.safeParse(req.body);
   if (!parseResult.success) {
@@ -563,20 +620,35 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
       return;
     }
 
-    let recipients: Array<{ email: string; name: string | null }> = [];
+    type RecipientWithLocation = {
+      email: string;
+      name: string | null;
+      anchorLat: number | null;
+      anchorLng: number | null;
+      radiusMiles: number;
+      walkableOnly: boolean;
+    };
+    let recipients: RecipientWithLocation[] = [];
     // Always use the tenant's canonical subdomain for RSVP/unsubscribe links in emails.
     // This is the only reliable approach — header-based inference can return the platform
     // root domain (eventcarpooling.com) which has no tenant and breaks the carpool flow.
     const siteUrl = process.env.SITE_URL || `https://${req.tenant!.slug}.eventcarpooling.com`;
 
     if (testEmail) {
-      recipients = [{ email: testEmail, name: null }];
+      recipients = [{ email: testEmail, name: null, anchorLat: null, anchorLng: null, radiusMiles: 3, walkableOnly: false }];
     } else {
       const subscribers = await db
         .select()
         .from(subscribersTable)
         .where(and(eq(subscribersTable.isActive, true), eq(subscribersTable.tenantId, req.tenant!.id)));
-      recipients = subscribers.map(s => ({ email: s.email, name: s.name }));
+      recipients = subscribers.map(s => ({
+        email: s.email,
+        name: s.name,
+        anchorLat: s.anchorLat ?? null,
+        anchorLng: s.anchorLng ?? null,
+        radiusMiles: s.radiusMiles ?? 3,
+        walkableOnly: s.walkableOnly ?? false,
+      }));
     }
 
     if (recipients.length === 0) {
@@ -605,14 +677,38 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
     }
     const emailEvents = ((digest.events as any[]) || []).filter(e => isUpcomingEvent(e.date));
 
+    const isAustin = req.tenant?.slug === "austin";
+
     for (const recipient of recipients) {
+      let recipientEvents: any[] = emailEvents;
+      let alsoNearby: any[] = [];
+
+      if (isAustin && recipient.anchorLat != null && recipient.anchorLng != null) {
+        const effectiveRadius = recipient.walkableOnly ? 1 : recipient.radiusMiles;
+        const personalized = personalizeEventsForSubscriber(
+          emailEvents,
+          recipient.anchorLat,
+          recipient.anchorLng,
+          effectiveRadius,
+        );
+        recipientEvents = personalized.mainEvents;
+        alsoNearby = personalized.alsoNearby;
+      }
+
+      const prefToken = isAustin ? signSubscriberToken(recipient.email) : null;
+      const preferencesUrl = prefToken
+        ? `${siteUrl}/preferences?email=${encodeURIComponent(recipient.email)}&token=${prefToken}`
+        : null;
+
       const html = buildDigestEmailHtml({
         subject: digest.subject,
         intro: digest.intro,
         weekOf: digest.weekOf,
-        events: emailEvents,
+        events: recipientEvents,
         digestId: digest.id,
         siteUrl,
+        preferencesUrl,
+        alsoNearby,
       }, recipient.name, recipient.email, req.tenant ?? undefined);
 
       const result = await sendEmail({

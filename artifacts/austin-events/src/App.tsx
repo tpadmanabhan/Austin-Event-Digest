@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/admin";
 import { AdminLoginGate } from "@/components/admin-login-gate";
 import RsvpPage from "./pages/rsvp";
 import UnsubscribePage from "./pages/unsubscribe";
+import PreferencesPage from "./pages/preferences";
 import NotFound from "@/pages/not-found";
 import PlatformHome from "./pages/platform-home";
 import { TenantProvider } from "./contexts/tenant-context";
@@ -47,6 +48,7 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
         </Route>
         <Route path="/rsvp" component={RsvpPage} />
         <Route path="/unsubscribe" component={UnsubscribePage} />
+        <Route path="/preferences" component={PreferencesPage} />
         <Route component={NotFound} />
       </Switch>
     </TenantProvider>

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, boolean, integer, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean, integer, doublePrecision, unique } from "drizzle-orm/pg-core";
 import { tenantsTable } from "./tenants";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -12,6 +12,11 @@ export const subscribersTable = pgTable("subscribers", {
   birthDay: integer("birth_day"),
   subscribedAt: timestamp("subscribed_at").defaultNow().notNull(),
   isActive: boolean("is_active").default(true).notNull(),
+  // Radius discovery (Austin only — Task #44)
+  anchorLat: doublePrecision("anchor_lat"),
+  anchorLng: doublePrecision("anchor_lng"),
+  radiusMiles: integer("radius_miles").default(3).notNull(),
+  walkableOnly: boolean("walkable_only").default(false).notNull(),
 }, (t) => [
   unique("subscribers_tenant_email").on(t.tenantId, t.email),
 ]);
