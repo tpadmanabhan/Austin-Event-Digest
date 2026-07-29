@@ -574,11 +574,11 @@ export async function runStartupMigration(): Promise<void> {
         )
     `);
     logger.info("Migrated austincares subscribers to brushycreek");
-    // Deactivate the austincares tenant so it no longer appears in the tenant list
+    // Ensure austincares tenant remains active (idempotent)
     await db.execute(sql`
-      UPDATE tenants SET is_active = false WHERE slug = 'austincares'
+      UPDATE tenants SET is_active = true WHERE slug = 'austincares'
     `);
-    logger.info("Deactivated austincares tenant");
+    logger.info("austincares tenant re-activated");
   } catch (err) {
     logger.warn({ err }, "Austincares → brushycreek subscriber migration failed (non-fatal)");
   }
