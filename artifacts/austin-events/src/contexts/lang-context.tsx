@@ -13,7 +13,7 @@ export const T = {
     heroBadge: "🚀 We're Launching Something New",
     heroH1a: "In Real Life,",
     heroH1b: "by AI",
-    heroSub: "We're not just an events app. We're rebuilding how people find real friends in their communities.",
+    heroSub: "We put what's happening near you in your inbox — and we let anyone run one for their own neighborhood.",
     heroSlogan: "Stop scrolling. Start living.",
     heroMission: "We help solve personalized event discovery and the logistics to get there. Be the change agent in your community.",
     heroLuddite: "A Luddite's Dream",
