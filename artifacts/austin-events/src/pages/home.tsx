@@ -65,12 +65,6 @@ export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
   const tenant = useTenant();
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
-  const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "active" | "denied" | "manual">("idle");
-  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [manualAddress, setManualAddress] = useState("");
-  const [manualGeoLoading, setManualGeoLoading] = useState(false);
-  const [manualGeoError, setManualGeoError] = useState("");
-  const [radiusFilter, setRadiusFilter] = useState<number | null>(null);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [featureEmail, setFeatureEmail] = useState("");
   const [featureStatus, setFeatureStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
@@ -325,7 +319,7 @@ export default function Home() {
 
           {/* Category Filter Bar */}
           {latestDigest?.events && (
-            <div className="mb-10 flex flex-col gap-3">
+            <div className="mb-10">
               <div className="flex items-center gap-2 flex-wrap">
                 {(Object.keys(CAT_CONFIG) as DisplayCat[]).map(cat => {
                   const cfg = CAT_CONFIG[cat];
@@ -333,7 +327,7 @@ export default function Home() {
                   return (
                     <button
                       key={cat}
-                      onClick={() => { setCategoryFilter(cat); setGeoStatus("idle"); setUserCoords(null); setRadiusFilter(null); }}
+                      onClick={() => setCategoryFilter(cat)}
                       className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                         isActive
                           ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
@@ -345,137 +339,7 @@ export default function Home() {
                     </button>
                   );
                 })}
-                {isLocationEnabled && (
-                  <>
-                    <span className="w-px h-6 bg-border self-center mx-1" />
-                    <button
-                      onClick={() => {
-                        if (geoStatus === "active") {
-                          setGeoStatus("idle");
-                          setUserCoords(null);
-                          setRadiusFilter(null);
-                          return;
-                        }
-                        if (geoStatus === "loading" || geoStatus === "manual") return;
-                        if (geoStatus === "denied") {
-                          setGeoStatus("manual");
-                          setManualAddress("");
-                          setManualGeoError("");
-                          return;
-                        }
-                        setGeoStatus("loading");
-                        navigator.geolocation.getCurrentPosition(
-                          (pos) => {
-                            setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                            setGeoStatus("active");
-                          },
-                          () => setGeoStatus("denied"),
-                          { timeout: 10000 }
-                        );
-                      }}
-                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                        geoStatus === "active"
-                          ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/20"
-                          : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                      }`}
-                    >
-                      {geoStatus === "loading" ? (
-                        <><Loader2 className="w-3.5 h-3.5 animate-spin" />Getting location…</>
-                      ) : geoStatus === "active" ? (
-                        <>📍 Sorted by distance ✕</>
-                      ) : (
-                        <>📍 Nearest first</>
-                      )}
-                    </button>
-                    {geoStatus === "denied" && (
-                      <span
-                        className="text-xs text-destructive self-center cursor-pointer underline underline-offset-2"
-                        onClick={() => { setGeoStatus("manual"); setManualAddress(""); setManualGeoError(""); }}
-                      >
-                        Location blocked — enter address instead
-                      </span>
-                    )}
-                    {geoStatus === "manual" && (
-                      <form
-                        className="flex items-center gap-1.5"
-                        onSubmit={async (e) => {
-                          e.preventDefault();
-                          const q = manualAddress.trim();
-                          if (!q) return;
-                          setManualGeoLoading(true);
-                          setManualGeoError("");
-                          try {
-                            const res = await fetch(
-                              `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
-                              { headers: { "Accept-Language": "en" } }
-                            );
-                            const data = await res.json() as Array<{ lat: string; lon: string }>;
-                            if (data.length > 0) {
-                              setUserCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
-                              setGeoStatus("active");
-                              setManualAddress("");
-                            } else {
-                              setManualGeoError("Address not found");
-                            }
-                          } catch {
-                            setManualGeoError("Geocoding failed");
-                          } finally {
-                            setManualGeoLoading(false);
-                          }
-                        }}
-                      >
-                        <input
-                          autoFocus
-                          value={manualAddress}
-                          onChange={(e) => setManualAddress(e.target.value)}
-                          placeholder="e.g. Rainey Street, Austin TX"
-                          className="px-3 py-1.5 rounded-full text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
-                        />
-                        <button
-                          type="submit"
-                          disabled={manualGeoLoading || !manualAddress.trim()}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground disabled:opacity-50"
-                        >
-                          {manualGeoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Go"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setGeoStatus("idle"); setManualGeoError(""); }}
-                          className="text-muted-foreground hover:text-foreground text-sm px-1"
-                        >
-                          ✕
-                        </button>
-                        {manualGeoError && (
-                          <span className="text-xs text-destructive">{manualGeoError}</span>
-                        )}
-                      </form>
-                    )}
-                  </>
-                )}
               </div>
-              {/* Radius chip row — shown only when location sort is active */}
-              {geoStatus === "active" && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold text-muted-foreground mr-1">Within:</span>
-                  {([1, 3, 5, null] as (number | null)[]).map((miles) => {
-                    const isActive = radiusFilter === miles;
-                    const label = miles === null ? "Any distance" : `${miles} mi`;
-                    return (
-                      <button
-                        key={miles ?? "any"}
-                        onClick={() => setRadiusFilter(miles)}
-                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${
-                          isActive
-                            ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/20"
-                            : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           )}
 
@@ -497,26 +361,8 @@ export default function Home() {
               const visibleEvents = categoryFilter === "All"
                 ? upcomingEvents
                 : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
-              const sortedVisibleEvents = (geoStatus === "active" && userCoords)
-                ? [...visibleEvents]
-                    .sort((a: any, b: any) => {
-                      const aDist = (a.lat != null && a.lng != null) ? haversine(userCoords.lat, userCoords.lng, a.lat, a.lng) : Infinity;
-                      const bDist = (b.lat != null && b.lng != null) ? haversine(userCoords.lat, userCoords.lng, b.lat, b.lng) : Infinity;
-                      return aDist - bDist;
-                    })
-                    .filter((e: any) => {
-                      if (radiusFilter === null) return true;
-                      // Always show ungeocodable events
-                      if (e.lat == null || e.lng == null) return true;
-                      return haversine(userCoords.lat, userCoords.lng, e.lat, e.lng) <= radiusFilter;
-                    })
-                : visibleEvents;
-              const getDistanceMiles = (e: any): number | undefined => {
-                if (geoStatus !== "active" || !userCoords || e.lat == null || e.lng == null) return undefined;
-                return Math.round(haversine(userCoords.lat, userCoords.lng, e.lat, e.lng) * 10) / 10;
-              };
-              const featuredEvents = sortedVisibleEvents.filter((e: any) => e.featured);
-              const regularEvents = sortedVisibleEvents.filter((e: any) => !e.featured);
+              const featuredEvents = visibleEvents.filter((e: any) => e.featured);
+              const regularEvents = visibleEvents.filter((e: any) => !e.featured);
               return (
                 <div className="space-y-8">
                   <div className="rounded-2xl border border-border bg-card p-6 space-y-3 text-sm text-muted-foreground leading-relaxed">
