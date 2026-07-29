@@ -4,10 +4,21 @@ import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { useAllDigests, useLatestDigest } from "@/hooks/use-events";
 import { format, parseISO } from "date-fns";
-import { Calendar, ArrowLeft, Star, Leaf, ExternalLink, Trophy } from "lucide-react";
+import { Calendar, ArrowLeft, Star, Leaf, ExternalLink, Trophy, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
+
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 3958.8;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
 
 const MONTH_MAP: Record<string, number> = {
   Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
@@ -125,6 +136,12 @@ export default function DigestView() {
 
   const isLoading = isLatest ? loadingLatest : loadingAll;
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
+  const isLocationEnabled = tenant.slug === "austin" || tenant.slug === "brushycreek";
+  const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "active" | "denied" | "manual">("idle");
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [manualAddress, setManualAddress] = useState("");
+  const [manualGeoLoading, setManualGeoLoading] = useState(false);
+  const [manualGeoError, setManualGeoError] = useState("");
 
   let digest = null;
   if (isLatest && latestData?.digest) {
@@ -232,7 +249,7 @@ export default function DigestView() {
               return (
                 <button
                   key={cat}
-                  onClick={() => setCategoryFilter(cat)}
+                  onClick={() => { setCategoryFilter(cat); setGeoStatus("idle"); setUserCoords(null); }}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                     isActive
                       ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
@@ -244,6 +261,98 @@ export default function DigestView() {
                 </button>
               );
             })}
+            {isLocationEnabled && (
+              <>
+                <span className="w-px h-6 bg-border self-center mx-1" />
+                <button
+                  onClick={() => {
+                    if (geoStatus === "active") { setGeoStatus("idle"); setUserCoords(null); return; }
+                    if (geoStatus === "loading" || geoStatus === "manual") return;
+                    if (geoStatus === "denied") { setGeoStatus("manual"); setManualAddress(""); setManualGeoError(""); return; }
+                    setGeoStatus("loading");
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => { setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setGeoStatus("active"); },
+                      () => setGeoStatus("denied"),
+                      { timeout: 10000 }
+                    );
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                    geoStatus === "active"
+                      ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/20"
+                      : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                  }`}
+                >
+                  {geoStatus === "loading" ? (
+                    <><Loader2 className="w-3.5 h-3.5 animate-spin" />Getting location…</>
+                  ) : geoStatus === "active" ? (
+                    <>📍 Sorted by distance ✕</>
+                  ) : (
+                    <>📍 Nearest first</>
+                  )}
+                </button>
+                {geoStatus === "denied" && (
+                  <span
+                    className="text-xs text-destructive self-center cursor-pointer underline underline-offset-2"
+                    onClick={() => { setGeoStatus("manual"); setManualAddress(""); setManualGeoError(""); }}
+                  >
+                    Location blocked — enter address instead
+                  </span>
+                )}
+                {geoStatus === "manual" && (
+                  <form
+                    className="flex items-center gap-1.5"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const q = manualAddress.trim();
+                      if (!q) return;
+                      setManualGeoLoading(true);
+                      setManualGeoError("");
+                      try {
+                        const res = await fetch(
+                          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
+                          { headers: { "Accept-Language": "en" } }
+                        );
+                        const data = await res.json() as Array<{ lat: string; lon: string }>;
+                        if (data.length > 0) {
+                          setUserCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+                          setGeoStatus("active");
+                          setManualAddress("");
+                        } else {
+                          setManualGeoError("Address not found");
+                        }
+                      } catch {
+                        setManualGeoError("Geocoding failed");
+                      } finally {
+                        setManualGeoLoading(false);
+                      }
+                    }}
+                  >
+                    <input
+                      autoFocus
+                      value={manualAddress}
+                      onChange={(e) => setManualAddress(e.target.value)}
+                      placeholder="e.g. Rainey Street, Austin TX"
+                      className="px-3 py-1.5 rounded-full text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
+                    />
+                    <button
+                      type="submit"
+                      disabled={manualGeoLoading || !manualAddress.trim()}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground disabled:opacity-50"
+                    >
+                      {manualGeoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Go"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setGeoStatus("idle"); setManualGeoError(""); }}
+                      className="text-muted-foreground hover:text-foreground text-sm px-1"
+                    >
+                      ✕
+                    </button>
+                    {manualGeoError && <span className="text-xs text-destructive">{manualGeoError}</span>}
+                  </form>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -262,10 +371,23 @@ export default function DigestView() {
                 if (cats.length > 0) return cats.includes(categoryFilter);
                 return getDisplayCategory(e) === categoryFilter;
               });
-          const featuredEvents = visibleEvents.filter((e: any) => e.featured);
-          const regularEvents = [...visibleEvents]
-            .filter((e: any) => !e.featured)
-            .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
+          const sortedVisibleEvents = (geoStatus === "active" && userCoords)
+            ? [...visibleEvents].sort((a: any, b: any) => {
+                const aDist = (a.lat != null && a.lng != null) ? haversine(userCoords.lat, userCoords.lng, a.lat, a.lng) : Infinity;
+                const bDist = (b.lat != null && b.lng != null) ? haversine(userCoords.lat, userCoords.lng, b.lat, b.lng) : Infinity;
+                return aDist - bDist;
+              })
+            : visibleEvents;
+          const getDistanceMiles = (e: any): number | undefined => {
+            if (geoStatus !== "active" || !userCoords || e.lat == null || e.lng == null) return undefined;
+            return Math.round(haversine(userCoords.lat, userCoords.lng, e.lat, e.lng) * 10) / 10;
+          };
+          const featuredEvents = sortedVisibleEvents.filter((e: any) => e.featured);
+          const regularEvents = (geoStatus === "active" && userCoords)
+            ? sortedVisibleEvents.filter((e: any) => !e.featured)
+            : [...sortedVisibleEvents]
+                .filter((e: any) => !e.featured)
+                .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
 
           return (
             <>
@@ -319,7 +441,7 @@ export default function DigestView() {
                               Special Event
                             </span>
                           </div>
-                          <EventCard event={featEvent} digestId={digest.id} />
+                          <EventCard event={featEvent} digestId={digest.id} distanceMiles={getDistanceMiles(featEvent)} />
                         </div>
                       </div>
                     ))}
@@ -436,7 +558,7 @@ export default function DigestView() {
                 ) : (
                   <div className="grid sm:grid-cols-2 gap-8">
                     {regularEvents.map((event, i) => (
-                      <EventCard key={i} event={event} digestId={digest.id} />
+                      <EventCard key={i} event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
                     ))}
                   </div>
                 )}

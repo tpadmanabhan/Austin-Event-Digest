@@ -549,6 +549,13 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:6px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Set your neighborhood once — get distance-sorted events every week.</p>
     </div>` : ""}
 
+    <!-- Sort by Distance CTA (Austin + Brushy Creek only) -->
+    ${(slug === "austin" || slug === "brushycreek") && digest.siteUrl && digest.digestId ? `
+    <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:14px; padding:18px 22px; margin-bottom:24px; text-align:center;">
+      <a href="${escapeHtml(digest.siteUrl)}/digest/${digest.digestId}" style="display:inline-block; background:#15803d; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:12px 28px; border-radius:100px; letter-spacing:-0.2px;">📍 Sort events by distance →</a>
+      <p style="margin:10px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Open the full edition and tap <strong>Nearest first</strong> to sort by your location.</p>
+    </div>` : ""}
+
     <!-- Superconnector Feature Block -->
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <table style="width:100%; border-collapse:collapse;">

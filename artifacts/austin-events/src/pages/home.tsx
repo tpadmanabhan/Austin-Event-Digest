@@ -60,26 +60,11 @@ function isEventTodayOrLater(dateStr: string): boolean {
   return eventDate >= today;
 }
 
-function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 3958.8;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.asin(Math.sqrt(a));
-}
 
 export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
   const tenant = useTenant();
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
-  const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "active" | "denied" | "manual">("idle");
-  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [manualAddress, setManualAddress] = useState("");
-  const [manualGeoLoading, setManualGeoLoading] = useState(false);
-  const [manualGeoError, setManualGeoError] = useState("");
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [featureEmail, setFeatureEmail] = useState("");
   const [featureStatus, setFeatureStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
@@ -115,8 +100,6 @@ export default function Home() {
   const isPortland = tenant.slug === "portland";
   const isSacramento = tenant.slug === "sacramento";
   const isBulverde = tenant.slug === "bulverde";
-  const isLocationEnabled = tenant.slug === "austin" || tenant.slug === "brushycreek";
-
   const heroImage = isAustinCares
     ? "austin-cares-hero.png"
     : tenant.slug === "austincares"
@@ -344,7 +327,7 @@ export default function Home() {
                   return (
                     <button
                       key={cat}
-                      onClick={() => { setCategoryFilter(cat); setGeoStatus("idle"); setUserCoords(null); }}
+                      onClick={() => setCategoryFilter(cat)}
                       className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                         isActive
                           ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
@@ -356,112 +339,6 @@ export default function Home() {
                     </button>
                   );
                 })}
-                {isLocationEnabled && (
-                  <>
-                    <span className="w-px h-6 bg-border self-center mx-1" />
-                    <button
-                      onClick={() => {
-                        if (geoStatus === "active") {
-                          setGeoStatus("idle");
-                          setUserCoords(null);
-                          return;
-                        }
-                        if (geoStatus === "loading" || geoStatus === "manual") return;
-                        if (geoStatus === "denied") {
-                          setGeoStatus("manual");
-                          setManualAddress("");
-                          setManualGeoError("");
-                          return;
-                        }
-                        setGeoStatus("loading");
-                        navigator.geolocation.getCurrentPosition(
-                          (pos) => {
-                            setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                            setGeoStatus("active");
-                          },
-                          () => setGeoStatus("denied"),
-                          { timeout: 10000 }
-                        );
-                      }}
-                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                        geoStatus === "active"
-                          ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/20"
-                          : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                      }`}
-                    >
-                      {geoStatus === "loading" ? (
-                        <><Loader2 className="w-3.5 h-3.5 animate-spin" />Getting location…</>
-                      ) : geoStatus === "active" ? (
-                        <>📍 Sorted by distance ✕</>
-                      ) : (
-                        <>📍 Nearest first</>
-                      )}
-                    </button>
-                    {geoStatus === "denied" && (
-                      <span
-                        className="text-xs text-destructive self-center cursor-pointer underline underline-offset-2"
-                        onClick={() => { setGeoStatus("manual"); setManualAddress(""); setManualGeoError(""); }}
-                      >
-                        Location blocked — enter address instead
-                      </span>
-                    )}
-                    {geoStatus === "manual" && (
-                      <form
-                        className="flex items-center gap-1.5"
-                        onSubmit={async (e) => {
-                          e.preventDefault();
-                          const q = manualAddress.trim();
-                          if (!q) return;
-                          setManualGeoLoading(true);
-                          setManualGeoError("");
-                          try {
-                            const res = await fetch(
-                              `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
-                              { headers: { "Accept-Language": "en" } }
-                            );
-                            const data = await res.json() as Array<{ lat: string; lon: string }>;
-                            if (data.length > 0) {
-                              setUserCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
-                              setGeoStatus("active");
-                              setManualAddress("");
-                            } else {
-                              setManualGeoError("Address not found");
-                            }
-                          } catch {
-                            setManualGeoError("Geocoding failed");
-                          } finally {
-                            setManualGeoLoading(false);
-                          }
-                        }}
-                      >
-                        <input
-                          autoFocus
-                          value={manualAddress}
-                          onChange={(e) => setManualAddress(e.target.value)}
-                          placeholder="e.g. Rainey Street, Austin TX"
-                          className="px-3 py-1.5 rounded-full text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
-                        />
-                        <button
-                          type="submit"
-                          disabled={manualGeoLoading || !manualAddress.trim()}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground disabled:opacity-50"
-                        >
-                          {manualGeoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Go"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setGeoStatus("idle"); setManualGeoError(""); }}
-                          className="text-muted-foreground hover:text-foreground text-sm px-1"
-                        >
-                          ✕
-                        </button>
-                        {manualGeoError && (
-                          <span className="text-xs text-destructive">{manualGeoError}</span>
-                        )}
-                      </form>
-                    )}
-                  </>
-                )}
               </div>
             </div>
           )}
@@ -484,19 +361,8 @@ export default function Home() {
               const visibleEvents = categoryFilter === "All"
                 ? upcomingEvents
                 : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
-              const sortedVisibleEvents = (geoStatus === "active" && userCoords)
-                ? [...visibleEvents].sort((a: any, b: any) => {
-                    const aDist = (a.lat != null && a.lng != null) ? haversine(userCoords.lat, userCoords.lng, a.lat, a.lng) : Infinity;
-                    const bDist = (b.lat != null && b.lng != null) ? haversine(userCoords.lat, userCoords.lng, b.lat, b.lng) : Infinity;
-                    return aDist - bDist;
-                  })
-                : visibleEvents;
-              const getDistanceMiles = (e: any): number | undefined => {
-                if (geoStatus !== "active" || !userCoords || e.lat == null || e.lng == null) return undefined;
-                return Math.round(haversine(userCoords.lat, userCoords.lng, e.lat, e.lng) * 10) / 10;
-              };
-              const featuredEvents = sortedVisibleEvents.filter((e: any) => e.featured);
-              const regularEvents = sortedVisibleEvents.filter((e: any) => !e.featured);
+              const featuredEvents = visibleEvents.filter((e: any) => e.featured);
+              const regularEvents = visibleEvents.filter((e: any) => !e.featured);
               return (
                 <div className="space-y-8">
                   <div className="rounded-2xl border border-border bg-card p-6 space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -548,7 +414,7 @@ export default function Home() {
                             </div>
                             <div className="p-6 sm:p-8">
                               <div className="max-w-xl">
-                                <EventCard event={featEvent} digestId={latestDigest.id} distanceMiles={getDistanceMiles(featEvent)} />
+                                <EventCard event={featEvent} digestId={latestDigest.id} />
                               </div>
                             </div>
                           </div>
@@ -682,7 +548,7 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ delay: i * 0.1 }}
                         >
-                          <EventCard event={event} digestId={latestDigest.id} distanceMiles={getDistanceMiles(event)} />
+                          <EventCard event={event} digestId={latestDigest.id} />
                         </motion.div>
                       ))}
                     </div>
