@@ -11,6 +11,7 @@ import { useTenant } from "@/contexts/tenant-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EventMap } from "@/components/event-map";
 
 const SHOW_AUSTIN_CARES = false;
 
@@ -100,6 +101,8 @@ export default function Home() {
   const isPortland = tenant.slug === "portland";
   const isSacramento = tenant.slug === "sacramento";
   const isBulverde = tenant.slug === "bulverde";
+  const showMap = tenant.slug === "austin" || tenant.slug === "brushycreek";
+  const mapCenter: [number, number] = tenant.slug === "brushycreek" ? [30.508, -97.679] : [30.267, -97.743];
   const heroImage = isAustinCares
     ? "austin-cares-hero.png"
     : tenant.slug === "austincares"
@@ -340,6 +343,21 @@ export default function Home() {
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Event Map — Austin & Brushy Creek only */}
+          {showMap && latestDigest?.events && (
+            <div className="mb-10">
+              <h3 className="font-serif text-xl font-bold mb-4 flex items-center gap-2">
+                🗺️ Where this week's events are happening
+              </h3>
+              <EventMap
+                events={latestDigest.events as any[]}
+                center={mapCenter}
+                radiusMiles={30}
+                height={340}
+              />
             </div>
           )}
 

@@ -256,6 +256,45 @@ type DigestEventItem = {
   lng?: number | null;
 };
 
+function buildStaticMapSection(
+  events: DigestEventItem[],
+  slug: string | undefined,
+  siteUrl: string | undefined,
+  digestId: number | undefined
+): string {
+  if (slug !== "austin" && slug !== "brushycreek") return "";
+  const geocoded = events.filter(
+    (e) => e.lat != null && e.lng != null && !e.isPost && !e.isBusinessSpotlight
+  );
+  if (geocoded.length === 0) return "";
+
+  const center = slug === "brushycreek"
+    ? { lat: 30.508, lng: -97.679 }
+    : { lat: 30.267, lng: -97.743 };
+
+  let mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${center.lat},${center.lng}&zoom=10&size=580x260&maptype=mapnik`;
+  const markers = geocoded.slice(0, 12);
+  for (const e of markers) {
+    const icon = e.featured ? "yellow-pushpin" : "blue-pushpin";
+    mapUrl += `&markers=${e.lat},${e.lng},${icon}`;
+  }
+
+  const cityLabel = slug === "brushycreek" ? "Round Rock / Brushy Creek" : "Austin";
+  const linkUrl = siteUrl && digestId ? `${siteUrl}/digest/${digestId}` : null;
+
+  return `
+    <!-- Event Map Preview -->
+    <div style="margin-bottom:24px; border-radius:14px; overflow:hidden; border:1px solid #e7e5e4;">
+      <div style="background:#f8fafc; padding:10px 16px; border-bottom:1px solid #e7e5e4;">
+        <p style="margin:0; font-size:13px; font-weight:700; color:#1c1917;">🗺️ This week's event locations in ${cityLabel}</p>
+      </div>
+      ${linkUrl ? `<a href="${escapeHtml(linkUrl)}" style="display:block; line-height:0;">` : ""}
+        <img src="${escapeHtml(mapUrl)}" alt="Map of this week's events in ${cityLabel}" width="580" height="260" style="display:block; width:100%; max-width:580px; height:auto; border:none;" />
+      ${linkUrl ? `</a>` : ""}
+      ${linkUrl ? `<div style="background:#f8fafc; padding:8px 16px; border-top:1px solid #e7e5e4; text-align:center;"><a href="${escapeHtml(linkUrl)}" style="color:#7c3aed; font-size:12px; font-weight:600; text-decoration:none;">Open interactive map &amp; sort by distance →</a></div>` : ""}
+    </div>`;
+}
+
 export function buildDigestEmailHtml(digest: {
   subject: string;
   intro: string;
@@ -555,6 +594,8 @@ export function buildDigestEmailHtml(digest: {
       <a href="${escapeHtml(digest.siteUrl)}/digest/${digest.digestId}" style="display:inline-block; background:#15803d; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:12px 28px; border-radius:100px; letter-spacing:-0.2px;">📍 Sort events by distance →</a>
       <p style="margin:10px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Open the full edition and tap <strong>Nearest first</strong> to sort by your location.</p>
     </div>` : ""}
+
+    ${buildStaticMapSection(digest.events, slug, digest.siteUrl, digest.digestId)}
 
     <!-- Superconnector Feature Block -->
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">

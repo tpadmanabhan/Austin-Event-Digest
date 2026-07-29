@@ -8,6 +8,7 @@ import { Calendar, ArrowLeft, Star, Leaf, ExternalLink, Trophy, Loader2 } from "
 import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
+import { EventMap } from "@/components/event-map";
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 3958.8;
@@ -137,6 +138,8 @@ export default function DigestView() {
   const isLoading = isLatest ? loadingLatest : loadingAll;
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
   const isLocationEnabled = tenant.slug === "austin" || tenant.slug === "brushycreek";
+  const showMap = tenant.slug === "austin" || tenant.slug === "brushycreek";
+  const mapCenter: [number, number] = tenant.slug === "brushycreek" ? [30.508, -97.679] : [30.267, -97.743];
   const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "active" | "denied" | "manual">("idle");
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [manualAddress, setManualAddress] = useState("");
@@ -422,6 +425,22 @@ export default function DigestView() {
                   </ul>
                 </div>
               </section>
+
+              {/* Event Map — Austin & Brushy Creek only */}
+              {showMap && (
+                <section className="mb-12">
+                  <h2 className="font-serif text-3xl font-bold mb-6 flex items-center gap-3">
+                    <span className="w-8 h-1 bg-primary rounded-full"></span>
+                    🗺️ This week on the map
+                  </h2>
+                  <EventMap
+                    events={digest.events as any[]}
+                    center={mapCenter}
+                    radiusMiles={30}
+                    height={400}
+                  />
+                </section>
+              )}
 
               {featuredEvents.length > 0 && (
                 <section className="mb-12">
