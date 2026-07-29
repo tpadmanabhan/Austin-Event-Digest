@@ -768,8 +768,10 @@ export async function sendNewSubscriberAdminNotification(opts: {
   subscriberName?: string | null;
   isResubscribe?: boolean;
   adminEmail?: string | null;
+  tenantName?: string | null;
 }): Promise<void> {
   const label = opts.isResubscribe ? "Re-subscribed" : "New Subscriber";
+  const displayName = opts.tenantName || "Raj's Austin Events";
   const nameLine = opts.subscriberName ? `<p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Name:</strong> ${opts.subscriberName}</p>` : "";
 
   const html = `
@@ -782,7 +784,7 @@ export async function sendNewSubscriberAdminNotification(opts: {
 <body style="margin:0; padding:0; background:#fafaf9; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:480px; margin:0 auto; padding:24px;">
     <div style="background:linear-gradient(135deg, #292524 0%, #1c1917 100%); border-radius:14px; padding:24px; margin-bottom:20px; text-align:center;">
-      <h1 style="margin:0 0 4px; color:#fbbf24; font-size:22px; font-weight:800;">🤠 Raj's Austin Events</h1>
+      <h1 style="margin:0 0 4px; color:#fbbf24; font-size:22px; font-weight:800;">🤠 ${displayName}</h1>
       <p style="margin:0; color:#d6d3d1; font-size:13px;">${label} Alert</p>
     </div>
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px;">

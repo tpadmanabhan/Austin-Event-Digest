@@ -70,7 +70,7 @@ router.post("/subscribe", async (req, res) => {
         });
         res.json(response);
         sendWelcomeEmail(email, updated[0].name, req.tenant).catch(() => {});
-        sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: updated[0].name, isResubscribe: true, adminEmail: req.tenant!.adminEmail }).catch(() => {});
+        sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: updated[0].name, isResubscribe: true, adminEmail: req.tenant!.adminEmail, tenantName: req.tenant!.name }).catch(() => {});
         return;
       }
 
@@ -111,7 +111,7 @@ router.post("/subscribe", async (req, res) => {
     });
     res.json(response);
     sendWelcomeEmail(email, null, req.tenant).catch(() => {});
-    sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: null, adminEmail: req.tenant!.adminEmail }).catch(() => {});
+    sendNewSubscriberAdminNotification({ subscriberEmail: email, subscriberName: null, adminEmail: req.tenant!.adminEmail, tenantName: req.tenant!.name }).catch(() => {});
     awardXP(tenantId, "subscriber", 3, { email }).catch(() => {});
 
     // Fire-and-forget: geocode the address provided at subscribe time (Austin only)
