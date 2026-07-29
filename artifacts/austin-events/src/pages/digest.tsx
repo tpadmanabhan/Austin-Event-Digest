@@ -441,19 +441,16 @@ export default function DigestView() {
                 return getDisplayCategory(e) === categoryFilter;
               });
           const geoActive = geoStatus === "active" && userCoords != null;
-          // Task #66 — apply radius filter when active
-          const hiddenByRadius = (geoActive && radiusFilter !== null)
-            ? catFiltered.filter((e: any) =>
-                e.lat != null && e.lng != null &&
-                haversine(userCoords!.lat, userCoords!.lng, e.lat, e.lng) > radiusFilter
-              ).length
+          // Radius chip = dim events beyond threshold, never hide them
+          const beyondRadius = (e: any): boolean => {
+            if (!geoActive || radiusFilter === null || e.lat == null || e.lng == null) return false;
+            return haversine(userCoords!.lat, userCoords!.lng, e.lat, e.lng) > radiusFilter;
+          };
+          const dimmedByRadius = (geoActive && radiusFilter !== null)
+            ? catFiltered.filter((e: any) => beyondRadius(e)).length
             : 0;
-          const visibleEvents = (geoActive && radiusFilter !== null)
-            ? catFiltered.filter((e: any) => {
-                if (e.lat == null || e.lng == null) return true;
-                return haversine(userCoords!.lat, userCoords!.lng, e.lat, e.lng) <= radiusFilter;
-              })
-            : catFiltered;
+          // All events always visible — radius chip only dims, never hides
+          const visibleEvents = catFiltered;
           const getDistanceMiles = (e: any): number | undefined => {
             if (!geoActive || !userCoords || e.lat == null || e.lng == null) return undefined;
             return Math.round(haversine(userCoords.lat, userCoords.lng, e.lat, e.lng) * 10) / 10;
@@ -642,9 +639,9 @@ export default function DigestView() {
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
                     {geoActive ? "Events — Nearest First" : "This Week's Curated Events"}
                   </h2>
-                  {hiddenByRadius > 0 && (
+                  {dimmedByRadius > 0 && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
-                      📍 {hiddenByRadius} event{hiddenByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi hidden
+                      📍 {dimmedByRadius} event{dimmedByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi
                     </span>
                   )}
                 </div>
@@ -664,7 +661,7 @@ export default function DigestView() {
                   <div className={geoActive ? "flex flex-col gap-6" : "grid sm:grid-cols-2 gap-8"}>
                     {regularEvents.map((event: any, i: number) =>
                       geoActive && event.featured ? (
-                        <div key={i} className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20">
+                        <div key={i} className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20" style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
                           <div className="h-1 rounded-t-3xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
                           <div className="p-6 sm:p-8">
                             <div className="flex justify-end mb-3">
@@ -677,7 +674,9 @@ export default function DigestView() {
                           </div>
                         </div>
                       ) : (
-                        <EventCard key={i} event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
+                        <div key={i} style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
+                          <EventCard event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
+                        </div>
                       )
                     )}
                   </div>
