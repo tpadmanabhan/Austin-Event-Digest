@@ -262,15 +262,29 @@ function buildStaticMapSection(
   siteUrl: string | undefined,
   digestId: number | undefined
 ): string {
-  if (slug !== "austin" && slug !== "brushycreek") return "";
+  const MAP_CENTERS: Record<string, { lat: number; lng: number }> = {
+    austin:      { lat: 30.267, lng: -97.743 },
+    austincares: { lat: 30.267, lng: -97.743 },
+    brushycreek: { lat: 30.508, lng: -97.679 },
+    bulverde:    { lat: 29.747, lng: -98.446 },
+    portland:    { lat: 45.523, lng: -122.676 },
+    sacramento:  { lat: 38.575, lng: -121.479 },
+  };
+  const CITY_LABELS: Record<string, string> = {
+    austin:      "Austin",
+    austincares: "Austin",
+    brushycreek: "Round Rock / Brushy Creek",
+    bulverde:    "Bulverde",
+    portland:    "Portland",
+    sacramento:  "Sacramento",
+  };
+  if (!slug || !(slug in MAP_CENTERS)) return "";
   const geocoded = events.filter(
     (e) => e.lat != null && e.lng != null && !e.isPost && !e.isBusinessSpotlight
   );
   if (geocoded.length === 0) return "";
 
-  const center = slug === "brushycreek"
-    ? { lat: 30.508, lng: -97.679 }
-    : { lat: 30.267, lng: -97.743 };
+  const center = MAP_CENTERS[slug];
 
   let mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${center.lat},${center.lng}&zoom=10&size=580x260&maptype=mapnik`;
   const markers = geocoded.slice(0, 12);
@@ -279,7 +293,7 @@ function buildStaticMapSection(
     mapUrl += `&markers=${e.lat},${e.lng},${icon}`;
   }
 
-  const cityLabel = slug === "brushycreek" ? "Round Rock / Brushy Creek" : "Austin";
+  const cityLabel = CITY_LABELS[slug] ?? slug;
   const linkUrl = siteUrl && digestId ? `${siteUrl}/digest/${digestId}` : null;
 
   return `

@@ -101,8 +101,16 @@ export default function Home() {
   const isPortland = tenant.slug === "portland";
   const isSacramento = tenant.slug === "sacramento";
   const isBulverde = tenant.slug === "bulverde";
-  const showMap = tenant.slug === "austin" || tenant.slug === "brushycreek";
-  const mapCenter: [number, number] = tenant.slug === "brushycreek" ? [30.508, -97.679] : [30.267, -97.743];
+  const MAP_CENTERS: Record<string, [number, number]> = {
+    austin:      [30.267, -97.743],
+    austincares: [30.267, -97.743],
+    brushycreek: [30.508, -97.679],
+    bulverde:    [29.747, -98.446],
+    portland:    [45.523, -122.676],
+    sacramento:  [38.575, -121.479],
+  };
+  const showMap = tenant.slug in MAP_CENTERS;
+  const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
   const heroImage = isAustinCares
     ? "austin-cares-hero.png"
     : tenant.slug === "austincares"

@@ -137,9 +137,17 @@ export default function DigestView() {
 
   const isLoading = isLatest ? loadingLatest : loadingAll;
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
-  const isLocationEnabled = tenant.slug === "austin" || tenant.slug === "brushycreek";
-  const showMap = tenant.slug === "austin" || tenant.slug === "brushycreek";
-  const mapCenter: [number, number] = tenant.slug === "brushycreek" ? [30.508, -97.679] : [30.267, -97.743];
+  const MAP_CENTERS: Record<string, [number, number]> = {
+    austin:      [30.267, -97.743],
+    austincares: [30.267, -97.743],
+    brushycreek: [30.508, -97.679],
+    bulverde:    [29.747, -98.446],
+    portland:    [45.523, -122.676],
+    sacramento:  [38.575, -121.479],
+  };
+  const isLocationEnabled = tenant.slug in MAP_CENTERS;
+  const showMap = tenant.slug in MAP_CENTERS;
+  const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
   const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "active" | "denied" | "manual">("idle");
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [manualAddress, setManualAddress] = useState("");
