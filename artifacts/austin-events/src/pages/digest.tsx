@@ -371,21 +371,21 @@ export default function DigestView() {
                 if (cats.length > 0) return cats.includes(categoryFilter);
                 return getDisplayCategory(e) === categoryFilter;
               });
-          const sortedVisibleEvents = (geoStatus === "active" && userCoords)
-            ? [...visibleEvents].sort((a: any, b: any) => {
-                const aDist = (a.lat != null && a.lng != null) ? haversine(userCoords.lat, userCoords.lng, a.lat, a.lng) : Infinity;
-                const bDist = (b.lat != null && b.lng != null) ? haversine(userCoords.lat, userCoords.lng, b.lat, b.lng) : Infinity;
-                return aDist - bDist;
-              })
-            : visibleEvents;
+          const geoActive = geoStatus === "active" && userCoords != null;
           const getDistanceMiles = (e: any): number | undefined => {
-            if (geoStatus !== "active" || !userCoords || e.lat == null || e.lng == null) return undefined;
+            if (!geoActive || !userCoords || e.lat == null || e.lng == null) return undefined;
             return Math.round(haversine(userCoords.lat, userCoords.lng, e.lat, e.lng) * 10) / 10;
           };
-          const featuredEvents = sortedVisibleEvents.filter((e: any) => e.featured);
-          const regularEvents = (geoStatus === "active" && userCoords)
-            ? sortedVisibleEvents.filter((e: any) => !e.featured)
-            : [...sortedVisibleEvents]
+          // When geo is active: merge all events into one distance-sorted list.
+          // When geo is off: keep featured pinned at top + regular sorted by date.
+          const featuredEvents = geoActive ? [] : visibleEvents.filter((e: any) => e.featured);
+          const regularEvents = geoActive
+            ? [...visibleEvents].sort((a: any, b: any) => {
+                const aDist = (a.lat != null && a.lng != null) ? haversine(userCoords!.lat, userCoords!.lng, a.lat, a.lng) : Infinity;
+                const bDist = (b.lat != null && b.lng != null) ? haversine(userCoords!.lat, userCoords!.lng, b.lat, b.lng) : Infinity;
+                return aDist - bDist;
+              })
+            : [...visibleEvents]
                 .filter((e: any) => !e.featured)
                 .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
 
@@ -541,7 +541,7 @@ export default function DigestView() {
               <section>
                 <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
                   <span className="w-8 h-1 bg-primary rounded-full"></span>
-                  This Week's Curated Events
+                  {geoActive ? "Events — Nearest First" : "This Week's Curated Events"}
                 </h2>
                 {visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
@@ -556,10 +556,25 @@ export default function DigestView() {
                     </button>
                   </div>
                 ) : (
-                  <div className="grid sm:grid-cols-2 gap-8">
-                    {regularEvents.map((event, i) => (
-                      <EventCard key={i} event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
-                    ))}
+                  <div className={geoActive ? "flex flex-col gap-6" : "grid sm:grid-cols-2 gap-8"}>
+                    {regularEvents.map((event: any, i: number) =>
+                      geoActive && event.featured ? (
+                        <div key={i} className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20">
+                          <div className="h-1 rounded-t-3xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
+                          <div className="p-6 sm:p-8">
+                            <div className="flex justify-end mb-3">
+                              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
+                                <Star className="w-3 h-3 fill-amber-950" />
+                                Special Event
+                              </span>
+                            </div>
+                            <EventCard event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
+                          </div>
+                        </div>
+                      ) : (
+                        <EventCard key={i} event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
+                      )
+                    )}
                   </div>
                 )}
               </section>
