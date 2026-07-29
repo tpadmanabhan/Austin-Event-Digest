@@ -185,6 +185,10 @@ export default function AdminDashboard() {
   const [venueEditValue, setVenueEditValue] = useState("");
   const [isSavingVenue, setIsSavingVenue] = useState(false);
 
+  // Geocode coverage for the Send dialog (Austin only)
+  const [sendDialogGeocov, setSendDialogGeocov] = useState<GeocovData | null>(null);
+  const [sendDialogGeocovLoading, setSendDialogGeocovLoading] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     async function loadAdminEmail() {
@@ -413,6 +417,26 @@ export default function AdminDashboard() {
       }
     );
   };
+
+  // Fetch geocode coverage when the Send dialog opens (Austin only)
+  useEffect(() => {
+    if (sendDialogTarget === null || tenant.slug !== "austin") {
+      setSendDialogGeocov(null);
+      return;
+    }
+    let cancelled = false;
+    setSendDialogGeocovLoading(true);
+    setSendDialogGeocov(null);
+    const token = sessionStorage.getItem("admin_token");
+    fetch(`/api/events/digest/${sendDialogTarget}/geocode-coverage`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(r => r.ok ? r.json() as Promise<GeocovData> : null)
+      .then(data => { if (!cancelled && data) setSendDialogGeocov(data); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setSendDialogGeocovLoading(false); });
+    return () => { cancelled = true; };
+  }, [sendDialogTarget, tenant.slug]);
 
   const onSend = (digestId: number, isTest: boolean) => {
     send(
@@ -1391,6 +1415,19 @@ export default function AdminDashboard() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-6 space-y-6">
+            {/* Geocode coverage warning — Austin only */}
+            {tenant.slug === "austin" && !sendDialogGeocovLoading && sendDialogGeocov && sendDialogGeocov.missing > 0 && (
+              <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
+                <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
+                <div className="text-sm leading-snug">
+                  <span className="font-semibold">{sendDialogGeocov.missing} event{sendDialogGeocov.missing !== 1 ? "s" : ""} missing coordinates</span>
+                  {" "}({sendDialogGeocov.geocoded}/{sendDialogGeocov.total} geocoded).{" "}
+                  Subscribers with a saved location won't get distance-sorted results for these events.
+                  You can re-geocode from the digest list before sending.
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3 bg-muted/50 p-4 rounded-xl border border-border">
               <h4 className="text-sm font-bold flex items-center gap-2"><Mail className="w-4 h-4"/> Test Email</h4>
               <div className="flex gap-2">
