@@ -198,7 +198,7 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
   );
 }
 
-export function EventCard({ event, digestId }: { event: EventItem; digestId?: number }) {
+export function EventCard({ event, digestId, distanceMiles }: { event: EventItem; digestId?: number; distanceMiles?: number }) {
   const getCategoryIcon = (category: string) => {
     const cat = category.toLowerCase();
     if (cat.includes("music") || cat.includes("concert")) return <Music className="w-4 h-4" />;
@@ -304,6 +304,11 @@ export function EventCard({ event, digestId }: { event: EventItem; digestId?: nu
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
           <MapPin className="w-4 h-4 shrink-0 text-secondary" />
           <span className="font-medium">{event.venue}</span>
+          {distanceMiles !== undefined && (
+            <span className="ml-auto shrink-0 inline-flex items-center rounded-full bg-secondary/10 px-2 py-0.5 text-xs font-semibold text-secondary">
+              {distanceMiles.toFixed(1)} mi
+            </span>
+          )}
         </div>
 
         <p className="text-muted-foreground text-sm leading-relaxed mb-3 flex-1">
