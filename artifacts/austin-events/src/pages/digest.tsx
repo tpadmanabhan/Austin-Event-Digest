@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute } from "wouter";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
@@ -153,6 +153,36 @@ export default function DigestView() {
   const [manualAddress, setManualAddress] = useState("");
   const [manualGeoLoading, setManualGeoLoading] = useState(false);
   const [manualGeoError, setManualGeoError] = useState("");
+  const [radiusFilter, setRadiusFilter] = useState<number | null>(null);
+
+  // Task #67 — restore saved location on mount
+  const GEO_KEY = `ec_location_${tenant.slug}`;
+  useEffect(() => {
+    if (!isLocationEnabled) return;
+    try {
+      const saved = localStorage.getItem(GEO_KEY);
+      if (saved) {
+        const coords = JSON.parse(saved) as { lat: number; lng: number };
+        if (coords?.lat && coords?.lng) {
+          setUserCoords(coords);
+          setGeoStatus("active");
+        }
+      }
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [GEO_KEY]);
+
+  // Task #67 — persist / clear saved location
+  useEffect(() => {
+    if (!isLocationEnabled) return;
+    try {
+      if (geoStatus === "active" && userCoords) {
+        localStorage.setItem(GEO_KEY, JSON.stringify(userCoords));
+      } else if (geoStatus === "idle" || geoStatus === "denied") {
+        localStorage.removeItem(GEO_KEY);
+      }
+    } catch {}
+  }, [geoStatus, userCoords, GEO_KEY, isLocationEnabled]);
 
   let digest = null;
   if (isLatest && latestData?.digest) {
@@ -260,7 +290,7 @@ export default function DigestView() {
               return (
                 <button
                   key={cat}
-                  onClick={() => { setCategoryFilter(cat); setGeoStatus("idle"); setUserCoords(null); }}
+                  onClick={() => { setCategoryFilter(cat); setGeoStatus("idle"); setUserCoords(null); setRadiusFilter(null); }}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                     isActive
                       ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
@@ -277,7 +307,7 @@ export default function DigestView() {
                 <span className="w-px h-6 bg-border self-center mx-1" />
                 <button
                   onClick={() => {
-                    if (geoStatus === "active") { setGeoStatus("idle"); setUserCoords(null); return; }
+                    if (geoStatus === "active") { setGeoStatus("idle"); setUserCoords(null); setRadiusFilter(null); return; }
                     if (geoStatus === "loading" || geoStatus === "manual") return;
                     if (geoStatus === "denied") { setGeoStatus("manual"); setManualAddress(""); setManualGeoError(""); return; }
                     setGeoStatus("loading");
@@ -367,6 +397,34 @@ export default function DigestView() {
           </div>
         </div>
 
+        {/* Radius filter chips — Task #66 */}
+        {geoStatus === "active" && userCoords != null && (
+          <div className="flex items-center gap-2 flex-wrap mb-6 -mt-4">
+            <span className="text-xs text-muted-foreground font-medium">Within:</span>
+            {([5, 10, 25, 50] as const).map(r => (
+              <button
+                key={r}
+                onClick={() => setRadiusFilter(radiusFilter === r ? null : r)}
+                className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  radiusFilter === r
+                    ? "bg-secondary text-secondary-foreground shadow-sm shadow-secondary/20"
+                    : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                }`}
+              >
+                {r} mi
+              </button>
+            ))}
+            {radiusFilter !== null && (
+              <button
+                onClick={() => setRadiusFilter(null)}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors ml-1"
+              >
+                Clear ✕
+              </button>
+            )}
+          </div>
+        )}
+
         {(() => {
           const communityPosts = digest.events.filter((e: any) => e.isPost === true);
           const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true);
@@ -375,7 +433,7 @@ export default function DigestView() {
             !e.isBusinessSpotlight &&
             (e.featured || isEventTodayOrLater(e.date, e))
           );
-          const visibleEvents = categoryFilter === "All"
+          const catFiltered = categoryFilter === "All"
             ? upcomingEvents
             : upcomingEvents.filter((e: any) => {
                 const cats: string[] = e.categories ?? [];
@@ -383,6 +441,19 @@ export default function DigestView() {
                 return getDisplayCategory(e) === categoryFilter;
               });
           const geoActive = geoStatus === "active" && userCoords != null;
+          // Task #66 — apply radius filter when active
+          const hiddenByRadius = (geoActive && radiusFilter !== null)
+            ? catFiltered.filter((e: any) =>
+                e.lat != null && e.lng != null &&
+                haversine(userCoords!.lat, userCoords!.lng, e.lat, e.lng) > radiusFilter
+              ).length
+            : 0;
+          const visibleEvents = (geoActive && radiusFilter !== null)
+            ? catFiltered.filter((e: any) => {
+                if (e.lat == null || e.lng == null) return true;
+                return haversine(userCoords!.lat, userCoords!.lng, e.lat, e.lng) <= radiusFilter;
+              })
+            : catFiltered;
           const getDistanceMiles = (e: any): number | undefined => {
             if (!geoActive || !userCoords || e.lat == null || e.lng == null) return undefined;
             return Math.round(haversine(userCoords.lat, userCoords.lng, e.lat, e.lng) * 10) / 10;
@@ -566,10 +637,17 @@ export default function DigestView() {
               )}
 
               <section>
-                <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
-                  <span className="w-8 h-1 bg-primary rounded-full"></span>
-                  {geoActive ? "Events — Nearest First" : "This Week's Curated Events"}
-                </h2>
+                <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
+                  <h2 className="font-serif text-3xl font-bold flex items-center gap-3">
+                    <span className="w-8 h-1 bg-primary rounded-full"></span>
+                    {geoActive ? "Events — Nearest First" : "This Week's Curated Events"}
+                  </h2>
+                  {hiddenByRadius > 0 && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
+                      📍 {hiddenByRadius} event{hiddenByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi hidden
+                    </span>
+                  )}
+                </div>
                 {visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
                     <p className="text-4xl mb-4">{CAT_CONFIG[categoryFilter].emoji}</p>
