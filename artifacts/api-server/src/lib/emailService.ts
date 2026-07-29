@@ -286,12 +286,13 @@ function buildStaticMapSection(
 
   const center = MAP_CENTERS[slug];
 
-  let mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${center.lat},${center.lng}&zoom=10&size=580x260&maptype=mapnik`;
+  // Self-hosted tile-stitcher — served from our own domain so email clients never block it
+  const baseUrl = siteUrl ?? "https://austin.eventcarpooling.com";
   const markers = geocoded.slice(0, 12);
-  for (const e of markers) {
-    const icon = e.featured ? "yellow-pushpin" : "blue-pushpin";
-    mapUrl += `&markers=${e.lat},${e.lng},${icon}`;
-  }
+  const markerParam = markers
+    .map((e) => `${e.lat},${e.lng},${e.featured ? "yellow" : "blue"}`)
+    .join("|");
+  const mapUrl = `${baseUrl}/api/map-image?center=${center.lat},${center.lng}&zoom=10&size=580x260&markers=${encodeURIComponent(markerParam)}`;
 
   const cityLabel = CITY_LABELS[slug] ?? slug;
   const linkUrl = siteUrl && digestId ? `${siteUrl}/digest/${digestId}` : null;

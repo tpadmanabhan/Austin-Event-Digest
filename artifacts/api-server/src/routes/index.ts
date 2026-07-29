@@ -6,12 +6,14 @@ import rsvpRouter from "./rsvp";
 import adminRouter from "./admin";
 import tenantsRouter from "./tenants";
 import gamificationRouter from "./gamification";
+import mapImageRouter from "./mapImage";
 import { requireTenant, requirePlatformRoot } from "../middleware/resolveTenant";
 
 const router: IRouter = Router();
 
 // Platform-level routes — no tenant required (work on root domain)
 router.use(healthRouter);
+router.use(mapImageRouter);
 // Tenant config + list are used by city subdomains too — no host guard.
 // requirePlatformRoot is applied per-route inside tenantsRouter for onboarding-only endpoints.
 router.use(tenantsRouter);

@@ -131,3 +131,9 @@ id = "XvgKaFEBI636MCQh5kEM3"
 uri = "file://attached_assets/screenshots/logo_less_uber.png"
 type = "image"
 title = "Event Carpooling — Less Uber · More Neighbor logo"
+
+[[outputs]]
+id = "A_vxr_VzYswOrEMahMtDL"
+uri = "file://maptest.png"
+type = "image"
+title = "Email map image — Austin (580×260)"
