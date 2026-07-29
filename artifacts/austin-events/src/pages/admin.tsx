@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe, BookmarkCheck, MapPin, RefreshCw } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe, BookmarkCheck, MapPin, RefreshCw, Pencil, Check, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
@@ -181,6 +181,10 @@ export default function AdminDashboard() {
 
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
+  const [editingVenue, setEditingVenue] = useState<{ digestId: number; eventIdx: number } | null>(null);
+  const [venueEditValue, setVenueEditValue] = useState("");
+  const [isSavingVenue, setIsSavingVenue] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     async function loadAdminEmail() {
@@ -346,6 +350,30 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Failed to add spotlight", description: err instanceof Error ? err.message : String(err) });
     } finally {
       type === "business" ? setIsAddingBiz(false) : setIsAddingComm(false);
+    }
+  };
+
+  const onSaveVenue = async (digestId: number, eventIdx: number) => {
+    const venue = venueEditValue.trim();
+    if (!venue) return;
+    setIsSavingVenue(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/events/digest/${digestId}/events/${eventIdx}/venue`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ venue }),
+      });
+      const data = await res.json() as { success?: boolean; event?: { lat?: number | null; lng?: number | null }; message?: string };
+      if (!res.ok) throw new Error(data.message || "Failed to update venue");
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      setEditingVenue(null);
+      const geocodeMsg = data.event?.lat != null ? "Venue updated and geocoded ✓" : "Venue updated — geocoding not found";
+      toast({ title: geocodeMsg });
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Failed to update venue", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsSavingVenue(false);
     }
   };
 
@@ -1094,7 +1122,59 @@ export default function AdminDashboard() {
                                         </div>
                                         <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                                           {ev.date && <span className="text-xs text-muted-foreground">{ev.date}</span>}
-                                          {ev.venue && <span className="text-xs text-muted-foreground">📍 {ev.venue}</span>}
+                                          {ev.venue && (
+                                            tenant.slug === "austin" ? (
+                                              editingVenue?.digestId === digest.id && editingVenue?.eventIdx === i ? (
+                                                <span className="inline-flex items-center gap-1">
+                                                  <Input
+                                                    value={venueEditValue}
+                                                    onChange={(e) => setVenueEditValue(e.target.value)}
+                                                    className="h-6 text-xs py-0 px-2 w-56"
+                                                    placeholder="Venue name or address"
+                                                    autoFocus
+                                                    onKeyDown={(e) => {
+                                                      if (e.key === "Enter") onSaveVenue(digest.id, i);
+                                                      if (e.key === "Escape") setEditingVenue(null);
+                                                    }}
+                                                  />
+                                                  <button
+                                                    onClick={() => onSaveVenue(digest.id, i)}
+                                                    disabled={isSavingVenue}
+                                                    title="Save venue"
+                                                    className="inline-flex items-center justify-center w-5 h-5 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                                                  >
+                                                    {isSavingVenue ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                                  </button>
+                                                  <button
+                                                    onClick={() => setEditingVenue(null)}
+                                                    title="Cancel"
+                                                    className="inline-flex items-center justify-center w-5 h-5 rounded bg-muted text-muted-foreground hover:bg-muted/80"
+                                                  >
+                                                    <X className="w-3 h-3" />
+                                                  </button>
+                                                </span>
+                                              ) : (
+                                                <span className="inline-flex items-center gap-1 group">
+                                                  <span
+                                                    title={ev.lat != null ? "Geocoded ✓" : "Not geocoded — click Fix to correct venue"}
+                                                    className="text-xs"
+                                                  >
+                                                    {ev.lat != null ? "📍" : "❌"}
+                                                  </span>
+                                                  <span className="text-xs text-muted-foreground">{ev.venue}</span>
+                                                  <button
+                                                    onClick={() => { setEditingVenue({ digestId: digest.id, eventIdx: i }); setVenueEditValue(ev.venue); }}
+                                                    title="Fix venue"
+                                                    className={`inline-flex items-center gap-0.5 text-[10px] font-medium transition-opacity ${ev.lat != null ? "opacity-0 group-hover:opacity-100" : "opacity-100"} text-primary hover:underline`}
+                                                  >
+                                                    <Pencil className="w-2.5 h-2.5" />Fix
+                                                  </button>
+                                                </span>
+                                              )
+                                            ) : (
+                                              <span className="text-xs text-muted-foreground">📍 {ev.venue}</span>
+                                            )
+                                          )}
                                           {ev.category && (
                                             <span className="inline-flex px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">{ev.category}</span>
                                           )}

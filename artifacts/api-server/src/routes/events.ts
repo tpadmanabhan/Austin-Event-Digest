@@ -16,7 +16,7 @@ import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } fro
 import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
 import { extractEventsFromSources } from "../lib/urlEventExtractor";
-import { geocodeAndPatchDigest } from "../lib/geocodeVenue";
+import { geocodeAndPatchDigest, geocodeEvents } from "../lib/geocodeVenue";
 import { signSubscriberToken } from "../lib/subscriberToken";
 
 const router: IRouter = Router();
@@ -442,6 +442,69 @@ router.post("/digest/:id/regeocoded", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error starting re-geocode");
     res.status(500).json({ error: "server_error", message: "Failed to start re-geocode" });
+  }
+});
+
+// PATCH /digest/:id/events/:idx/venue — update a single event's venue and re-geocode it synchronously
+router.patch("/digest/:id/events/:idx/venue", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  const idx = parseInt(req.params["idx"] as string, 10);
+  if (isNaN(id) || isNaN(idx)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id or event index" });
+    return;
+  }
+  const { venue } = (req.body || {}) as { venue?: unknown };
+  if (typeof venue !== "string" || !venue.trim()) {
+    res.status(400).json({ error: "invalid_request", message: "venue string is required" });
+    return;
+  }
+  try {
+    const [digest] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .limit(1);
+    if (!digest) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+    const events = (digest.events as Array<Record<string, unknown>>) || [];
+    if (idx < 0 || idx >= events.length) {
+      res.status(400).json({ error: "invalid_request", message: "Event index out of range" });
+      return;
+    }
+
+    // Clear existing coordinates so the geocoder re-runs for the new venue text
+    const updatedEvent: Record<string, unknown> = { ...events[idx], venue: venue.trim() };
+    delete updatedEvent["lat"];
+    delete updatedEvent["lng"];
+
+    // Geocode just this single event (synchronous so the response includes fresh coords)
+    const geocoded = await geocodeEvents([updatedEvent]);
+    const finalEvent = geocoded[0] ?? updatedEvent;
+
+    const finalEvents = [
+      ...events.slice(0, idx),
+      finalEvent,
+      ...events.slice(idx + 1),
+    ];
+
+    const [updated] = await db
+      .update(digestsTable)
+      .set({ events: finalEvents as any })
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "not_found", message: "Digest not found after update" });
+      return;
+    }
+
+    req.log.info({ digestId: id, idx, venue: venue.trim(), geocoded: finalEvent["lat"] != null }, "Event venue patched and re-geocoded");
+    res.json({ success: true, event: finalEvent, digest: digestToApi(updated) });
+  } catch (err) {
+    req.log.error({ err }, "Error updating event venue");
+    res.status(500).json({ error: "server_error", message: "Failed to update venue" });
   }
 });
 
