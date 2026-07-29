@@ -163,9 +163,14 @@ export default function DigestView() {
       const saved = localStorage.getItem(GEO_KEY);
       if (saved) {
         const coords = JSON.parse(saved) as { lat: number; lng: number };
-        if (coords?.lat && coords?.lng) {
+        const validLat = typeof coords?.lat === "number" && coords.lat >= -90  && coords.lat <= 90;
+        const validLng = typeof coords?.lng === "number" && coords.lng >= -180 && coords.lng <= 180;
+        if (validLat && validLng) {
           setUserCoords(coords);
           setGeoStatus("active");
+        } else {
+          // Corrupted / swapped coords — discard so the user can re-detect cleanly
+          localStorage.removeItem(GEO_KEY);
         }
       }
     } catch {}
