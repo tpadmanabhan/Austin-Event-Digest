@@ -5,6 +5,19 @@ import { MapPin, Check, ExternalLink, ArrowRight, Users, Globe, Star } from "luc
 import { PlatformLayout } from "@/components/platform-layout";
 import { useLang } from "@/contexts/lang-context";
 import { LaunchCityModal } from "@/components/launch-city-modal";
+import { EventMap } from "@/components/event-map";
+
+const PLATFORM_MAP_EVENTS = [
+  { title: "Tech Meetup @ The Domain",      lat: 30.401, lng: -97.723, category: "Tech",    featured: false },
+  { title: "Live Music on 6th Street",       lat: 30.268, lng: -97.740, category: "Arts",    featured: true  },
+  { title: "SoCo Arts Festival",             lat: 30.244, lng: -97.750, category: "Arts",    featured: false },
+  { title: "Mueller Farmers Market",         lat: 30.300, lng: -97.702, category: "Arts",    featured: false },
+  { title: "Yoga in Zilker Park",            lat: 30.266, lng: -97.768, category: "Wellness",featured: false },
+  { title: "Round Rock Startup Summit",      lat: 30.508, lng: -97.679, category: "Tech",    featured: false },
+  { title: "Domain Food Festival",           lat: 30.403, lng: -97.730, category: "Arts",    featured: false },
+  { title: "Cedar Park Family Fun Day",      lat: 30.504, lng: -97.821, category: "Sports",  featured: false },
+  { title: "Pflugerville Civic Night",       lat: 30.437, lng: -97.619, category: "Civics",  featured: false },
+];
 
 interface TenantSummary {
   slug: string;
@@ -266,6 +279,51 @@ function PlatformHomeInner() {
               ))}
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* CITY MAP SHOWCASE */}
+      <section className="py-16 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-8"
+          >
+            <div
+              className="inline-block rounded-full px-3.5 py-1 text-xs font-bold uppercase tracking-widest mb-4"
+              style={{ background: "#dcfce7", color: "#15803d" }}
+            >
+              🗺️ Live Near You
+            </div>
+            <h2 className="font-serif text-4xl font-bold mb-3" style={{ color: "#0f172a" }}>
+              Events happening across your city
+            </h2>
+            <p style={{ color: "#64748b" }}>
+              Every week, hand-picked events pinned on a live map — sorted by distance from wherever you are.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="rounded-3xl overflow-hidden shadow-xl border border-border"
+          >
+            <EventMap
+              events={PLATFORM_MAP_EVENTS}
+              center={[30.360, -97.720]}
+              radiusMiles={40}
+              height={420}
+            />
+          </motion.div>
+
+          <p className="text-center text-xs text-muted-foreground mt-3">
+            Sample pins shown for illustration — Austin, TX area
+          </p>
         </div>
       </section>
 
