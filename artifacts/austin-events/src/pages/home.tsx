@@ -75,8 +75,11 @@ export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
   const tenant = useTenant();
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
-  const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "active" | "denied">("idle");
+  const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "active" | "denied" | "manual">("idle");
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [manualAddress, setManualAddress] = useState("");
+  const [manualGeoLoading, setManualGeoLoading] = useState(false);
+  const [manualGeoError, setManualGeoError] = useState("");
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [featureEmail, setFeatureEmail] = useState("");
   const [featureStatus, setFeatureStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
@@ -363,7 +366,13 @@ export default function Home() {
                           setUserCoords(null);
                           return;
                         }
-                        if (geoStatus === "loading") return;
+                        if (geoStatus === "loading" || geoStatus === "manual") return;
+                        if (geoStatus === "denied") {
+                          setGeoStatus("manual");
+                          setManualAddress("");
+                          setManualGeoError("");
+                          return;
+                        }
                         setGeoStatus("loading");
                         navigator.geolocation.getCurrentPosition(
                           (pos) => {
@@ -389,7 +398,67 @@ export default function Home() {
                       )}
                     </button>
                     {geoStatus === "denied" && (
-                      <span className="text-xs text-destructive self-center">Location unavailable</span>
+                      <span
+                        className="text-xs text-destructive self-center cursor-pointer underline underline-offset-2"
+                        onClick={() => { setGeoStatus("manual"); setManualAddress(""); setManualGeoError(""); }}
+                      >
+                        Location blocked — enter address instead
+                      </span>
+                    )}
+                    {geoStatus === "manual" && (
+                      <form
+                        className="flex items-center gap-1.5"
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          const q = manualAddress.trim();
+                          if (!q) return;
+                          setManualGeoLoading(true);
+                          setManualGeoError("");
+                          try {
+                            const res = await fetch(
+                              `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
+                              { headers: { "Accept-Language": "en" } }
+                            );
+                            const data = await res.json() as Array<{ lat: string; lon: string }>;
+                            if (data.length > 0) {
+                              setUserCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+                              setGeoStatus("active");
+                              setManualAddress("");
+                            } else {
+                              setManualGeoError("Address not found");
+                            }
+                          } catch {
+                            setManualGeoError("Geocoding failed");
+                          } finally {
+                            setManualGeoLoading(false);
+                          }
+                        }}
+                      >
+                        <input
+                          autoFocus
+                          value={manualAddress}
+                          onChange={(e) => setManualAddress(e.target.value)}
+                          placeholder="e.g. Rainey Street, Austin TX"
+                          className="px-3 py-1.5 rounded-full text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
+                        />
+                        <button
+                          type="submit"
+                          disabled={manualGeoLoading || !manualAddress.trim()}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground disabled:opacity-50"
+                        >
+                          {manualGeoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Go"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setGeoStatus("idle"); setManualGeoError(""); }}
+                          className="text-muted-foreground hover:text-foreground text-sm px-1"
+                        >
+                          ✕
+                        </button>
+                        {manualGeoError && (
+                          <span className="text-xs text-destructive">{manualGeoError}</span>
+                        )}
+                      </form>
                     )}
                   </>
                 )}
