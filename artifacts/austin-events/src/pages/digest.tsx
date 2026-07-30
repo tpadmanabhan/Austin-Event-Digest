@@ -584,8 +584,8 @@ export default function DigestView() {
                             <img
                               src={biz.imageUrl}
                               alt={biz.title}
-                              className="w-full object-cover"
-                              style={{ height: "200px" }}
+                              className="w-full object-contain bg-gray-50"
+                              style={{ maxHeight: "260px" }}
                               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                             />
                           </a>
@@ -636,8 +636,8 @@ export default function DigestView() {
                             <img
                               src={post.imageUrl}
                               alt={post.title}
-                              className="w-full object-cover"
-                              style={{ height: "200px" }}
+                              className="w-full object-contain bg-gray-50"
+                              style={{ maxHeight: "260px" }}
                               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                             />
                           </a>
