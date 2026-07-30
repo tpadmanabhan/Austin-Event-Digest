@@ -10,8 +10,8 @@ export interface TenantConfig {
   digestTitle: string | null;
   firstRun: boolean;
   hasEmailAdmin: boolean;
-  heroImageUrl?: string | null;
-  brandIconUrl?: string | null;
+  hasHeroImage?: boolean;
+  hasBrandIcon?: boolean;
 }
 
 const TenantContext = createContext<TenantConfig | null>(null);

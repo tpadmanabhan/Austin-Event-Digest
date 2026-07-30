@@ -111,20 +111,20 @@ export default function Home() {
   };
   const showMap = tenant.slug in MAP_CENTERS;
   const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
-  const heroImage = tenant.heroImageUrl
-    ? null   // custom URL — handled separately below
-    : isAustinCares
-      ? "brushycreek-hero.jpg"
-      : tenant.slug === "austincares"
-        ? "austincares-hero.svg"
-        : isPortland
-          ? "portland-hero.jpg"
-          : isSacramento
-            ? "sacramento-hero.jpg"
-            : isBulverde
-              ? "bulverde-hero.jpg"
-              : "austin-hero.png";
-  const heroSrc = tenant.heroImageUrl ?? (heroImage ? `${import.meta.env.BASE_URL}images/${heroImage}` : "");
+  const heroImage = isAustinCares
+    ? "brushycreek-hero.jpg"
+    : tenant.slug === "austincares"
+      ? "austincares-hero.svg"
+      : isPortland
+        ? "portland-hero.jpg"
+        : isSacramento
+          ? "sacramento-hero.jpg"
+          : isBulverde
+            ? "bulverde-hero.jpg"
+            : "austin-hero.png";
+  const heroSrc = tenant.hasHeroImage
+    ? `/api/tenant/image/hero?slug=${encodeURIComponent(tenant.slug)}`
+    : `${import.meta.env.BASE_URL}images/${heroImage}`;
   const heroAlt = isAustinCares
     ? "High school student leaders taking charge"
     : tenant.slug === "austincares"

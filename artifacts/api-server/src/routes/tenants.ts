@@ -110,11 +110,53 @@ router.get("/tenant/config", async (req, res) => {
       return;
     }
 
-    const { adminEmail: _adminEmail, ...publicTenant } = tenant;
-    res.json({ tenant: { ...publicTenant, hasEmailAdmin: !!_adminEmail, heroImageUrl: tenant.heroImageUrl ?? null, brandIconUrl: tenant.brandIconUrl ?? null } });
+    const { adminEmail: _adminEmail, heroImageUrl: _hero, brandIconUrl: _icon, ...publicTenant } = tenant;
+    res.json({
+      tenant: {
+        ...publicTenant,
+        hasEmailAdmin: !!_adminEmail,
+        hasHeroImage: !!_hero,
+        hasBrandIcon: !!_icon,
+      },
+    });
   } catch (err) {
     req.log.error({ err }, "Error fetching tenant config");
     res.status(500).json({ error: "server_error", message: "Failed to fetch tenant config" });
+  }
+});
+
+// Serve hero or brand icon image for a tenant — public, aggressively cached
+router.get("/tenant/image/:type", async (req, res) => {
+  const slug = req.query.slug as string | undefined;
+  const type = req.params.type as string;
+  if (!slug || (type !== "hero" && type !== "icon")) {
+    res.status(400).json({ error: "invalid_request", message: "slug and type (hero|icon) are required" });
+    return;
+  }
+  try {
+    const [tenant] = await db
+      .select({ heroImageUrl: tenantsTable.heroImageUrl, brandIconUrl: tenantsTable.brandIconUrl })
+      .from(tenantsTable)
+      .where(eq(tenantsTable.slug, slug))
+      .limit(1);
+
+    const dataUrl = type === "hero" ? tenant?.heroImageUrl : tenant?.brandIconUrl;
+    if (!dataUrl) { res.status(404).end(); return; }
+
+    // Parse "data:<mime>;base64,<data>" format
+    const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/s);
+    if (!m) { res.status(422).end(); return; }
+
+    const mimeType = m[1];
+    const buf = Buffer.from(m[2], "base64");
+
+    res.setHeader("Content-Type", mimeType);
+    res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=3600");
+    res.setHeader("Content-Length", buf.length);
+    res.end(buf);
+  } catch (err) {
+    req.log.error({ err }, "Error serving tenant image");
+    res.status(500).end();
   }
 });
 

@@ -27,9 +27,11 @@ export function AdminSettingsTab() {
   const [adminEmail, setAdminEmail] = useState("");
   const [initialAdminEmail, setInitialAdminEmail] = useState("");
 
-  // Image uploads (#81)
-  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(tenant.heroImageUrl ?? null);
-  const [brandIconUrl, setBrandIconUrl] = useState<string | null>(tenant.brandIconUrl ?? null);
+  // Image uploads (#81) — load from admin settings GET (not public tenant config)
+  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null);
+  const [brandIconUrl, setBrandIconUrl] = useState<string | null>(null);
+  const [initialHeroImageUrl, setInitialHeroImageUrl] = useState<string | null>(null);
+  const [initialBrandIconUrl, setInitialBrandIconUrl] = useState<string | null>(null);
   const [isUploadingHero, setIsUploadingHero] = useState(false);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const heroInputRef = useRef<HTMLInputElement>(null);
@@ -44,11 +46,17 @@ export function AdminSettingsTab() {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (!res.ok) return;
-        const data = await res.json() as { tenant?: { adminEmail?: string | null } };
+        const data = await res.json() as { tenant?: { adminEmail?: string | null; heroImageUrl?: string | null; brandIconUrl?: string | null } };
         const email = data.tenant?.adminEmail ?? "";
+        const hero = data.tenant?.heroImageUrl ?? null;
+        const icon = data.tenant?.brandIconUrl ?? null;
         if (!cancelled) {
           setAdminEmail(email);
           setInitialAdminEmail(email);
+          setHeroImageUrl(hero);
+          setInitialHeroImageUrl(hero);
+          setBrandIconUrl(icon);
+          setInitialBrandIconUrl(icon);
         }
       } catch {
         // non-critical
@@ -62,8 +70,8 @@ export function AdminSettingsTab() {
     name !== tenant.name ||
     accentColor !== tenant.accentColor ||
     adminEmail !== initialAdminEmail ||
-    heroImageUrl !== (tenant.heroImageUrl ?? null) ||
-    brandIconUrl !== (tenant.brandIconUrl ?? null) ||
+    heroImageUrl !== initialHeroImageUrl ||
+    brandIconUrl !== initialBrandIconUrl ||
     JSON.stringify([...categories].sort()) !== JSON.stringify([...tenant.categories].sort());
 
   function readFileAsDataUrl(file: File): Promise<string> {
@@ -143,8 +151,8 @@ export function AdminSettingsTab() {
           accentColor,
           categories,
           ...(adminEmail.trim() && adminEmail.trim() !== initialAdminEmail ? { adminEmail: adminEmail.trim() } : {}),
-          ...(heroImageUrl !== (tenant.heroImageUrl ?? null) ? { heroImageUrl } : {}),
-          ...(brandIconUrl !== (tenant.brandIconUrl ?? null) ? { brandIconUrl } : {}),
+          ...(heroImageUrl !== initialHeroImageUrl ? { heroImageUrl } : {}),
+          ...(brandIconUrl !== initialBrandIconUrl ? { brandIconUrl } : {}),
         }),
       });
 

@@ -24,9 +24,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : "h-8 w-8"}`}
                 style={isAustinCares || isPortland || isSacramento ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
-                {tenant.brandIconUrl ? (
+                {tenant.hasBrandIcon ? (
                   <img
-                    src={tenant.brandIconUrl}
+                    src={`/api/tenant/image/icon?slug=${encodeURIComponent(tenant.slug)}`}
                     alt={tenant.name}
                     className="h-full w-full object-cover object-center"
                   />
@@ -135,9 +135,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-40 h-20" : isBulverde ? "w-28 h-16" : "w-10 h-10"}`}
                 style={isAustinCares || isPortland || isSacramento ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
-                {tenant.brandIconUrl ? (
+                {tenant.hasBrandIcon ? (
                   <img
-                    src={tenant.brandIconUrl}
+                    src={`/api/tenant/image/icon?slug=${encodeURIComponent(tenant.slug)}`}
                     alt={tenant.name}
                     className="h-full w-full object-cover object-center"
                   />
