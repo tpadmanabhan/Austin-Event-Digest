@@ -586,7 +586,7 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Brushy Creek admin email migration failed (non-fatal)");
   }
 
-  for (const slug of ["portland", "sacramento"]) {
+  for (const slug of ["portland", "sacramento", "stlouis"]) {
     try {
       await db.execute(
         sql`UPDATE tenants SET admin_email = 'aiimplementationclubaustin@gmail.com', is_active = true, email_verified = true WHERE slug = ${slug} AND (admin_email IS NULL OR admin_email != 'aiimplementationclubaustin@gmail.com')`
