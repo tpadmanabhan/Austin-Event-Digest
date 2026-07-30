@@ -22,8 +22,8 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className={`flex items-center justify-between ${(isAustinCares || isBulverde) ? "h-20" : "h-14"}`}>
             <Link href="/" className="flex items-center gap-2 group">
               <div
-                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : isStLouis ? "h-12 w-12" : "h-8 w-8"}`}
-                style={isAustinCares || isPortland || isSacramento ? undefined : isStLouis ? { background: "#C41E3A", padding: "5px", borderRadius: "10px", boxShadow: "0 4px 12px rgba(196,30,58,0.4)" } : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
+                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : isStLouis ? "h-16 w-16" : "h-8 w-8"}`}
+                style={isAustinCares || isPortland || isSacramento ? undefined : isStLouis ? { background: "#C41E3A", padding: "7px", borderRadius: "10px", boxShadow: "0 4px 14px rgba(196,30,58,0.5)" } : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
                 {tenant.hasBrandIcon ? (
                   <img
