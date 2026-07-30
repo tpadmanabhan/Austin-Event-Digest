@@ -136,6 +136,7 @@ router.post("/", async (req, res) => {
             eventDate: event.date,
             eventVenue: event.venue,
             digestSubject: digest.subject,
+            newsletterName: req.tenant!.name,
           }).catch(() => {});
         }
       }
@@ -148,6 +149,7 @@ router.post("/", async (req, res) => {
           eventTitle: event.title,
           eventDate: event.date,
           eventVenue: event.venue,
+          newsletterName: req.tenant!.name,
         }).catch(() => {});
       }
 
@@ -160,6 +162,7 @@ router.post("/", async (req, res) => {
         eventVenue: event.venue,
         totalRsvps: priorRsvps.length + 1,
         adminEmail: req.tenant!.adminEmail,
+        newsletterName: req.tenant!.name,
       }).catch(() => {});
 
       req.log.info({ email: normalizedEmail, eventTitle, digestId, carpoolMatches: priorRsvps.length, verifiedBySignature }, "RSVP recorded");

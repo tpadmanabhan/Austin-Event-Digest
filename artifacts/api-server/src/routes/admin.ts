@@ -313,6 +313,7 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
           eventTitle: event.title,
           eventDate: event.date,
           eventVenue: event.venue,
+          newsletterName: req.tenant!.name,
         });
         results.push({ to: recipient.email, success: true, matchCount: others.length });
       } catch (err: any) {

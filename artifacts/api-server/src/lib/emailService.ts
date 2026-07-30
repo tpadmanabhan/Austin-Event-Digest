@@ -853,8 +853,10 @@ export async function sendCarpoolAdminNotification(opts: {
   eventVenue: string;
   totalRsvps: number;
   adminEmail?: string | null;
+  newsletterName?: string | null;
 }): Promise<void> {
   const name = opts.rsvperName || opts.rsvperEmail.split("@")[0];
+  const newsletterName = opts.newsletterName || "Raj's Austin Events";
   const html = `
 <!DOCTYPE html>
 <html>
@@ -863,7 +865,7 @@ export async function sendCarpoolAdminNotification(opts: {
   <div style="max-width:480px; margin:0 auto; padding:24px;">
     <div style="background:linear-gradient(135deg, #166534 0%, #14532d 100%); border-radius:14px; padding:24px; margin-bottom:20px; text-align:center;">
       <h1 style="margin:0 0 4px; color:#bbf7d0; font-size:22px; font-weight:800;">🚗 Carpool RSVP</h1>
-      <p style="margin:0; color:#86efac; font-size:13px;">Raj's Austin Events</p>
+      <p style="margin:0; color:#86efac; font-size:13px;">${newsletterName}</p>
     </div>
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px;">
       <p style="margin:0 0 14px; color:#1c1917; font-size:17px; font-weight:700;">New Carpool Signup</p>
@@ -918,9 +920,11 @@ export async function sendRsvpNotification(opts: {
   eventDate: string;
   eventVenue: string;
   digestSubject: string;
+  newsletterName?: string | null;
 }): Promise<void> {
   const firstName = opts.rsvperName.split(" ")[0];
   const shortTitle = opts.eventTitle.length > 60 ? opts.eventTitle.substring(0, 60).trimEnd() + "…" : opts.eventTitle;
+  const newsletterName = opts.newsletterName || "Raj's Austin Events";
 
   const html = `
 <!DOCTYPE html>
@@ -934,7 +938,7 @@ export async function sendRsvpNotification(opts: {
     <div style="background:linear-gradient(135deg, #166534 0%, #14532d 100%); border-radius:16px; padding:28px; margin-bottom:20px; text-align:center;">
       <div style="font-size:36px; margin-bottom:8px;">🚗</div>
       <h1 style="margin:0 0 4px; color:#bbf7d0; font-size:20px; font-weight:800;">Carpool Match!</h1>
-      <p style="margin:0; color:#86efac; font-size:13px;">Raj's Austin Events</p>
+      <p style="margin:0; color:#86efac; font-size:13px;">${newsletterName}</p>
     </div>
     <div style="background:#fff; border:1px solid #bbf7d0; border-radius:12px; padding:24px; margin-bottom:20px;">
       <p style="margin:0 0 16px; color:#14532d; font-size:20px; font-weight:700;">${firstName} also wants to carpool! 🚗</p>
@@ -952,7 +956,7 @@ export async function sendRsvpNotification(opts: {
       </p>
     </div>
     <div style="text-align:center; padding-top:8px;">
-      <p style="margin:0; color:#6b7280; font-size:12px;">Raj's Austin Events · Austin, TX</p>
+      <p style="margin:0; color:#6b7280; font-size:12px;">${newsletterName}</p>
     </div>
   </div>
 </body>
@@ -978,10 +982,12 @@ export async function sendRsvpGroupNotification(opts: {
   eventTitle: string;
   eventDate: string;
   eventVenue: string;
+  newsletterName?: string | null;
 }): Promise<void> {
   if (opts.matches.length === 0) return;
 
   const shortTitle = opts.eventTitle.length > 60 ? opts.eventTitle.substring(0, 60).trimEnd() + "…" : opts.eventTitle;
+  const newsletterName = opts.newsletterName || "Raj's Austin Events";
   const count = opts.matches.length;
   const headline = count === 1
     ? `${opts.matches[0].name.split(" ")[0]} wants to carpool! 🚗`
@@ -1002,7 +1008,7 @@ export async function sendRsvpGroupNotification(opts: {
     <div style="background:linear-gradient(135deg, #166534 0%, #14532d 100%); border-radius:16px; padding:28px; margin-bottom:20px; text-align:center;">
       <div style="font-size:36px; margin-bottom:8px;">🚗</div>
       <h1 style="margin:0 0 4px; color:#bbf7d0; font-size:20px; font-weight:800;">Carpool Match${count > 1 ? "es" : ""}!</h1>
-      <p style="margin:0; color:#86efac; font-size:13px;">Raj's Austin Events</p>
+      <p style="margin:0; color:#86efac; font-size:13px;">${newsletterName}</p>
     </div>
     <div style="background:#fff; border:1px solid #bbf7d0; border-radius:12px; padding:24px; margin-bottom:20px;">
       <p style="margin:0 0 16px; color:#14532d; font-size:20px; font-weight:700;">${headline}</p>
@@ -1019,7 +1025,7 @@ export async function sendRsvpGroupNotification(opts: {
       </p>
     </div>
     <div style="text-align:center; padding-top:8px;">
-      <p style="margin:0; color:#6b7280; font-size:12px;">Raj's Austin Events · Austin, TX</p>
+      <p style="margin:0; color:#6b7280; font-size:12px;">${newsletterName}</p>
     </div>
   </div>
 </body>
