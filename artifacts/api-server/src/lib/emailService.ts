@@ -606,15 +606,25 @@ export function buildDigestEmailHtml(digest: {
 
   const buildSpotlightCard = (event: (typeof digest.events)[number], accentColor: string, labelText: string, labelEmoji: string) => {
     const safeLink = safeHref(event.link);
-    const safeImageUrl = event.imageUrl ? safeHref(decodeHtmlEntities(event.imageUrl)) : null;
+    // Decode then escape directly — same pattern as regular event cards
+    const rawImageUrl = event.imageUrl ? decodeHtmlEntities(event.imageUrl).trim() : null;
+    const safeImageUrl = rawImageUrl && (rawImageUrl.startsWith("https://") || rawImageUrl.startsWith("http://"))
+      ? escapeHtml(rawImageUrl)
+      : null;
     return `
-    <div style="border:1.5px solid ${accentColor}33; border-radius:14px; overflow:hidden; margin-bottom:16px; background:#fff;">
-      ${safeImageUrl ? `<img src="${escapeHtml(safeImageUrl)}" alt="${escapeHtml(event.title)}" style="width:100%; max-height:200px; object-fit:cover; display:block;" />` : ""}
-      <div style="padding:20px;">
-        <h3 style="margin:0 0 8px; font-size:17px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
-        ${event.description ? `<p style="margin:0 0 12px; color:#44403c; font-size:14px; line-height:1.65;">${escapeHtml(event.description)}</p>` : ""}
+    <div style="border-radius:16px; overflow:hidden; margin-bottom:20px; border:1px solid ${accentColor}33; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+      ${safeImageUrl
+        ? `<a href="${safeLink || "#"}" style="display:block; line-height:0;"><img src="${safeImageUrl}" alt="${escapeHtml(event.title)}" width="580" style="width:100%; height:220px; max-height:220px; object-fit:cover; display:block; border:none;" /></a>`
+        : `<div style="height:8px; background:${accentColor};"></div>`
+      }
+      <div style="background:${accentColor}; padding:7px 20px;">
+        <span style="color:#fff; font-size:11px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">${labelEmoji} ${labelText}</span>
+      </div>
+      <div style="padding:20px; background:#fff;">
+        <h3 style="margin:0 0 8px; font-size:18px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
+        ${event.description ? `<p style="margin:0 0 14px; color:#44403c; font-size:14px; line-height:1.7;">${escapeHtml(event.description)}</p>` : ""}
         ${event.deadline ? `<p style="margin:0 0 12px; color:#b45309; font-size:13px; font-weight:600;">⏰ Deadline: ${escapeHtml(event.deadline)}</p>` : ""}
-        ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:${accentColor}; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">Learn More →</a>` : ""}
+        ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:${accentColor}; color:#fff; padding:9px 20px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:700;">Learn More →</a>` : ""}
       </div>
     </div>
   `;
