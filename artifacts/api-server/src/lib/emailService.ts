@@ -408,6 +408,28 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(92,122,62,0.35)",
     rideBtnBg: "#c8d9b0",
     rideBtnColor: "#1e2d14",
+  } : slug === "stlouis" ? {
+    headerGradient: "linear-gradient(135deg, #3d000d 0%, #7a0e1a 55%, #C41E3A 100%)",
+    primary: "#C41E3A",
+    primaryBtn: "#C41E3A",
+    primaryDark: "#7a0e1a",
+    primaryLight: "#fde8ec",
+    primaryMuted: "#f9b8c4",
+    textOnDark: "#fde8ec",
+    textMutedOnDark: "#f5b8c4",
+    textStrong: "#ffffff",
+    linkColor: "#C41E3A",
+    curatorName: "Phil",
+    curatorUrl: null as string | null,
+    cityGuideText: "Your weekly guide to what's happening in St. Louis",
+    digestDisplayName: tenant?.digestTitle || "Phil's St. Louis Events",
+    headerEmoji: "⚾",
+    eventBtnColor: "#C41E3A",
+    eventBtnBorder: "#C41E3A",
+    pillText: "rgba(253,216,224,0.9)",
+    pillBorder: "rgba(196,30,58,0.35)",
+    rideBtnBg: "#C41E3A",
+    rideBtnColor: "#fff",
   } : slug === "brushycreek" ? {
     headerGradient: "linear-gradient(135deg, #064e3b 0%, #065f46 55%, #047857 100%)",
     primary: "#15803d",
@@ -584,12 +606,16 @@ export function buildDigestEmailHtml(digest: {
 
   const buildSpotlightCard = (event: (typeof digest.events)[number], accentColor: string, labelText: string, labelEmoji: string) => {
     const safeLink = safeHref(event.link);
+    const safeImageUrl = event.imageUrl ? safeHref(decodeHtmlEntities(event.imageUrl)) : null;
     return `
-    <div style="border:1.5px solid ${accentColor}33; border-radius:14px; padding:20px; margin-bottom:16px; background:#fff;">
-      <h3 style="margin:0 0 8px; font-size:17px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
-      ${event.description ? `<p style="margin:0 0 12px; color:#44403c; font-size:14px; line-height:1.65;">${escapeHtml(event.description)}</p>` : ""}
-      ${event.deadline ? `<p style="margin:0 0 12px; color:#b45309; font-size:13px; font-weight:600;">⏰ Deadline: ${escapeHtml(event.deadline)}</p>` : ""}
-      ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:${accentColor}; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">Learn More →</a>` : ""}
+    <div style="border:1.5px solid ${accentColor}33; border-radius:14px; overflow:hidden; margin-bottom:16px; background:#fff;">
+      ${safeImageUrl ? `<img src="${escapeHtml(safeImageUrl)}" alt="${escapeHtml(event.title)}" style="width:100%; max-height:200px; object-fit:cover; display:block;" />` : ""}
+      <div style="padding:20px;">
+        <h3 style="margin:0 0 8px; font-size:17px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
+        ${event.description ? `<p style="margin:0 0 12px; color:#44403c; font-size:14px; line-height:1.65;">${escapeHtml(event.description)}</p>` : ""}
+        ${event.deadline ? `<p style="margin:0 0 12px; color:#b45309; font-size:13px; font-weight:600;">⏰ Deadline: ${escapeHtml(event.deadline)}</p>` : ""}
+        ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:${accentColor}; color:#fff; padding:8px 18px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600;">Learn More →</a>` : ""}
+      </div>
     </div>
   `;
   };
@@ -621,6 +647,7 @@ export function buildDigestEmailHtml(digest: {
       </div>
       <p style="margin:0; color:${theme.textOnDark}; font-size:14px;">${theme.cityGuideText}</p>
       <p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">Week of ${weekDate}</p>
+      ${theme.curatorName ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:12px; font-style:italic;">Curated by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.textMutedOnDark}; text-decoration:underline;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
     </div>
 
     <!-- Intro -->
@@ -784,7 +811,7 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
-      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">${theme.curatorName ? `Curated with ❤️ by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : slug === "bulverde" ? " from Bulverde, TX" : " from Austin, TX"}` : `Curated with ❤️ for ${escapeHtml(cityName)}, TX`}</p>
+      <p style="margin:0 0 6px; color:#78716c; font-size:13px;">${theme.curatorName ? `Curated with ❤️ by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : slug === "bulverde" ? " from Bulverde, TX" : slug === "stlouis" ? " from St. Louis, MO" : " from Austin, TX"}` : `Curated with ❤️ for ${escapeHtml(cityName)}`}</p>
       <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at ${escapeHtml(theme.digestDisplayName)}.</p>
       ${unsubscribeUrl ? `<p style="margin:12px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#a8a29e; font-size:11px; text-decoration:underline;">Unsubscribe</a></p>` : ""}
     </div>

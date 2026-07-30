@@ -100,11 +100,59 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string): Gener
   };
 }
 
-export function getStLouisSampleDigest(dateRange: string): { subject: string; intro: string; events: typeof SAMPLE_EVENTS } {
+export function getStLouisSampleDigest(dateRange: string): { subject: string; intro: string; events: EventItem[] } {
+  const STL_SAMPLE_EVENTS: EventItem[] = [
+    {
+      title: "Gateway Arch Sunrise Hike",
+      date: "Sunday at 6:30 AM",
+      venue: "Gateway Arch National Park, St. Louis, MO",
+      description: "Start your week with a sunrise walk along the Mississippi riverfront and take in the Arch at golden hour. Free and open to all — one of St. Louis's most iconic views.",
+      link: "https://www.nps.gov/jeff/index.htm",
+      category: "Outdoors & Fitness",
+      imageUrl: null,
+    },
+    {
+      title: "Soulard Farmers Market",
+      date: "Saturday at 8:00 AM",
+      venue: "730 Carroll St, St. Louis, MO 63104",
+      description: "One of the oldest farmers markets in the country. Fresh produce, local vendors, live music, and the best breakfast burritos in the city. A St. Louis Saturday institution.",
+      link: "https://soulardmarket.com",
+      category: "Food & Markets",
+      imageUrl: null,
+    },
+    {
+      title: "St. Louis Art Museum: Free Admission",
+      date: "Tuesday at 10:00 AM",
+      venue: "1 Fine Arts Dr, Forest Park, St. Louis, MO",
+      description: "The Saint Louis Art Museum in Forest Park offers free general admission every day. World-class collection spanning 5,000 years — from Egyptian antiquities to contemporary art.",
+      link: "https://www.slam.org",
+      category: "Arts & Culture",
+      imageUrl: null,
+    },
+    {
+      title: "City Museum After Dark",
+      date: "Friday at 5:00 PM",
+      venue: "750 N 16th St, St. Louis, MO 63103",
+      description: "St. Louis's legendary playground for adults — a multi-story wonder of reclaimed architecture, caves, slides, and rooftop schoolbus. Unlike anything else in the world.",
+      link: "https://citymuseum.org",
+      category: "Arts & Culture",
+      imageUrl: null,
+    },
+    {
+      title: "Ballpark Village Live!",
+      date: "Saturday at 7:00 PM",
+      venue: "601 Clark Ave, St. Louis, MO 63102",
+      description: "Right next to Busch Stadium — live music, craft beer, and the best Cardinals pregame energy in the city. Free to enter, great views of the Arch.",
+      link: "https://www.stlballparkvillage.com",
+      category: "Music",
+      imageUrl: null,
+    },
+  ];
+
   return {
     subject: `⚾ Phil's St. Louis Events — Week of ${dateRange}`,
     intro: `Hey St. Louis! With the help of AI, I combed through various event newsletters and hand-picked some cool events happening around the city this week. Here's your curated digest — get out there and enjoy St. Louis! Let's Go Redbirds! 🔴`,
-    events: SAMPLE_EVENTS,
+    events: STL_SAMPLE_EVENTS,
   };
 }
 
