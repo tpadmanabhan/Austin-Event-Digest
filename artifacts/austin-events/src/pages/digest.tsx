@@ -293,6 +293,8 @@ export default function DigestView() {
                   <a href="https://www.minervaventures.com/what-we-do" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Marianna</a>
                 ) : tenant.slug === "sacramento" ? (
                   "Bob"
+                ) : tenant.slug === "stlouis" ? (
+                  "Phil"
                 ) : (
                   <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
                 )}
