@@ -475,17 +475,25 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ delay: bi * 0.1 }}
                         >
-                          <div className="relative rounded-3xl border-2 border-sky-400/60 bg-gradient-to-br from-sky-50/80 via-card to-card dark:from-sky-950/30 shadow-lg shadow-sky-100/40 dark:shadow-sky-900/20">
-                            <div className="h-1 rounded-t-3xl bg-gradient-to-r from-sky-400 via-cyan-300 to-sky-400" />
+                          <div className="relative rounded-3xl border-2 border-sky-400/60 bg-gradient-to-br from-sky-50/80 via-card to-card dark:from-sky-950/30 shadow-lg shadow-sky-100/40 dark:shadow-sky-900/20 overflow-hidden">
+                            {biz.imageUrl ? (
+                              <a href={biz.link || "#"} target="_blank" rel="noopener noreferrer" className="block">
+                                <img
+                                  src={biz.imageUrl}
+                                  alt={biz.title}
+                                  className="w-full object-cover"
+                                  style={{ height: "200px" }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                />
+                              </a>
+                            ) : null}
+                            <div className="px-4 py-2 bg-sky-500 flex items-center gap-2">
+                              <Trophy className="w-3 h-3 text-white" />
+                              <span className="text-xs font-bold text-white tracking-widest uppercase">Business Spotlight</span>
+                            </div>
                             <div className="p-6 sm:p-8">
-                              <div className="flex justify-end mb-3">
-                                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-sky-500 text-white shadow-sm">
-                                  <Trophy className="w-3 h-3" />
-                                  Business Spotlight
-                                </span>
-                              </div>
                               <div className="flex items-center gap-3 mb-3">
-                                {biz.link && (
+                                {!biz.imageUrl && biz.link && (
                                   <img
                                     src={`https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(biz.link).hostname; } catch { return ""; } })()}&sz=64`}
                                     alt=""
@@ -530,17 +538,25 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ delay: pi * 0.1 }}
                         >
-                          <div className="relative rounded-3xl border-2 border-green-400/60 bg-gradient-to-br from-green-50/80 via-card to-card dark:from-green-950/30 shadow-lg shadow-green-100/40 dark:shadow-green-900/20">
-                            <div className="h-1 rounded-t-3xl bg-gradient-to-r from-green-400 via-emerald-300 to-green-400" />
+                          <div className="relative rounded-3xl border-2 border-green-400/60 bg-gradient-to-br from-green-50/80 via-card to-card dark:from-green-950/30 shadow-lg shadow-green-100/40 dark:shadow-green-900/20 overflow-hidden">
+                            {post.imageUrl ? (
+                              <a href={post.link || "#"} target="_blank" rel="noopener noreferrer" className="block">
+                                <img
+                                  src={post.imageUrl}
+                                  alt={post.title}
+                                  className="w-full object-cover"
+                                  style={{ height: "200px" }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                />
+                              </a>
+                            ) : null}
+                            <div className="px-4 py-2 bg-green-600 flex items-center gap-2">
+                              <Leaf className="w-3 h-3 text-white" />
+                              <span className="text-xs font-bold text-white tracking-widest uppercase">Community Spotlight</span>
+                            </div>
                             <div className="p-6 sm:p-8">
-                              <div className="flex justify-end mb-3">
-                                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-green-500 text-white shadow-sm">
-                                  <Leaf className="w-3 h-3" />
-                                  Community Post
-                                </span>
-                              </div>
                               <div className="flex items-center gap-3 mb-3">
-                                {post.link && (
+                                {!post.imageUrl && post.link && (
                                   <img
                                     src={`https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(post.link).hostname; } catch { return ""; } })()}&sz=64`}
                                     alt=""
