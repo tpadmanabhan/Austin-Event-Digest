@@ -189,6 +189,11 @@ export default function AdminDashboard() {
 
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
+  // Manual add-subscriber form
+  const [addSubEmail, setAddSubEmail] = useState("");
+  const [addSubName, setAddSubName] = useState("");
+  const [isAddingSub, setIsAddingSub] = useState(false);
+
   const [editingVenue, setEditingVenue] = useState<{ digestId: number; eventIdx: number } | null>(null);
   const [venueEditValue, setVenueEditValue] = useState("");
   const [isSavingVenue, setIsSavingVenue] = useState(false);
@@ -570,6 +575,32 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Failed to update event" });
     } finally {
       setIsSavingEvent(false);
+    }
+  };
+
+  const onAddSubscriber = async () => {
+    if (!addSubEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addSubEmail.trim())) {
+      toast({ variant: "destructive", title: "Enter a valid email address." });
+      return;
+    }
+    setIsAddingSub(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch("/api/subscribers/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ email: addSubEmail.trim(), name: addSubName.trim() || undefined }),
+      });
+      const data = await res.json() as { success?: boolean; message?: string; alreadyExists?: boolean; reactivated?: boolean };
+      if (!res.ok) throw new Error(data.message || "Failed to add subscriber");
+      queryClient.invalidateQueries({ queryKey: ["subscribers"] });
+      toast({ title: data.alreadyExists ? "Already subscribed" : data.reactivated ? "Subscriber re-activated!" : "Subscriber added!" });
+      setAddSubEmail("");
+      setAddSubName("");
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Failed", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsAddingSub(false);
     }
   };
 
@@ -1582,6 +1613,38 @@ export default function AdminDashboard() {
           </TabsContent>
           
           <TabsContent value="subscribers" className="space-y-6 mt-0">
+            {/* Add subscriber manually */}
+            <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+              <h3 className="font-serif font-bold text-base mb-1">Add a subscriber</h3>
+              <p className="text-sm text-muted-foreground mb-4">Manually add someone to your list — no sign-up form needed.</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  value={addSubEmail}
+                  onChange={e => setAddSubEmail(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && onAddSubscriber()}
+                  className="rounded-xl sm:max-w-xs"
+                />
+                <Input
+                  type="text"
+                  placeholder="Name (optional)"
+                  value={addSubName}
+                  onChange={e => setAddSubName(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && onAddSubscriber()}
+                  className="rounded-xl sm:max-w-xs"
+                />
+                <Button
+                  onClick={onAddSubscriber}
+                  disabled={isAddingSub || !addSubEmail.trim()}
+                  className="rounded-xl gap-2 shrink-0"
+                >
+                  {isAddingSub ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {isAddingSub ? "Adding…" : "Add subscriber"}
+                </Button>
+              </div>
+            </div>
+
             <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap">
@@ -1591,13 +1654,14 @@ export default function AdminDashboard() {
                       <th className="px-6 py-4 font-medium">Name</th>
                       <th className="px-6 py-4 font-medium">Subscribed Date</th>
                       <th className="px-6 py-4 font-medium">Status</th>
+                      <th className="px-6 py-4 font-medium">Location preference</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {loadingSubs ? (
-                      <tr><td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">Loading...</td></tr>
+                      <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">Loading...</td></tr>
                     ) : subsData?.subscribers?.length === 0 ? (
-                      <tr><td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">No subscribers yet.</td></tr>
+                      <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">No subscribers yet.</td></tr>
                     ) : subsData?.subscribers?.map((sub) => (
                       <tr key={sub.id} className="hover:bg-muted/20 transition-colors">
                         <td className="px-6 py-4 font-medium">{sub.email}</td>
@@ -1610,6 +1674,25 @@ export default function AdminDashboard() {
                             <span className="inline-flex px-2 py-1 rounded-md bg-green-100 text-green-700 font-medium text-xs">Active</span>
                           ) : (
                             <span className="inline-flex px-2 py-1 rounded-md bg-zinc-100 text-zinc-600 font-medium text-xs">Unsubscribed</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {sub.displayAddress ? (
+                            <div className="space-y-1">
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                                sub.walkableOnly
+                                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  : "bg-primary/10 text-primary border-primary/20"
+                              }`}>
+                                <MapPin className="w-3 h-3" />
+                                {sub.walkableOnly ? "1 mi (walkable)" : `${sub.radiusMiles ?? 3} mi`}
+                              </span>
+                              <p className="text-xs text-muted-foreground truncate max-w-[180px]" title={sub.displayAddress}>
+                                {sub.displayAddress}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
                           )}
                         </td>
                       </tr>

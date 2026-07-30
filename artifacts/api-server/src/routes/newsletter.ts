@@ -178,6 +178,9 @@ router.get("/subscribers", requireAdmin, async (req, res) => {
         name: s.name,
         subscribedAt: s.subscribedAt,
         isActive: s.isActive,
+        radiusMiles: s.radiusMiles ?? null,
+        walkableOnly: s.walkableOnly ?? false,
+        displayAddress: s.anchorDisplayAddress ?? null,
       })),
       total: subscribers.filter(s => s.isActive).length,
     });
@@ -185,6 +188,49 @@ router.get("/subscribers", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error fetching subscribers");
     res.status(500).json({ error: "server_error", message: "Failed to fetch subscribers" });
+  }
+});
+
+// Admin-only: manually add a single subscriber (no captcha required)
+router.post("/subscribers/add", requireAdmin, async (req, res) => {
+  const { email: rawEmail, name: rawName } = req.body || {};
+  const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
+  const name = typeof rawName === "string" ? rawName.trim() || null : null;
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    res.status(400).json({ error: "invalid_request", message: "A valid email address is required." });
+    return;
+  }
+
+  const tenantId = req.tenant!.id;
+
+  try {
+    const existing = await db
+      .select()
+      .from(subscribersTable)
+      .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)))
+      .limit(1);
+
+    if (existing.length > 0) {
+      const sub = existing[0];
+      if (!sub.isActive) {
+        await db.update(subscribersTable)
+          .set({ isActive: true, ...(name ? { name } : {}) })
+          .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)));
+        res.json({ success: true, message: "Subscriber re-activated.", reactivated: true });
+        return;
+      }
+      res.json({ success: true, message: "Already subscribed.", alreadyExists: true });
+      return;
+    }
+
+    await db.insert(subscribersTable)
+      .values({ tenantId, email, name, isActive: true });
+
+    res.json({ success: true, message: "Subscriber added." });
+  } catch (err) {
+    req.log.error({ err }, "Error adding subscriber manually");
+    res.status(500).json({ error: "server_error", message: "Failed to add subscriber." });
   }
 });
 
