@@ -372,6 +372,7 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
     const title = (typeof titleOverride === "string" && titleOverride.trim()) ? titleOverride.trim() : meta.title;
     const description = (typeof descOverride === "string" && descOverride.trim()) ? descOverride.trim() : meta.description;
 
+    const { featured: featuredRaw } = req.body || {};
     const spotlight: EventItem = type === "event" ? {
       title: title || url,
       date: (typeof date === "string" && date.trim()) ? date.trim() : "",
@@ -381,7 +382,7 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
       imageUrl: meta.imageUrl,
       category: (typeof category === "string" && category.trim()) ? category.trim() : "Community",
       source: url,
-      featured: false,
+      featured: featuredRaw === true || featuredRaw === "true",
     } as EventItem : {
       title: title || url,
       date: "",
@@ -410,6 +411,96 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error adding spotlight to digest");
     res.status(500).json({ error: "server_error", message: "Failed to add spotlight" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Parse a single event URL and return structured fields for the admin form
+// ---------------------------------------------------------------------------
+router.post("/digest/:id/parse-event-url", requireAdmin, async (req, res) => {
+  const { url } = req.body || {};
+  if (typeof url !== "string" || !url.startsWith("http")) {
+    res.status(400).json({ error: "invalid_request", message: "url is required" });
+    return;
+  }
+  try {
+    let html = "";
+    try {
+      const pageRes = await fetch(url, {
+        signal: AbortSignal.timeout(12000),
+        redirect: "follow",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
+        },
+      });
+      if (pageRes.ok) html = await pageRes.text();
+    } catch { /* fall through to og fallback */ }
+
+    // Try JSON-LD Schema.org Event first
+    const jldRe = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+    let jldParsed: Record<string, unknown> | null = null;
+    for (const m of html.matchAll(jldRe)) {
+      try {
+        const d = JSON.parse(m[1]) as Record<string, unknown>;
+        const t = d["@type"];
+        if (t === "Event" || t === "MusicEvent" || t === "SportsEvent" || t === "SocialEvent") {
+          jldParsed = d; break;
+        }
+      } catch { /* skip malformed */ }
+    }
+
+    let title = "", date = "", venue = "", description = "", imageUrl: string | null = null;
+
+    if (jldParsed) {
+      title = String(jldParsed["name"] || "");
+      description = typeof jldParsed["description"] === "string"
+        ? jldParsed["description"].replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").slice(0, 400)
+        : "";
+      const img = jldParsed["image"];
+      imageUrl = Array.isArray(img) ? String(img[0]) : (typeof img === "string" ? img : null);
+
+      // Parse startDate into human-readable format
+      if (jldParsed["startDate"]) {
+        try {
+          const d = new Date(String(jldParsed["startDate"]));
+          if (!isNaN(d.getTime())) {
+            const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+            const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const hr = d.getHours(), min = String(d.getMinutes()).padStart(2, "0");
+            const ampm = hr >= 12 ? "PM" : "AM";
+            const hr12 = hr % 12 || 12;
+            date = `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()} at ${hr12}:${min} ${ampm}`;
+          }
+        } catch { /* ignore */ }
+      }
+
+      // Extract venue from location
+      const loc = jldParsed["location"] as Record<string, unknown> | string | undefined;
+      if (typeof loc === "string") {
+        venue = loc;
+      } else if (loc && typeof loc === "object") {
+        const locName = String((loc as any)["name"] || "");
+        const addr = (loc as any)["address"] as Record<string, unknown> | string | undefined;
+        const street = typeof addr === "string" ? addr : String((addr as any)?.["streetAddress"] || "");
+        const city   = typeof addr === "object" ? String((addr as any)?.["addressLocality"] || "") : "";
+        const state  = typeof addr === "object" ? String((addr as any)?.["addressRegion"] || "") : "";
+        venue = [locName, street, city, state].filter(Boolean).join(", ");
+      }
+    }
+
+    // Fallback to og/meta tags
+    if (!title || !description) {
+      const meta = await fetchUrlMeta(url);
+      if (!title) title = meta.title;
+      if (!description) description = meta.description;
+      if (!imageUrl) imageUrl = meta.imageUrl;
+    }
+
+    res.json({ success: true, event: { title, date, venue, description, imageUrl, link: url } });
+  } catch (err) {
+    req.log.warn({ url, err }, "Failed to parse event URL");
+    res.status(500).json({ error: "server_error", message: "Failed to parse URL" });
   }
 });
 

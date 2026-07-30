@@ -196,6 +196,9 @@ export default function AdminDashboard() {
   const [editingEvent, setEditingEvent] = useState<{ digestId: number; eventIdx: number } | null>(null);
   const [eventEditFields, setEventEditFields] = useState({ title: "", date: "", venue: "", category: "", description: "" });
   const [isSavingEvent, setIsSavingEvent] = useState(false);
+  const [isFetchingEventUrl, setIsFetchingEventUrl] = useState(false);
+  const [eventFeatured, setEventFeatured] = useState(false);
+  const [removingStale, setRemovingStale] = useState<number | null>(null);
 
   // Geocode coverage for the Send dialog (Austin only)
   const [sendDialogGeocov, setSendDialogGeocov] = useState<GeocovData | null>(null);
@@ -390,7 +393,7 @@ export default function AdminDashboard() {
         setSpotlightDigestId(targetDigestId);
         queryClient.invalidateQueries({ queryKey: ["digests"] });
       }
-      const body: Record<string, string> = { url: eventUrl.trim(), type: "event" };
+      const body: Record<string, unknown> = { url: eventUrl.trim(), type: "event", featured: eventFeatured };
       if (eventTitle.trim()) body.title = eventTitle.trim();
       if (eventDesc.trim()) body.description = eventDesc.trim();
       if (eventDate.trim()) body.date = eventDate.trim();
@@ -405,11 +408,76 @@ export default function AdminDashboard() {
       if (!res.ok) throw new Error(data.message || "Failed to add event");
       queryClient.invalidateQueries({ queryKey: ["digests"] });
       toast({ title: `Event added to digest #${targetDigestId}!` });
-      setEventUrl(""); setEventTitle(""); setEventDesc(""); setEventDate(""); setEventVenue(""); setEventCategory("");
+      setEventUrl(""); setEventTitle(""); setEventDesc(""); setEventDate(""); setEventVenue(""); setEventCategory(""); setEventFeatured(false);
     } catch (err: unknown) {
       toast({ variant: "destructive", title: "Failed to add event", description: err instanceof Error ? err.message : String(err) });
     } finally {
       setIsAddingEvent(false);
+    }
+  };
+
+  const onFetchEventUrl = async () => {
+    if (!eventUrl.trim().startsWith("http")) {
+      toast({ variant: "destructive", title: "Enter a URL first" });
+      return;
+    }
+    let targetId = spotlightDigestId;
+    if (targetId === null && digestsData?.digests?.length) targetId = digestsData.digests[0].id;
+    if (targetId === null) { toast({ variant: "destructive", title: "Select a digest first" }); return; }
+    setIsFetchingEventUrl(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/events/digest/${targetId}/parse-event-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ url: eventUrl.trim() }),
+      });
+      const data = await res.json() as { success?: boolean; event?: { title?: string; date?: string; venue?: string; description?: string }; message?: string };
+      if (!res.ok) throw new Error(data.message || "Failed to parse URL");
+      const ev = data.event || {};
+      if (ev.title) setEventTitle(ev.title);
+      if (ev.date) setEventDate(ev.date);
+      if (ev.venue) setEventVenue(ev.venue);
+      if (ev.description) setEventDesc(ev.description);
+      toast({ title: "Fields auto-filled from URL — review before adding" });
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Couldn't auto-fill", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsFetchingEventUrl(false);
+    }
+  };
+
+  const onRemoveStaleEvents = async (digestId: number, events: any[]) => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const MONTH_MAP: Record<string, number> = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+    const isStale = (ev: any): boolean => {
+      if (!ev.date || ev.isPost || ev.isBusinessSpotlight || ev.featured) return false;
+      const m = String(ev.date).match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+      if (!m) return false;
+      const key = m[1].substring(0,3);
+      const month = MONTH_MAP[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()];
+      if (month === undefined) return false;
+      return new Date(today.getFullYear(), month, parseInt(m[2], 10)) < today;
+    };
+    const fresh = events.filter((ev: any) => !isStale(ev));
+    const staleCount = events.length - fresh.length;
+    if (staleCount === 0) { toast({ title: "No past events found" }); return; }
+    setRemovingStale(digestId);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/events/digest/${digestId}/events`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ events: fresh }),
+      });
+      const data = await res.json() as { success?: boolean; message?: string };
+      if (!res.ok) throw new Error(data.message || "Failed to update");
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      toast({ title: `Removed ${staleCount} past event${staleCount > 1 ? "s" : ""}` });
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Failed", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setRemovingStale(null);
     }
   };
 
@@ -1180,23 +1248,47 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                 </div>
-                <Input type="url" placeholder="https://eventbrite.com/e/... or any event URL" value={eventUrl} onChange={e => setEventUrl(e.target.value)} className="rounded-xl text-sm" />
-                <Input type="text" placeholder="Title (auto-filled from URL)" value={eventTitle} onChange={e => setEventTitle(e.target.value)} className="rounded-xl text-sm" />
-                <Textarea placeholder="Description (auto-filled from URL)" value={eventDesc} onChange={e => setEventDesc(e.target.value)} className="rounded-xl text-sm resize-none" rows={3} />
+                <div className="flex gap-2">
+                  <Input type="url" placeholder="https://eventbrite.com/e/... or any event URL" value={eventUrl} onChange={e => setEventUrl(e.target.value)} className="rounded-xl text-sm flex-1" />
+                  <Button
+                    variant="outline"
+                    onClick={onFetchEventUrl}
+                    disabled={isFetchingEventUrl || !eventUrl.trim().startsWith("http")}
+                    title="Auto-fill fields from URL"
+                    className="rounded-xl shrink-0 border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950 gap-1.5 text-xs"
+                  >
+                    {isFetchingEventUrl ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                    Auto-fill
+                  </Button>
+                </div>
+                <Input type="text" placeholder="Title" value={eventTitle} onChange={e => setEventTitle(e.target.value)} className="rounded-xl text-sm" />
+                <Textarea placeholder="Description" value={eventDesc} onChange={e => setEventDesc(e.target.value)} className="rounded-xl text-sm resize-none" rows={3} />
                 <div className="grid grid-cols-2 gap-3">
                   <Input type="text" placeholder="Date (e.g. Sunday, Aug 3 at 2:00 PM)" value={eventDate} onChange={e => setEventDate(e.target.value)} className="rounded-xl text-sm" />
                   <Input type="text" placeholder="Venue / address" value={eventVenue} onChange={e => setEventVenue(e.target.value)} className="rounded-xl text-sm" />
                 </div>
-                <select
-                  value={eventCategory}
-                  onChange={e => setEventCategory(e.target.value)}
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="">Category (auto-detect)</option>
-                  {tenant.categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+                <div className="flex gap-3 items-center">
+                  <select
+                    value={eventCategory}
+                    onChange={e => setEventCategory(e.target.value)}
+                    className="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">Category (auto-detect)</option>
+                    {tenant.categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <label className="flex items-center gap-1.5 text-sm text-amber-600 cursor-pointer shrink-0 select-none">
+                    <input
+                      type="checkbox"
+                      checked={eventFeatured}
+                      onChange={e => setEventFeatured(e.target.checked)}
+                      className="w-4 h-4 accent-amber-500"
+                    />
+                    <Star className={`w-3.5 h-3.5 ${eventFeatured ? "fill-amber-500 text-amber-500" : "text-muted-foreground"}`} />
+                    Special Event
+                  </label>
+                </div>
                 <Button onClick={onAddEvent} disabled={isAddingEvent || !eventUrl.trim()} className="rounded-xl gap-2 bg-orange-500 hover:bg-orange-600 text-white w-full">
                   {isAddingEvent ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>🔗 Add Event</>}
                 </Button>
@@ -1292,6 +1384,36 @@ export default function AdminDashboard() {
                                 <p className="text-xs text-muted-foreground italic">No events in this digest yet.</p>
                               ) : (
                                 <div className="space-y-2">
+                                  {/* #83 — stale events indicator + remove button */}
+                                  {(() => {
+                                    const today = new Date(); today.setHours(0,0,0,0);
+                                    const MONTH_MAP: Record<string,number> = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+                                    const staleCount = (digest.events as any[]).filter((ev: any) => {
+                                      if (!ev.date || ev.isPost || ev.isBusinessSpotlight || ev.featured) return false;
+                                      const m = String(ev.date).match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+                                      if (!m) return false;
+                                      const key = m[1].substring(0,3);
+                                      const month = MONTH_MAP[key.charAt(0).toUpperCase()+key.slice(1).toLowerCase()];
+                                      if (month === undefined) return false;
+                                      return new Date(today.getFullYear(), month, parseInt(m[2],10)) < today;
+                                    }).length;
+                                    if (staleCount === 0) return null;
+                                    return (
+                                      <div className="flex items-center justify-between py-1.5 px-3 mb-1 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                                        <span className="text-xs text-amber-700 dark:text-amber-400">
+                                          ⚠️ {staleCount} past event{staleCount > 1 ? "s" : ""} in this digest
+                                        </span>
+                                        <button
+                                          onClick={() => onRemoveStaleEvents(digest.id, digest.events as any[])}
+                                          disabled={removingStale === digest.id}
+                                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 transition-colors"
+                                        >
+                                          {removingStale === digest.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                                          Remove past
+                                        </button>
+                                      </div>
+                                    );
+                                  })()}
                                   {(digest.events as any[]).map((ev: any, i: number) => (
                                     <div key={i} className="py-2 border-b border-border/40 last:border-0">
                                       {editingEvent?.digestId === digest.id && editingEvent?.eventIdx === i ? (
