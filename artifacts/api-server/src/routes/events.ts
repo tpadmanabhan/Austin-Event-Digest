@@ -380,7 +380,7 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
       link: url,
       imageUrl: meta.imageUrl,
       category: (typeof category === "string" && category.trim()) ? category.trim() : "Community",
-      source: meta.source || url,
+      source: url,
       featured: false,
     } as EventItem : {
       title: title || url,

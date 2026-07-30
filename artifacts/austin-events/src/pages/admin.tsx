@@ -179,6 +179,7 @@ export default function AdminDashboard() {
   const [eventDesc, setEventDesc] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventVenue, setEventVenue] = useState("");
+  const [eventCategory, setEventCategory] = useState("");
   const [isAddingEvent, setIsAddingEvent] = useState(false);
 
   const [draftDigestId, setDraftDigestId] = useState<number | null>(null);
@@ -394,6 +395,7 @@ export default function AdminDashboard() {
       if (eventDesc.trim()) body.description = eventDesc.trim();
       if (eventDate.trim()) body.date = eventDate.trim();
       if (eventVenue.trim()) body.venue = eventVenue.trim();
+      if (eventCategory.trim()) body.category = eventCategory.trim();
       const res = await fetch(`/api/events/digest/${targetDigestId}/spotlight`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -403,7 +405,7 @@ export default function AdminDashboard() {
       if (!res.ok) throw new Error(data.message || "Failed to add event");
       queryClient.invalidateQueries({ queryKey: ["digests"] });
       toast({ title: `Event added to digest #${targetDigestId}!` });
-      setEventUrl(""); setEventTitle(""); setEventDesc(""); setEventDate(""); setEventVenue("");
+      setEventUrl(""); setEventTitle(""); setEventDesc(""); setEventDate(""); setEventVenue(""); setEventCategory("");
     } catch (err: unknown) {
       toast({ variant: "destructive", title: "Failed to add event", description: err instanceof Error ? err.message : String(err) });
     } finally {
@@ -1185,6 +1187,16 @@ export default function AdminDashboard() {
                   <Input type="text" placeholder="Date (e.g. Sunday, Aug 3 at 2:00 PM)" value={eventDate} onChange={e => setEventDate(e.target.value)} className="rounded-xl text-sm" />
                   <Input type="text" placeholder="Venue / address" value={eventVenue} onChange={e => setEventVenue(e.target.value)} className="rounded-xl text-sm" />
                 </div>
+                <select
+                  value={eventCategory}
+                  onChange={e => setEventCategory(e.target.value)}
+                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="">Category (auto-detect)</option>
+                  {tenant.categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
                 <Button onClick={onAddEvent} disabled={isAddingEvent || !eventUrl.trim()} className="rounded-xl gap-2 bg-orange-500 hover:bg-orange-600 text-white w-full">
                   {isAddingEvent ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>🔗 Add Event</>}
                 </Button>
