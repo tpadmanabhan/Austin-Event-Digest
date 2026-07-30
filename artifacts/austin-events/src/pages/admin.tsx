@@ -586,7 +586,7 @@ export default function AdminDashboard() {
     setIsAddingSub(true);
     try {
       const token = sessionStorage.getItem("admin_token");
-      const res = await fetch("/api/subscribers/add", {
+      const res = await fetch("/api/newsletter/subscribers/add", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ email: addSubEmail.trim(), name: addSubName.trim() || undefined }),
