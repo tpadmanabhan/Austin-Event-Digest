@@ -28,7 +28,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   <img
                     src={`${import.meta.env.BASE_URL}images/austin-cares-brand-icon.jpg`}
                     alt={tenant.name}
-                    className="h-full w-full object-cover object-center"
+                    className="h-full w-full object-cover object-bottom"
                   />
                 ) : isBulverde ? (
                   <img
@@ -133,7 +133,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   <img
                     src={`${import.meta.env.BASE_URL}images/austin-cares-brand-icon.jpg`}
                     alt={tenant.name}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover object-bottom"
                   />
                 ) : isBulverde ? (
                   <img
