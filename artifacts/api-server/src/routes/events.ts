@@ -21,6 +21,35 @@ import { signSubscriberToken } from "../lib/subscriberToken";
 
 const router: IRouter = Router();
 
+/**
+ * Automatically marks events as featured (Special Event) when their date falls
+ * beyond the digest's Saturday (weekOf + 6 days). Spotlights and already-featured
+ * events are left unchanged.
+ */
+function autoTagFutureEvents(events: EventItem[], weekOf: Date): EventItem[] {
+  const MONTH_IDX: Record<string, number> = {
+    Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11,
+  };
+  const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return events.map(event => {
+    if (event.featured || (event as any).isBusinessSpotlight || (event as any).isPost) return event;
+    const dateStr = ((event as any).date as string) || "";
+    const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+    if (!m) return event;
+    const key = (m[1] as string).substring(0, 3);
+    const mo = MONTH_IDX[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()];
+    if (mo === undefined) return event;
+    const day = parseInt(m[2] as string, 10);
+    const eventDate = new Date(weekOf.getFullYear(), mo, day);
+    // Handle year rollover (e.g. Dec digest referencing Jan event)
+    if (eventDate < weekOf) eventDate.setFullYear(weekOf.getFullYear() + 1);
+    if (eventDate > weekEnd) return { ...event, featured: true } as EventItem;
+    return event;
+  });
+}
+
 function digestToApi(d: typeof digestsTable.$inferSelect) {
   return {
     id: d.id,
@@ -157,6 +186,8 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       );
     }
 
+    const taggedEvents = autoTagFutureEvents(events as EventItem[], weekOf);
+
     const [digest] = await db
       .insert(digestsTable)
       .values({
@@ -164,7 +195,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
         weekOf,
         subject,
         intro,
-        events,
+        events: taggedEvents,
         sentCount: 0,
       })
       .returning();
@@ -173,7 +204,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     res.json(response);
 
     // Geocode venue coordinates in the background (fire-and-forget)
-    geocodeAndPatchDigest(digest.id, events as Array<Record<string, unknown>>).catch(() => {});
+    geocodeAndPatchDigest(digest.id, taggedEvents as Array<Record<string, unknown>>).catch(() => {});
 
     // Award XP for each event in the digest and update the weekly streak (fire-and-forget)
     const eventCount = events.length;
@@ -199,9 +230,15 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
     return;
   }
   try {
+    const [existing] = await db
+      .select({ weekOf: digestsTable.weekOf })
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .limit(1);
+    const taggedEvents = existing ? autoTagFutureEvents(events as EventItem[], new Date(existing.weekOf)) : events;
     const [updated] = await db
       .update(digestsTable)
-      .set({ events })
+      .set({ events: taggedEvents })
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .returning();
     if (!updated) {
@@ -618,7 +655,7 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
 
       const [newDigest] = await db
         .insert(digestsTable)
-        .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: finalEvents, sentCount: 0 })
+        .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: autoTagFutureEvents(finalEvents as EventItem[], weekOf), sentCount: 0 })
         .returning();
 
       digest = newDigest;
@@ -656,16 +693,18 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
       return;
     }
 
+    const taggedImportEvents = autoTagFutureEvents(events as EventItem[], weekOf);
+
     const [digest] = await db
       .insert(digestsTable)
-      .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events, sentCount: 0 })
+      .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: taggedImportEvents, sentCount: 0 })
       .returning();
 
     const response = GenerateDigestResponse.parse({ digest: digestToApi(digest) });
     res.json(response);
 
     // Geocode venue coordinates in the background (fire-and-forget)
-    geocodeAndPatchDigest(digest.id, events as Array<Record<string, unknown>>).catch(() => {});
+    geocodeAndPatchDigest(digest.id, taggedImportEvents as Array<Record<string, unknown>>).catch(() => {});
   } catch (err) {
     req.log.error({ err }, "Error importing digest");
     res.status(500).json({ error: "server_error", message: "Failed to import digest" });
