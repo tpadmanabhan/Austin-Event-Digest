@@ -215,12 +215,23 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#39;");
 }
 
+/** Decode HTML entities in a URL before re-escaping, so stored &amp; doesn't double-encode. */
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'");
+}
+
 function safeHref(url: string | null | undefined): string | null {
   if (!url) return null;
   try {
-    const parsed = new URL(url);
+    const clean = decodeHtmlEntities(url);
+    const parsed = new URL(clean);
     if (parsed.protocol === "http:" || parsed.protocol === "https:") {
-      return escapeHtml(url);
+      return escapeHtml(clean);
     }
   } catch {
     // not a valid URL
@@ -538,7 +549,7 @@ export function buildDigestEmailHtml(digest: {
 
     return `
     <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; margin-bottom:20px;">
-      ${event.imageUrl ? `<img src="${escapeHtml(event.imageUrl)}" alt="${escapeHtml(event.title)}" style="width:100%; max-height:220px; object-fit:cover; display:block;" />` : ""}
+      ${event.imageUrl ? `<img src="${escapeHtml(decodeHtmlEntities(event.imageUrl))}" alt="${escapeHtml(event.title)}" style="width:100%; max-height:220px; object-fit:cover; display:block;" />` : ""}
       <div style="padding:20px;">
       <div style="display:inline-block; ${categoryBadgeStyle(event.category)} font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(normalizeCategory(event.category))}</div>
       <h3 style="margin:0 0 8px; font-size:18px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
