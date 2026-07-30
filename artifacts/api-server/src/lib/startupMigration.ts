@@ -482,6 +482,51 @@ async function runGeocodeCacheMigration(): Promise<void> {
   logger.info("venue_geocode_cache table ready");
 }
 
+/**
+ * One-time patch: walk all digests and replace HTML-encoded characters
+ * (`&amp;`, `&lt;`, `&gt;`, `&quot;`) in event `imageUrl` and `link` fields.
+ * Eventbrite image CDN URLs commonly contain `&amp;` in query parameters, which
+ * causes broken <img> tags for every visitor.  This runs on every startup but
+ * is a no-op once all existing digests have been cleaned.
+ */
+async function patchHtmlEncodedEventUrls(): Promise<void> {
+  const allDigests = await db.select().from(digestsTable);
+  let patchedCount = 0;
+
+  for (const digest of allDigests) {
+    const events = (digest.events as any[]) || [];
+    let dirty = false;
+
+    const cleaned = events.map((ev: any) => {
+      const patched = { ...ev };
+      for (const field of ["imageUrl", "link"] as const) {
+        if (typeof patched[field] === "string" && patched[field].includes("&amp;")) {
+          patched[field] = (patched[field] as string)
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'");
+          dirty = true;
+        }
+      }
+      return patched;
+    });
+
+    if (dirty) {
+      await db
+        .update(digestsTable)
+        .set({ events: cleaned })
+        .where(eq(digestsTable.id, digest.id));
+      patchedCount++;
+    }
+  }
+
+  if (patchedCount > 0) {
+    logger.info({ patchedCount }, "Patched HTML-encoded URLs in digest events");
+  }
+}
+
 export async function runStartupMigration(): Promise<void> {
   try {
     await runTenantMigration();
@@ -635,5 +680,11 @@ export async function runStartupMigration(): Promise<void> {
     }
   } catch (err) {
     logger.warn({ err }, "Startup migration failed (non-fatal)");
+  }
+
+  try {
+    await patchHtmlEncodedEventUrls();
+  } catch (err) {
+    logger.warn({ err }, "HTML entity URL patch failed (non-fatal)");
   }
 }

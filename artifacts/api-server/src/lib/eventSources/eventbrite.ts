@@ -1,6 +1,6 @@
 import type { SourceAdapter, SourceQuery } from "./types";
 import type { EventItem } from "@workspace/db";
-import { getCategorySearchQuery, formatISODate, isWithinDateRange, guessCategory } from "./utils";
+import { getCategorySearchQuery, formatISODate, isWithinDateRange, guessCategory, decodeHtmlEntities } from "./utils";
 import { logger } from "../logger";
 
 const EVENTBRITE_TOKEN = process.env.EVENTBRITE_TOKEN;
@@ -94,8 +94,8 @@ async function fetchEventbriteEvents(query: SourceQuery): Promise<EventItem[]> {
       venue: venue.substring(0, 120),
       description,
       category: guessCategory(`${ev.name.text} ${description}`),
-      link: ev.url || null,
-      imageUrl: ev.logo?.url || null,
+      link: decodeHtmlEntities(ev.url || null),
+      imageUrl: decodeHtmlEntities(ev.logo?.url || null),
     });
   }
 

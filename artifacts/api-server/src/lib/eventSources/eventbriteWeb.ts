@@ -1,6 +1,6 @@
 import type { SourceAdapter, SourceQuery } from "./types";
 import type { EventItem } from "@workspace/db";
-import { guessCategory, isWithinDateRange, formatISODate } from "./utils";
+import { guessCategory, isWithinDateRange, formatISODate, decodeHtmlEntities } from "./utils";
 import { logger } from "../logger";
 
 const SEARCH_PATHS: Record<string, string[]> = {
@@ -70,7 +70,7 @@ async function scrapeEventbritePage(path: string, query: SourceQuery): Promise<E
     if (!isWithinDateRange(isoDate, query.weekOf, query.weekEnd)) continue;
 
     const locationName = ev.location?.name || ev.location?.address?.addressLocality || query.city;
-    const imageUrl = typeof ev.image === "string" ? ev.image : ev.image?.url || null;
+    const imageUrl = decodeHtmlEntities(typeof ev.image === "string" ? ev.image : ev.image?.url || null);
 
     events.push({
       title: ev.name.trim(),
@@ -78,7 +78,7 @@ async function scrapeEventbritePage(path: string, query: SourceQuery): Promise<E
       venue: locationName.substring(0, 120),
       description: (ev.description || `${ev.name} — ${locationName}`).substring(0, 400),
       category: guessCategory(`${ev.name} ${ev.description || ""}`),
-      link: ev.url || null,
+      link: decodeHtmlEntities(ev.url || null),
       imageUrl: imageUrl || null,
       source: "Eventbrite",
     });

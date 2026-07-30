@@ -148,6 +148,23 @@ export function isWithinDateRange(isoStr: string, weekOf: Date, weekEnd?: Date):
   }
 }
 
+/**
+ * Decode common HTML entities from a URL string so that image/link URLs stored
+ * in the DB never contain raw `&amp;`, `&lt;`, etc.  The most common culprit is
+ * `&amp;` introduced when an imageUrl is extracted from raw HTML attributes.
+ */
+export function decodeHtmlEntities(str: string | null | undefined): string | null {
+  if (!str) return str ?? null;
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x2F;/g, "/");
+}
+
 // Returns exactly one of the 5 display categories: Tech, Arts, Sports, Civics, Wellness
 export function guessCategory(text: string): string {
   const lower = text.toLowerCase();

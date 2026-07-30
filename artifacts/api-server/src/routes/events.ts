@@ -330,10 +330,12 @@ async function fetchUrlMeta(url: string): Promise<{ title: string; description: 
       return m ? m[1].trim() : "";
     };
     const titleTag = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    // Decode HTML entities that HTML parsers may leave in attribute values (e.g. &amp; → &)
+    const rawImageUrl = og("image") || null;
     return {
       title: og("title") || (titleTag ? titleTag[1].trim() : ""),
       description: og("description"),
-      imageUrl: og("image") || null,
+      imageUrl: rawImageUrl ? rawImageUrl.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"') : null,
     };
   } catch {
     return { title: "", description: "", imageUrl: null };
