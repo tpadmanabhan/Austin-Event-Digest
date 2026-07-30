@@ -174,6 +174,12 @@ export default function AdminDashboard() {
   const [commDesc, setCommDesc] = useState("");
   const [commDeadline, setCommDeadline] = useState("");
   const [isAddingComm, setIsAddingComm] = useState(false);
+  const [eventUrl, setEventUrl] = useState("");
+  const [eventTitle, setEventTitle] = useState("");
+  const [eventDesc, setEventDesc] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [eventVenue, setEventVenue] = useState("");
+  const [isAddingEvent, setIsAddingEvent] = useState(false);
 
   const [draftDigestId, setDraftDigestId] = useState<number | null>(null);
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
@@ -354,6 +360,49 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Failed to add spotlight", description: err instanceof Error ? err.message : String(err) });
     } finally {
       type === "business" ? setIsAddingBiz(false) : setIsAddingComm(false);
+    }
+  };
+
+  const onAddEvent = async () => {
+    if (!eventUrl.trim().startsWith("http")) {
+      toast({ variant: "destructive", title: "Invalid URL", description: "Enter a URL starting with http." });
+      return;
+    }
+    setIsAddingEvent(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      let targetDigestId = spotlightDigestId;
+      if (targetDigestId === null) {
+        const createRes = await fetch("/api/events/digest/create-empty", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ weekOf: currentSunday }),
+        });
+        const createData = await createRes.json() as { digest?: { id: number }; message?: string };
+        if (!createRes.ok) throw new Error(createData.message || "Failed to create digest");
+        targetDigestId = createData.digest!.id;
+        setSpotlightDigestId(targetDigestId);
+        queryClient.invalidateQueries({ queryKey: ["digests"] });
+      }
+      const body: Record<string, string> = { url: eventUrl.trim(), type: "event" };
+      if (eventTitle.trim()) body.title = eventTitle.trim();
+      if (eventDesc.trim()) body.description = eventDesc.trim();
+      if (eventDate.trim()) body.date = eventDate.trim();
+      if (eventVenue.trim()) body.venue = eventVenue.trim();
+      const res = await fetch(`/api/events/digest/${targetDigestId}/spotlight`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json() as { success?: boolean; message?: string };
+      if (!res.ok) throw new Error(data.message || "Failed to add event");
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      toast({ title: `Event added to digest #${targetDigestId}!` });
+      setEventUrl(""); setEventTitle(""); setEventDesc(""); setEventDate(""); setEventVenue("");
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Failed to add event", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsAddingEvent(false);
     }
   };
 
@@ -1037,6 +1086,44 @@ export default function AdminDashboard() {
                     Save
                   </Button>
                 </div>
+              </div>
+            </div>
+
+            {/* ADD EVENT FROM URL CARD */}
+            <div className="bg-card rounded-2xl border border-orange-200 dark:border-orange-900 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-orange-200 dark:border-orange-900 bg-orange-50/60 dark:bg-orange-950/30 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0 text-lg">🔗</div>
+                <div>
+                  <h3 className="font-semibold text-sm text-orange-800 dark:text-orange-200">Add Event from URL</h3>
+                  <p className="text-xs text-orange-600/80 dark:text-orange-400/80 mt-0.5">Add any event (Eventbrite, UTR, Luma, etc.) — appends to existing digest without overwriting</p>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add to Digest</label>
+                  <select
+                    value={spotlightDigestId ?? ""}
+                    onChange={e => setSpotlightDigestId(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">— Create new digest —</option>
+                    {digestsData?.digests?.map(d => (
+                      <option key={d.id} value={d.id}>
+                        #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Input type="url" placeholder="https://eventbrite.com/e/... or any event URL" value={eventUrl} onChange={e => setEventUrl(e.target.value)} className="rounded-xl text-sm" />
+                <Input type="text" placeholder="Title (auto-filled from URL)" value={eventTitle} onChange={e => setEventTitle(e.target.value)} className="rounded-xl text-sm" />
+                <Textarea placeholder="Description (auto-filled from URL)" value={eventDesc} onChange={e => setEventDesc(e.target.value)} className="rounded-xl text-sm resize-none" rows={3} />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input type="text" placeholder="Date (e.g. Sunday, Aug 3 at 2:00 PM)" value={eventDate} onChange={e => setEventDate(e.target.value)} className="rounded-xl text-sm" />
+                  <Input type="text" placeholder="Venue / address" value={eventVenue} onChange={e => setEventVenue(e.target.value)} className="rounded-xl text-sm" />
+                </div>
+                <Button onClick={onAddEvent} disabled={isAddingEvent || !eventUrl.trim()} className="rounded-xl gap-2 bg-orange-500 hover:bg-orange-600 text-white w-full">
+                  {isAddingEvent ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>🔗 Add Event</>}
+                </Button>
               </div>
             </div>
 

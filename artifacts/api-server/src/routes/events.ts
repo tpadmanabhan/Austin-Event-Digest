@@ -309,13 +309,13 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
     res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
     return;
   }
-  const { url, type, title: titleOverride, description: descOverride, deadline } = req.body || {};
+  const { url, type, title: titleOverride, description: descOverride, deadline, date, venue, category } = req.body || {};
   if (typeof url !== "string" || !url.startsWith("http")) {
     res.status(400).json({ error: "invalid_request", message: "url is required and must start with http" });
     return;
   }
-  if (type !== "business" && type !== "community") {
-    res.status(400).json({ error: "invalid_request", message: "type must be 'business' or 'community'" });
+  if (type !== "business" && type !== "community" && type !== "event") {
+    res.status(400).json({ error: "invalid_request", message: "type must be 'business', 'community', or 'event'" });
     return;
   }
   try {
@@ -333,7 +333,17 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
     const title = (typeof titleOverride === "string" && titleOverride.trim()) ? titleOverride.trim() : meta.title;
     const description = (typeof descOverride === "string" && descOverride.trim()) ? descOverride.trim() : meta.description;
 
-    const spotlight: EventItem = {
+    const spotlight: EventItem = type === "event" ? {
+      title: title || url,
+      date: (typeof date === "string" && date.trim()) ? date.trim() : "",
+      venue: (typeof venue === "string" && venue.trim()) ? venue.trim() : "",
+      description: description || "",
+      link: url,
+      imageUrl: meta.imageUrl,
+      category: (typeof category === "string" && category.trim()) ? category.trim() : "Community",
+      source: meta.source || url,
+      featured: false,
+    } as EventItem : {
       title: title || url,
       date: "",
       venue: "",
