@@ -112,7 +112,7 @@ export default function Home() {
   const showMap = tenant.slug in MAP_CENTERS;
   const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
   const heroImage = isAustinCares
-    ? "austin-cares-hero.png"
+    ? "brushycreek-hero.jpg"
     : tenant.slug === "austincares"
       ? "austincares-hero.svg"
       : isPortland
