@@ -145,6 +145,7 @@ export default function DigestView() {
     bulverde:    [29.747, -98.446],
     portland:    [45.523, -122.676],
     sacramento:  [38.575, -121.479],
+    stlouis:     [38.627, -90.197],
   };
   const isLocationEnabled = tenant.slug in MAP_CENTERS;
   const showMap = tenant.slug in MAP_CENTERS;

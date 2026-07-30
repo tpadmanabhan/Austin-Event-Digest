@@ -109,6 +109,7 @@ export default function Home() {
     bulverde:    [29.747, -98.446],
     portland:    [45.523, -122.676],
     sacramento:  [38.575, -121.479],
+    stlouis:     [38.627, -90.197],
   };
   const showMap = tenant.slug in MAP_CENTERS;
   const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
