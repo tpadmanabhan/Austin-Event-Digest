@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe, BookmarkCheck, MapPin, RefreshCw, Pencil, Check, X } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe, BookmarkCheck, MapPin, RefreshCw, Pencil, Check, X, Star } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
@@ -190,6 +190,11 @@ export default function AdminDashboard() {
   const [editingVenue, setEditingVenue] = useState<{ digestId: number; eventIdx: number } | null>(null);
   const [venueEditValue, setVenueEditValue] = useState("");
   const [isSavingVenue, setIsSavingVenue] = useState(false);
+
+  const [togglingFeatured, setTogglingFeatured] = useState<{ digestId: number; eventIdx: number } | null>(null);
+  const [editingEvent, setEditingEvent] = useState<{ digestId: number; eventIdx: number } | null>(null);
+  const [eventEditFields, setEventEditFields] = useState({ title: "", date: "", venue: "", category: "", description: "" });
+  const [isSavingEvent, setIsSavingEvent] = useState(false);
 
   // Geocode coverage for the Send dialog (Austin only)
   const [sendDialogGeocov, setSendDialogGeocov] = useState<GeocovData | null>(null);
@@ -427,6 +432,65 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Failed to update venue", description: err instanceof Error ? err.message : String(err) });
     } finally {
       setIsSavingVenue(false);
+    }
+  };
+
+  const onToggleFeatured = async (digestId: number, eventIdx: number) => {
+    const digest = (digestsData as any)?.digests?.find((d: any) => d.id === digestId);
+    if (!digest) return;
+    const events = (digest.events as any[]).map((ev: any, idx: number) =>
+      idx === eventIdx ? { ...ev, featured: !ev.featured } : ev
+    );
+    setTogglingFeatured({ digestId, eventIdx });
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/events/digest/${digestId}/events`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ events }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      const nowFeatured = events[eventIdx].featured;
+      toast({ title: nowFeatured ? "⭐ Marked as Special Event" : "Removed Special Event tag" });
+    } catch {
+      toast({ variant: "destructive", title: "Failed to update event" });
+    } finally {
+      setTogglingFeatured(null);
+    }
+  };
+
+  const onSaveEventFields = async (digestId: number, eventIdx: number) => {
+    const digest = (digestsData as any)?.digests?.find((d: any) => d.id === digestId);
+    if (!digest) return;
+    setIsSavingEvent(true);
+    try {
+      const events = (digest.events as any[]).map((ev: any, idx: number) =>
+        idx === eventIdx
+          ? {
+              ...ev,
+              title: eventEditFields.title.trim() || ev.title,
+              date: eventEditFields.date.trim() || ev.date,
+              venue: eventEditFields.venue.trim() !== "" ? eventEditFields.venue.trim() : ev.venue,
+              category: eventEditFields.category || ev.category,
+              description: eventEditFields.description.trim() !== "" ? eventEditFields.description.trim() : ev.description,
+            }
+          : ev
+      );
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/events/digest/${digestId}/events`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ events }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      setEditingEvent(null);
+      toast({ title: "Event updated" });
+    } catch {
+      toast({ variant: "destructive", title: "Failed to update event" });
+    } finally {
+      setIsSavingEvent(false);
     }
   };
 
@@ -1217,84 +1281,146 @@ export default function AdminDashboard() {
                               ) : (
                                 <div className="space-y-2">
                                   {(digest.events as any[]).map((ev: any, i: number) => (
-                                    <div key={i} className="flex items-start gap-3 py-2 border-b border-border/40 last:border-0">
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="text-sm font-semibold text-foreground truncate">{ev.title}</span>
-                                          {ev.isBusinessSpotlight && (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[10px] font-bold uppercase tracking-wide">🏆 Business</span>
-                                          )}
-                                          {ev.isPost && (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide">🌿 Community</span>
-                                          )}
-                                          {ev.featured && (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wide">⭐ Featured</span>
-                                          )}
+                                    <div key={i} className="py-2 border-b border-border/40 last:border-0">
+                                      {editingEvent?.digestId === digest.id && editingEvent?.eventIdx === i ? (
+                                        /* ── Inline edit form (Task #77) ── */
+                                        <div className="space-y-2">
+                                          <div className="flex gap-2">
+                                            <div className="flex-1">
+                                              <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Title</label>
+                                              <Input value={eventEditFields.title} onChange={e => setEventEditFields(f => ({ ...f, title: e.target.value }))} className="h-7 text-xs" placeholder={ev.title} />
+                                            </div>
+                                            <div className="w-36">
+                                              <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Category</label>
+                                              <select
+                                                value={eventEditFields.category || ev.category || ""}
+                                                onChange={e => setEventEditFields(f => ({ ...f, category: e.target.value }))}
+                                                className="w-full h-7 text-xs rounded-md border border-input bg-background px-2 focus:outline-none focus:ring-1 focus:ring-ring"
+                                              >
+                                                <option value="">— keep current —</option>
+                                                <option value="Arts">Arts</option>
+                                                <option value="Sports">Sports</option>
+                                                <option value="Tech">Tech</option>
+                                                <option value="Tech & Business">Tech & Business</option>
+                                                <option value="Wellness">Wellness</option>
+                                                <option value="Civics">Civics</option>
+                                                <option value="Community">Community</option>
+                                                <option value="Entertainment">Entertainment</option>
+                                                <option value="Food & Drink">Food & Drink</option>
+                                              </select>
+                                            </div>
+                                          </div>
+                                          <div className="flex gap-2">
+                                            <div className="flex-1">
+                                              <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Date</label>
+                                              <Input value={eventEditFields.date} onChange={e => setEventEditFields(f => ({ ...f, date: e.target.value }))} className="h-7 text-xs" placeholder={ev.date || "e.g. Saturday, Aug 10 at 2:00 PM"} />
+                                            </div>
+                                            <div className="flex-1">
+                                              <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Venue</label>
+                                              <Input value={eventEditFields.venue} onChange={e => setEventEditFields(f => ({ ...f, venue: e.target.value }))} className="h-7 text-xs" placeholder={ev.venue || "Venue / address"} />
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Description</label>
+                                            <Textarea value={eventEditFields.description} onChange={e => setEventEditFields(f => ({ ...f, description: e.target.value }))} className="text-xs min-h-[56px] resize-none" placeholder={ev.description || "Short description…"} />
+                                          </div>
+                                          <div className="flex gap-2 justify-end">
+                                            <button onClick={() => setEditingEvent(null)} className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-md bg-muted text-muted-foreground hover:bg-muted/80">
+                                              <X className="w-3 h-3" />Cancel
+                                            </button>
+                                            <button onClick={() => onSaveEventFields(digest.id, i)} disabled={isSavingEvent} className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+                                              {isSavingEvent ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}Save
+                                            </button>
+                                          </div>
                                         </div>
-                                        <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                                          {ev.date && <span className="text-xs text-muted-foreground">{ev.date}</span>}
-                                          {ev.venue && (
-                                            tenant.slug === "austin" ? (
-                                              editingVenue?.digestId === digest.id && editingVenue?.eventIdx === i ? (
-                                                <span className="inline-flex items-center gap-1">
-                                                  <Input
-                                                    value={venueEditValue}
-                                                    onChange={(e) => setVenueEditValue(e.target.value)}
-                                                    className="h-6 text-xs py-0 px-2 w-56"
-                                                    placeholder="Venue name or address"
-                                                    autoFocus
-                                                    onKeyDown={(e) => {
-                                                      if (e.key === "Enter") onSaveVenue(digest.id, i);
-                                                      if (e.key === "Escape") setEditingVenue(null);
-                                                    }}
-                                                  />
-                                                  <button
-                                                    onClick={() => onSaveVenue(digest.id, i)}
-                                                    disabled={isSavingVenue}
-                                                    title="Save venue"
-                                                    className="inline-flex items-center justify-center w-5 h-5 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
-                                                  >
-                                                    {isSavingVenue ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                                                  </button>
-                                                  <button
-                                                    onClick={() => setEditingVenue(null)}
-                                                    title="Cancel"
-                                                    className="inline-flex items-center justify-center w-5 h-5 rounded bg-muted text-muted-foreground hover:bg-muted/80"
-                                                  >
-                                                    <X className="w-3 h-3" />
-                                                  </button>
-                                                </span>
-                                              ) : (
-                                                <span className="inline-flex items-center gap-1 group">
-                                                  <span
-                                                    title={ev.lat != null ? "Geocoded ✓" : "Not geocoded — click Fix to correct venue"}
-                                                    className="text-xs"
-                                                  >
-                                                    {ev.lat != null ? "📍" : "❌"}
-                                                  </span>
-                                                  <span className="text-xs text-muted-foreground">{ev.venue}</span>
-                                                  <button
-                                                    onClick={() => { setEditingVenue({ digestId: digest.id, eventIdx: i }); setVenueEditValue(ev.venue); }}
-                                                    title="Fix venue"
-                                                    className={`inline-flex items-center gap-0.5 text-[10px] font-medium transition-opacity ${ev.lat != null ? "opacity-0 group-hover:opacity-100" : "opacity-100"} text-primary hover:underline`}
-                                                  >
-                                                    <Pencil className="w-2.5 h-2.5" />Fix
-                                                  </button>
-                                                </span>
-                                              )
-                                            ) : (
-                                              <span className="text-xs text-muted-foreground">📍 {ev.venue}</span>
-                                            )
-                                          )}
-                                          {ev.category && (
-                                            <span className="inline-flex px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">{ev.category}</span>
-                                          )}
+                                      ) : (
+                                        /* ── Normal row view ── */
+                                        <div className="flex items-start gap-3">
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                              <span className="text-sm font-semibold text-foreground truncate">{ev.title}</span>
+                                              {ev.isBusinessSpotlight && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[10px] font-bold uppercase tracking-wide">🏆 Business</span>
+                                              )}
+                                              {ev.isPost && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide">🌿 Community</span>
+                                              )}
+                                              {ev.featured && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wide">⭐ Special</span>
+                                              )}
+                                            </div>
+                                            <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                                              {ev.date && <span className="text-xs text-muted-foreground">{ev.date}</span>}
+                                              {ev.venue && (
+                                                tenant.slug === "austin" ? (
+                                                  editingVenue?.digestId === digest.id && editingVenue?.eventIdx === i ? (
+                                                    <span className="inline-flex items-center gap-1">
+                                                      <Input
+                                                        value={venueEditValue}
+                                                        onChange={(e) => setVenueEditValue(e.target.value)}
+                                                        className="h-6 text-xs py-0 px-2 w-56"
+                                                        placeholder="Venue name or address"
+                                                        autoFocus
+                                                        onKeyDown={(e) => {
+                                                          if (e.key === "Enter") onSaveVenue(digest.id, i);
+                                                          if (e.key === "Escape") setEditingVenue(null);
+                                                        }}
+                                                      />
+                                                      <button onClick={() => onSaveVenue(digest.id, i)} disabled={isSavingVenue} title="Save venue" className="inline-flex items-center justify-center w-5 h-5 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50">
+                                                        {isSavingVenue ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                                      </button>
+                                                      <button onClick={() => setEditingVenue(null)} title="Cancel" className="inline-flex items-center justify-center w-5 h-5 rounded bg-muted text-muted-foreground hover:bg-muted/80">
+                                                        <X className="w-3 h-3" />
+                                                      </button>
+                                                    </span>
+                                                  ) : (
+                                                    <span className="inline-flex items-center gap-1 group">
+                                                      <span title={ev.lat != null ? "Geocoded ✓" : "Not geocoded — click Fix to correct venue"} className="text-xs">
+                                                        {ev.lat != null ? "📍" : "❌"}
+                                                      </span>
+                                                      <span className="text-xs text-muted-foreground">{ev.venue}</span>
+                                                      <button onClick={() => { setEditingVenue({ digestId: digest.id, eventIdx: i }); setVenueEditValue(ev.venue); }} title="Fix venue" className={`inline-flex items-center gap-0.5 text-[10px] font-medium transition-opacity ${ev.lat != null ? "opacity-0 group-hover:opacity-100" : "opacity-100"} text-primary hover:underline`}>
+                                                        <Pencil className="w-2.5 h-2.5" />Fix
+                                                      </button>
+                                                    </span>
+                                                  )
+                                                ) : (
+                                                  <span className="text-xs text-muted-foreground">📍 {ev.venue}</span>
+                                                )
+                                              )}
+                                              {ev.category && (
+                                                <span className="inline-flex px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">{ev.category}</span>
+                                              )}
+                                            </div>
+                                          </div>
+                                          {/* Action buttons */}
+                                          <div className="shrink-0 flex items-center gap-1">
+                                            {!ev.isBusinessSpotlight && !ev.isPost && (
+                                              <button
+                                                onClick={() => onToggleFeatured(digest.id, i)}
+                                                disabled={togglingFeatured?.digestId === digest.id && togglingFeatured?.eventIdx === i}
+                                                title={ev.featured ? "Remove Special Event tag" : "Mark as Special Event"}
+                                                className={`inline-flex items-center justify-center w-6 h-6 rounded transition-colors ${ev.featured ? "text-amber-500 hover:text-amber-300" : "text-muted-foreground/40 hover:text-amber-500"}`}
+                                              >
+                                                {togglingFeatured?.digestId === digest.id && togglingFeatured?.eventIdx === i
+                                                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                  : <Star className={`w-3.5 h-3.5 ${ev.featured ? "fill-amber-500" : ""}`} />}
+                                              </button>
+                                            )}
+                                            <button
+                                              onClick={() => { setEditingEvent({ digestId: digest.id, eventIdx: i }); setEventEditFields({ title: ev.title || "", date: ev.date || "", venue: ev.venue || "", category: ev.category || "", description: ev.description || "" }); }}
+                                              title="Edit event fields"
+                                              className="inline-flex items-center justify-center w-6 h-6 rounded text-muted-foreground/40 hover:text-primary transition-colors"
+                                            >
+                                              <Pencil className="w-3.5 h-3.5" />
+                                            </button>
+                                            {ev.link && (
+                                              <a href={ev.link} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary underline underline-offset-2 hover:opacity-70">
+                                                Link ↗
+                                              </a>
+                                            )}
+                                          </div>
                                         </div>
-                                      </div>
-                                      {ev.link && (
-                                        <a href={ev.link} target="_blank" rel="noopener noreferrer" className="shrink-0 text-[10px] text-primary underline underline-offset-2 hover:opacity-70">
-                                          Link ↗
-                                        </a>
                                       )}
                                     </div>
                                   ))}

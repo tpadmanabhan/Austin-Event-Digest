@@ -153,7 +153,22 @@ export default function DigestView() {
   const [manualAddress, setManualAddress] = useState("");
   const [manualGeoLoading, setManualGeoLoading] = useState(false);
   const [manualGeoError, setManualGeoError] = useState("");
-  const [radiusFilter, setRadiusFilter] = useState<number | null>(null);
+  const RADIUS_KEY = `ec_radius_${tenant.slug}`;
+  const [radiusFilter, setRadiusFilter] = useState<number | null>(() => {
+    try {
+      const saved = localStorage.getItem(`ec_radius_${tenant.slug}`);
+      if (saved !== null) { const v = parseInt(saved, 10); return isNaN(v) ? null : v; }
+    } catch {}
+    return null;
+  });
+
+  // Persist radius filter whenever it changes
+  useEffect(() => {
+    try {
+      if (radiusFilter === null) localStorage.removeItem(RADIUS_KEY);
+      else localStorage.setItem(RADIUS_KEY, String(radiusFilter));
+    } catch {}
+  }, [radiusFilter, RADIUS_KEY]);
 
   // Task #67 — restore saved location on mount
   const GEO_KEY = `ec_location_${tenant.slug}`;
