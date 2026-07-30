@@ -646,6 +646,26 @@ export function buildDigestEmailHtml(digest: {
 
     ${buildStaticMapSection(digest.events, slug, digest.siteUrl, digest.digestId)}
 
+    <!-- Featured Event -->
+    ${featuredCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">⭐ Special Event</h2>${featuredCards}` : ""}
+
+    <!-- Business Spotlights -->
+    ${bizSpotlightCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">💼 Business Spotlight</h2>${bizSpotlightCards}` : ""}
+
+    <!-- Community Spotlights -->
+    ${commSpotlightCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">🙌 Community Spotlight</h2>${commSpotlightCards}` : ""}
+
+    <!-- Events -->
+    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>${eventCards}` : ""}
+
+    <!-- Also Nearby -->
+    ${alsoNearbyCards ? `
+    <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:14px; padding:20px; margin-bottom:24px;">
+      <h2 style="margin:0 0 4px; color:#1c1917; font-size:18px; font-weight:700;">📍 Also Nearby</h2>
+      <p style="margin:0 0 16px; color:#78716c; font-size:13px;">These events are a bit further out — but still in Austin.</p>
+      ${alsoNearbyCards}
+    </div>` : ""}
+
     <!-- Superconnector Feature Block -->
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <table style="width:100%; border-collapse:collapse;">
@@ -761,26 +781,6 @@ export function buildDigestEmailHtml(digest: {
         <li><a href="https://tech.yahoo.com/ai/articles/ai-industrys-hottest-networking-event-095252785.html" style="color:${theme.linkColor}; text-decoration:underline;">The AI Industry's Hottest Networking Event Is a Dinner Party</a> <span style="color:#a8a29e; font-size:12px;">— Yahoo Tech</span></li>
       </ul>
     </div>
-
-    <!-- Featured Event -->
-    ${featuredCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">⭐ Special Event</h2>${featuredCards}` : ""}
-
-    <!-- Business Spotlights -->
-    ${bizSpotlightCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">💼 Business Spotlight</h2>${bizSpotlightCards}` : ""}
-
-    <!-- Community Spotlights -->
-    ${commSpotlightCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">🙌 Community Spotlight</h2>${commSpotlightCards}` : ""}
-
-    <!-- Events -->
-    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>${eventCards}` : ""}
-
-    <!-- Also Nearby -->
-    ${alsoNearbyCards ? `
-    <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:14px; padding:20px; margin-bottom:24px;">
-      <h2 style="margin:0 0 4px; color:#1c1917; font-size:18px; font-weight:700;">📍 Also Nearby</h2>
-      <p style="margin:0 0 16px; color:#78716c; font-size:13px;">These events are a bit further out — but still in Austin.</p>
-      ${alsoNearbyCards}
-    </div>` : ""}
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
