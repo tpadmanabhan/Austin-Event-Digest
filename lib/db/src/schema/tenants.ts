@@ -10,6 +10,8 @@ export const tenantsTable = pgTable("tenants", {
   digestTitle: text("digest_title"),
   passwordHash: text("password_hash"),
   adminEmail: text("admin_email"),
+  heroImageUrl: text("hero_image_url"),
+  brandIconUrl: text("brand_icon_url"),
   emailVerified: boolean("email_verified").notNull().default(false),
   firstRun: boolean("first_run").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),

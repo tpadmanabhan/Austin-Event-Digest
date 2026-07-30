@@ -281,6 +281,9 @@ async function runTenantMigration(): Promise<void> {
   await db.execute(sql`
     ALTER TABLE tenants ADD COLUMN IF NOT EXISTS admin_email TEXT
   `);
+  // Task #81: hero and brand icon image URLs per tenant
+  await db.execute(sql`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS hero_image_url TEXT`);
+  await db.execute(sql`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS brand_icon_url TEXT`);
   await db.execute(sql`
     ALTER TABLE tenants ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false
   `);

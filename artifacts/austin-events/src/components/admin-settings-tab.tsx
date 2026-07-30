@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
-import { Save, Palette, Check, Tag, Mail } from "lucide-react";
+import { Save, Palette, Check, Tag, Mail, ImageIcon, Loader2, X } from "lucide-react";
 
 const ALL_CATEGORIES = [
   { name: "Tech",     emoji: "💻", description: "Startup meetups, AI demos, developer nights." },
@@ -26,6 +26,14 @@ export function AdminSettingsTab() {
 
   const [adminEmail, setAdminEmail] = useState("");
   const [initialAdminEmail, setInitialAdminEmail] = useState("");
+
+  // Image uploads (#81)
+  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(tenant.heroImageUrl ?? null);
+  const [brandIconUrl, setBrandIconUrl] = useState<string | null>(tenant.brandIconUrl ?? null);
+  const [isUploadingHero, setIsUploadingHero] = useState(false);
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const heroInputRef = useRef<HTMLInputElement>(null);
+  const iconInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +62,56 @@ export function AdminSettingsTab() {
     name !== tenant.name ||
     accentColor !== tenant.accentColor ||
     adminEmail !== initialAdminEmail ||
+    heroImageUrl !== (tenant.heroImageUrl ?? null) ||
+    brandIconUrl !== (tenant.brandIconUrl ?? null) ||
     JSON.stringify([...categories].sort()) !== JSON.stringify([...tenant.categories].sort());
+
+  function readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      toast({ variant: "destructive", title: "Image too large", description: "Please choose an image under 3 MB." });
+      return;
+    }
+    setIsUploadingHero(true);
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setHeroImageUrl(dataUrl);
+    } catch {
+      toast({ variant: "destructive", title: "Failed to read file" });
+    } finally {
+      setIsUploadingHero(false);
+      if (heroInputRef.current) heroInputRef.current.value = "";
+    }
+  }
+
+  async function handleIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 1 * 1024 * 1024) {
+      toast({ variant: "destructive", title: "Image too large", description: "Please choose an image under 1 MB." });
+      return;
+    }
+    setIsUploadingIcon(true);
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setBrandIconUrl(dataUrl);
+    } catch {
+      toast({ variant: "destructive", title: "Failed to read file" });
+    } finally {
+      setIsUploadingIcon(false);
+      if (iconInputRef.current) iconInputRef.current.value = "";
+    }
+  }
 
   function toggleCategory(cat: string) {
     setCategories(prev =>
@@ -86,6 +143,8 @@ export function AdminSettingsTab() {
           accentColor,
           categories,
           ...(adminEmail.trim() && adminEmail.trim() !== initialAdminEmail ? { adminEmail: adminEmail.trim() } : {}),
+          ...(heroImageUrl !== (tenant.heroImageUrl ?? null) ? { heroImageUrl } : {}),
+          ...(brandIconUrl !== (tenant.brandIconUrl ?? null) ? { brandIconUrl } : {}),
         }),
       });
 
@@ -212,6 +271,71 @@ export function AdminSettingsTab() {
         {categories.length === 0 && (
           <p className="text-xs text-destructive">Select at least one category.</p>
         )}
+      </div>
+
+      {/* Hero image + brand icon */}
+      <div className="bg-card border border-border rounded-2xl p-6 space-y-6">
+        <div className="flex items-center gap-2">
+          <ImageIcon className="w-5 h-5 text-primary" />
+          <h3 className="font-serif font-bold text-lg">City images</h3>
+        </div>
+        <p className="text-sm text-muted-foreground -mt-2">
+          Upload a custom hero photo and brand icon for your city page.
+        </p>
+
+        {/* Hero image */}
+        <div className="space-y-3">
+          <label className="text-sm font-semibold">Hero photo</label>
+          <p className="text-xs text-muted-foreground">Shown prominently at the top of your city page. Landscape images work best (max 3 MB).</p>
+          {heroImageUrl ? (
+            <div className="relative w-full max-w-sm">
+              <img src={heroImageUrl} alt="Hero preview" className="w-full rounded-xl object-cover aspect-[16/9] border border-border" />
+              <button
+                onClick={() => setHeroImageUrl(null)}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
+                title="Remove image"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div
+              onClick={() => heroInputRef.current?.click()}
+              className="flex flex-col items-center justify-center w-full max-w-sm h-32 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 cursor-pointer transition-colors gap-2"
+            >
+              {isUploadingHero ? <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /> : <ImageIcon className="w-6 h-6 text-muted-foreground" />}
+              <span className="text-xs text-muted-foreground">{isUploadingHero ? "Reading file…" : "Click to upload"}</span>
+            </div>
+          )}
+          <input ref={heroInputRef} type="file" accept="image/*" className="hidden" onChange={handleHeroUpload} />
+        </div>
+
+        {/* Brand icon */}
+        <div className="space-y-3">
+          <label className="text-sm font-semibold">Brand icon</label>
+          <p className="text-xs text-muted-foreground">Shown in the nav bar and footer. Square or near-square images work best (max 1 MB).</p>
+          {brandIconUrl ? (
+            <div className="relative w-24">
+              <img src={brandIconUrl} alt="Icon preview" className="w-24 h-24 rounded-xl object-cover border border-border" />
+              <button
+                onClick={() => setBrandIconUrl(null)}
+                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
+                title="Remove icon"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <div
+              onClick={() => iconInputRef.current?.click()}
+              className="flex flex-col items-center justify-center w-24 h-24 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 cursor-pointer transition-colors gap-1"
+            >
+              {isUploadingIcon ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : <ImageIcon className="w-5 h-5 text-muted-foreground" />}
+              <span className="text-[10px] text-muted-foreground text-center leading-tight">{isUploadingIcon ? "Reading…" : "Click to upload"}</span>
+            </div>
+          )}
+          <input ref={iconInputRef} type="file" accept="image/*" className="hidden" onChange={handleIconUpload} />
+        </div>
       </div>
 
       <Button

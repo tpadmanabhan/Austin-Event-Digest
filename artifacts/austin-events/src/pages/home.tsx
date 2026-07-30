@@ -111,17 +111,20 @@ export default function Home() {
   };
   const showMap = tenant.slug in MAP_CENTERS;
   const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
-  const heroImage = isAustinCares
-    ? "brushycreek-hero.jpg"
-    : tenant.slug === "austincares"
-      ? "austincares-hero.svg"
-      : isPortland
-        ? "portland-hero.jpg"
-        : isSacramento
-          ? "sacramento-hero.jpg"
-          : isBulverde
-            ? "bulverde-hero.jpg"
-            : "austin-hero.png";
+  const heroImage = tenant.heroImageUrl
+    ? null   // custom URL — handled separately below
+    : isAustinCares
+      ? "brushycreek-hero.jpg"
+      : tenant.slug === "austincares"
+        ? "austincares-hero.svg"
+        : isPortland
+          ? "portland-hero.jpg"
+          : isSacramento
+            ? "sacramento-hero.jpg"
+            : isBulverde
+              ? "bulverde-hero.jpg"
+              : "austin-hero.png";
+  const heroSrc = tenant.heroImageUrl ?? (heroImage ? `${import.meta.env.BASE_URL}images/${heroImage}` : "");
   const heroAlt = isAustinCares
     ? "High school student leaders taking charge"
     : tenant.slug === "austincares"
@@ -297,7 +300,7 @@ export default function Home() {
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />
               <img 
-                src={`${import.meta.env.BASE_URL}images/${heroImage}`}
+                src={heroSrc}
                 alt={heroAlt}
                 className={`relative rounded-3xl shadow-2xl border border-border w-full ${tenant.slug === "austincares" ? "object-contain aspect-[3/4]" : isAustinCares ? "object-contain aspect-[16/9] bg-stone-900" : "object-cover aspect-[4/3]"}`}
               />

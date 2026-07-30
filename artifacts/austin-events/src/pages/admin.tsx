@@ -156,7 +156,7 @@ export default function AdminDashboard() {
   const [customNotes, setCustomNotes] = useState("");
   const [weekOfInput, setWeekOfInput] = useState(currentSunday);
 
-  const [sourceUrls, setSourceUrls] = useState<string[]>(["", "", "", "", ""]);
+  const [sourceUrls, setSourceUrls] = useState<string[]>(new Array(10).fill(""));
   const [sourceWeekOf, setSourceWeekOf] = useState(currentSunday);
   const [sourceTargetDigestId, setSourceTargetDigestId] = useState<number | null>(null);
   const [isGeneratingFromSources, setIsGeneratingFromSources] = useState(false);
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
       const savedUrls = localStorage.getItem(`admin_source_urls_${slug}`);
       if (savedUrls) {
         const parsed = JSON.parse(savedUrls) as string[];
-        if (Array.isArray(parsed)) setSourceUrls([...parsed.slice(0, 5), ...Array(5).fill("")].slice(0, 5));
+        if (Array.isArray(parsed)) setSourceUrls([...parsed.slice(0, 10), ...Array(10).fill("")].slice(0, 10));
       }
       const savedBiz = localStorage.getItem(`admin_biz_${slug}`);
       if (savedBiz) {
@@ -270,6 +270,14 @@ export default function AdminDashboard() {
       setSpotlightDigestId(latestDraft.id);
     }
   }, [digestsData]); // intentionally omit spotlightDigestId so manual overrides stick
+
+  // Auto-save sourceUrls to localStorage 600ms after any change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      localStorage.setItem(`admin_source_urls_${tenant.slug}`, JSON.stringify(sourceUrls));
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [sourceUrls, tenant.slug]);
 
   const handleSaveUrls = () => {
     localStorage.setItem(`admin_source_urls_${tenant.slug}`, JSON.stringify(sourceUrls));
@@ -984,7 +992,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">Generate from Event Sources</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Paste up to 5 event page URLs (Luma, Eventbrite, Meetup, org sites, etc.) and AI will extract this week's events</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Paste up to 10 event page URLs (Luma, Eventbrite, Meetup, org sites, etc.) and AI will extract this week's events</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">

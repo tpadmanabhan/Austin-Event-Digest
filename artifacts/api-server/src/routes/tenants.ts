@@ -98,6 +98,8 @@ router.get("/tenant/config", async (req, res) => {
         digestTitle: tenantsTable.digestTitle,
         firstRun: tenantsTable.firstRun,
         adminEmail: tenantsTable.adminEmail,
+        heroImageUrl: tenantsTable.heroImageUrl,
+        brandIconUrl: tenantsTable.brandIconUrl,
       })
       .from(tenantsTable)
       .where(eq(tenantsTable.slug, slug))
@@ -109,7 +111,7 @@ router.get("/tenant/config", async (req, res) => {
     }
 
     const { adminEmail: _adminEmail, ...publicTenant } = tenant;
-    res.json({ tenant: { ...publicTenant, hasEmailAdmin: !!_adminEmail } });
+    res.json({ tenant: { ...publicTenant, hasEmailAdmin: !!_adminEmail, heroImageUrl: tenant.heroImageUrl ?? null, brandIconUrl: tenant.brandIconUrl ?? null } });
   } catch (err) {
     req.log.error({ err }, "Error fetching tenant config");
     res.status(500).json({ error: "server_error", message: "Failed to fetch tenant config" });

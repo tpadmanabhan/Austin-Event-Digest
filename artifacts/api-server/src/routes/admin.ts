@@ -434,6 +434,8 @@ router.get("/settings", requireAdmin, async (req, res) => {
         categories: tenantsTable.categories,
         digestTitle: tenantsTable.digestTitle,
         adminEmail: tenantsTable.adminEmail,
+        heroImageUrl: tenantsTable.heroImageUrl,
+        brandIconUrl: tenantsTable.brandIconUrl,
       })
       .from(tenantsTable)
       .where(eq(tenantsTable.id, tenantId))
@@ -453,7 +455,7 @@ router.get("/settings", requireAdmin, async (req, res) => {
 
 // Update tenant settings (name, accentColor, categories)
 router.patch("/settings", requireAdmin, async (req, res) => {
-  const { name, accentColor, categories, adminEmail, digestTitle } = req.body ?? {};
+  const { name, accentColor, categories, adminEmail, digestTitle, heroImageUrl, brandIconUrl } = req.body ?? {};
   const tenantId = req.tenant!.id;
 
   const updates: Record<string, unknown> = {};
@@ -499,6 +501,22 @@ router.patch("/settings", requireAdmin, async (req, res) => {
     updates.digestTitle = digestTitle === null ? null : digestTitle.trim();
   }
 
+  if (heroImageUrl !== undefined) {
+    if (heroImageUrl !== null && typeof heroImageUrl !== "string") {
+      res.status(400).json({ error: "invalid_request", message: "heroImageUrl must be a string or null" });
+      return;
+    }
+    updates.heroImageUrl = heroImageUrl;
+  }
+
+  if (brandIconUrl !== undefined) {
+    if (brandIconUrl !== null && typeof brandIconUrl !== "string") {
+      res.status(400).json({ error: "invalid_request", message: "brandIconUrl must be a string or null" });
+      return;
+    }
+    updates.brandIconUrl = brandIconUrl;
+  }
+
   if (Object.keys(updates).length === 0) {
     res.status(400).json({ error: "invalid_request", message: "No valid fields to update" });
     return;
@@ -516,6 +534,8 @@ router.patch("/settings", requireAdmin, async (req, res) => {
         accentColor: tenantsTable.accentColor,
         categories: tenantsTable.categories,
         digestTitle: tenantsTable.digestTitle,
+        heroImageUrl: tenantsTable.heroImageUrl,
+        brandIconUrl: tenantsTable.brandIconUrl,
       });
     res.json({ tenant: updated });
   } catch (err) {
