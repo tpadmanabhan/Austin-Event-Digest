@@ -402,11 +402,11 @@ export default function DigestView() {
           </div>
         </div>
 
-        {/* Radius filter chips — Task #66 */}
+        {/* Radius filter chips — show when geo sort is active */}
         {geoStatus === "active" && userCoords != null && (
           <div className="flex items-center gap-2 flex-wrap mb-6 -mt-4">
             <span className="text-xs text-muted-foreground font-medium">Within:</span>
-            {([5, 10, 25, 50] as const).map(r => (
+            {([1, 3, 5] as const).map(r => (
               <button
                 key={r}
                 onClick={() => setRadiusFilter(radiusFilter === r ? null : r)}
@@ -419,14 +419,16 @@ export default function DigestView() {
                 {r} mi
               </button>
             ))}
-            {radiusFilter !== null && (
-              <button
-                onClick={() => setRadiusFilter(null)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors ml-1"
-              >
-                Clear ✕
-              </button>
-            )}
+            <button
+              onClick={() => setRadiusFilter(null)}
+              className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                radiusFilter === null
+                  ? "bg-secondary text-secondary-foreground shadow-sm shadow-secondary/20"
+                  : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+              }`}
+            >
+              Any distance
+            </button>
           </div>
         )}
 
