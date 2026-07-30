@@ -395,7 +395,7 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
     } as EventItem;
 
     const currentEvents = (existing.events as EventItem[]) || [];
-    const updatedEvents = [...currentEvents, spotlight];
+    const updatedEvents = autoTagFutureEvents([...currentEvents, spotlight], new Date(existing.weekOf));
 
     const [updated] = await db
       .update(digestsTable)
