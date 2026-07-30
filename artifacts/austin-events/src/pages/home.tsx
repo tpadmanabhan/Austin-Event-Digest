@@ -299,7 +299,7 @@ export default function Home() {
               <img 
                 src={`${import.meta.env.BASE_URL}images/${heroImage}`}
                 alt={heroAlt}
-                className={`relative rounded-3xl shadow-2xl border border-border w-full ${tenant.slug === "austincares" ? "object-contain aspect-[3/4]" : isAustinCares ? "object-cover object-bottom aspect-[4/3]" : "object-cover aspect-[4/3]"}`}
+                className={`relative rounded-3xl shadow-2xl border border-border w-full ${tenant.slug === "austincares" ? "object-contain aspect-[3/4]" : isAustinCares ? "object-contain aspect-[16/9] bg-stone-900" : "object-cover aspect-[4/3]"}`}
               />
             </motion.div>
 
