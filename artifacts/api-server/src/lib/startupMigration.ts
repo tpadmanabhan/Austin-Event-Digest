@@ -586,6 +586,15 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Brushy Creek admin email migration failed (non-fatal)");
   }
 
+  // St. Louis gets Cardinals red accent
+  try {
+    await db.execute(
+      sql`UPDATE tenants SET accent_color = '#C41E3A' WHERE slug = 'stlouis' AND accent_color != '#C41E3A'`
+    );
+  } catch (err) {
+    logger.warn({ err }, "St. Louis accent color migration failed (non-fatal)");
+  }
+
   for (const slug of ["portland", "sacramento", "stlouis"]) {
     try {
       await db.execute(

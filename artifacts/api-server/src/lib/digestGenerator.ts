@@ -100,4 +100,12 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string): Gener
   };
 }
 
+export function getStLouisSampleDigest(dateRange: string): { subject: string; intro: string; events: typeof SAMPLE_EVENTS } {
+  return {
+    subject: `⚾ Phil's St. Louis Events — Week of ${dateRange}`,
+    intro: `Hey St. Louis! With the help of AI, I combed through various event newsletters and hand-picked some cool events happening around the city this week. Here's your curated digest — get out there and enjoy St. Louis! Let's Go Redbirds! 🔴`,
+    events: SAMPLE_EVENTS,
+  };
+}
+
 export { getNextSunday };

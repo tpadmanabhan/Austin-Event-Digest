@@ -9,7 +9,7 @@ import {
   GenerateDigestResponse,
   SendDigestResponse,
 } from "@workspace/api-zod";
-import { generateSampleDigest, getNextSunday } from "../lib/digestGenerator";
+import { generateSampleDigest, getStLouisSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendEmail, buildDigestEmailHtml } from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
 import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } from "../lib/eventSources";
@@ -122,7 +122,14 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     let intro: string;
     let events: EventItem[];
 
-    const fallback = generateSampleDigest(weekOf, customNotes || undefined);
+    const dateRange = (() => {
+      const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
+      const end = new Date(weekOf); end.setDate(end.getDate() + 6);
+      return `${weekOf.toLocaleDateString("en-US", opts)}–${end.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
+    })();
+    const fallback = req.tenant!.slug === "stlouis"
+      ? getStLouisSampleDigest(dateRange)
+      : generateSampleDigest(weekOf, customNotes || undefined);
 
     // Run category-based adapters for this tenant's configured categories (primary source)
     const adapterResult = await fetchEventsForTenant({ tenant: req.tenant!, weekOf, weekEnd });

@@ -101,6 +101,7 @@ export default function Home() {
   const isPortland = tenant.slug === "portland";
   const isSacramento = tenant.slug === "sacramento";
   const isBulverde = tenant.slug === "bulverde";
+  const isStLouis = tenant.slug === "stlouis";
   const MAP_CENTERS: Record<string, [number, number]> = {
     austin:      [30.267, -97.743],
     austincares: [30.267, -97.743],
@@ -121,7 +122,9 @@ export default function Home() {
           ? "sacramento-hero.jpg"
           : isBulverde
             ? "bulverde-hero.jpg"
-            : "austin-hero.png";
+            : isStLouis
+              ? "stlouis-hero.jpg"
+              : "austin-hero.png";
   const heroSrc = tenant.hasHeroImage
     ? `/api/tenant/image/hero?slug=${encodeURIComponent(tenant.slug)}`
     : `${import.meta.env.BASE_URL}images/${heroImage}`;
@@ -135,7 +138,9 @@ export default function Home() {
           ? "Sacramento California skyline"
           : isBulverde
             ? "Bulverde Community Park, Texas Hill Country"
-            : "Austin Texas stylized illustration";
+            : isStLouis
+              ? "St. Louis skyline and Gateway Arch at night"
+              : "Austin Texas stylized illustration";
 
   return (
     <Layout>
@@ -253,7 +258,7 @@ export default function Home() {
                     : `"Hey ${cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`
                   }
                 </p>
-                {(isAustinCares || isPortland || isSacramento || tenant.slug === "austin") && (
+                {(isAustinCares || isPortland || isSacramento || isStLouis || tenant.slug === "austin") && (
                   <p className="mt-3 text-sm font-semibold text-primary not-italic">
                     —{" "}
                     {isAustinCares ? (
@@ -280,6 +285,8 @@ export default function Home() {
                       <a href="https://www.minervaventures.com/what-we-do" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Marianna</a>
                     ) : isSacramento ? (
                       "Bob"
+                    ) : isStLouis ? (
+                      "Phil"
                     ) : (
                       <a href="https://customersuccessforgood.com/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Raj</a>
                     )}
