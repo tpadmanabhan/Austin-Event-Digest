@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AdminSettingsTab } from "@/components/admin-settings-tab";
 import { useAdminRsvps } from "@/hooks/use-rsvps";
 import { SuperconnectorTab } from "@/components/superconnector-tab";
+import { AdminHelpTab } from "@/components/admin-help-tab";
 
 type FirstRunStep = "generate" | "preview" | "ready";
 
@@ -981,6 +982,7 @@ export default function AdminDashboard() {
               Superconnector
             </TabsTrigger>
             <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Settings</TabsTrigger>
+            <TabsTrigger value="help" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Help</TabsTrigger>
           </TabsList>
           
           <TabsContent value="digests" className="space-y-6 mt-0">
@@ -1689,6 +1691,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="settings" className="mt-0">
             <AdminSettingsTab />
+          </TabsContent>
+
+          <TabsContent value="help" className="mt-0">
+            <AdminHelpTab />
           </TabsContent>
         </Tabs>
       </div>
