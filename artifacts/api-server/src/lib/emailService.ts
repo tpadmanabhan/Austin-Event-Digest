@@ -13,6 +13,7 @@ interface SendEmailOptions {
   html: string;
   text?: string;
   replyTo?: string;
+  fromName?: string;
   headers?: Record<string, string>;
 }
 
@@ -33,7 +34,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: `${FROM_NAME} <${FROM_EMAIL}>`,
+          from: `${options.fromName || FROM_NAME} <${FROM_EMAIL}>`,
           to: Array.isArray(options.to) ? options.to : [options.to],
           subject: options.subject,
           html: options.html,
@@ -72,7 +73,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     const recipients = Array.isArray(options.to) ? options.to.join(", ") : options.to;
 
     await transporter.sendMail({
-      from: `${FROM_NAME} <${GMAIL_USER}>`,
+      from: `${options.fromName || FROM_NAME} <${GMAIL_USER}>`,
       to: recipients,
       subject: options.subject,
       html: options.html,

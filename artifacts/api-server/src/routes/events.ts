@@ -844,6 +844,8 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
         to: recipient.email,
         subject: digest.subject,
         html,
+        fromName: req.tenant?.name || undefined,
+        replyTo: req.tenant?.adminEmail || undefined,
       });
 
       if (result.success) {
