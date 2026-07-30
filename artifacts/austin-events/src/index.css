@@ -137,6 +137,37 @@
   --destructive-foreground: 0 0% 100%;
 }
 
+/* ── St. Louis Cardinals: red (#C41E3A) ────────────────────────────────── */
+[data-tenant="stlouis"] {
+  --background: 350 100% 97%;
+  --foreground: 350 30% 10%;
+  --border: 350 40% 87%;
+  --input: 350 40% 87%;
+  --ring: 350 73% 44%;
+  --card: 0 0% 100%;
+  --card-foreground: 350 30% 10%;
+  --card-border: 350 40% 87%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 350 30% 10%;
+  --popover-border: 350 40% 87%;
+  --primary: 350 73% 44%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 350 60% 28%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 350 50% 92%;
+  --muted-foreground: 350 20% 44%;
+  --accent: 350 75% 58%;
+  --accent-foreground: 0 0% 100%;
+  --sidebar: 350 100% 97%;
+  --sidebar-foreground: 350 30% 10%;
+  --sidebar-border: 350 40% 87%;
+  --sidebar-primary: 350 73% 44%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 350 50% 92%;
+  --sidebar-accent-foreground: 350 30% 10%;
+  --sidebar-ring: 350 73% 44%;
+}
+
 /* ── Portland: Trail Blazers red (#CE1141) ─────────────────────────────── */
 [data-tenant="portland"] {
   --background: 349 60% 97%;
