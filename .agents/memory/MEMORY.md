@@ -9,3 +9,4 @@
 - [Tailwind @theme inline runtime overrides](tailwind-theme-inline-runtime-vars.md) — @theme inline bakes utilities to raw vars; override --primary/--secondary etc directly, not --color-*
 - [Admin page conventions](admin-page-conventions.md) — Save buttons + localStorage, spotlight "Create new digest" default, Send Draft week picker; apply to every current and future admin section
 - [Brushy Creek admin auth](brushycreek-admin-auth.md) — use email-based HMAC token (not password-hash token) for brushycreek admin API calls
+- [Draft send field name](stlouis-send-draft.md) — use `testEmail` (not `draftEmail`/`isDraft`) in POST /api/events/digest/send to avoid accidental full subscriber sends
