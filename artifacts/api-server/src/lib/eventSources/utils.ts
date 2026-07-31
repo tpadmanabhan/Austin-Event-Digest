@@ -27,11 +27,90 @@ const CITY_GEO: Record<string, CityGeo> = {
   "Miami, FL": { lat: 25.7617, lon: -80.1918, timezone: "America/New_York", slug: "miami-fl" },
   "Boston": { lat: 42.3601, lon: -71.0589, timezone: "America/New_York", slug: "boston-ma" },
   "Boston, MA": { lat: 42.3601, lon: -71.0589, timezone: "America/New_York", slug: "boston-ma" },
+  // Extended city list
+  "St. Louis": { lat: 38.6270, lon: -90.1994, timezone: "America/Chicago", slug: "st-louis-mo" },
+  "St. Louis, MO": { lat: 38.6270, lon: -90.1994, timezone: "America/Chicago", slug: "st-louis-mo" },
+  "Saint Louis": { lat: 38.6270, lon: -90.1994, timezone: "America/Chicago", slug: "st-louis-mo" },
+  "Saint Louis, MO": { lat: 38.6270, lon: -90.1994, timezone: "America/Chicago", slug: "st-louis-mo" },
+  "Portland": { lat: 45.5051, lon: -122.6750, timezone: "America/Los_Angeles", slug: "portland-or" },
+  "Portland, OR": { lat: 45.5051, lon: -122.6750, timezone: "America/Los_Angeles", slug: "portland-or" },
+  "Sacramento": { lat: 38.5816, lon: -121.4944, timezone: "America/Los_Angeles", slug: "sacramento-ca" },
+  "Sacramento, CA": { lat: 38.5816, lon: -121.4944, timezone: "America/Los_Angeles", slug: "sacramento-ca" },
+  "Nashville": { lat: 36.1627, lon: -86.7816, timezone: "America/Chicago", slug: "nashville-tn" },
+  "Nashville, TN": { lat: 36.1627, lon: -86.7816, timezone: "America/Chicago", slug: "nashville-tn" },
+  "Atlanta": { lat: 33.7490, lon: -84.3880, timezone: "America/New_York", slug: "atlanta-ga" },
+  "Atlanta, GA": { lat: 33.7490, lon: -84.3880, timezone: "America/New_York", slug: "atlanta-ga" },
+  "Dallas": { lat: 32.7767, lon: -96.7970, timezone: "America/Chicago", slug: "dallas-tx" },
+  "Dallas, TX": { lat: 32.7767, lon: -96.7970, timezone: "America/Chicago", slug: "dallas-tx" },
+  "Houston": { lat: 29.7604, lon: -95.3698, timezone: "America/Chicago", slug: "houston-tx" },
+  "Houston, TX": { lat: 29.7604, lon: -95.3698, timezone: "America/Chicago", slug: "houston-tx" },
+  "Phoenix": { lat: 33.4484, lon: -112.0740, timezone: "America/Phoenix", slug: "phoenix-az" },
+  "Phoenix, AZ": { lat: 33.4484, lon: -112.0740, timezone: "America/Phoenix", slug: "phoenix-az" },
+  "Minneapolis": { lat: 44.9778, lon: -93.2650, timezone: "America/Chicago", slug: "minneapolis-mn" },
+  "Minneapolis, MN": { lat: 44.9778, lon: -93.2650, timezone: "America/Chicago", slug: "minneapolis-mn" },
+  "San Diego": { lat: 32.7157, lon: -117.1611, timezone: "America/Los_Angeles", slug: "san-diego-ca" },
+  "San Diego, CA": { lat: 32.7157, lon: -117.1611, timezone: "America/Los_Angeles", slug: "san-diego-ca" },
+  // Active tenant cities
+  "Brushy Creek": { lat: 30.5085, lon: -97.7528, timezone: "America/Chicago", slug: "brushy-creek-tx" },
+  "Brushy Creek, TX": { lat: 30.5085, lon: -97.7528, timezone: "America/Chicago", slug: "brushy-creek-tx" },
+  "Bulverde, TX": { lat: 29.7474, lon: -98.4248, timezone: "America/Chicago", slug: "bulverde-tx" },
+  "Bulverde": { lat: 29.7474, lon: -98.4248, timezone: "America/Chicago", slug: "bulverde-tx" },
+  // Non-geographic city strings — map to nearest real city
+  "Austin Cares": { lat: 30.2672, lon: -97.7431, timezone: "America/Chicago", slug: "austin-tx" },
 };
+
+/** Derive a reasonable US timezone from longitude when we can't look it up. */
+function timezoneFromLon(lon: number): string {
+  if (lon > -87.5) return "America/New_York";   // Eastern
+  if (lon > -102.5) return "America/Chicago";   // Central
+  if (lon > -115) return "America/Denver";      // Mountain
+  return "America/Los_Angeles";                 // Pacific
+}
+
+/** In-process cache for Nominatim geocode results (unknown cities). Resets on server restart. */
+const _geoCache = new Map<string, CityGeo | null>();
 
 export function getCityGeo(city: string): CityGeo | null {
   const normalized = city.trim();
   return CITY_GEO[normalized] || CITY_GEO[normalized.split(",")[0].trim()] || null;
+}
+
+/**
+ * Resolves geo coordinates for any city string.
+ * 1. Checks the static CITY_GEO map (instant, no network).
+ * 2. Checks the in-process cache from previous Nominatim lookups.
+ * 3. Falls back to a Nominatim geocode call so new cities work without code changes.
+ */
+export async function resolveCityGeo(city: string): Promise<CityGeo | null> {
+  const static_ = getCityGeo(city);
+  if (static_) return static_;
+
+  const cacheKey = city.trim().toLowerCase();
+  if (_geoCache.has(cacheKey)) return _geoCache.get(cacheKey)!;
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "eventcarpooling/1.0" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) { _geoCache.set(cacheKey, null); return null; }
+    const results = (await res.json()) as Array<{ lat: string; lon: string }>;
+    if (!results[0]) { _geoCache.set(cacheKey, null); return null; }
+    const lat = parseFloat(results[0].lat);
+    const lon = parseFloat(results[0].lon);
+    const geo: CityGeo = {
+      lat,
+      lon,
+      timezone: timezoneFromLon(lon),
+      slug: city.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    };
+    _geoCache.set(cacheKey, geo);
+    return geo;
+  } catch {
+    _geoCache.set(cacheKey, null);
+    return null;
+  }
 }
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {

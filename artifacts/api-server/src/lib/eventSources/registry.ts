@@ -15,6 +15,10 @@ export const CATEGORY_SOURCES: Record<string, SourceAdapter[]> = {
   "Food": [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter],
   "Wellness": [lumaAdapter, meetupAdapter, eventbriteAdapter],
   "Civics": [meetupAdapter, eventbriteAdapter, eventbriteWebAdapter],
+  "Arts & Culture": [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter],
+  // Aliases used by active tenants
+  "Arts": [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter],
+  "Sports": [lumaAdapter, meetupAdapter, eventbriteAdapter],
 };
 
 export function getAdaptersForCategories(categories: string[]): Array<{ adapter: SourceAdapter; category: string }> {

@@ -1,6 +1,6 @@
 import type { SourceAdapter, SourceQuery } from "./types";
 import type { EventItem } from "@workspace/db";
-import { getCityGeo, getCategoryKeywords, formatISODate, isWithinDateRange, guessCategory } from "./utils";
+import { resolveCityGeo, getCategoryKeywords, formatISODate, isWithinDateRange, guessCategory } from "./utils";
 import { logger } from "../logger";
 
 // Keyed by canonical category names (after canonicalizeCategory is applied upstream)
@@ -8,6 +8,9 @@ const LUMA_TAG_MAP: Record<string, string[]> = {
   "Tech": ["tech", "startup", "ai"],
   "Food": ["food", "foodie"],
   "Wellness": ["wellness", "yoga", "fitness"],
+  "Arts & Culture": ["art", "culture", "music"],
+  "Arts": ["art", "culture"],
+  "Sports": ["fitness", "sports"],
   "Music": [],
   "Civics": [],
 };
@@ -37,7 +40,7 @@ interface LumaResponse {
 }
 
 async function fetchLumaEvents(query: SourceQuery): Promise<EventItem[]> {
-  const geo = getCityGeo(query.city);
+  const geo = await resolveCityGeo(query.city);
   if (!geo) {
     logger.warn({ city: query.city }, "Luma: unknown city — no geo coordinates");
     return [];
@@ -97,7 +100,7 @@ async function fetchLumaEvents(query: SourceQuery): Promise<EventItem[]> {
 
     events.push({
       title: ev.name.trim(),
-      date: formatISODate(ev.start_at, "America/Chicago"),
+      date: formatISODate(ev.start_at, geo.timezone),
       venue: venue.substring(0, 120),
       description: description.substring(0, 400),
       category: guessCategory(`${ev.name} ${description}`),

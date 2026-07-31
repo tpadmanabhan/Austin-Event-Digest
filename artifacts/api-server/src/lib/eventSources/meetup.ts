@@ -1,6 +1,6 @@
 import type { SourceAdapter, SourceQuery } from "./types";
 import type { EventItem } from "@workspace/db";
-import { getCityGeo, getCategorySearchQuery, formatISODate, isWithinDateRange, guessCategory } from "./utils";
+import { resolveCityGeo, getCategorySearchQuery, formatISODate, isWithinDateRange, guessCategory } from "./utils";
 import { logger } from "../logger";
 
 interface MeetupEvent {
@@ -34,7 +34,7 @@ interface MeetupGQLResponse {
 }
 
 async function fetchMeetupEvents(query: SourceQuery): Promise<EventItem[]> {
-  const geo = getCityGeo(query.city);
+  const geo = await resolveCityGeo(query.city);
   if (!geo) {
     logger.warn({ city: query.city }, "Meetup: unknown city");
     return [];
@@ -116,7 +116,7 @@ async function fetchMeetupEvents(query: SourceQuery): Promise<EventItem[]> {
 
     events.push({
       title: ev.title.trim(),
-      date: formatISODate(ev.dateTime, "America/Chicago"),
+      date: formatISODate(ev.dateTime, geo.timezone),
       venue: venue.substring(0, 120),
       description,
       category: guessCategory(`${ev.title} ${description}`),
