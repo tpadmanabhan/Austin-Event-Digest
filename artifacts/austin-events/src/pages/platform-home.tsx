@@ -215,6 +215,13 @@ function PlatformHomeInner() {
                   iconShadow: "0 3px 10px rgba(217,119,6,0.5)",
                   label: "Bulverde Events",
                 },
+                {
+                  href: "https://stlouis.eventcarpooling.com",
+                  icon: "⚜️",
+                  iconBg: "linear-gradient(135deg, #1e3a5f, #1d4ed8)",
+                  iconShadow: "0 3px 10px rgba(29,78,216,0.5)",
+                  label: "St. Louis Events",
+                },
               ].map(city => (
                 <a
                   key={city.href}
