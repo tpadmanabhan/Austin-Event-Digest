@@ -66,8 +66,13 @@ async function fetchLumaEvents(query: SourceQuery): Promise<EventItem[]> {
 
   const url = `https://api.lu.ma/public/v1/calendar/list-events?${params}`;
 
+  const lumaKey = process.env["LUMA_API_KEY"];
   const res = await fetch(url, {
-    headers: { accept: "application/json", "user-agent": "eventcarpooling-newsletter/1.0" },
+    headers: {
+      accept: "application/json",
+      "user-agent": "eventcarpooling-newsletter/1.0",
+      ...(lumaKey ? { "x-luma-api-key": lumaKey } : {}),
+    },
     signal: AbortSignal.timeout(8000),
   });
 
