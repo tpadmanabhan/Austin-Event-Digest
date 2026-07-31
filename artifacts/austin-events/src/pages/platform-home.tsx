@@ -201,6 +201,20 @@ function PlatformHomeInner() {
                   iconShadow: "0 3px 10px rgba(21,128,61,0.5)",
                   label: "Austin Cares",
                 },
+                {
+                  href: "https://portland.eventcarpooling.com",
+                  icon: "🌲",
+                  iconBg: "linear-gradient(135deg, #7f1d1d, #CE1141)",
+                  iconShadow: "0 3px 10px rgba(206,17,65,0.5)",
+                  label: "Portland Events",
+                },
+                {
+                  href: "https://bulverde.eventcarpooling.com",
+                  icon: "🤠",
+                  iconBg: "linear-gradient(135deg, #78350f, #d97706)",
+                  iconShadow: "0 3px 10px rgba(217,119,6,0.5)",
+                  label: "Bulverde Events",
+                },
               ].map(city => (
                 <a
                   key={city.href}
