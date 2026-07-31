@@ -382,7 +382,7 @@ export function EventCard({ event, digestId, distanceMiles }: { event: EventItem
   return (
     <div className={`group relative flex flex-col rounded-2xl bg-card border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full ${event.link ? "border-primary/40 border-t-2 border-t-primary hover:border-primary/60" : "border-border hover:border-primary/30"}`}>
       {event.imageUrl && (
-        <div className="aspect-[16/9] w-full overflow-hidden bg-muted rounded-t-2xl">
+        <div className="w-full overflow-hidden bg-muted rounded-t-2xl" style={{ height: "160px" }}>
           <img
             src={event.imageUrl}
             alt={event.title}
