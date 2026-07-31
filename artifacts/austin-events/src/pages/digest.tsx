@@ -4,7 +4,7 @@ import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { useAllDigests, useLatestDigest } from "@/hooks/use-events";
 import { format, parseISO } from "date-fns";
-import { Calendar, ArrowLeft, Star, Leaf, ExternalLink, Trophy, Loader2 } from "lucide-react";
+import { Calendar, ArrowLeft, Leaf, ExternalLink, Trophy, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
@@ -454,9 +454,12 @@ export default function DigestView() {
         {(() => {
           const communityPosts = digest.events.filter((e: any) => e.isPost === true);
           const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true);
+          const dragQueenRe = /drag queen/i;
           const upcomingEvents = digest.events.filter((e: any) =>
             !e.isPost &&
             !e.isBusinessSpotlight &&
+            !dragQueenRe.test(e.title || "") &&
+            !dragQueenRe.test(e.description || "") &&
             (e.featured || isEventTodayOrLater(e.date, e))
           );
           const catFiltered = categoryFilter === "All"
@@ -481,9 +484,8 @@ export default function DigestView() {
             if (!geoActive || !userCoords || e.lat == null || e.lng == null) return undefined;
             return Math.round(haversine(userCoords.lat, userCoords.lng, e.lat, e.lng) * 10) / 10;
           };
-          // When geo is active: merge all events into one distance-sorted list.
-          // When geo is off: keep featured pinned at top + regular sorted by date.
-          const featuredEvents = geoActive ? [] : visibleEvents.filter((e: any) => e.featured);
+          // When geo is active: sort all events by distance ascending.
+          // When geo is off: sort all events by date ascending (no featured pinning).
           const regularEvents = geoActive
             ? [...visibleEvents].sort((a: any, b: any) => {
                 const aDist = (a.lat != null && a.lng != null) ? haversine(userCoords!.lat, userCoords!.lng, a.lat, a.lng) : Infinity;
@@ -491,7 +493,6 @@ export default function DigestView() {
                 return aDist - bDist;
               })
             : [...visibleEvents]
-                .filter((e: any) => !e.featured)
                 .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
 
           return (
@@ -541,32 +542,6 @@ export default function DigestView() {
                     radiusMiles={30}
                     height={400}
                   />
-                </section>
-              )}
-
-              {featuredEvents.length > 0 && (
-                <section className="mb-12">
-                  <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
-                    <span className="w-8 h-1 bg-amber-500 rounded-full"></span>
-                    <Star className="w-6 h-6 text-amber-500 fill-amber-500" />
-                    Special Events
-                  </h2>
-                  <div className="flex flex-col gap-6">
-                    {featuredEvents.map((featEvent: any, fi: number) => (
-                      <div key={fi} className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20">
-                        <div className="h-1 rounded-t-3xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
-                        <div className="p-6 sm:p-8">
-                          <div className="flex justify-end mb-3">
-                            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
-                              <Star className="w-3 h-3 fill-amber-950" />
-                              Special Event
-                            </span>
-                          </div>
-                          <EventCard event={featEvent} digestId={digest.id} distanceMiles={getDistanceMiles(featEvent)} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </section>
               )}
 
@@ -706,26 +681,11 @@ export default function DigestView() {
                   </div>
                 ) : (
                   <div className={geoActive ? "flex flex-col gap-6" : "grid sm:grid-cols-2 gap-8"}>
-                    {regularEvents.map((event: any, i: number) =>
-                      geoActive && event.featured ? (
-                        <div key={i} className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20" style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
-                          <div className="h-1 rounded-t-3xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
-                          <div className="p-6 sm:p-8">
-                            <div className="flex justify-end mb-3">
-                              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
-                                <Star className="w-3 h-3 fill-amber-950" />
-                                Special Event
-                              </span>
-                            </div>
-                            <EventCard event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
-                          </div>
-                        </div>
-                      ) : (
-                        <div key={i} style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
-                          <EventCard event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
-                        </div>
-                      )
-                    )}
+                    {regularEvents.map((event: any, i: number) => (
+                      <div key={i} style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
+                        <EventCard event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
+                      </div>
+                    ))}
                   </div>
                 )}
               </section>

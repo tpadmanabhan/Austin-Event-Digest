@@ -94,11 +94,13 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
   const data = (await res.json()) as TmResponse;
   const tmEvents = data._embedded?.events || [];
 
+  const dragQueenRe = /drag queen/i;
   const events: EventItem[] = [];
   for (const ev of tmEvents) {
     const startIso = ev.dates?.start?.dateTime || (ev.dates?.start?.localDate ? `${ev.dates.start.localDate}T${ev.dates.start.localTime || "19:00:00"}` : null);
     if (!startIso) continue;
     if (!isWithinDateRange(startIso, query.weekOf, query.weekEnd)) continue;
+    if (dragQueenRe.test(ev.name)) continue;
 
     const venue = ev._embedded?.venues?.[0];
     const venueName = venue
