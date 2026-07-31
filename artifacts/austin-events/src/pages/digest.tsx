@@ -454,12 +454,12 @@ export default function DigestView() {
         {(() => {
           const communityPosts = digest.events.filter((e: any) => e.isPost === true);
           const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true);
-          const dragQueenRe = /drag queen/i;
+          const ADULT_BLOCKED = ["drag queen","burlesque","strip club","stripclub","gentlemen's club","gentlemens club","adult comedy","adult entertainment","adult show","adult cabaret","lingerie party","erotic","nude","naked","naughty","XXX"];
+          const isAdult = (e: any) => { const t = `${e.title ?? ""} ${e.description ?? ""}`.toLowerCase(); return ADULT_BLOCKED.some(p => t.includes(p.toLowerCase())); };
           const upcomingEvents = digest.events.filter((e: any) =>
             !e.isPost &&
             !e.isBusinessSpotlight &&
-            !dragQueenRe.test(e.title || "") &&
-            !dragQueenRe.test(e.description || "") &&
+            !isAdult(e) &&
             (e.featured || isEventTodayOrLater(e.date, e))
           );
           const catFiltered = categoryFilter === "All"

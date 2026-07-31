@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 
 const SOURCE_URLS: Record<string, string> = {
+  "Ticketmaster": "https://www.ticketmaster.com",
+  "Eventbrite": "https://www.eventbrite.com",
+  "Luma": "https://lu.ma",
   "The Austin Business Review": "https://austinbusinessreview.com/",
-  "Luma": "https://lu.ma/austin",
   "ATX Today": "https://atxtoday.6amcity.com",
   "Greater Asian Chamber of Commerce": "https://members.austinasianchamber.org/events?_gl=1*1gwyy91*_ga*MjM4NTUzNjU2LjE3Nzg0NTE2NDk.*_ga_34Z9ZMSYKX*czE3ODExMDA1NzIkbzYkZzAkdDE3ODExMDA1NzIkajYwJGwwJGgw",
   "What's Weird ATX": "https://whatsweirdatx.substack.com",

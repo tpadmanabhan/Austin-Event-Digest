@@ -2,6 +2,7 @@ import type { SourceAdapter, SourceQuery } from "./types";
 import type { EventItem } from "@workspace/db";
 import { getCityGeo, guessCategory, isWithinDateRange, formatISODate } from "./utils";
 import { logger } from "../logger";
+import { isAdultContent } from "../contentFilter";
 
 /** Maps canonical category names to Ticketmaster classification names */
 const TM_CLASSIFICATION: Record<string, string> = {
@@ -94,13 +95,12 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
   const data = (await res.json()) as TmResponse;
   const tmEvents = data._embedded?.events || [];
 
-  const dragQueenRe = /drag queen/i;
   const events: EventItem[] = [];
   for (const ev of tmEvents) {
     const startIso = ev.dates?.start?.dateTime || (ev.dates?.start?.localDate ? `${ev.dates.start.localDate}T${ev.dates.start.localTime || "19:00:00"}` : null);
     if (!startIso) continue;
     if (!isWithinDateRange(startIso, query.weekOf, query.weekEnd)) continue;
-    if (dragQueenRe.test(ev.name)) continue;
+    if (isAdultContent(ev.name, ev.description || ev.info || "")) continue;
 
     const venue = ev._embedded?.venues?.[0];
     const venueName = venue
