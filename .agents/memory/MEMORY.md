@@ -4,7 +4,7 @@
 - [Zod schema stripping on deploy](zod-deployed-schema.md) — deployed server strips fields not in its schema; adding a field requires redeploy to flow through API responses
 - [Newsletter parser formats](newsletter-parsers.md) — each newsletter has a unique format; TIME_LINE must extract only time (not " @ Venue" trailing content); DATE_COLON_LINE needs [a-z]* for full month names
 - [Custom date range digests](custom-date-range.md) — generate endpoint supports optional weekEnd param (bypasses Zod schema) for multi-day ranges; use /api/events/digest/import to push cleaned data to production
-- [Production admin token](prod-admin-token.md) — bcrypt hash rotates on every redeploy; query prod DB for fresh password_hash then HMAC it to get a valid Bearer token
+- [Production admin token](prod-admin-token.md) — token = HMAC(tenant.passwordHash, "admin-session"); per-tenant from tenants table; never HMAC(SESSION_SECRET, ADMIN_PASSWORD)
 - [Digest 61 spotlights](digest-61-spotlights.md) — RacFit (Business) + Food & Climate Grants (Community) must be PATCHed into digest 61 (7/12) when generated
 - [Tailwind @theme inline runtime overrides](tailwind-theme-inline-runtime-vars.md) — @theme inline bakes utilities to raw vars; override --primary/--secondary etc directly, not --color-*
 - [Admin page conventions](admin-page-conventions.md) — Save buttons + localStorage, spotlight "Create new digest" default, Send Draft week picker; apply to every current and future admin section

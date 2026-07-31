@@ -1,35 +1,30 @@
 ---
-name: Production admin token derivation
-description: How to generate a valid admin Bearer token for the production API after each redeploy rotates the bcrypt hash
+name: Production admin token
+description: How to compute a valid Bearer token for requireAdmin endpoints on the production API
 ---
 
-## Admin email (preferred — survives redeploys)
+# Production Admin Token
 
-Austin tenant admin email: `aiimplementationclubaustin@gmail.com`, tenantId: `1`
+## The rule
+Admin token = `crypto.createHmac("sha256", tenant.passwordHash).update("admin-session").digest("hex")`
 
-Token = `HMAC-SHA256(RSVP_HMAC_SECRET, "admin-email:1:aiimplementationclubaustin@gmail.com")`
+The `passwordHash` lives on the **tenant row** in the `tenants` table, not in a separate admins table.  
+Query prod DB: `SELECT id, slug, password_hash FROM tenants ORDER BY id`  
+Each tenant has its own passwordHash → its own token.
 
-This is stable — uses `RSVP_HMAC_SECRET` which never changes. Generate via:
-```bash
-TOKEN=$(node -e "
-  const {createHmac}=require('crypto');
-  const secret=process.env.RSVP_HMAC_SECRET;
-  console.log(createHmac('sha256',secret).update('admin-email:1:aiimplementationclubaustin@gmail.com').digest('hex'));
-")
-```
+**Why:** The bcrypt hash is stored per-tenant (not globally), and the token is derived from it. Hash rotates on redeploy, so recompute after every deploy.
 
-**Requires** `admin_email` to be set in the tenants table. Set in `startupMigration.ts` — takes effect after next publish.
+**How to apply:**
+1. Query prod DB for `password_hash` from `tenants` table
+2. `HMAC(passwordHash, "admin-session")` — the string "admin-session" is the HMAC message, passwordHash is the key
+3. Use as `Authorization: Bearer <token>` against `<slug>.eventcarpooling.com`
+4. GET endpoints like `/api/events/digest/list` are public (no auth needed)
+5. POST/PATCH/DELETE endpoints use requireAdmin — use per-tenant token
 
----
+## Alternative: email-based admin
+`HMAC(RSVP_HMAC_SECRET, "admin-email:<tenantId>:<email>")` — used for Brushy Creek. See brushycreek-admin-auth.md.
 
-## Password-based token (fallback — breaks on redeploy)
-
-`HMAC-SHA256(tenant.passwordHash, "admin-session")` — the `passwordHash` rotates on every redeploy.
-
-**Why:** `startupMigration` re-hashes `ADMIN_PASSWORD` with a fresh bcrypt salt each startup.
-
-**How to apply if email token fails:**
-1. Query prod DB: `SELECT password_hash FROM tenants WHERE slug = 'austin'` with `environment: "production"`
-2. `TOKEN=$(node -e "const {createHmac}=require('crypto'); console.log(createHmac('sha256','<hash>').update('admin-session').digest('hex'))")`
-
-The login endpoint (`POST /api/admin/login`) requires a Cloudflare Turnstile captcha — cannot be used via curl.
+## Pitfalls
+- Do NOT use `HMAC(SESSION_SECRET, ADMIN_PASSWORD)` — that was wrong and returns 401
+- Do NOT reuse tokens across tenants — each tenant has a different passwordHash → different token
+- The production generate endpoint falls back to `generateSampleDigest()` when adapters return nothing — always verify events are real before keeping generated digests; delete immediately if they contain hallucinated fallback events (e.g. "Barton Springs Sunday Swim", "South Congress Farmers Market")
