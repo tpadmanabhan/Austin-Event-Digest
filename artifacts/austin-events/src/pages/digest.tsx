@@ -105,7 +105,7 @@ function getDisplayCategory(event: { category: string; title: string; descriptio
 function parseEventDateForSort(dateStr: string): number {
   // Handles: "Sunday, Jun 7", "Wednesday, Jun 10 at 7:00 AM", "Thu, Jun 11 - Fri, Jun 12"
   const match = dateStr.match(/([A-Z][a-z]{2})\s+(\d+)/);
-  if (!match) return 0;
+  if (!match) return Number.MAX_SAFE_INTEGER; // undated events sink to bottom
   const month = MONTH_MAP[match[1]] ?? 0;
   const day = parseInt(match[2], 10);
   // Extract time if present (e.g. "at 7:00 AM" or ", 7:00 PM")
