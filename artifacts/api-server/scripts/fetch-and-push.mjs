@@ -209,7 +209,7 @@ async function fetchEventbrite(city, tz) {
 }
 
 // ── Ticketmaster ──────────────────────────────────────────────────────────────
-const TM_CLASSIFICATIONS = ["Music", "Arts & Theatre", "Sports"];
+const TM_CLASSIFICATIONS = ["Music", "Arts & Theatre", "Sports", "Family", "Miscellaneous"];
 
 async function fetchTicketmaster(tmCity, tz) {
   const apiKey = process.env.TICKETMASTER_API_KEY?.trim();
