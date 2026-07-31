@@ -223,8 +223,9 @@ async function fetchTicketmaster(city, weekOf, weekEnd) {
 async function getCurrentEvents(subdomain, token, digestId) {
   const res = await fetch(`https://${subdomain}.eventcarpooling.com/api/events/digest/list`,
     { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(12000) });
-  const list = await res.json();
-  const digest = list.find(d => d.id === digestId);
+  const body = await res.json();
+  const digests = Array.isArray(body) ? body : (body.digests ?? []);
+  const digest = digests.find(d => d.id === digestId);
   return digest?.events ?? [];
 }
 
