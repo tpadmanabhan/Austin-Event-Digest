@@ -1,19 +1,48 @@
 /**
  * fetch-and-push.mjs  — plain Node.js (ESM)
  * Runs Eventbrite + Ticketmaster scrapers and PATCHes results into production digests.
- * Covers current week (7/26–8/1) + next week (8/2–8/8).
- * Events on 8/2+ are tagged featured:true (Special Events).
+ * Covers current week (Sun→Sat) + next week (Sun→Sat).
+ * Events in the next week are tagged featured:true (Special Events).
  * Past events (before today) are dropped from existing lists.
  *
- * node artifacts/api-server/scripts/fetch-and-push.mjs
+ * Usage:
+ *   node artifacts/api-server/scripts/fetch-and-push.mjs           # live run
+ *   node artifacts/api-server/scripts/fetch-and-push.mjs --dry-run # preview only
+ *
+ * Safety features:
+ *   - Backs up existing events to .refresh-backup-<date>.json before patching
+ *   - Refuses to patch if merged count would drop below 50% of existing (safety floor)
+ *   - --dry-run flag shows what would change without writing anything
  */
-import { createHmac } from "crypto";
 
-// ── Date constants ────────────────────────────────────────────────────────────
-const TODAY_ISO      = "2026-07-31";   // events before this date are past
-const NEXT_WEEK_ISO  = "2026-08-02";   // events on/after this are "special"
-const RANGE_START    = "2026-07-31T00:00:00Z";
-const RANGE_END      = "2026-08-08T23:59:59Z";
+import { createHmac } from "crypto";
+import { writeFileSync }   from "fs";
+import { join, dirname }   from "path";
+import { fileURLToPath }   from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DRY_RUN = process.argv.includes("--dry-run");
+
+// ── Dynamic date constants (recalculated each run) ────────────────────────────
+
+function getSundayOf(d = new Date()) {
+  const day = d.getDay(); // 0=Sun
+  const sun = new Date(d);
+  sun.setDate(d.getDate() - day);
+  sun.setHours(0, 0, 0, 0);
+  return sun;
+}
+
+const weekStart    = getSundayOf();                              // This Sunday 00:00
+const nextWeekStart = new Date(weekStart);
+nextWeekStart.setDate(weekStart.getDate() + 7);                 // Next Sunday 00:00
+const twoWeeksEnd  = new Date(weekStart);
+twoWeeksEnd.setDate(weekStart.getDate() + 13);                  // Next Saturday 23:59
+
+const TODAY_ISO     = new Date().toISOString().substring(0, 10);
+const NEXT_WEEK_ISO = nextWeekStart.toISOString().substring(0, 10);
+const RANGE_START   = weekStart.toISOString().replace(".000Z", "Z");
+const RANGE_END     = new Date(twoWeeksEnd.getTime() + 86399000).toISOString().replace(".000Z", "Z");
 
 // ── City slug map for Eventbrite ─────────────────────────────────────────────
 const EB_SLUG = {
@@ -36,7 +65,6 @@ const CATEGORY_PATHS = {
 };
 
 // ── Tenant config ─────────────────────────────────────────────────────────────
-// tmCity: city/state used for Ticketmaster lookups (defaults to city)
 const TENANTS = [
   {
     subdomain: "austincares", city: "Austin, TX", digestId: 85,
@@ -88,12 +116,12 @@ function parseDateString(str) {
   const m = str.match(/([A-Z][a-z]+)\s+(\d+)\s+at\s+(\d+):(\d+)\s+(AM|PM)/i);
   if (!m) return null;
   const [, month, day, hours, minutes, ampm] = m;
-  const mo = MONTHS[month];
+  const mo = MONTHS[month.substring(0, 3)];
   if (mo === undefined) return null;
   let h = parseInt(hours, 10);
   if (ampm.toUpperCase() === "PM" && h !== 12) h += 12;
   if (ampm.toUpperCase() === "AM" && h === 12) h = 0;
-  return new Date(2026, mo, parseInt(day, 10), h, parseInt(minutes, 10));
+  return new Date(new Date().getFullYear(), mo, parseInt(day, 10), h, parseInt(minutes, 10));
 }
 
 /** Keep only events whose date is today or in the future */
@@ -145,6 +173,39 @@ const FETCH_OPTS = {
   },
   signal: AbortSignal.timeout(14000),
 };
+
+// ── Safety floor ──────────────────────────────────────────────────────────────
+
+/**
+ * Returns true if it's safe to proceed with the patch.
+ * Aborts (returns false) if the merged count drops below 50% of what existed.
+ */
+function safetyCheck(subdomain, existingCount, mergedCount) {
+  if (existingCount === 0) return true; // empty digest — always ok
+  const ratio = mergedCount / existingCount;
+  if (ratio < 0.5) {
+    console.log(
+      `  🛑 SAFETY FLOOR: merged count (${mergedCount}) is < 50% of existing (${existingCount}). ` +
+      `Skipping patch to protect existing events. Run with --dry-run to inspect.`
+    );
+    return false;
+  }
+  return true;
+}
+
+// ── Backup ────────────────────────────────────────────────────────────────────
+
+function backupEvents(allExisting) {
+  if (DRY_RUN) return; // no backup in dry-run
+  const date = new Date().toISOString().substring(0, 10);
+  const path = join(__dirname, `.refresh-backup-${date}.json`);
+  try {
+    writeFileSync(path, JSON.stringify(allExisting, null, 2));
+    console.log(`  💾 Backup saved → ${path}`);
+  } catch (e) {
+    console.log(`  ⚠ Backup failed: ${e.message}`);
+  }
+}
 
 // ── Eventbrite scraper ────────────────────────────────────────────────────────
 async function scrapeEventbritePage(url, tz) {
@@ -226,8 +287,8 @@ async function fetchTicketmaster(tmCity, tz) {
       size: "30",
       sort: "date,asc",
       classificationName: cls,
-      startDateTime: RANGE_START.replace("Z", "Z"),
-      endDateTime:   RANGE_END.replace(" ", "T"),
+      startDateTime: RANGE_START,
+      endDateTime:   RANGE_END,
     });
     if (stateCode) params.set("stateCode", stateCode);
 
@@ -281,6 +342,10 @@ async function getCurrentEvents(subdomain, token, digestId) {
 }
 
 async function patchDigest(subdomain, token, digestId, events) {
+  if (DRY_RUN) {
+    console.log(`  🔍 DRY RUN — would patch digest ${digestId} with ${events.length} events`);
+    return;
+  }
   const res = await fetch(
     `https://${subdomain}.eventcarpooling.com/api/events/digest/${digestId}/events`,
     {
@@ -297,6 +362,7 @@ async function patchDigest(subdomain, token, digestId, events) {
 
 /** Trigger server-side geocoding for any events missing lat/lng (fire-and-forget) */
 async function triggerGeocode(subdomain, token, digestId) {
+  if (DRY_RUN) return;
   try {
     const res = await fetch(
       `https://${subdomain}.eventcarpooling.com/api/events/digest/${digestId}/regeocoded`,
@@ -317,8 +383,9 @@ async function triggerGeocode(subdomain, token, digestId) {
 async function main() {
   const tmKey = process.env.TICKETMASTER_API_KEY?.trim() || "";
   console.log(`\n${"=".repeat(60)}`);
-  console.log(`Event fetch-and-push`);
-  console.log(`Range: ${TODAY_ISO} → 2026-08-08  |  Special events start: ${NEXT_WEEK_ISO}`);
+  console.log(`Event fetch-and-push${DRY_RUN ? " [DRY RUN — no changes will be written]" : ""}`);
+  console.log(`Week: ${weekStart.toISOString().substring(0,10)} → ${twoWeeksEnd.toISOString().substring(0,10)}`);
+  console.log(`Special events start: ${NEXT_WEEK_ISO}`);
   console.log("=".repeat(60));
 
   let tmActive = false;
@@ -336,6 +403,9 @@ async function main() {
     console.log("Ticketmaster key: ⚠ not set");
   }
 
+  // Collect all existing events for backup (before any changes)
+  const backupData = {};
+
   for (const tenant of TENANTS) {
     const tmCity = tenant.tmCity || tenant.city;
     console.log(`\n── ${tenant.subdomain.toUpperCase()} (digest ${tenant.digestId})${tmCity !== tenant.city ? `  [TM city: ${tmCity}]` : ""} ──`);
@@ -343,11 +413,14 @@ async function main() {
 
     // Fetch existing events, drop ones that are now past
     let existing = [];
+    let rawCount = 0;
     try {
       const raw = await getCurrentEvents(tenant.subdomain, token, tenant.digestId);
+      rawCount = raw.length;
       existing = filterPastEvents(raw);
       const dropped = raw.length - existing.length;
       console.log(`  Existing: ${raw.length} events${dropped > 0 ? ` (dropped ${dropped} past)` : ""}`);
+      backupData[tenant.subdomain] = raw; // save originals for backup
     } catch (e) {
       console.log(`  Could not fetch existing: ${e.message}`);
     }
@@ -387,22 +460,37 @@ async function main() {
     const specialCount = merged.filter(e => e.featured).length;
     console.log(`  Net new: ${toAdd.length} | Total: ${merged.length} (${specialCount} special/featured)`);
 
+    // Safety floor — skip if merged count drops below 50% of existing
+    if (!safetyCheck(tenant.subdomain, rawCount, merged.length)) continue;
+
     if (toAdd.length === 0 && JSON.stringify(existing) === JSON.stringify(updatedExisting)) {
       console.log(`  ✓ Nothing changed — triggering geocode for any missing pins`);
       await triggerGeocode(tenant.subdomain, token, tenant.digestId);
       continue;
     }
 
+    // Backup before first real write
+    if (Object.keys(backupData).length === TENANTS.indexOf(tenant) + 1) {
+      backupEvents(backupData);
+    }
+
     try {
       await patchDigest(tenant.subdomain, token, tenant.digestId, merged);
-      console.log(`  ✅ Patched → ${merged.length} events in digest ${tenant.digestId}`);
-      await triggerGeocode(tenant.subdomain, token, tenant.digestId);
+      if (!DRY_RUN) {
+        console.log(`  ✅ Patched → ${merged.length} events in digest ${tenant.digestId}`);
+        await triggerGeocode(tenant.subdomain, token, tenant.digestId);
+      }
     } catch (e) {
       console.log(`  ❌ PATCH failed: ${e.message}`);
     }
   }
 
-  console.log(`\n${"=".repeat(60)}\nDone.\n`);
+  // Write backup once all tenants are processed (if any changes were made)
+  if (!DRY_RUN && Object.keys(backupData).length > 0) {
+    backupEvents(backupData);
+  }
+
+  console.log(`\n${"=".repeat(60)}\nDone${DRY_RUN ? " (dry run — nothing was changed)" : ""}.\n`);
 }
 
 main().catch(console.error);
