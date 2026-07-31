@@ -5,20 +5,21 @@ import { eventbriteWebAdapter } from "./eventbriteWeb";
 import { stationAustinAdapter } from "./stationAustin";
 import { bandsintownAdapter } from "./bandsintown";
 import { songkickAdapter } from "./songkick";
+import { ticketmasterAdapter } from "./ticketmaster";
 import { canonicalizeCategory } from "./utils";
 import type { SourceAdapter } from "./types";
 
 // Keyed by canonical category names only — aliases are resolved via canonicalizeCategory()
 export const CATEGORY_SOURCES: Record<string, SourceAdapter[]> = {
-  "Tech": [stationAustinAdapter, eventbriteWebAdapter, lumaAdapter, meetupAdapter, eventbriteAdapter],
-  "Music": [bandsintownAdapter, songkickAdapter, eventbriteAdapter],
-  "Food": [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter],
-  "Wellness": [lumaAdapter, meetupAdapter, eventbriteAdapter],
-  "Civics": [meetupAdapter, eventbriteAdapter, eventbriteWebAdapter],
-  "Arts & Culture": [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter],
+  "Tech":           [stationAustinAdapter, eventbriteWebAdapter, lumaAdapter, meetupAdapter, eventbriteAdapter, ticketmasterAdapter],
+  "Music":          [bandsintownAdapter, songkickAdapter, eventbriteAdapter, ticketmasterAdapter],
+  "Food":           [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter],
+  "Wellness":       [lumaAdapter, meetupAdapter, eventbriteAdapter, ticketmasterAdapter],
+  "Civics":         [meetupAdapter, eventbriteAdapter, eventbriteWebAdapter],
+  "Arts & Culture": [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter, ticketmasterAdapter],
   // Aliases used by active tenants
-  "Arts": [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter],
-  "Sports": [lumaAdapter, meetupAdapter, eventbriteAdapter],
+  "Arts":           [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter, ticketmasterAdapter],
+  "Sports":         [lumaAdapter, meetupAdapter, eventbriteAdapter, ticketmasterAdapter],
 };
 
 export function getAdaptersForCategories(categories: string[]): Array<{ adapter: SourceAdapter; category: string }> {
