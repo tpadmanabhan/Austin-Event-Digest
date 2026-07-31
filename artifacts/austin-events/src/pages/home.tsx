@@ -301,7 +301,7 @@ export default function Home() {
                         />
                       </span>
                     ) : isPortland ? (
-                      <a href="https://www.minervaventures.com/what-we-do" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">Marianna</a>
+                      "Meg"
                     ) : isSacramento ? (
                       "Bob"
                     ) : isStLouis ? (
