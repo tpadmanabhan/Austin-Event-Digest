@@ -61,6 +61,22 @@ function isEventTodayOrLater(dateStr: string): boolean {
   return eventDate >= today;
 }
 
+function parseEventDateForSort(dateStr: string): number {
+  if (!dateStr) return Infinity;
+  const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})(?:\s+at\s+(\d+):(\d+)\s*(AM|PM))?/i);
+  if (!m) return Infinity;
+  const key = m[1].substring(0, 3);
+  const month = MONTH_MAP[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()];
+  if (month === undefined) return Infinity;
+  const day = parseInt(m[2], 10);
+  let hour = m[3] ? parseInt(m[3], 10) : 12;
+  const min = m[4] ? parseInt(m[4], 10) : 0;
+  const ampm = m[5]?.toUpperCase();
+  if (ampm === "PM" && hour !== 12) hour += 12;
+  if (ampm === "AM" && hour === 12) hour = 0;
+  return new Date(new Date().getFullYear(), month, day, hour, min).getTime();
+}
+
 
 export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
@@ -400,8 +416,12 @@ export default function Home() {
               const visibleEvents = categoryFilter === "All"
                 ? upcomingEvents
                 : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
-              const featuredEvents = visibleEvents.filter((e: any) => e.featured);
-              const regularEvents = visibleEvents.filter((e: any) => !e.featured);
+              const featuredEvents = visibleEvents
+                .filter((e: any) => e.featured)
+                .sort((a: any, b: any) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
+              const regularEvents = visibleEvents
+                .filter((e: any) => !e.featured)
+                .sort((a: any, b: any) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
               return (
                 <div className="space-y-8">
                   <div className="rounded-2xl border border-border bg-card p-6 space-y-3 text-sm text-muted-foreground leading-relaxed">

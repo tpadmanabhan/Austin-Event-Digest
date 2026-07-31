@@ -253,6 +253,8 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
       return;
     }
     res.json({ success: true, digest: digestToApi(updated) });
+    // Geocode any events that are missing coordinates (fire-and-forget)
+    geocodeAndPatchDigest(id, taggedEvents as Array<Record<string, unknown>>).catch(() => {});
   } catch (err) {
     req.log.error({ err }, "Error updating digest events");
     res.status(500).json({ error: "server_error", message: "Failed to update digest events" });

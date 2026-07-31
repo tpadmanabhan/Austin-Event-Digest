@@ -295,6 +295,24 @@ async function patchDigest(subdomain, token, digestId, events) {
   return JSON.parse(bodyText);
 }
 
+/** Trigger server-side geocoding for any events missing lat/lng (fire-and-forget) */
+async function triggerGeocode(subdomain, token, digestId) {
+  try {
+    const res = await fetch(
+      `https://${subdomain}.eventcarpooling.com/api/events/digest/${digestId}/regeocoded`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+    const body = await res.json();
+    console.log(`  📍 Geocoding started: ${body.message || "ok"}`);
+  } catch (e) {
+    console.log(`  ⚠ Geocode trigger failed: ${e.message}`);
+  }
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   const tmKey = process.env.TICKETMASTER_API_KEY?.trim() || "";
@@ -370,13 +388,15 @@ async function main() {
     console.log(`  Net new: ${toAdd.length} | Total: ${merged.length} (${specialCount} special/featured)`);
 
     if (toAdd.length === 0 && JSON.stringify(existing) === JSON.stringify(updatedExisting)) {
-      console.log(`  ✓ Nothing changed — skipping patch`);
+      console.log(`  ✓ Nothing changed — triggering geocode for any missing pins`);
+      await triggerGeocode(tenant.subdomain, token, tenant.digestId);
       continue;
     }
 
     try {
       await patchDigest(tenant.subdomain, token, tenant.digestId, merged);
       console.log(`  ✅ Patched → ${merged.length} events in digest ${tenant.digestId}`);
+      await triggerGeocode(tenant.subdomain, token, tenant.digestId);
     } catch (e) {
       console.log(`  ❌ PATCH failed: ${e.message}`);
     }
