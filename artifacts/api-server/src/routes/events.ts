@@ -51,6 +51,19 @@ function autoTagFutureEvents(events: EventItem[], weekOf: Date): EventItem[] {
   });
 }
 
+/**
+ * Per-tenant category restriction. Returns only events whose category is in the
+ * tenant's allowed list. If no restriction is configured, all events pass through.
+ */
+function applyTenantCategoryRestriction(tenantSlug: string, events: EventItem[]): EventItem[] {
+  const RESTRICTIONS: Record<string, string[]> = {
+    austincares: ["Civics", "Wellness"],
+  };
+  const allowed = RESTRICTIONS[tenantSlug];
+  if (!allowed) return events;
+  return events.filter(e => allowed.includes(e.category));
+}
+
 function digestToApi(d: typeof digestsTable.$inferSelect) {
   return {
     id: d.id,
@@ -194,7 +207,10 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       );
     }
 
-    const taggedEvents = autoTagFutureEvents(events as EventItem[], weekOf);
+    const taggedEvents = autoTagFutureEvents(
+      applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[]),
+      weekOf,
+    );
 
     const [digest] = await db
       .insert(digestsTable)
@@ -243,7 +259,9 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
       .from(digestsTable)
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .limit(1);
-    const taggedEvents = existing ? autoTagFutureEvents(events as EventItem[], new Date(existing.weekOf)) : events;
+    const taggedEvents = existing
+      ? autoTagFutureEvents(applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[]), new Date(existing.weekOf))
+      : applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[]);
     const [updated] = await db
       .update(digestsTable)
       .set({ events: taggedEvents })
@@ -713,7 +731,10 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
     const tenantCategories = (req.tenant!.categories as string[]) || [];
     const deduped = deduplicateEvents(events);
     const filtered = tenantCategories.length > 0 ? filterByTenantCategories(deduped, tenantCategories) : deduped;
-    const finalEvents = filtered.length > 0 ? filtered : deduped;
+    const finalEvents = applyTenantCategoryRestriction(
+      req.tenant!.slug,
+      filtered.length > 0 ? filtered : deduped,
+    );
 
     const sourceResults = results.map(r => ({ url: r.url, eventCount: r.events.length, error: r.error }));
 
@@ -796,7 +817,10 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
       return;
     }
 
-    const taggedImportEvents = autoTagFutureEvents(events as EventItem[], weekOf);
+    const taggedImportEvents = autoTagFutureEvents(
+      applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[]),
+      weekOf,
+    );
 
     const [digest] = await db
       .insert(digestsTable)
