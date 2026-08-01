@@ -203,23 +203,27 @@ function PlatformHomeInner() {
                 },
                 {
                   href: "https://portland.eventcarpooling.com",
-                  icon: "🌲",
-                  iconBg: "linear-gradient(135deg, #7f1d1d, #CE1141)",
-                  iconShadow: "0 3px 10px rgba(206,17,65,0.5)",
+                  icon: "🌹",
+                  iconBg: "linear-gradient(135deg, #1a3a1a, #2d6a2d)",
+                  iconShadow: "0 3px 10px rgba(45,106,45,0.5)",
                   label: "Portland Events",
                 },
                 {
                   href: "https://bulverde.eventcarpooling.com",
-                  icon: "🤠",
-                  iconBg: "linear-gradient(135deg, #78350f, #d97706)",
-                  iconShadow: "0 3px 10px rgba(217,119,6,0.5)",
+                  icon: "🌳",
+                  iconBg: "linear-gradient(135deg, #162010, #2a4015)",
+                  iconShadow: "0 3px 10px rgba(22,32,16,0.5)",
                   label: "Bulverde Events",
                 },
                 {
                   href: "https://stlouis.eventcarpooling.com",
-                  icon: "⚜️",
-                  iconBg: "linear-gradient(135deg, #1e3a5f, #1d4ed8)",
-                  iconShadow: "0 3px 10px rgba(29,78,216,0.5)",
+                  icon: (
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 28, height: 28 }}>
+                      <path d="M10 43 L14 43 C14 30 24 10 24 10 C24 10 34 30 34 43 L38 43 C38 27 26 5 24 5 C22 5 10 27 10 43 Z" fill="rgba(255,255,255,0.95)" />
+                    </svg>
+                  ),
+                  iconBg: "linear-gradient(135deg, #0c1a3a, #1a3a6e)",
+                  iconShadow: "0 3px 10px rgba(12,26,58,0.55)",
                   label: "St. Louis Events",
                 },
                 {
