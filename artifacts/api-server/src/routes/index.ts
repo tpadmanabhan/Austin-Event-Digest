@@ -7,6 +7,7 @@ import adminRouter from "./admin";
 import tenantsRouter from "./tenants";
 import gamificationRouter from "./gamification";
 import mapImageRouter from "./mapImage";
+import translateRouter from "./translate";
 import { requireTenant, requirePlatformRoot } from "../middleware/resolveTenant";
 
 const router: IRouter = Router();
@@ -24,5 +25,6 @@ router.use("/events", requireTenant, eventsRouter);
 router.use("/rsvp", requireTenant, rsvpRouter);
 router.use("/admin", requireTenant, adminRouter);
 router.use("/gamification", requireTenant, gamificationRouter);
+router.use(translateRouter);
 
 export default router;

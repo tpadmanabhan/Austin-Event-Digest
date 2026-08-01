@@ -118,6 +118,7 @@ export default function Home() {
   const isSacramento = tenant.slug === "sacramento";
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
+  const isToky = tenant.slug === "tokyo";
   const MAP_CENTERS: Record<string, [number, number]> = {
     austin:      [30.267, -97.743],
     austincares: [30.267, -97.743],
@@ -126,6 +127,7 @@ export default function Home() {
     portland:    [45.523, -122.676],
     sacramento:  [38.575, -121.479],
     stlouis:     [38.627, -90.197],
+    tokyo:       [35.676,  139.650],
   };
   const showMap = tenant.slug in MAP_CENTERS;
   const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
@@ -142,9 +144,11 @@ export default function Home() {
             : isStLouis
               ? "stlouis-hero.jpg"
               : "austin-hero.png";
-  const heroSrc = tenant.hasHeroImage
-    ? `/api/tenant/image/hero?slug=${encodeURIComponent(tenant.slug)}`
-    : `${import.meta.env.BASE_URL}images/${heroImage}`;
+  const heroSrc = isToky
+    ? "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1400&auto=format&fit=crop&q=80"
+    : tenant.hasHeroImage
+      ? `/api/tenant/image/hero?slug=${encodeURIComponent(tenant.slug)}`
+      : `${import.meta.env.BASE_URL}images/${heroImage}`;
   const heroAlt = isAustinCares
     ? "High school student leaders taking charge"
     : tenant.slug === "austincares"
@@ -157,7 +161,9 @@ export default function Home() {
             ? "Bulverde Community Park, Texas Hill Country"
             : isStLouis
               ? "St. Louis skyline and Gateway Arch at night"
-              : "Austin Texas stylized illustration";
+              : isToky
+                ? "Tokyo skyline with Tokyo Skytree at dusk"
+                : "Austin Texas stylized illustration";
 
   return (
     <Layout>

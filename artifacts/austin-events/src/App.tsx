@@ -15,6 +15,7 @@ import PreferencesPage from "./pages/preferences";
 import NotFound from "@/pages/not-found";
 import PlatformHome from "./pages/platform-home";
 import { TenantProvider } from "./contexts/tenant-context";
+import { LanguageProvider } from "./contexts/language-context";
 import { useDomain } from "./hooks/use-domain";
 
 const queryClient = new QueryClient({
@@ -36,6 +37,7 @@ function ScrollToTop() {
 
 function CityRoutes({ citySlug }: { citySlug: string }) {
   return (
+    <LanguageProvider>
     <TenantProvider slug={citySlug}>
       <ScrollToTop />
       <Switch>
@@ -52,6 +54,7 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
         <Route component={NotFound} />
       </Switch>
     </TenantProvider>
+    </LanguageProvider>
   );
 }
 

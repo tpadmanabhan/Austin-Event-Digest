@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Mail, MapPin, Music, VolumeX } from "lucide-react";
 import { useAudio } from "@/components/audio-provider";
 import { useTenant } from "@/contexts/tenant-context";
+import { useLanguage } from "@/contexts/language-context";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -14,16 +15,18 @@ export function Layout({ children }: { children: ReactNode }) {
   const isSacramento = tenant.slug === "sacramento";
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
+  const isToky = tenant.slug === "tokyo";
+  const { lang, setLang } = useLanguage();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary" style={isStLouis ? { background: "#FFF2F2" } : undefined}>
+    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 selection:text-primary" style={isToky ? { background: "#F3F7FE" } : isStLouis ? { background: "#FFF2F2" } : undefined}>
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between ${(isAustinCares || isBulverde) ? "h-20" : "h-14"}`}>
             <Link href="/" className="flex items-center gap-2 group">
               <div
-                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : isStLouis ? "h-10 w-10" : "h-8 w-8"}`}
-                style={isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
+                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : isStLouis ? "h-10 w-10" : isToky ? "h-10 w-10" : "h-8 w-8"}`}
+                style={isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : isToky ? { background: "linear-gradient(135deg, #0A2548, #1B5EA8)", boxShadow: "0 4px 12px rgba(27,94,168,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
                 {tenant.hasBrandIcon ? (
                   <img
@@ -67,6 +70,8 @@ export function Layout({ children }: { children: ReactNode }) {
                     alt={tenant.name}
                     className="h-full w-full object-contain"
                   />
+                ) : isToky ? (
+                  <span style={{ fontFamily: '"Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif', fontSize: "13px", fontWeight: 700, color: "#fff", letterSpacing: "-0.5px", lineHeight: 1 }}>東京</span>
                 ) : (
                   "🎸"
                 )}
@@ -86,7 +91,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
-                  {isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : "Make Austin Weird Again"}
+                  {isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : isToky ? "Tokyo Events • 東京のイベント" : "Make Austin Weird Again"}
                 </span>
               </div>
             </Link>
@@ -100,6 +105,18 @@ export function Layout({ children }: { children: ReactNode }) {
                 {muted ? <VolumeX className="w-3 h-3" /> : <Music className="w-3 h-3" />}
               </button>
 
+              {isToky && (
+                <button
+                  onClick={() => setLang(lang === "en" ? "ja" : "en")}
+                  title="Toggle Japanese / English"
+                  className="flex items-center gap-1 px-3 py-1 rounded-full border text-xs font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0"
+                  style={lang === "ja"
+                    ? { background: "#1B5EA8", color: "#fff", borderColor: "#1B5EA8" }
+                    : { background: "rgba(27,94,168,0.08)", color: "#1B5EA8", borderColor: "rgba(27,94,168,0.3)" }}
+                >
+                  {lang === "ja" ? "🇯🇵 日本語" : "🇺🇸 English"}
+                </button>
+              )}
               <a
                 href="https://eventcarpooling.com"
                 className="shrink-0 transition-opacity hover:opacity-80"

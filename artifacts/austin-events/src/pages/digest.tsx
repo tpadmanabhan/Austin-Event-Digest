@@ -8,6 +8,7 @@ import { Calendar, ArrowLeft, Leaf, ExternalLink, Trophy, Loader2 } from "lucide
 import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
+import { useLanguage } from "@/contexts/language-context";
 import { EventMap } from "@/components/event-map";
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -132,7 +133,11 @@ export default function DigestView() {
   const isPortland = tenant.slug === "portland";
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
-  
+  const isToky = tenant.slug === "tokyo";
+  const { lang, translate } = useLanguage();
+  const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
+  const [translating, setTranslating] = useState(false);
+
   const { data: latestData, isLoading: loadingLatest } = useLatestDigest();
   const { data: allData, isLoading: loadingAll } = useAllDigests();
 
@@ -146,6 +151,7 @@ export default function DigestView() {
     portland:    [45.523, -122.676],
     sacramento:  [38.575, -121.479],
     stlouis:     [38.627, -90.197],
+    tokyo:       [35.676,  139.650],
   };
   const isLocationEnabled = tenant.slug in MAP_CENTERS;
   const showMap = tenant.slug in MAP_CENTERS;
@@ -206,12 +212,41 @@ export default function DigestView() {
     } catch {}
   }, [geoStatus, userCoords, GEO_KEY, isLocationEnabled]);
 
+  // EN/JA translation for Tokyo
+  useEffect(() => {
+    if (!isToky || lang !== "ja") return;
+    const events: any[] = (isLatest ? latestData?.digest?.events : allData?.digests?.find((d: any) => String(d.id) === idStr)?.events) ?? [];
+    const untranslated = events.filter(e => e?.title && !translatedMap.has(e.title));
+    if (!untranslated.length) return;
+    setTranslating(true);
+    const titles = untranslated.map(e => e.title || "");
+    const descs = untranslated.map(e => e.description || "");
+    Promise.all([translate(titles), translate(descs)])
+      .then(([tTitles, tDescs]) => {
+        setTranslatedMap(prev => {
+          const next = new Map(prev);
+          untranslated.forEach((e, i) => {
+            next.set(e.title, { title: tTitles[i] || e.title, description: tDescs[i] || e.description });
+          });
+          return next;
+        });
+      })
+      .finally(() => setTranslating(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang, isToky, latestData, allData, isLatest, idStr]);
+
   let digest = null;
   if (isLatest && latestData?.digest) {
     digest = latestData.digest;
   } else if (idStr && allData?.digests) {
     digest = allData.digests.find(d => d.id === parseInt(idStr));
   }
+
+  const translateEvent = (event: any) => {
+    if (!isToky || lang !== "ja") return event;
+    const t = translatedMap.get(event.title);
+    return t ? { ...event, ...t } : event;
+  };
 
   if (isLoading) {
     return (
@@ -282,7 +317,7 @@ export default function DigestView() {
                 ) : part
               )}
             </p>
-            {!isBulverde && tenant.slug !== "austincares" && (
+            {!isBulverde && tenant.slug !== "austincares" && !isToky && (
               <p className="mt-3 text-sm font-semibold text-primary not-italic">
                 —{" "}
                 {isAustinCares ? (
@@ -683,7 +718,7 @@ export default function DigestView() {
                   <div className={geoActive ? "flex flex-col gap-6" : "grid sm:grid-cols-2 gap-8"}>
                     {regularEvents.map((event: any, i: number) => (
                       <div key={i} style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
-                        <EventCard event={event} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
+                        <EventCard event={translateEvent(event)} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
                       </div>
                     ))}
                   </div>
