@@ -17,6 +17,7 @@ import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
 import { extractEventsFromSources } from "../lib/urlEventExtractor";
 import { geocodeAndPatchDigest, geocodeEvents } from "../lib/geocodeVenue";
+import { prewarmTranslationCache } from "../lib/translationPrewarm";
 import { signSubscriberToken } from "../lib/subscriberToken";
 
 const router: IRouter = Router();
@@ -807,6 +808,12 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
 
     // Geocode venue coordinates in the background (fire-and-forget)
     geocodeAndPatchDigest(digest.id, taggedImportEvents as Array<Record<string, unknown>>).catch(() => {});
+
+    // Pre-translate event titles + descriptions for Tokyo (tenantId 8) so first page
+    // load is instant instead of waiting on OpenAI (fire-and-forget)
+    if (req.tenant!.id === 8) {
+      prewarmTranslationCache(taggedImportEvents as EventItem[]).catch(() => {});
+    }
   } catch (err) {
     req.log.error({ err }, "Error importing digest");
     res.status(500).json({ error: "server_error", message: "Failed to import digest" });

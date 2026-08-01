@@ -485,6 +485,19 @@ async function runGeocodeCacheMigration(): Promise<void> {
   logger.info("venue_geocode_cache table ready");
 }
 
+async function runTranslationCacheMigration(): Promise<void> {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS translation_cache (
+      source_text     TEXT        NOT NULL,
+      target_lang     TEXT        NOT NULL,
+      translated_text TEXT        NOT NULL,
+      created_at      TIMESTAMP   NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (source_text, target_lang)
+    )
+  `);
+  logger.info("translation_cache table ready");
+}
+
 /**
  * One-time patch: walk all digests and replace HTML-encoded characters
  * (`&amp;`, `&lt;`, `&gt;`, `&quot;`) in event `imageUrl` and `link` fields.
@@ -559,6 +572,12 @@ export async function runStartupMigration(): Promise<void> {
     await runGeocodeCacheMigration();
   } catch (err) {
     logger.warn({ err }, "Geocode cache migration failed (non-fatal) — table may already exist");
+  }
+
+  try {
+    await runTranslationCacheMigration();
+  } catch (err) {
+    logger.warn({ err }, "Translation cache migration failed (non-fatal) — table may already exist");
   }
 
   try {
