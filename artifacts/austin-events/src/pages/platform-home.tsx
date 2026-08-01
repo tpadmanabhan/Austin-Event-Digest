@@ -582,33 +582,6 @@ function PlatformHomeInner() {
         </div>
       </section>
 
-      {/* JAPAN LAUNCH */}
-      <section className="py-16" style={{ background: "linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%)" }}>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <div
-              className="inline-flex items-center gap-2 rounded-full px-5 py-1.5 mb-6 text-xs font-bold uppercase tracking-widest"
-              style={{ background: "rgba(147,197,253,0.15)", color: "#93c5fd", border: "1px solid rgba(147,197,253,0.3)" }}
-            >
-              {t.comingSoon}
-            </div>
-            <div className="text-5xl mb-4">🗾</div>
-            <h2 className="font-serif font-black text-3xl sm:text-4xl mb-5" style={{ color: "#eff6ff", letterSpacing: "-0.02em" }}>
-              {t.japanH2}
-            </h2>
-            <p className="text-lg leading-relaxed" style={{ color: "#bfdbfe" }}>
-              {t.japanDesc}{" "}
-              <strong style={{ color: "#eff6ff" }}>{t.japanStrong}</strong>
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
       {/* CATEGORY SHOWCASE */}
       <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -721,10 +694,10 @@ function PlatformHomeInner() {
                 <div key={i} className="h-36 rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
-          ) : tenants && tenants.filter((t) => ["austin", "sacramento", "austincares"].includes(t.slug)).length > 0 ? (
+          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "austincares"].includes(t.slug)).length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tenants.filter((t) => ["austin", "sacramento", "austincares"].includes(t.slug))
-                .sort((a, b) => ["austin", "sacramento", "austincares"].indexOf(a.slug) - ["austin", "sacramento", "austincares"].indexOf(b.slug))
+              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "austincares"].includes(t.slug))
+                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "austincares"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "austincares"].indexOf(b.slug))
                 .map((tenant, i) => {
                 const CardEl = motion.a;
                 const cardProps = { href: `https://${tenant.slug}.eventcarpooling.com` };
@@ -745,6 +718,12 @@ function PlatformHomeInner() {
                     </div>
                   );
                   iconStyle = { background: "linear-gradient(135deg, #14532d, #15803d)", boxShadow: "0 6px 20px rgba(21,128,61,0.45)" };
+                } else if (tenant.slug === "stlouis") {
+                  iconContent = "⚜️";
+                  iconStyle = { background: "linear-gradient(135deg, #1e3a5f, #1d4ed8)", boxShadow: "0 6px 20px rgba(29,78,216,0.45)" };
+                } else if (tenant.slug === "tokyo") {
+                  iconContent = "🗼";
+                  iconStyle = { background: "linear-gradient(135deg, #4d0000, #CC0000)", boxShadow: "0 6px 20px rgba(204,0,0,0.45)" };
                 } else {
                   iconContent = tenant.name.charAt(0);
                   iconStyle = { background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)`, color: "#fff", fontSize: "1.5rem", fontWeight: 700, fontFamily: "Georgia, serif" };

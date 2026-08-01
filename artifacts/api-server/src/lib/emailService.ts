@@ -855,25 +855,6 @@ export function buildDigestEmailHtml(digest: {
       </div>
     </div>
 
-    <!-- Japan Launch Feature Block -->
-    <div style="background:${theme.headerGradient}; border-radius:16px; padding:24px; margin-bottom:24px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <tr>
-          <td style="vertical-align:middle; padding-right:14px; width:48px;">
-            <div style="width:44px; height:44px; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:26px; text-align:center; line-height:44px;">🇯🇵</div>
-          </td>
-          <td style="vertical-align:middle;">
-            <p style="margin:0 0 2px; color:${theme.textMutedOnDark}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Coming Soon</p>
-            <p style="margin:0; color:${theme.textStrong}; font-size:18px; font-weight:800; letter-spacing:-0.3px;">🗾 Japan Launch</p>
-          </td>
-        </tr>
-      </table>
-
-      <p style="margin:16px 0 0; color:${theme.textOnDark}; font-size:14px; line-height:1.7;">
-        EventCarpooling.com is expanding to Japan — bringing the same weekly event digest, carpool RSVP, and city community features that power Austin to cities across Japan. Local organizers will be able to launch their own city newsletter, curate weekly events, grow a subscriber base, and earn XP on the global leaderboard. <strong style="color:${theme.textStrong};">Tokyo, Osaka, Kyoto — watch this space.</strong>
-      </p>
-    </div>
-
     <!-- Rise of IRL -->
     <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:20px 24px; margin:0 0 28px;">
       <h2 style="margin:0 0 10px; color:#1c1917; font-size:18px; font-weight:700;">🌎 The Rise of IRL</h2>

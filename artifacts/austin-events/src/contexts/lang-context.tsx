@@ -81,10 +81,6 @@ export const T = {
     rideChip3: "Groceries & Pharmacy",
     rideChip4: "Job Interviews",
 
-    japanH2: "Japan Launch",
-    japanDesc: "EventCarpooling.com is expanding to Japan — bringing the same weekly event digest, carpool RSVP, and city community features that power Austin to cities across Japan. Local organizers will be able to launch their own city newsletter, curate weekly events, grow a subscriber base, and earn XP on the global leaderboard.",
-    japanStrong: "Tokyo, Osaka, Kyoto — watch this space.",
-
     ctaH2: "Ready to launch your city?",
     ctaSub: "Join the platform and give your city the newsletter it deserves. Setup takes under five minutes.",
     ctaButton: "Get started — it's free",
@@ -180,10 +176,6 @@ export const T = {
     rideChip2: "通学・授業",
     rideChip3: "食料品・薬局",
     rideChip4: "就職面接",
-
-    japanH2: "日本上陸",
-    japanDesc: "EventCarpooling.comが日本に進出します — オースティンを支える毎週のイベントダイジェスト、カープールRSVP、都市コミュニティ機能を日本全国の都市へ。地域オーガナイザーは独自の都市ニュースレターを立ち上げ、週次イベントを厳選し、購読者を増やし、グローバルリーダーボードでXPを獲得できます。",
-    japanStrong: "東京、大阪、京都 — ご注目ください。",
 
     ctaH2: "あなたの街を立ち上げる準備はできましたか？",
     ctaSub: "プラットフォームに参加して、あなたの街にふさわしいニュースレターを。セットアップはわずか5分以内。",
