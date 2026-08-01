@@ -694,10 +694,10 @@ function PlatformHomeInner() {
                 <div key={i} className="h-36 rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
-          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "austincares"].includes(t.slug)).length > 0 ? (
+          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "austincares", "portland", "bulverde"].includes(t.slug)).length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "austincares"].includes(t.slug))
-                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "austincares"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "austincares"].indexOf(b.slug))
+              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "austincares", "portland", "bulverde"].includes(t.slug))
+                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "austincares", "portland", "bulverde"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "austincares", "portland", "bulverde"].indexOf(b.slug))
                 .map((tenant, i) => {
                 const CardEl = motion.a;
                 const cardProps = { href: `https://${tenant.slug}.eventcarpooling.com` };
@@ -719,11 +719,25 @@ function PlatformHomeInner() {
                   );
                   iconStyle = { background: "linear-gradient(135deg, #14532d, #15803d)", boxShadow: "0 6px 20px rgba(21,128,61,0.45)" };
                 } else if (tenant.slug === "stlouis") {
-                  iconContent = "⚜️";
-                  iconStyle = { background: "linear-gradient(135deg, #1e3a5f, #1d4ed8)", boxShadow: "0 6px 20px rgba(29,78,216,0.45)" };
+                  iconContent = (
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 44, height: 44 }}>
+                      {/* Gateway Arch — tapered catenary legs meeting at the apex */}
+                      <path
+                        d="M10 43 L14 43 C14 30 24 10 24 10 C24 10 34 30 34 43 L38 43 C38 27 26 5 24 5 C22 5 10 27 10 43 Z"
+                        fill="rgba(255,255,255,0.95)"
+                      />
+                    </svg>
+                  );
+                  iconStyle = { background: "linear-gradient(135deg, #0c1a3a, #1a3a6e)", boxShadow: "0 6px 20px rgba(12,26,58,0.55)" };
                 } else if (tenant.slug === "tokyo") {
                   iconContent = "🗼";
                   iconStyle = { background: "linear-gradient(135deg, #4d0000, #CC0000)", boxShadow: "0 6px 20px rgba(204,0,0,0.45)" };
+                } else if (tenant.slug === "portland") {
+                  iconContent = "🌹";
+                  iconStyle = { background: "linear-gradient(135deg, #1a3a1a, #2d6a2d)", boxShadow: "0 6px 20px rgba(45,106,45,0.45)" };
+                } else if (tenant.slug === "bulverde") {
+                  iconContent = "🌳";
+                  iconStyle = { background: "linear-gradient(135deg, #162010, #2a4015)", boxShadow: "0 6px 20px rgba(22,32,16,0.5)" };
                 } else {
                   iconContent = tenant.name.charAt(0);
                   iconStyle = { background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)`, color: "#fff", fontSize: "1.5rem", fontWeight: 700, fontFamily: "Georgia, serif" };
