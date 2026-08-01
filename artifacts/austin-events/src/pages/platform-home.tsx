@@ -775,12 +775,12 @@ function PlatformHomeInner() {
                         <p className="text-sm" style={{ color: "#64748b" }}>{tenant.city}</p>
                       </div>
                       <div className="flex flex-wrap gap-1.5 mt-auto">
-                        {tenant.categories.slice(0, 4).map(cat => (
+                        {(tenant.slug === "austincares" ? ["Civics", "Wellness"] : tenant.categories.slice(0, 4)).map(cat => (
                           <span key={cat} className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                             {cat}
                           </span>
                         ))}
-                        {tenant.categories.length > 4 && (
+                        {tenant.slug !== "austincares" && tenant.categories.length > 4 && (
                           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                             +{tenant.categories.length - 4} more
                           </span>
