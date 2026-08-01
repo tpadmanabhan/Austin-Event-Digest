@@ -1,11 +1,17 @@
 import { Router } from "express";
+import OpenAI from "openai";
 import { logger } from "../lib/logger";
 
 const router = Router();
 
+const openai = new OpenAI({
+  baseURL: process.env["AI_INTEGRATIONS_OPENAI_BASE_URL"],
+  apiKey: process.env["AI_INTEGRATIONS_OPENAI_API_KEY"],
+});
+
 /**
  * POST /api/translate
- * Translates an array of texts using OpenAI (gpt-5-nano for speed/cost).
+ * Translates an array of texts using OpenAI gpt-5-nano (fastest/cheapest).
  * Used by the Tokyo site's EN/JA language toggle.
  * Body: { texts: string[], targetLang?: "ja" | "en" }
  * Response: { translations: string[] }
@@ -19,11 +25,8 @@ router.post("/translate", async (req, res) => {
   }
 
   const batch = (texts as string[]).slice(0, 60).filter(Boolean);
-  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-  const baseUrl = (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "");
 
-  if (!apiKey) {
-    // No key — return originals silently so the UI doesn't break
+  if (!process.env["AI_INTEGRATIONS_OPENAI_API_KEY"]) {
     res.json({ translations: batch });
     return;
   }
@@ -32,38 +35,24 @@ router.post("/translate", async (req, res) => {
     const langName = targetLang === "ja" ? "Japanese" : "English";
     const numbered = batch.map((t, i) => `${i + 1}. ${t}`).join("\n");
 
-    const response = await fetch(`${baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-5-nano",
-        messages: [
-          {
-            role: "system",
-            content: `You are a translator. Translate the numbered event titles/descriptions to ${langName}. Return ONLY the numbered translations in the same format. Preserve event names, venue names, and proper nouns where appropriate.`,
-          },
-          { role: "user", content: numbered },
-        ],
-        temperature: 0.1,
-      }),
-      signal: AbortSignal.timeout(20000),
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5-nano",
+      messages: [
+        {
+          role: "system",
+          content: `You are a translator. Translate the numbered event titles/descriptions to ${langName}. Return ONLY the numbered translations in the same format. Preserve event names, venue names, and proper nouns where appropriate.`,
+        },
+        { role: "user", content: numbered },
+      ],
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI error ${response.status}`);
-    }
-
-    const data = (await response.json()) as { choices: Array<{ message: { content: string } }> };
-    const content = data.choices?.[0]?.message?.content ?? "";
+    const content = completion.choices?.[0]?.message?.content ?? "";
 
     // Parse "1. text", "2. text" … lines
     const lines = content.split("\n").filter(l => /^\d+\./.test(l.trim()));
     const translations = lines.map(l => l.replace(/^\d+\.\s*/, "").trim());
 
-    // Pad to input length in case OpenAI collapsed some lines
+    // Pad to input length in case the model collapsed some lines
     while (translations.length < batch.length) {
       translations.push(batch[translations.length] ?? "");
     }
