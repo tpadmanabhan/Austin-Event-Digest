@@ -324,6 +324,49 @@ function buildStaticMapSection(
     </div>`;
 }
 
+/**
+ * Translate event titles + descriptions to Japanese using OpenAI gpt-5-nano.
+ * Falls back to originals on any error. Used for Tokyo digest emails.
+ */
+export async function translateEventsForEmail(events: DigestEventItem[]): Promise<DigestEventItem[]> {
+  if (!events.length) return events;
+  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  const baseUrl = (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "");
+  if (!apiKey) return events;
+  try {
+    const titles = events.map(e => e.title || "");
+    const descs  = events.map(e => e.description || "");
+    const all    = [...titles, ...descs];
+    const numbered = all.map((t, i) => `${i + 1}. ${t}`).join("\n");
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "gpt-5-nano",
+        messages: [
+          { role: "system", content: "You are a translator. Translate these event titles and descriptions to Japanese. Return ONLY the numbered translations in the same format. Preserve event names, venue names, and proper nouns." },
+          { role: "user", content: numbered },
+        ],
+        temperature: 0.1,
+      }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!res.ok) return events;
+    const data = (await res.json()) as { choices: Array<{ message: { content: string } }> };
+    const content = data.choices?.[0]?.message?.content ?? "";
+    const lines = content.split("\n").filter((l: string) => /^\d+\./.test(l.trim()));
+    const translations = lines.map((l: string) => l.replace(/^\d+\.\s*/, "").trim());
+    const mid = titles.length;
+    return events.map((e, i) => ({
+      ...e,
+      title:       translations[i]       || e.title,
+      description: translations[mid + i] || e.description,
+    }));
+  } catch {
+    return events;
+  }
+}
+
 export function buildDigestEmailHtml(digest: {
   subject: string;
   intro: string;

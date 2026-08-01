@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Star, Bell, CheckCircle2, Loader2, Trophy, ExternalLink, Leaf, Calendar } from "lucide-react";
@@ -8,6 +8,7 @@ import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
+import { useLanguage } from "@/contexts/language-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,6 +120,34 @@ export default function Home() {
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
   const isToky = tenant.slug === "tokyo";
+  const { lang, translate } = useLanguage();
+  const [homeTranslatedMap, setHomeTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
+
+  useEffect(() => {
+    if (!isToky || lang !== "ja") return;
+    const events: any[] = latestDigest?.events ?? [];
+    const untranslated = events.filter((e: any) => e?.title && !homeTranslatedMap.has(e.title));
+    if (!untranslated.length) return;
+    const titles = untranslated.map((e: any) => e.title || "");
+    const descs  = untranslated.map((e: any) => e.description || "");
+    Promise.all([translate(titles), translate(descs)]).then(([tTitles, tDescs]) => {
+      setHomeTranslatedMap(prev => {
+        const next = new Map(prev);
+        untranslated.forEach((e: any, i: number) => {
+          next.set(e.title, { title: tTitles[i] || e.title, description: tDescs[i] || e.description });
+        });
+        return next;
+      });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang, isToky, latestDigest]);
+
+  const translateEvent = (event: any) => {
+    if (!isToky || lang !== "ja") return event;
+    const t = homeTranslatedMap.get(event.title);
+    return t ? { ...event, ...t } : event;
+  };
+
   const MAP_CENTERS: Record<string, [number, number]> = {
     austin:      [30.267, -97.743],
     austincares: [30.267, -97.743],
@@ -479,7 +508,7 @@ export default function Home() {
                             </div>
                             <div className="p-6 sm:p-8">
                               <div className="max-w-xl">
-                                <EventCard event={featEvent} digestId={latestDigest.id} />
+                                <EventCard event={translateEvent(featEvent)} digestId={latestDigest.id} />
                               </div>
                             </div>
                           </div>
@@ -629,7 +658,7 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ delay: i * 0.1 }}
                         >
-                          <EventCard event={event} digestId={latestDigest.id} />
+                          <EventCard event={translateEvent(event)} digestId={latestDigest.id} />
                         </motion.div>
                       ))}
                     </div>

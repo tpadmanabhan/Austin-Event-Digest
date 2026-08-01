@@ -10,7 +10,7 @@ import {
   SendDigestResponse,
 } from "@workspace/api-zod";
 import { generateSampleDigest, getStLouisSampleDigest, getNextSunday } from "../lib/digestGenerator";
-import { sendEmail, buildDigestEmailHtml } from "../lib/emailService";
+import { sendEmail, buildDigestEmailHtml, translateEventsForEmail } from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
 import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } from "../lib/eventSources";
 import { requireAdmin } from "../middleware/requireAdmin";
@@ -970,11 +970,16 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
         ? `${siteUrl}/preferences?email=${encodeURIComponent(recipient.email)}&token=${prefToken}`
         : null;
 
+      // For Tokyo: translate event titles + descriptions to Japanese before emailing
+      const eventsForEmail = req.tenant?.slug === "tokyo"
+        ? await translateEventsForEmail(recipientEvents)
+        : recipientEvents;
+
       const html = buildDigestEmailHtml({
         subject: digest.subject,
         intro: digest.intro,
         weekOf: digest.weekOf,
-        events: recipientEvents,
+        events: eventsForEmail,
         digestId: digest.id,
         siteUrl,
         preferencesUrl,
