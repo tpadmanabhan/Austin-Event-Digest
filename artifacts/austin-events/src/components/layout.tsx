@@ -92,7 +92,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
-                  {isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : isToky ? "Tokyo Events • 東京のイベント" : "Make Austin Weird Again"}
+                  {isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : isToky ? "Tokyo Never Sleeps • 東京のイベント" : "Make Austin Weird Again"}
                 </span>
               </div>
             </Link>
