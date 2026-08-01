@@ -131,7 +131,10 @@ export default function Home() {
     if (!untranslated.length) return;
     const titles = untranslated.map((e: any) => e.title || "");
     const descs  = untranslated.map((e: any) => e.description || "");
-    Promise.all([translate(titles), translate(descs)]).then(([tTitles, tDescs]) => {
+    // Single batched call: titles first, then descriptions — avoids concurrent request failures
+    translate([...titles, ...descs]).then(tAll => {
+      const tTitles = tAll.slice(0, titles.length);
+      const tDescs  = tAll.slice(titles.length);
       setHomeTranslatedMap(prev => {
         const next = new Map(prev);
         untranslated.forEach((e: any, i: number) => {

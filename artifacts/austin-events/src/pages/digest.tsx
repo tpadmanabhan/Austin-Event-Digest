@@ -222,8 +222,11 @@ export default function DigestView() {
     setTranslating(true);
     const titles = untranslated.map(e => e.title || "");
     const descs = untranslated.map(e => e.description || "");
-    Promise.all([translate(titles), translate(descs)])
-      .then(([tTitles, tDescs]) => {
+    // Single batched call: titles first, then descriptions — avoids concurrent request failures
+    translate([...titles, ...descs])
+      .then(tAll => {
+        const tTitles = tAll.slice(0, titles.length);
+        const tDescs  = tAll.slice(titles.length);
         setTranslatedMap(prev => {
           const next = new Map(prev);
           untranslated.forEach((e, i) => {
