@@ -402,6 +402,12 @@ components:
           items:
             type: string
           nullable: true
+        lat:
+          type: number
+          nullable: true
+        lng:
+          type: number
+          nullable: true
       required:
         - title
         - date

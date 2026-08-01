@@ -72,6 +72,8 @@ export interface EventItem {
   isBusinessSpotlight?: boolean;
   deadline?: string | null;
   zodiacSigns?: string[] | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export interface Digest {
