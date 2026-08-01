@@ -5,6 +5,7 @@ import { Mail, MapPin, Music, VolumeX } from "lucide-react";
 import { useAudio } from "@/components/audio-provider";
 import { useTenant } from "@/contexts/tenant-context";
 import { useLanguage } from "@/contexts/language-context";
+import { JA } from "@/i18n/ja";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -133,7 +134,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 className="hidden sm:inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0"
               >
                 <Mail className="w-3 h-3" />
-                Subscribe
+                {isToky && lang === "ja" ? JA.subscribe : "Subscribe"}
               </a>
             </nav>
           </div>

@@ -9,6 +9,7 @@ import { EventCard } from "@/components/event-card";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
 import { useLanguage } from "@/contexts/language-context";
+import { JA } from "@/i18n/ja";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -148,6 +149,11 @@ export default function Home() {
     return t ? { ...event, ...t } : event;
   };
 
+  // Japanese helper: returns JA string when Tokyo+ja, else English
+  const jt = (en: string, ja: string) => (isToky && lang === "ja") ? ja : en;
+  const JA_CAT: Record<string, string> = { All: JA.catAll, Tech: JA.catTech, Arts: JA.catArts, Sports: JA.catSports, Civics: JA.catCivics, Wellness: JA.catWellness };
+  const catLabel = (cat: string) => (isToky && lang === "ja") ? (JA_CAT[cat] ?? cat) : (CAT_CONFIG[cat as keyof typeof CAT_CONFIG]?.label ?? cat);
+
   const MAP_CENTERS: Record<string, [number, number]> = {
     austin:      [30.267, -97.743],
     austincares: [30.267, -97.743],
@@ -281,13 +287,15 @@ export default function Home() {
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4 border border-secondary/20">
                 <Sparkles className="w-4 h-4" />
-                <span>The best of {cityShortName}, hand-picked for you</span>
+                <span>{jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
               </div>
               
               <h1 className="text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1]">
-                Stop scrolling. <br/>
+                {jt("Stop scrolling.", JA.stopScrolling)} <br/>
                 {isAustinCares ? (
                   <>Start <span className="text-primary italic">helping</span>.</>
+                ) : isToky && lang === "ja" ? (
+                  <span className="text-primary italic">{JA.startExperiencing(cityShortName)}</span>
                 ) : (
                   <>Start <span className="text-primary italic">experiencing</span> {cityShortName}.</>
                 )}
@@ -298,6 +306,8 @@ export default function Home() {
                   ? "Every Sunday, a curated list of volunteering opportunities, school events, networking activities, and high school club stuff will be published for the week ahead."
                   : tenant.slug === "austincares"
                   ? `Check out a curated list of volunteer activities, school contests, movie nights, and fun activities for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!`
+                  : isToky && lang === "ja"
+                  ? JA.heroSubtext
                   : `Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in ${cityShortName} for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!`}
               </p>
 
@@ -307,6 +317,8 @@ export default function Home() {
                     ? `"Hey crew! I've got the AI scouring inboxes and combing through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek 😎"`
                     : isStLouis
                     ? `"Hey St. Louis! Every week I use AI to comb through event newsletters and hand-pick the best things happening around the city — from Forest Park to Soulard to the Arch. Here's your curated digest. Let's Go Redbirds! ⚾"`
+                    : isToky && lang === "ja"
+                    ? JA.curatorQuote
                     : tenant.slug === "austincares"
                     ? `"Hey Austin! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy Austin 🤠"`
                     : `"Hey ${cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`
@@ -410,7 +422,7 @@ export default function Home() {
                       }`}
                     >
                       <span>{cfg.emoji}</span>
-                      <span>{cfg.label}</span>
+                      <span>{catLabel(cat)}</span>
                     </button>
                   );
                 })}
@@ -503,7 +515,7 @@ export default function Home() {
                             <div className="absolute top-4 right-4 z-10">
                               <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
                                 <Star className="w-3 h-3 fill-amber-950" />
-                                Special Event
+                                {jt("Special Event", JA.specialEvent)}
                               </span>
                             </div>
                             <div className="p-6 sm:p-8">
@@ -665,8 +677,8 @@ export default function Home() {
                   ) : featuredEvents.length === 0 && businessSpotlights.length === 0 && communityPosts.length === 0 ? (
                     <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-border">
                       <p className="text-4xl mb-3">{CAT_CONFIG[categoryFilter].emoji}</p>
-                      <p className="text-lg font-serif font-bold text-foreground mb-2">No {CAT_CONFIG[categoryFilter].label} events this week</p>
-                      <p className="text-muted-foreground text-sm">Check back next issue for {categoryFilter.toLowerCase()} events.</p>
+                      <p className="text-lg font-serif font-bold text-foreground mb-2">{jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                      <p className="text-muted-foreground text-sm">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     </div>
                   ) : null}
                 </div>

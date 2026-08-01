@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
 import { useLanguage } from "@/contexts/language-context";
+import { JA } from "@/i18n/ja";
 import { EventMap } from "@/components/event-map";
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -248,6 +249,11 @@ export default function DigestView() {
     return t ? { ...event, ...t } : event;
   };
 
+  // Japanese helper
+  const jt = (en: string, ja: string) => (isToky && lang === "ja") ? ja : en;
+  const JA_CAT: Record<string, string> = { All: JA.catAll, Tech: JA.catTech, Arts: JA.catArts, Sports: JA.catSports, Civics: JA.catCivics, Wellness: JA.catWellness };
+  const catLabel = (cat: string) => (isToky && lang === "ja") ? (JA_CAT[cat] ?? cat) : (CAT_CONFIG[cat as keyof typeof CAT_CONFIG]?.label ?? cat);
+
   if (isLoading) {
     return (
       <Layout>
@@ -357,7 +363,7 @@ export default function DigestView() {
                   }`}
                 >
                   <span>{cfg.emoji}</span>
-                  <span>{cfg.label}</span>
+                  <span>{catLabel(cat)}</span>
                 </button>
               );
             })}
@@ -705,13 +711,13 @@ export default function DigestView() {
                 {visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
                     <p className="text-4xl mb-4">{CAT_CONFIG[categoryFilter].emoji}</p>
-                    <p className="text-xl font-serif font-bold text-foreground mb-2">No {categoryFilter} events this week</p>
-                    <p className="text-muted-foreground text-sm mb-6">Check back next issue for {categoryFilter.toLowerCase()} events.</p>
+                    <p className="text-xl font-serif font-bold text-foreground mb-2">{jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                    <p className="text-muted-foreground text-sm mb-6">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     <button
                       onClick={() => setCategoryFilter("All")}
                       className="text-primary text-sm font-medium hover:underline"
                     >
-                      View all events →
+                      {jt("View all events →", JA.viewAllEvents)}
                     </button>
                   </div>
                 ) : (

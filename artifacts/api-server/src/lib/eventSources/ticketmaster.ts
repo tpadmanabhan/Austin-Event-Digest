@@ -61,11 +61,13 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
     endDateTime: weekEnd.toISOString().replace(/\.\d{3}Z$/, "Z"),
   });
 
-  if (stateCode) params.set("stateCode", stateCode);
+  // Only set stateCode for US two-letter state abbreviations — never for country names like "Japan"
+  if (stateCode && stateCode.length === 2) params.set("stateCode", stateCode);
   if (classification) params.set("classificationName", classification);
 
-  // For small cities (Brushy Creek, Bulverde), use lat/lng radius instead of city name
-  if (geo && (cityName === "Brushy Creek" || cityName === "Bulverde" || cityName === "Austin Cares")) {
+  // For small/international cities, use lat/lng radius instead of city name
+  const useLatLng = geo && (cityName === "Brushy Creek" || cityName === "Bulverde" || cityName === "Austin Cares" || cityName === "Tokyo");
+  if (useLatLng && geo) {
     params.delete("city");
     params.delete("stateCode");
     params.set("latlong", `${geo.lat},${geo.lon}`);
