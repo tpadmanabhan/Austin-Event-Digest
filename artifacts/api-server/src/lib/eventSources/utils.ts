@@ -57,6 +57,9 @@ const CITY_GEO: Record<string, CityGeo> = {
   "Bulverde": { lat: 29.7474, lon: -98.4248, timezone: "America/Chicago", slug: "bulverde-tx" },
   // Non-geographic city strings — map to nearest real city
   "Austin Cares": { lat: 30.2672, lon: -97.7431, timezone: "America/Chicago", slug: "austin-tx" },
+  // International cities
+  "Tokyo":        { lat: 35.6762, lon: 139.6503, timezone: "Asia/Tokyo", slug: "tokyo-jp" },
+  "Tokyo, Japan": { lat: 35.6762, lon: 139.6503, timezone: "Asia/Tokyo", slug: "tokyo-jp" },
 };
 
 /** Derive a reasonable US timezone from longitude when we can't look it up. */

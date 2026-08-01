@@ -595,7 +595,27 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "St. Louis accent color migration failed (non-fatal)");
   }
 
-  for (const slug of ["portland", "sacramento", "stlouis"]) {
+  // Seed Tokyo tenant (idempotent)
+  try {
+    await db.execute(sql`
+      INSERT INTO tenants (slug, name, city, accent_color, categories, is_active, email_verified)
+      VALUES (
+        'tokyo',
+        'Tokyo Events',
+        'Tokyo, Japan',
+        '#CC0000',
+        '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb,
+        true,
+        true
+      )
+      ON CONFLICT (slug) DO NOTHING
+    `);
+    logger.info("Tokyo tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "Tokyo tenant seed failed (non-fatal)");
+  }
+
+  for (const slug of ["portland", "sacramento", "stlouis", "tokyo"]) {
     try {
       await db.execute(
         sql`UPDATE tenants SET admin_email = 'aiimplementationclubaustin@gmail.com', is_active = true, email_verified = true WHERE slug = ${slug} AND (admin_email IS NULL OR admin_email != 'aiimplementationclubaustin@gmail.com')`

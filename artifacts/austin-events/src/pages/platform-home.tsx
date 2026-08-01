@@ -222,6 +222,13 @@ function PlatformHomeInner() {
                   iconShadow: "0 3px 10px rgba(29,78,216,0.5)",
                   label: "St. Louis Events",
                 },
+                {
+                  href: "https://tokyo.eventcarpooling.com",
+                  icon: "🗼",
+                  iconBg: "linear-gradient(135deg, #4d0000, #CC0000)",
+                  iconShadow: "0 3px 10px rgba(204,0,0,0.5)",
+                  label: "Tokyo Events",
+                },
               ].map(city => (
                 <a
                   key={city.href}
