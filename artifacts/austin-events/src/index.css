@@ -323,6 +323,37 @@
   --sidebar-ring: 217 91% 50%;
 }
 
+/* ── Tokyo: Japan navy blue (Ai-iro indigo) ────────────────────────────── */
+[data-tenant="tokyo"] {
+  --background: 211 45% 97%;      /* light blue-white */
+  --foreground: 220 47% 11%;      /* deep navy text */
+  --border: 211 40% 86%;
+  --input: 211 40% 86%;
+  --ring: 211 72% 38%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 47% 11%;
+  --card-border: 211 40% 86%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 47% 11%;
+  --popover-border: 211 40% 86%;
+  --primary: 211 72% 38%;         /* Japan navy #1B5EA8 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 75% 25%;       /* deep navy */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 211 50% 93%;
+  --muted-foreground: 211 25% 46%;
+  --accent: 211 80% 55%;          /* lighter sky blue */
+  --accent-foreground: 0 0% 100%;
+  --sidebar: 211 45% 97%;
+  --sidebar-foreground: 220 47% 11%;
+  --sidebar-border: 211 40% 86%;
+  --sidebar-primary: 211 72% 38%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 211 50% 93%;
+  --sidebar-accent-foreground: 220 47% 11%;
+  --sidebar-ring: 211 72% 38%;
+}
+
 @layer base {
   * {
     @apply border-border;
