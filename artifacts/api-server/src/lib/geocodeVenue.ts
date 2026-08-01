@@ -46,7 +46,7 @@ async function cacheSet(venue: string, lat: number | null, lng: number | null): 
 // Nominatim fetch
 // ---------------------------------------------------------------------------
 
-async function nominatim(query: string): Promise<{ lat: number; lng: number } | null> {
+async function nominatimQuery(query: string): Promise<{ lat: number; lng: number } | null> {
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
     const res = await fetch(url, {
@@ -63,6 +63,28 @@ async function nominatim(query: string): Promise<{ lat: number; lng: number } | 
   } catch {
     return null;
   }
+}
+
+/**
+ * Geocode a query string, trying the exact query first, then simplified fallbacks:
+ *  - Strip ", SubPremise" suffix (e.g. "Venue, Minato City" → "Venue")
+ *  - Strip trailing comma-parts one at a time
+ * This handles cases like "Tokyo Opera City Concert Hall, Shinjuku" where Nominatim
+ * only resolves "Tokyo Opera City".
+ */
+async function nominatim(query: string): Promise<{ lat: number; lng: number } | null> {
+  const exact = await nominatimQuery(query);
+  if (exact) return exact;
+
+  // Build fallback candidates by progressively stripping the rightmost comma-part
+  const parts = query.split(",").map(p => p.trim()).filter(Boolean);
+  for (let i = parts.length - 1; i >= 1; i--) {
+    await sleep(1100); // respect Nominatim rate-limit between fallback attempts
+    const candidate = parts.slice(0, i).join(", ");
+    const result = await nominatimQuery(candidate);
+    if (result) return result;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -102,8 +124,8 @@ export async function geocodeEvents(
   for (const event of events) {
     const venue = typeof event["venue"] === "string" ? event["venue"].trim() : "";
 
-    // Skip: no venue, or coordinates already present
-    if (!venue || event["lat"] !== undefined) {
+    // Skip: no venue, or valid coordinates already present (not null)
+    if (!venue || (event["lat"] !== undefined && event["lat"] !== null)) {
       result.push(event);
       continue;
     }

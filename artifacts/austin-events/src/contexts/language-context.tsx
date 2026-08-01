@@ -38,7 +38,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         });
         if (res.ok) {
           const { translations } = await res.json() as { translations: string[] };
-          uncached.forEach((t, i) => { if (translations[i]) translationCache.set(t, translations[i]); });
+          uncached.forEach((t, i) => {
+            // Only cache if a real translation came back (don't cache if API returned originals)
+            if (translations[i] && translations[i] !== t) translationCache.set(t, translations[i]);
+          });
         }
       } catch { /* fall back to originals on error */ }
     }
