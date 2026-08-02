@@ -746,6 +746,15 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:10px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Open the full edition and tap <strong>Nearest first</strong> to sort by your location.</p>
     </div>` : ""}
 
+    <!-- Tokyo Launch Highlight (Tokyo only) -->
+    ${slug === "tokyo" && digest.siteUrl && digest.digestId ? `
+    <div style="background:#fff0f0; border:1.5px solid #dc2626; border-radius:14px; padding:20px 24px; margin-bottom:24px; text-align:center;">
+      <p style="margin:0 0 4px; color:#dc2626; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🗼 Now Live</p>
+      <p style="margin:0 0 8px; color:#1c1917; font-size:17px; font-weight:800; letter-spacing:-0.3px;">Tokyo Events is here!</p>
+      <p style="margin:0 0 14px; color:#78716c; font-size:13px; line-height:1.6;">Your weekly hand-picked guide to the best live music, food pop-ups, tech meetups, and hidden gems happening across Tokyo. Share with a friend who loves the city!</p>
+      <a href="${escapeHtml(digest.siteUrl)}/digest/${digest.digestId}" style="display:inline-block; background:#dc2626; color:#fff; font-size:14px; font-weight:700; text-decoration:none; padding:11px 26px; border-radius:100px; letter-spacing:-0.1px;">View full edition →</a>
+    </div>` : ""}
+
     ${buildStaticMapSection(digest.events, slug, digest.siteUrl, digest.digestId)}
 
     <!-- Featured Events -->
