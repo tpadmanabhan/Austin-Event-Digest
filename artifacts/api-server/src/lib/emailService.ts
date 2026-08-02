@@ -126,7 +126,6 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 
     <!-- Main card -->
     <div style="background:#ffffff;border:1px solid #e7e5e4;border-radius:16px;padding:32px;margin-bottom:16px;">
-      ${greeting ? `<p style="margin:0 0 16px;color:#1c1917;font-size:18px;font-weight:700;">${greeting}</p>` : ""}
       <p style="margin:0 0 16px;color:#44403c;font-size:15px;line-height:1.75;">
         You're officially on the list for ${escapeHtml(cityLabel)}'s most interesting week-ahead digest. 🎉
       </p>
@@ -727,7 +726,6 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Intro -->
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:16px;">
-      ${greeting ? `<p style="margin:0 0 12px; color:#1c1917; font-size:16px; font-weight:600;">${greeting}</p>` : ""}
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
       ${theme.curatorName ? `<p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
     </div>
