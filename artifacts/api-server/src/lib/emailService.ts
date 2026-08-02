@@ -311,7 +311,7 @@ function buildStaticMapSection(
   const mapUrl = `${baseUrl}/api/map-image?center=${center.lat},${center.lng}&zoom=10&size=580x260&markers=${encodeURIComponent(markerParam)}`;
 
   const cityLabel = CITY_LABELS[slug] ?? slug;
-  const linkUrl = siteUrl && digestId ? `${siteUrl}/digest/${digestId}` : null;
+  const linkUrl = siteUrl ? siteUrl : null;
 
   return `
     <!-- Event Map Preview -->
@@ -773,7 +773,7 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0 0 4px; color:#dc2626; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🗼 Now Live</p>
       <p style="margin:0 0 8px; color:#1c1917; font-size:17px; font-weight:800; letter-spacing:-0.3px;">Tokyo Events is here!</p>
       <p style="margin:0 0 14px; color:#78716c; font-size:13px; line-height:1.6;">Your weekly hand-picked guide to the best live music, food pop-ups, tech meetups, and hidden gems happening across Tokyo. Share with a friend who loves the city!</p>
-      <a href="${escapeHtml(digest.siteUrl)}/digest/${digest.digestId}" style="display:inline-block; background:#dc2626; color:#fff; font-size:14px; font-weight:700; text-decoration:none; padding:11px 26px; border-radius:100px; letter-spacing:-0.1px;">View full edition →</a>
+      <a href="${escapeHtml(digest.siteUrl)}" style="display:inline-block; background:#dc2626; color:#fff; font-size:14px; font-weight:700; text-decoration:none; padding:11px 26px; border-radius:100px; letter-spacing:-0.1px;">View full edition →</a>
     </div>` : ""}
 
     ${buildStaticMapSection(digest.events, slug, digest.siteUrl, digest.digestId)}
