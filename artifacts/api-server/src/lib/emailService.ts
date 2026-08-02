@@ -751,14 +751,14 @@ export function buildDigestEmailHtml(digest: {
 
     ${buildStaticMapSection(digest.events, slug, digest.siteUrl, digest.digestId)}
 
-    <!-- Featured Event -->
-    ${featuredCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">⭐ Special Event</h2>${featuredCards}` : ""}
+    <!-- Featured Events -->
+    ${featuredCards}
 
     <!-- Business Spotlights -->
-    ${bizSpotlightCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">💼 Business Spotlight</h2>${bizSpotlightCards}` : ""}
+    ${bizSpotlightCards}
 
     <!-- Community Spotlights -->
-    ${commSpotlightCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">🙌 Community Spotlight</h2>${commSpotlightCards}` : ""}
+    ${commSpotlightCards}
 
     <!-- Events -->
     ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>${eventCards}` : ""}
