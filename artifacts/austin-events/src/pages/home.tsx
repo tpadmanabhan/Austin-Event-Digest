@@ -474,34 +474,6 @@ export default function Home() {
                 .sort((a: any, b: any) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
               return (
                 <div className="space-y-8">
-                  {featuredEvents.length > 0 && (
-                    <div className="flex flex-col gap-6">
-                      {featuredEvents.map((featEvent: any, fi: number) => (
-                        <motion.div
-                          key={fi}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: fi * 0.1 }}
-                        >
-                          <div className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20 overflow-hidden">
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
-                            <div className="absolute top-4 right-4 z-10">
-                              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
-                                <Star className="w-3 h-3 fill-amber-950" />
-                                {jt("Special Event", JA.specialEvent)}
-                              </span>
-                            </div>
-                            <div className="p-6 sm:p-8">
-                              <div className="max-w-xl">
-                                <EventCard event={translateEvent(featEvent)} digestId={latestDigest.id} />
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
                   {categoryFilter === "All" && businessSpotlights.length > 0 && (
                     <div className="flex flex-col gap-6">
                       <h3 className="font-serif text-2xl font-bold flex items-center gap-3">
@@ -628,6 +600,34 @@ export default function Home() {
                                   Apply Now <ExternalLink className="w-3.5 h-3.5" />
                                 </a>
                               )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                  {featuredEvents.length > 0 && (
+                    <div className="flex flex-col gap-6">
+                      {featuredEvents.map((featEvent: any, fi: number) => (
+                        <motion.div
+                          key={fi}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: fi * 0.1 }}
+                        >
+                          <div className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20 overflow-hidden">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
+                            <div className="absolute top-4 right-4 z-10">
+                              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
+                                <Star className="w-3 h-3 fill-amber-950" />
+                                {jt("Special Event", JA.specialEvent)}
+                              </span>
+                            </div>
+                            <div className="p-6 sm:p-8">
+                              <div className="max-w-xl">
+                                <EventCard event={translateEvent(featEvent)} digestId={latestDigest.id} />
+                              </div>
                             </div>
                           </div>
                         </motion.div>
