@@ -499,6 +499,28 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(27,94,168,0.35)",
     rideBtnBg: "#1B5EA8",
     rideBtnColor: "#fff",
+  } : slug === "austincares" ? {
+    headerGradient: "linear-gradient(135deg, #0a2e2e 0%, #134040 55%, #1e6e6e 100%)",
+    primary: "#1e6e6e",
+    primaryBtn: "#1e6e6e",
+    primaryDark: "#0a2e2e",
+    primaryLight: "#e0f4f4",
+    primaryMuted: "#b2e0e0",
+    textOnDark: "#e0f4f4",
+    textMutedOnDark: "#a0d4d4",
+    textStrong: "#ffffff",
+    linkColor: "#1e6e6e",
+    curatorName: "",
+    curatorUrl: null as string | null,
+    cityGuideText: "Your weekly guide to community events and causes in Austin",
+    digestDisplayName: tenant?.digestTitle || "Austin Cares Events",
+    headerEmoji: "🌱",
+    eventBtnColor: "#1e6e6e",
+    eventBtnBorder: "#1e6e6e",
+    pillText: "rgba(224,244,244,0.9)",
+    pillBorder: "rgba(30,110,110,0.35)",
+    rideBtnBg: "#b2e0e0",
+    rideBtnColor: "#0a2e2e",
   } : slug === "brushycreek" ? {
     headerGradient: "linear-gradient(135deg, #064e3b 0%, #065f46 55%, #047857 100%)",
     primary: "#15803d",
@@ -740,9 +762,9 @@ export function buildDigestEmailHtml(digest: {
     </div>` : ""}
 
     <!-- Sort by Distance CTA (Austin + Brushy Creek only) -->
-    ${(slug === "austin" || slug === "brushycreek") && digest.siteUrl && digest.digestId ? `
+    ${(slug === "austin" || slug === "brushycreek") && digest.siteUrl ? `
     <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:14px; padding:18px 22px; margin-bottom:24px; text-align:center;">
-      <a href="${escapeHtml(digest.siteUrl)}/digest/${digest.digestId}" style="display:inline-block; background:#15803d; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:12px 28px; border-radius:100px; letter-spacing:-0.2px;">📍 Sort events by distance →</a>
+      <a href="${escapeHtml(digest.siteUrl)}" style="display:inline-block; background:#15803d; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:12px 28px; border-radius:100px; letter-spacing:-0.2px;">📍 Sort events by distance →</a>
       <p style="margin:10px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Open the full edition and tap <strong>Nearest first</strong> to sort by your location.</p>
     </div>` : ""}
 
