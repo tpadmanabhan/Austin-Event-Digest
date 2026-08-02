@@ -327,7 +327,7 @@ export default function Home() {
                     : `"Hey ${cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`
                   }
                 </p>
-                {(isAustinCares || isPortland || isSacramento || isStLouis || tenant.slug === "austin") && (
+                {(isAustinCares || isSacramento || isStLouis || tenant.slug === "austin") && (
                   <p className="mt-3 text-sm font-semibold text-primary not-italic">
                     —{" "}
                     {isAustinCares ? (

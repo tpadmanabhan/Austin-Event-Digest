@@ -326,7 +326,7 @@ export default function DigestView() {
                 ) : part
               )}
             </p>
-            {!isBulverde && tenant.slug !== "austincares" && !isToky && (
+            {!isBulverde && tenant.slug !== "austincares" && !isToky && !isPortland && (
               <p className="mt-3 text-sm font-semibold text-primary not-italic">
                 —{" "}
                 {isAustinCares ? (

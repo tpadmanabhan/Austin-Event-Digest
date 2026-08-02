@@ -401,7 +401,6 @@ export function buildDigestEmailHtml(digest: {
     textMutedOnDark: "#f5b8c4",
     textStrong: "#ffffff",
     linkColor: "#CE1141",
-    curatorName: "Meg",
     cityGuideText: "Your weekly guide to what's happening in Portland",
     digestDisplayName: tenant?.digestTitle || "Portland Events",
     headerEmoji: "🌲",
