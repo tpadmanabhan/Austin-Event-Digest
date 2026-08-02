@@ -715,7 +715,7 @@ export function buildDigestEmailHtml(digest: {
     
     <!-- Header -->
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
-      <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl && digest.digestId ? `<a href="${escapeHtml(digest.siteUrl)}/digest/${digest.digestId}" style="color:#fbbf24; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:#fbbf24;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
+      <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:#fbbf24; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:#fbbf24;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
       <div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
         <div style="display:inline-block; background:#fbbf24; border-radius:6px; padding:2px 8px;">
           <span style="color:#1c1917; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase;">Beta</span>
@@ -757,14 +757,14 @@ export function buildDigestEmailHtml(digest: {
 
     ${buildStaticMapSection(digest.events, slug, digest.siteUrl, digest.digestId)}
 
-    <!-- Featured Events -->
-    ${featuredCards}
-
     <!-- Business Spotlights -->
     ${bizSpotlightCards}
 
     <!-- Community Spotlights -->
     ${commSpotlightCards}
+
+    <!-- Featured Events -->
+    ${featuredCards}
 
     <!-- Events -->
     ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>${eventCards}` : ""}
