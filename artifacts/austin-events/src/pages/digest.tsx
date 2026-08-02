@@ -541,38 +541,6 @@ export default function DigestView() {
 
           return (
             <>
-              <section className="mb-12">
-                <h2 className="font-serif text-3xl font-bold mb-4 flex items-center gap-3">
-                  <span className="w-8 h-1 bg-primary rounded-full"></span>
-                  🌎 The Rise of IRL
-                </h2>
-                <div className="rounded-2xl border border-border bg-card p-6 space-y-3 text-sm text-muted-foreground leading-relaxed">
-                  <p>
-                    In Real Life (IRL) events are having a moment — and it's not just nostalgia. As screens dominate more of our attention, people are craving genuine face-to-face connection more than ever. From neighborhood meetups to multi-day conferences, IRL gatherings are reshaping how communities form, how professionals network, and how ideas spread. The shift is changing everyday life in ways that online spaces simply can't replicate.
-                  </p>
-                  <ul className="space-y-2 pt-1">
-                    <li>
-                      <a href="https://influencerdaily.com/irl-events-redefine-community-building/" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline underline-offset-2 hover:opacity-70 transition-opacity">
-                        IRL Events Redefine Community Building in the Creator Economy
-                      </a>
-                      <span className="text-xs text-muted-foreground/60 ml-1">— Influencer Daily</span>
-                    </li>
-                    <li>
-                      <a href="https://www.forbes.com/sites/brucelee/2026/01/25/trend-towards-irl-events-with-more-authenticity-whats-behind-it/" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline underline-offset-2 hover:opacity-70 transition-opacity">
-                        Trend Towards IRL Events With More Authenticity: What's Behind It?
-                      </a>
-                      <span className="text-xs text-muted-foreground/60 ml-1">— Forbes</span>
-                    </li>
-                    <li>
-                      <a href="https://tech.yahoo.com/ai/articles/ai-industrys-hottest-networking-event-095252785.html" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline underline-offset-2 hover:opacity-70 transition-opacity">
-                        The AI Industry's Hottest Networking Event Is a Dinner Party
-                      </a>
-                      <span className="text-xs text-muted-foreground/60 ml-1">— Yahoo Tech</span>
-                    </li>
-                  </ul>
-                </div>
-              </section>
-
               {/* Event Map — Austin & Brushy Creek only */}
               {showMap && (
                 <section className="mb-12">
