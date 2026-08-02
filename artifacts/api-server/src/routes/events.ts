@@ -900,6 +900,29 @@ function personalizeEventsForSubscriber(
   return { mainEvents: [...passThrough, ...within], alsoNearby: beyond };
 }
 
+router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "invalid_request" }); return; }
+  const [digest] = await db.select().from(digestsTable)
+    .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id))).limit(1);
+  if (!digest) { res.status(404).json({ error: "not_found" }); return; }
+  const tenant = req.tenant!;
+  const siteUrl = tenant.siteUrl || "";
+  const html = buildDigestEmailHtml({
+    events: (digest.events as any[]) || [],
+    subject: digest.subject,
+    intro: digest.intro || "",
+    weekOf: digest.weekOf instanceof Date ? digest.weekOf.toISOString() : String(digest.weekOf),
+    digestId: digest.id,
+    siteUrl,
+    tenantSlug: tenant.slug,
+    unsubscribeUrl: `${siteUrl}/unsubscribe`,
+    preferencesUrl: `${siteUrl}/preferences`,
+  });
+  res.setHeader("Content-Type", "text/html");
+  res.send(html);
+});
+
 router.post("/digest/send", requireAdmin, async (req, res) => {
   const parseResult = SendDigestBody.safeParse(req.body);
   if (!parseResult.success) {
