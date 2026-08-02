@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { useAllDigests, useLatestDigest } from "@/hooks/use-events";
@@ -273,17 +273,12 @@ export default function DigestView() {
   }
 
   if (!digest) {
-    return (
-      <Layout>
-        <div className="max-w-4xl mx-auto px-4 py-32 text-center">
-          <h1 className="text-4xl font-serif font-bold mb-4 text-foreground">Digest not found</h1>
-          <p className="text-muted-foreground mb-8 text-lg">We couldn't find the edition you're looking for.</p>
-          <Link href="/" className="text-primary font-medium hover:underline inline-flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" /> Back to Home
-          </Link>
-        </div>
-      </Layout>
-    );
+    // Redirect to home — handles old email links that point to a dev digest ID
+    // that doesn't exist on production (e.g. /digest/43 sent from dev environment)
+    if (typeof window !== "undefined") {
+      window.location.replace("/");
+    }
+    return null;
   }
 
   return (
