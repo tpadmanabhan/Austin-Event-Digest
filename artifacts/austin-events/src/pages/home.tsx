@@ -466,11 +466,7 @@ export default function Home() {
               const visibleEvents = categoryFilter === "All"
                 ? upcomingEvents
                 : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
-              const featuredEvents = visibleEvents
-                .filter((e: any) => e.featured)
-                .sort((a: any, b: any) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
-              const regularEvents = visibleEvents
-                .filter((e: any) => !e.featured)
+              const allEventsSorted = [...visibleEvents]
                 .sort((a: any, b: any) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
               return (
                 <div className="space-y-8">
@@ -606,49 +602,38 @@ export default function Home() {
                       ))}
                     </div>
                   )}
-                  {featuredEvents.length > 0 && (
+                  {allEventsSorted.length > 0 ? (
                     <div className="flex flex-col gap-6">
-                      {featuredEvents.map((featEvent: any, fi: number) => (
-                        <motion.div
-                          key={fi}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: fi * 0.1 }}
-                        >
-                          <div className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20 overflow-hidden">
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
-                            <div className="absolute top-4 right-4 z-10">
-                              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
-                                <Star className="w-3 h-3 fill-amber-950" />
-                                {jt("Special Event", JA.specialEvent)}
-                              </span>
-                            </div>
-                            <div className="p-6 sm:p-8">
-                              <div className="max-w-xl">
-                                <EventCard event={translateEvent(featEvent)} digestId={latestDigest.id} />
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                  {regularEvents.length > 0 ? (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {regularEvents.slice(0, featuredEvents.length > 0 ? 2 : 3).map((event, i) => (
+                      {allEventsSorted.map((event: any, i: number) => (
                         <motion.div
                           key={i}
                           initial={{ opacity: 0, y: 20 }}
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
-                          transition={{ delay: i * 0.1 }}
+                          transition={{ delay: i * 0.05 }}
                         >
-                          <EventCard event={translateEvent(event)} digestId={latestDigest.id} />
+                          {event.featured ? (
+                            <div className="relative rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50/80 via-card to-card dark:from-amber-950/30 shadow-lg shadow-amber-100/40 dark:shadow-amber-900/20 overflow-hidden">
+                              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
+                              <div className="absolute top-4 right-4 z-10">
+                                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-amber-400 text-amber-950 shadow-sm">
+                                  <Star className="w-3 h-3 fill-amber-950" />
+                                  {jt("Special Event", JA.specialEvent)}
+                                </span>
+                              </div>
+                              <div className="p-6 sm:p-8">
+                                <div className="max-w-xl">
+                                  <EventCard event={translateEvent(event)} digestId={latestDigest.id} />
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <EventCard event={translateEvent(event)} digestId={latestDigest.id} />
+                          )}
                         </motion.div>
                       ))}
                     </div>
-                  ) : featuredEvents.length === 0 && businessSpotlights.length === 0 && communityPosts.length === 0 ? (
+                  ) : businessSpotlights.length === 0 && communityPosts.length === 0 ? (
                     <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-border">
                       <p className="text-4xl mb-3">{CAT_CONFIG[categoryFilter].emoji}</p>
                       <p className="text-lg font-serif font-bold text-foreground mb-2">{jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
