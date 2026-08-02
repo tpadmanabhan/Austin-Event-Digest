@@ -855,19 +855,6 @@ export function buildDigestEmailHtml(digest: {
       </div>
     </div>
 
-    <!-- Rise of IRL -->
-    <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:20px 24px; margin:0 0 28px;">
-      <h2 style="margin:0 0 10px; color:#1c1917; font-size:18px; font-weight:700;">🌎 The Rise of IRL</h2>
-      <p style="margin:0 0 14px; color:#57534e; font-size:14px; line-height:1.7;">
-        In Real Life (IRL) events are having a moment — and it's not just nostalgia. As screens dominate more of our attention, people are craving genuine face-to-face connection more than ever. From neighborhood meetups to multi-day conferences, IRL gatherings are reshaping how communities form, how professionals network, and how ideas spread. The shift is changing everyday life in ways that online spaces simply can't replicate.
-      </p>
-      <ul style="margin:0; padding:0 0 0 18px; color:#57534e; font-size:14px; line-height:2;">
-        <li><a href="https://influencerdaily.com/irl-events-redefine-community-building/" style="color:${theme.linkColor}; text-decoration:underline;">IRL Events Redefine Community Building in the Creator Economy</a> <span style="color:#a8a29e; font-size:12px;">— Influencer Daily</span></li>
-        <li><a href="https://www.forbes.com/sites/brucelee/2026/01/25/trend-towards-irl-events-with-more-authenticity-whats-behind-it/" style="color:${theme.linkColor}; text-decoration:underline;">Trend Towards IRL Events With More Authenticity: What's Behind It?</a> <span style="color:#a8a29e; font-size:12px;">— Forbes</span></li>
-        <li><a href="https://tech.yahoo.com/ai/articles/ai-industrys-hottest-networking-event-095252785.html" style="color:${theme.linkColor}; text-decoration:underline;">The AI Industry's Hottest Networking Event Is a Dinner Party</a> <span style="color:#a8a29e; font-size:12px;">— Yahoo Tech</span></li>
-      </ul>
-    </div>
-
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
       <p style="margin:0 0 6px; color:#78716c; font-size:13px;">${theme.curatorName ? `Curated with ❤️ by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : slug === "bulverde" ? " from Bulverde, TX" : slug === "stlouis" ? " from St. Louis, MO" : " from Austin, TX"}` : `Curated with ❤️ for ${escapeHtml(cityName)}`}</p>
