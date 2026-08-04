@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AustinCares — The best deal in Austin, every day of the week</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF3E7;
+    --paper:#FFFDFA;
+    --char:#241C15;
+    --muted:#6B6055;
+    --line:#EDE1CF;
+    --rust:#C4502B;
+    --rust-deep:#A33F20;
+    --gold:#E8A93C;
+    --olive:#5C6E4A;
+    --olive-soft:#E7ECE0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--char);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .serif{font-family:'Fraunces',Georgia,serif}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 24px}
+
+  nav{padding:20px 0}
+  nav .wrap{display:flex;justify-content:space-between;align-items:center}
+  .brand{font-family:'Fraunces',serif;font-weight:600;font-size:21px;letter-spacing:-.01em;color:var(--char)}
+  .brand span{color:var(--rust)}
+  nav a.biz{color:var(--char);text-decoration:none;font-size:14.5px;font-weight:600;border:1.5px solid var(--char);padding:9px 16px;border-radius:100px}
+  nav a.biz:hover{background:var(--char);color:var(--paper)}
+
+  .hero{
+    background:linear-gradient(175deg,var(--cream) 0%, #F6E4CC 100%);
+    padding:56px 0 64px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero .wrap{position:relative;z-index:1}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:100px;padding:6px 14px;font-size:12.5px;font-weight:600;color:var(--rust-deep)}
+  .hero h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(34px,5.6vw,54px);line-height:1.08;letter-spacing:-.015em;margin-top:20px;max-width:14ch}
+  .hero h1 em{font-style:italic;color:var(--rust)}
+  .hero p{margin-top:18px;font-size:19px;color:#4A4038;max-width:46ch}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:32px}
+  .btn{display:inline-block;text-decoration:none;font-weight:700;font-size:15.5px;padding:14px 25px;border-radius:12px}
+  .btn-rust{background:var(--rust);color:#fff;box-shadow:0 10px 26px rgba(196,80,43,.28)}
+  .btn-ghost{background:transparent;color:var(--char);border:1.5px solid var(--char)}
+
+  /* day strip */
+  .daystrip{display:flex;gap:8px;margin-top:40px;flex-wrap:wrap}
+  .day{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:9px 15px;font-size:13.5px;font-weight:600;color:var(--muted)}
+  .day.on{background:var(--char);color:var(--paper);border-color:var(--char)}
+
+  /* how it works */
+  .how{padding:78px 0}
+  .how .head{max-width:38ch;margin-bottom:40px}
+  .how h2{font-family:'Fraunces',serif;font-size:clamp(24px,3.4vw,32px);font-weight:600;letter-spacing:-.01em}
+  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .c3{background:var(--cream);border-radius:16px;padding:26px 22px}
+  .c3 .ic{width:38px;height:38px;border-radius:10px;background:var(--rust);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:17px;margin-bottom:14px}
+  .c3 h3{font-size:16.5px;font-weight:700}
+  .c3 p{font-size:14.5px;color:var(--muted);margin-top:6px}
+
+  /* sample digest */
+  .digest{background:var(--char);color:var(--cream);padding:74px 0}
+  .digest .head{max-width:40ch}
+  .digest h2{font-family:'Fraunces',serif;font-size:clamp(24px,3.4vw,32px);font-weight:600;color:#fff}
+  .digest .head p{color:#C9BFAE;margin-top:10px;font-size:16.5px}
+  .card-mail{background:var(--paper);color:var(--char);border-radius:18px;margin-top:36px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.28)}
+  .mail-top{background:var(--rust);color:#fff;padding:16px 22px;font-family:'Fraunces',serif;font-size:15.5px}
+  .mail-body{padding:22px}
+  .deal{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+  .deal:last-child{border-bottom:none}
+  .deal .tag{flex:none;width:52px;text-align:center;background:var(--olive-soft);color:var(--olive);font-weight:700;font-size:12.5px;padding:7px 0;border-radius:9px}
+  .deal .info{flex:1}
+  .deal .biz{font-weight:700;font-size:15px}
+  .deal .off{color:var(--rust);font-weight:700;font-size:14px}
+  .deal .meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .deal .dist{flex:none;font-size:12.5px;color:var(--muted);font-weight:600}
+
+  /* business section */
+  .biz-section{padding:80px 0}
+  .biz-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:44px;align-items:center}
+  .biz-grid h2{font-family:'Fraunces',serif;font-size:clamp(26px,3.6vw,36px);font-weight:600;letter-spacing:-.01em;line-height:1.18}
+  .biz-grid > div > p{margin-top:16px;font-size:17px;color:#4A4038;max-width:44ch}
+  .price-card{background:var(--cream);border-radius:20px;padding:32px 28px;text-align:center}
+  .price-card .amt{font-family:'Fraunces',serif;font-size:52px;font-weight:600;color:var(--rust)}
+  .price-card .amt span{font-size:17px;color:var(--muted);font-weight:500}
+  .price-card ul{list-style:none;text-align:left;margin:24px 0;max-width:240px;margin-left:auto;margin-right:auto}
+  .price-card li{font-size:14.5px;padding-left:22px;position:relative;margin-bottom:9px;color:#4A4038}
+  .price-card li::before{content:"✓";position:absolute;left:0;color:var(--olive);font-weight:700}
+  .price-card .btn{width:100%}
+
+  /* testimonial */
+  .testi{background:var(--olive-soft);padding:70px 0}
+  .testi .wrap{max-width:680px;text-align:center}
+  .testi .quote{font-family:'Fraunces',serif;font-style:italic;font-size:clamp(21px,3vw,27px);line-height:1.42;color:var(--char)}
+  .testi .who{margin-top:20px;font-size:14.5px;color:var(--muted);font-weight:600}
+  .testi .placeholder-tag{display:inline-block;margin-top:14px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--olive);background:#fff;border:1px solid #D3DCC7;padding:4px 12px;border-radius:100px}
+
+  footer{padding:38px 0;text-align:center;color:var(--muted);font-size:13.5px}
+  footer .brand{justify-content:center;display:flex;margin-bottom:6px}
+
+  @media(max-width:760px){
+    .cards3{grid-template-columns:1fr}
+    .biz-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <div class="brand">Austin<span>Cares</span></div>
+  <a href="#business" class="biz">I run a business →</a>
+</div></nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">● Updated every week</span>
+    <h1 class="serif">The best deal in Austin — <em>every day of the week.</em></h1>
+    <p>A weekly digest of real, time-boxed discounts near you — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.</p>
+    <div class="cta-row">
+      <a href="#" class="btn btn-rust">Get this week's deals</a>
+      <a href="#business" class="btn btn-ghost">I run a business →</a>
+    </div>
+    <div class="daystrip">
+      <div class="day on">Mon</div>
+      <div class="day">Tue</div>
+      <div class="day">Wed</div>
+      <div class="day">Thu</div>
+      <div class="day">Fri</div>
+      <div class="day">Sat</div>
+      <div class="day">Sun</div>
+    </div>
+  </div>
+</header>
+
+<section class="how">
+  <div class="wrap">
+    <div class="head">
+      <h2 class="serif">Deals, sorted the way you actually decide.</h2>
+    </div>
+    <div class="cards3">
+      <div class="c3">
+        <div class="ic">1</div>
+        <h3>Sorted by day</h3>
+        <p>Monday oyster nights. Tuesday tikka. Thursday happy hours. See what's on, the day it's on — not a stale list from three weeks ago.</p>
+      </div>
+      <div class="c3">
+        <div class="ic">2</div>
+        <h3>Sorted by distance</h3>
+        <p>Set your spot, get deals within 1, 3, or 5 miles. Not a citywide list you'll never make it across town for.</p>
+      </div>
+      <div class="c3">
+        <div class="ic">3</div>
+        <h3>Verified and current</h3>
+        <p>Every deal is pulled and checked weekly. If it's expired, it's gone — not left up to rot like an old coupon site.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="digest">
+  <div class="wrap">
+    <div class="head">
+      <h2 class="serif">This week, near South Congress</h2>
+      <p>A real sample of what lands in your inbox every Sunday.</p>
+    </div>
+    <div class="card-mail">
+      <div class="mail-top">AustinCares · Weekly Deals · South Congress ± 3 mi</div>
+      <div class="mail-body">
+        <div class="deal">
+          <div class="tag">TUE</div>
+          <div class="info">
+            <div class="biz">Masala Wok — Tikka Tuesday</div>
+            <div class="off">Tikka Masala + Rice + Naan + Drink — $11.95</div>
+            <div class="meta">All-day · dine-in or to-go</div>
+          </div>
+          <div class="dist">0.4 mi</div>
+        </div>
+        <div class="deal">
+          <div class="tag">WED</div>
+          <div class="info">
+            <div class="biz">The Fade Room</div>
+            <div class="off">Half-price haircuts</div>
+            <div class="meta">Walk-ins, 10am–2pm</div>
+          </div>
+          <div class="dist">0.7 mi</div>
+        </div>
+        <div class="deal">
+          <div class="tag">THU</div>
+          <div class="info">
+            <div class="biz">Rainey Draft House</div>
+            <div class="off">$2 off all drafts</div>
+            <div class="meta">4–6pm happy hour</div>
+          </div>
+          <div class="dist">1.1 mi</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="biz-section" id="business">
+  <div class="wrap">
+    <div class="biz-grid">
+      <div>
+        <h2 class="serif">Your Tuesday special, in front of people looking for a Tuesday special.</h2>
+        <p>You're already running the discount. We just make sure the neighborhood sees it — sorted by day, filtered by distance, delivered weekly. No ad spend, no boosting posts and hoping the algorithm cares.</p>
+      </div>
+      <div class="price-card">
+        <div class="amt">$5.99<span>/month</span></div>
+        <ul>
+          <li>List your weekly deal</li>
+          <li>Sorted by day &amp; geo-matched to nearby readers</li>
+          <li>Update anytime</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <a href="#" class="btn btn-rust">List your business</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="testi">
+  <div class="wrap">
+    <p class="quote serif">"I used to post our happy hour on Instagram and hope the algorithm cared. Now it just shows up in front of people a few blocks away, on the exact day it matters."</p>
+    <div class="who">— Local Austin business owner</div>
+    <div class="placeholder-tag">Sample quote — swap in a real review once live</div>
+  </div>
+</section>
+
+<footer>
+  <div class="brand">Austin<span style="color:var(--rust)">Cares</span></div>
+  <div>Part of the EventCarpooling network — what's happening, and what's on sale, near you.</div>
+</footer>
+
+</body>
+</html>
