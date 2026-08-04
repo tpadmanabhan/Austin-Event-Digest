@@ -103,14 +103,21 @@ async function fetchLumaEvents(query: SourceQuery): Promise<EventItem[]> {
     const description = ev.description_short
       || `${ev.name} — ${venue}`;
 
+    // ev.url from the API is already a full URL (e.g. "https://lu.ma/abc123") or a slug ("abc123").
+    // Handle both forms to avoid double-prefixing.
+    const link = ev.url
+      ? (ev.url.startsWith("http") ? ev.url : `https://lu.ma/${ev.url}`)
+      : null;
+
     events.push({
       title: ev.name.trim(),
       date: formatISODate(ev.start_at, geo.timezone),
       venue: venue.substring(0, 120),
       description: description.substring(0, 400),
       category: guessCategory(`${ev.name} ${description}`),
-      link: ev.url ? `https://lu.ma/${ev.url}` : null,
+      link,
       imageUrl: ev.cover_url || null,
+      source: "Luma",
     });
   }
 
