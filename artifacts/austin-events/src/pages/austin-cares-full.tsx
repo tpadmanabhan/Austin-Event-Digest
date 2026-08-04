@@ -37,7 +37,7 @@ const DEALS: Deal[] = [
     savings: "$11.95 all-day",
     source: "Direct",
     location: "10515 N Mopac Expy Ste A155, Austin",
-    url: "https://www.grubhub.com/restaurant/masala-wok-10515-n-mopac-expy-austin/316536",
+    url: "https://www.grubhub.com/restaurant/masala-wok-10515-n-mopac-expy-ste-a155-austin/659613",
     lat: 30.4161,
     lng: -97.7354,
   },
