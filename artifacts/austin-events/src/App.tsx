@@ -7,6 +7,7 @@ import { AudioProvider } from "@/components/audio-provider";
 
 import Home from "./pages/home";
 import AustinCaresDeals from "./pages/austin-cares-deals";
+import AustinCaresFullEdition from "./pages/austin-cares-full";
 import DigestView from "./pages/digest";
 import AdminDashboard from "./pages/admin";
 import { AdminLoginGate } from "@/components/admin-login-gate";
@@ -43,6 +44,7 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
       <ScrollToTop />
       <Switch>
         <Route path="/" component={citySlug === "austincares" ? AustinCaresDeals : Home} />
+        {citySlug === "austincares" && <Route path="/full" component={AustinCaresFullEdition} />}
         <Route path="/digest/:id" component={DigestView} />
         <Route path="/admin">
           <AdminLoginGate>

@@ -17,9 +17,9 @@ const C = {
 const serif: React.CSSProperties = { fontFamily: "'Fraunces', Georgia, serif" };
 
 const DEAL_LOCATIONS = [
-  { name: "Masala Wok",      deal: "Tikka Masala + Rice + Naan + Drink — $11.95", lat: 30.4161, lng: -97.7354 },
-  { name: "The Fade Room",   deal: "Half-price haircuts",                          lat: 30.2584, lng: -97.7170 },
-  { name: "The Rainey House",deal: "$2 off all drafts",                            lat: 30.2585, lng: -97.7396 },
+  { name: "Local Indian Restaurant", deal: "Tikka Masala + Rice + Naan + Drink — $11.95", lat: 30.4161, lng: -97.7354 },
+  { name: "Neighborhood Barbershop", deal: "Half-price haircuts",                          lat: 30.2584, lng: -97.7170 },
+  { name: "Rainey St. Bar",        deal: "$2 off all drafts",                            lat: 30.2585, lng: -97.7396 },
 ];
 
 export default function AustinCaresDeals() {
@@ -213,9 +213,9 @@ export default function AustinCaresDeals() {
             </div>
             <div style={{ padding: 22 }}>
               {[
-                { day: "TUE", biz: "Masala Wok — Tikka Tuesday",  off: "Tikka Masala + Rice + Naan + Drink — $11.95", meta: "All-day · dine-in or to-go", dist: "0.4 mi" },
-                { day: "WED", biz: "The Fade Room",                off: "Half-price haircuts",                        meta: "Walk-ins, 10am–2pm",         dist: "0.7 mi" },
-                { day: "THU", biz: "The Rainey House",              off: "$2 off all drafts",                          meta: "4–6pm happy hour",           dist: "1.1 mi" },
+                { day: "TUE", biz: "Local Indian Restaurant — Tikka Tuesday", off: "Tikka Masala + Rice + Naan + Drink — $11.95", meta: "All-day · dine-in or to-go", dist: "0.4 mi" },
+                { day: "WED", biz: "Neighborhood Barbershop",               off: "Half-price haircuts",                        meta: "Walk-ins, 10am–2pm",         dist: "0.7 mi" },
+                { day: "THU", biz: "Rainey St. Bar",                     off: "$2 off all drafts",                          meta: "4–6pm happy hour",           dist: "1.1 mi" },
               ].map(({ day, biz, off, meta, dist }, i, arr) => (
                 <div key={day} style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid ${C.line}` : "none" }}>
                   <div style={{ flexShrink: 0, width: 52, textAlign: "center", background: C.oliveSoft, color: C.olive, fontWeight: 700, fontSize: 12.5, padding: "7px 0", borderRadius: 9 }}>
@@ -229,6 +229,11 @@ export default function AustinCaresDeals() {
                   <div style={{ flexShrink: 0, fontSize: 12.5, color: C.muted, fontWeight: 600 }}>{dist}</div>
                 </div>
               ))}
+            </div>
+            <div style={{ marginTop: 20, textAlign: "right" }}>
+              <a href="/full" style={{ fontSize: 14, fontWeight: 700, color: C.gold, textDecoration: "none", letterSpacing: "0.01em" }}>
+                See full edition →
+              </a>
             </div>
           </div>
         </div>
