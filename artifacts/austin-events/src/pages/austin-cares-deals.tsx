@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const C = {
   cream:    "#FBF3E7",
@@ -16,7 +16,78 @@ const C = {
 
 const serif: React.CSSProperties = { fontFamily: "'Fraunces', Georgia, serif" };
 
+const DEAL_LOCATIONS = [
+  { name: "Masala Wok",      deal: "Tikka Masala + Rice + Naan + Drink — $11.95", lat: 30.4161, lng: -97.7354 },
+  { name: "The Fade Room",   deal: "Half-price haircuts",                          lat: 30.2584, lng: -97.7170 },
+  { name: "The Rainey House",deal: "$2 off all drafts",                            lat: 30.2585, lng: -97.7396 },
+];
+
 export default function AustinCaresDeals() {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<unknown>(null);
+
+  // Business deal map
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+    let mounted = true;
+    (async () => {
+      const L = (await import("leaflet")).default;
+      await import("leaflet/dist/leaflet.css");
+      if (!mounted || !mapContainerRef.current) return;
+
+      const map = L.map(mapContainerRef.current, {
+        center: [30.33, -97.73],
+        zoom: 11,
+        zoomControl: true,
+        scrollWheelZoom: false,
+        attributionControl: true,
+      });
+      mapRef.current = map;
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(map);
+
+      DEAL_LOCATIONS.forEach((biz) => {
+        const icon = L.divIcon({
+          className: "",
+          html: `<div style="
+            width:30px;height:30px;border-radius:50%;
+            background:#C4502B;border:2.5px solid #F4B49A;
+            box-shadow:0 2px 8px rgba(0,0,0,0.35);
+            display:flex;align-items:center;justify-content:center;
+            font-size:14px;line-height:1;
+          ">📍</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+          tooltipAnchor: [0, -18],
+        });
+
+        L.marker([biz.lat, biz.lng], { icon })
+          .addTo(map)
+          .bindTooltip(
+            `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-width:160px;">
+              <strong style="font-size:13px;display:block;margin-bottom:3px;">${biz.name}</strong>
+              <span style="font-size:12px;color:#C4502B;font-weight:600;">${biz.deal}</span>
+            </div>`,
+            { direction: "top", offset: [0, -8], opacity: 1 }
+          );
+      });
+
+      const latlngs = DEAL_LOCATIONS.map((b) => [b.lat, b.lng] as [number, number]);
+      map.fitBounds(latlngs, { padding: [48, 48], maxZoom: 13 });
+    })();
+    return () => {
+      mounted = false;
+      if (mapRef.current) {
+        (mapRef.current as { remove: () => void }).remove();
+        mapRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Inject Google Fonts
   useEffect(() => {
     const id = "austincares-fonts";
@@ -136,7 +207,7 @@ export default function AustinCaresDeals() {
               {[
                 { day: "TUE", biz: "Masala Wok — Tikka Tuesday",  off: "Tikka Masala + Rice + Naan + Drink — $11.95", meta: "All-day · dine-in or to-go", dist: "0.4 mi" },
                 { day: "WED", biz: "The Fade Room",                off: "Half-price haircuts",                        meta: "Walk-ins, 10am–2pm",         dist: "0.7 mi" },
-                { day: "THU", biz: "Rainey Draft House",           off: "$2 off all drafts",                          meta: "4–6pm happy hour",           dist: "1.1 mi" },
+                { day: "THU", biz: "The Rainey House",              off: "$2 off all drafts",                          meta: "4–6pm happy hour",           dist: "1.1 mi" },
               ].map(({ day, biz, off, meta, dist }, i, arr) => (
                 <div key={day} style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid ${C.line}` : "none" }}>
                   <div style={{ flexShrink: 0, width: 52, textAlign: "center", background: C.oliveSoft, color: C.olive, fontWeight: 700, fontSize: 12.5, padding: "7px 0", borderRadius: 9 }}>
@@ -152,6 +223,22 @@ export default function AustinCaresDeals() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── DEAL MAP ── */}
+      <section style={{ background: C.cream, padding: "64px 0" }}>
+        <div style={{ maxWidth: 1020, margin: "0 auto", padding: "0 24px" }}>
+          <h2 style={{ ...serif, fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 600, color: C.char, marginBottom: 8 }}>
+            Where to find this week's deals
+          </h2>
+          <p style={{ fontSize: 16, color: C.muted, marginBottom: 28 }}>
+            Hover a pin to see the business and its offer.
+          </p>
+          <div
+            ref={mapContainerRef}
+            style={{ height: 380, borderRadius: 18, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,.12)" }}
+          />
         </div>
       </section>
 
