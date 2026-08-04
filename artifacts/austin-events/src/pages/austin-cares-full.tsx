@@ -47,8 +47,10 @@ const DEALS: Deal[] = [
     deal: "$25 eGift Card Toward Sandwiches, Salads, Pizzas, Soups & Desserts",
     savings: "Pay $22.62 · Save $2.38",
     source: "Groupon",
-    location: "Any location · redeemable online",
+    location: "8900 S Congress Ave #200, Austin",
     url: "https://www.groupon.com/deals/schlotzskys-25",
+    lat: 30.1762,
+    lng: -97.7834,
   },
   {
     day: "ANY DAY",
@@ -56,8 +58,10 @@ const DEALS: Deal[] = [
     deal: "$25 eGift Card Toward Sandwiches, Salads, Spuds, Desserts & Drinks",
     savings: "Pay $22.62 · Save $2.38",
     source: "Groupon",
-    location: "Any location · redeemable online",
+    location: "2525 W Anderson Ln #130, Austin",
     url: "https://www.groupon.com/deals/mcalisters-deli-25",
+    lat: 30.3617,
+    lng: -97.7307,
   },
   {
     day: "ANY DAY",
