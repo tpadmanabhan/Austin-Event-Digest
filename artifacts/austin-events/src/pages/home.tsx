@@ -317,14 +317,14 @@ export default function Home() {
               <div className="mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl">
                 <p className="text-foreground/90 leading-relaxed text-base italic">
                   {isAustinCares
-                    ? `"Hey crew! I've got the AI scouring inboxes and combing through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek 😎"`
+                    ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek 😎"`
                     : isStLouis
-                    ? `"Hey St. Louis! Every week I use AI to comb through event newsletters and hand-pick the best things happening around the city — from Forest Park to Soulard to the Arch. Here's your curated digest. Let's Go Redbirds! ⚾"`
+                    ? `"Hey St. Louis! Every week I comb through event newsletters and hand-pick the best things happening around the city — from Forest Park to Soulard to the Arch. Here's your curated digest. Let's Go Redbirds! ⚾"`
                     : isToky && lang === "ja"
                     ? JA.curatorQuote
                     : tenant.slug === "austincares"
-                    ? `"Hey Austin! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy Austin 🤠"`
-                    : `"Hey ${cityShortName}! With the help of AI, I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`
+                    ? `"Hey Austin! I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy Austin 🤠"`
+                    : `"Hey ${cityShortName}! I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`
                   }
                 </p>
                 {(isAustinCares || isSacramento || isStLouis || tenant.slug === "austin") && (

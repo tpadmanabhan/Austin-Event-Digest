@@ -775,7 +775,7 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
       const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
       const label = `${weekOf.toLocaleDateString("en-US", opts)}–${weekEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
       const subject = `🤠 ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
-      const intro = `Hey ${req.tenant!.city.split(",")[0]}! With the help of AI, I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest — get out there and enjoy it! 🤠`;
+      const intro = `Hey ${req.tenant!.city.split(",")[0]}! I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest — get out there and enjoy it! 🤠`;
 
       const [newDigest] = await db
         .insert(digestsTable)

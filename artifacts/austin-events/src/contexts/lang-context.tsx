@@ -12,7 +12,7 @@ export const T = {
 
     heroBadge: "🚀 We're Launching Something New",
     heroH1a: "In Real Life,",
-    heroH1b: "by AI",
+    heroH1b: "Near You",
     heroSub: "We put what's happening near you in your inbox — and we let anyone run one for their own neighborhood.",
     heroSlogan: "Stop scrolling. Start living.",
     heroMission: "We help solve personalized event discovery and the logistics to get there. Be the change agent in your community.",
@@ -108,7 +108,7 @@ export const T = {
 
     heroBadge: "🚀 新しいものを始めています",
     heroH1a: "リアルな体験を、",
-    heroH1b: "AIで",
+    heroH1b: "あなたの近くで",
     heroSub: "私たちは単なるイベントアプリではありません。人々がコミュニティで本当の友人を見つける方法を再構築しています。",
     heroSlogan: "スクロールをやめて、生き始めよう。",
     heroMission: "パーソナライズされたイベント発見と、そこへ行くための手段を解決します。あなたのコミュニティの変革エージェントになろう。",

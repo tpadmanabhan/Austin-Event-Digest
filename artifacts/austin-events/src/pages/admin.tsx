@@ -1025,7 +1025,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">Generate from Event Sources</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Paste up to 10 event page URLs (Luma, Eventbrite, Meetup, org sites, etc.) and AI will extract this week's events</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Paste up to 10 event page URLs (Luma, Eventbrite, Meetup, org sites, etc.) and we'll extract this week's events</p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
