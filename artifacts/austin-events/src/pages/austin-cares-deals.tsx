@@ -142,9 +142,9 @@ export default function AustinCaresDeals() {
             A weekly digest of real, time-boxed discounts near you — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" as const, marginTop: 32 }}>
-            <a href="#" style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: C.rust, color: "#fff", boxShadow: `0 10px 26px rgba(196,80,43,.28)` }}>
+            <Link href="/full" style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: C.rust, color: "#fff", boxShadow: `0 10px 26px rgba(196,80,43,.28)` }}>
               Get this week's deals
-            </a>
+            </Link>
             <a href="#business" style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: "transparent", color: C.char, border: `1.5px solid ${C.char}` }}>
               I run a business →
             </a>
@@ -269,10 +269,10 @@ export default function AustinCaresDeals() {
               </p>
             </div>
             <div style={{ background: C.cream, borderRadius: 20, padding: "32px 28px", textAlign: "center" }}>
-              <div style={{ ...serif, fontSize: 52, fontWeight: 600, color: C.rust }}>
-                $5.99<span style={{ fontSize: 17, color: C.muted, fontWeight: 500 }}>/month</span>
+              <div style={{ ...serif, fontSize: 18, fontWeight: 600, color: C.rust, marginBottom: 20 }}>
+                What's included
               </div>
-              <ul style={{ listStyle: "none", textAlign: "left", margin: "24px auto", maxWidth: 240 }}>
+              <ul style={{ listStyle: "none", textAlign: "left", margin: "0 auto 24px", maxWidth: 240 }}>
                 {["List your weekly deal", "Sorted by day & geo-matched to nearby readers", "Update anytime", "Cancel anytime"].map(item => (
                   <li key={item} style={{ fontSize: 14.5, paddingLeft: 22, position: "relative", marginBottom: 9, color: C.brown }}>
                     <span style={{ position: "absolute", left: 0, color: C.olive, fontWeight: 700 }}>✓</span>

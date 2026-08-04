@@ -31,6 +31,17 @@ interface Deal {
 
 const DEALS: Deal[] = [
   {
+    day: "TUE",
+    business: "Masala Wok",
+    deal: "Tikka Tuesday — Tikka Masala + Rice + Naan + Drink",
+    savings: "$11.95 all-day",
+    source: "Direct",
+    location: "10515 N Mopac Expy Ste A155, Austin",
+    url: "https://www.grubhub.com/restaurant/masala-wok-10515-n-mopac-expy-austin/316536",
+    lat: 30.4161,
+    lng: -97.7354,
+  },
+  {
     day: "ANY DAY",
     business: "Schlotzsky's",
     deal: "$25 eGift Card Toward Sandwiches, Salads, Pizzas, Soups & Desserts",
