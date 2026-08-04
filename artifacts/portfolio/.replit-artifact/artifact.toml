@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/portfolio/"
+title = "Skills Portfolio"
+description = "A showcase portfolio highlighting the engineering skills demonstrated while building the eventcarpooling.com multi-city event discovery platform — full-stack development, API integrations, maps, email systems, multi-tenancy, and more."
+version = "1.0.0"
+id = "artifacts/portfolio"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/portfolio/" ]
+localPort = 21113
+
+[services.development]
+run = "pnpm --filter @workspace/portfolio run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/portfolio", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/portfolio/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21113"
+BASE_PATH = "/portfolio/"
