@@ -106,8 +106,16 @@ export default function AustinCaresDeals() {
       {/* ── NAV ── */}
       <nav style={{ padding: "20px 0" }}>
         <div style={{ maxWidth: 1020, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ ...serif, fontWeight: 600, fontSize: 21, letterSpacing: "-0.01em", color: C.char }}>
-            Austin<span style={{ color: C.rust }}>Cares</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ ...serif, fontWeight: 600, fontSize: 21, letterSpacing: "-0.01em", color: C.char }}>
+                Austin<span style={{ color: C.rust }}>Cares</span>
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", background: "#FBBF24", borderRadius: 100, padding: "2px 8px", lineHeight: 1 }}>
+                <span style={{ fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "#78350F" }}>Beta</span>
+              </span>
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: C.muted }}>Daily Deals Nearby</span>
           </div>
           <a
             href="#business"
