@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AudioProvider } from "@/components/audio-provider";
 
 import Home from "./pages/home";
+import AustinCaresDeals from "./pages/austin-cares-deals";
 import DigestView from "./pages/digest";
 import AdminDashboard from "./pages/admin";
 import { AdminLoginGate } from "@/components/admin-login-gate";
@@ -41,7 +42,7 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
     <TenantProvider slug={citySlug}>
       <ScrollToTop />
       <Switch>
-        <Route path="/" component={Home} />
+        <Route path="/" component={citySlug === "austincares" ? AustinCaresDeals : Home} />
         <Route path="/digest/:id" component={DigestView} />
         <Route path="/admin">
           <AdminLoginGate>
