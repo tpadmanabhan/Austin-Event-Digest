@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "wouter";
 
 const C = {
   cream:    "#FBF3E7",
@@ -231,9 +232,9 @@ export default function AustinCaresDeals() {
               ))}
             </div>
             <div style={{ marginTop: 20, textAlign: "right" }}>
-              <a href="/full" style={{ fontSize: 14, fontWeight: 700, color: C.gold, textDecoration: "none", letterSpacing: "0.01em" }}>
+              <Link href="/full" style={{ fontSize: 14, fontWeight: 700, color: C.gold, textDecoration: "none", letterSpacing: "0.01em" }}>
                 See full edition →
-              </a>
+              </Link>
             </div>
           </div>
         </div>

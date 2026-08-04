@@ -44,7 +44,7 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
       <ScrollToTop />
       <Switch>
         <Route path="/" component={citySlug === "austincares" ? AustinCaresDeals : Home} />
-        {citySlug === "austincares" && <Route path="/full" component={AustinCaresFullEdition} />}
+        <Route path="/full" component={citySlug === "austincares" ? AustinCaresFullEdition : NotFound} />
         <Route path="/digest/:id" component={DigestView} />
         <Route path="/admin">
           <AdminLoginGate>
