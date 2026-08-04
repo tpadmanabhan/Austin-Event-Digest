@@ -229,7 +229,7 @@ export default function AustinCaresFullEdition() {
             This Week's Deals
           </h1>
           <p style={{ marginTop: 10, fontSize: 15, color: "#C9BFAE" }}>
-            {weekLabel()} · sourced from aiimplementationclubaustin@gmail.com
+            {weekLabel()}
           </p>
         </div>
       </div>
