@@ -195,13 +195,6 @@ function PlatformHomeInner() {
                   label: "Sacramento Events",
                 },
                 {
-                  href: "https://austincares.eventcarpooling.com",
-                  icon: "🫶",
-                  iconBg: "linear-gradient(135deg, #14532d, #15803d)",
-                  iconShadow: "0 3px 10px rgba(21,128,61,0.5)",
-                  label: "Austin Cares",
-                },
-                {
                   href: "https://portland.eventcarpooling.com",
                   icon: "🌹",
                   iconBg: "linear-gradient(135deg, #1a3a1a, #2d6a2d)",
@@ -698,10 +691,10 @@ function PlatformHomeInner() {
                 <div key={i} className="h-36 rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
-          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "austincares", "portland", "bulverde"].includes(t.slug)).length > 0 ? (
+          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde"].includes(t.slug)).length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "austincares", "portland", "bulverde"].includes(t.slug))
-                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "austincares", "portland", "bulverde"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "austincares", "portland", "bulverde"].indexOf(b.slug))
+              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde"].includes(t.slug))
+                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde"].indexOf(b.slug))
                 .map((tenant, i) => {
                 const CardEl = motion.a;
                 const cardProps = { href: `https://${tenant.slug}.eventcarpooling.com` };
@@ -714,14 +707,6 @@ function PlatformHomeInner() {
                 } else if (tenant.slug === "sacramento") {
                   iconContent = "👑";
                   iconStyle = { background: "linear-gradient(135deg, #1a0a30, #5A2D81)", boxShadow: "0 6px 20px rgba(90,45,129,0.45)" };
-                } else if (tenant.slug === "austincares") {
-                  iconContent = (
-                    <div className="flex flex-col items-center justify-center gap-0.5">
-                      <span style={{ fontSize: "2rem", lineHeight: 1 }}>🫶</span>
-                      <span style={{ fontSize: "0.5rem", fontWeight: 800, letterSpacing: "0.12em", color: "#fff", textTransform: "uppercase", lineHeight: 1 }}>Give Back</span>
-                    </div>
-                  );
-                  iconStyle = { background: "linear-gradient(135deg, #14532d, #15803d)", boxShadow: "0 6px 20px rgba(21,128,61,0.45)" };
                 } else if (tenant.slug === "stlouis") {
                   iconContent = (
                     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 44, height: 44 }}>
@@ -775,12 +760,12 @@ function PlatformHomeInner() {
                         <p className="text-sm" style={{ color: "#64748b" }}>{tenant.city}</p>
                       </div>
                       <div className="flex flex-wrap gap-1.5 mt-auto">
-                        {(tenant.slug === "austincares" ? ["Civics", "Wellness"] : tenant.categories.slice(0, 4)).map(cat => (
+                        {tenant.categories.slice(0, 4).map(cat => (
                           <span key={cat} className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                             {cat}
                           </span>
                         ))}
-                        {tenant.slug !== "austincares" && tenant.categories.length > 4 && (
+                        {tenant.categories.length > 4 && (
                           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                             +{tenant.categories.length - 4} more
                           </span>
