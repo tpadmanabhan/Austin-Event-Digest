@@ -498,6 +498,25 @@ async function runTranslationCacheMigration(): Promise<void> {
   logger.info("translation_cache table ready");
 }
 
+async function runSubmittedDealsMigration(): Promise<void> {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS submitted_deals (
+      id               SERIAL       PRIMARY KEY,
+      business         TEXT         NOT NULL,
+      deal             TEXT         NOT NULL,
+      savings          TEXT         NOT NULL DEFAULT '',
+      day              TEXT         NOT NULL DEFAULT 'ANY DAY',
+      location_name    TEXT         NOT NULL,
+      location_address TEXT         NOT NULL,
+      image_url        TEXT,
+      submitter_name   TEXT         NOT NULL,
+      submitter_email  TEXT         NOT NULL,
+      created_at       TIMESTAMP    NOT NULL DEFAULT NOW()
+    )
+  `);
+  logger.info("submitted_deals table ready");
+}
+
 /**
  * One-time patch: walk all digests and replace HTML-encoded characters
  * (`&amp;`, `&lt;`, `&gt;`, `&quot;`) in event `imageUrl` and `link` fields.
@@ -578,6 +597,12 @@ export async function runStartupMigration(): Promise<void> {
     await runTranslationCacheMigration();
   } catch (err) {
     logger.warn({ err }, "Translation cache migration failed (non-fatal) — table may already exist");
+  }
+
+  try {
+    await runSubmittedDealsMigration();
+  } catch (err) {
+    logger.warn({ err }, "Submitted deals migration failed (non-fatal) — table may already exist");
   }
 
   try {

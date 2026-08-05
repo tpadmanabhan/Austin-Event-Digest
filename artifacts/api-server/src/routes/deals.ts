@@ -14,12 +14,18 @@ const openai = new OpenAI({
 
 const objectStorageService = new ObjectStorageService();
 
+// Matches GCS object paths issued by our upload endpoint: /objects/uploads/<uuid>
+// Fixed prefix "uploads/" + UUID — prevents path traversal and limits scope to issued upload paths.
+const OBJECT_PATH_PATTERN = /^\/objects\/uploads\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const SubmitDealBody = z.object({
   firstName: z.string().min(1).max(100),
   email: z.string().email(),
   locationName: z.string().min(1).max(200),
   locationAddress: z.string().min(1).max(300),
-  objectPath: z.string().min(1), // e.g. /objects/<uuid>
+  objectPath: z.string().regex(OBJECT_PATH_PATTERN, {
+    message: "objectPath must be a valid upload path (e.g. /objects/<uuid>)",
+  }),
 });
 
 /**
@@ -69,14 +75,45 @@ router.post("/deals/submit", async (req, res) => {
 
   try {
     // ── Download image from GCS and convert to base64 ──────────────────────
+    const ALLOWED_MIME = new Set([
+      "image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif",
+    ]);
+    const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+
     let imageBase64: string | null = null;
     let imageMime = "image/jpeg";
 
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+
+      // Server-side validation using GCS object metadata — runs before streaming the body
+      const [meta] = await objectFile.getMetadata();
+      const gcsContentType: string = (meta.contentType as string | undefined) ?? "";
+      const gcsSize: number = Number(meta.size ?? 0);
+
+      if (gcsContentType && !ALLOWED_MIME.has(gcsContentType.split(";")[0].trim())) {
+        res.status(400).json({
+          error: "invalid_request",
+          message: `Uploaded file type '${gcsContentType}' is not allowed. Please upload an image.`,
+        });
+        return;
+      }
+      if (gcsSize > MAX_BYTES) {
+        res.status(400).json({
+          error: "invalid_request",
+          message: `Uploaded file is too large (${(gcsSize / (1024 * 1024)).toFixed(1)} MB). Maximum is 10 MB.`,
+        });
+        return;
+      }
+
       const response = await objectStorageService.downloadObject(objectFile);
       if (response.ok && response.body) {
         const arrayBuffer = await response.arrayBuffer();
+        // Final size guard after buffering (defence-in-depth against metadata mismatch)
+        if (arrayBuffer.byteLength > MAX_BYTES) {
+          res.status(400).json({ error: "invalid_request", message: "Uploaded file exceeds the 10 MB limit." });
+          return;
+        }
         imageBase64 = Buffer.from(arrayBuffer).toString("base64");
         const ct = response.headers.get("content-type");
         if (ct) imageMime = ct.split(";")[0].trim();
