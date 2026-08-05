@@ -28,7 +28,9 @@ export const weeklyChallengesTable = pgTable("weekly_challenges", {
   targetValue: integer("target_value").notNull(),
   xpReward: integer("xp_reward").notNull(),
   reasonFilter: text("reason_filter").notNull(),
-});
+}, (t) => [
+  unique("weekly_challenges_week_key").on(t.weekOf, t.challengeKey),
+]);
 
 export const challengeProgressTable = pgTable("challenge_progress", {
   id: serial("id").primaryKey(),
@@ -42,11 +44,16 @@ export const challengeProgressTable = pgTable("challenge_progress", {
 
 export const streaksTable = pgTable("streaks", {
   id: serial("id").primaryKey(),
-  tenantId: integer("tenant_id").notNull().unique().references(() => tenantsTable.id),
+  // unique() name must match the existing DB constraint "streaks_tenant_id_key"
+  // (Postgres auto-generates "_key" suffix; drizzle column-level .unique() would
+  // generate "_unique", causing a false schema diff that blocks publishing)
+  tenantId: integer("tenant_id").notNull().references(() => tenantsTable.id),
   currentStreak: integer("current_streak").notNull().default(0),
   longestStreak: integer("longest_streak").notNull().default(0),
   lastActiveWeek: text("last_active_week"),
-});
+}, (t) => [
+  unique("streaks_tenant_id_key").on(t.tenantId),
+]);
 
 export type XpLedgerEntry = typeof xpLedgerTable.$inferSelect;
 export type EarnedBadge = typeof earnedBadgesTable.$inferSelect;
