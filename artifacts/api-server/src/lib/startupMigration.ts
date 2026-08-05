@@ -629,19 +629,34 @@ export async function runStartupMigration(): Promise<void> {
             sql`UPDATE submitted_deals SET location_address = ${cleanedAddress} WHERE id = ${row.id}`
           );
         }
-        const encoded = encodeURIComponent(cleanedAddress);
-        const geoRes = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`,
-          { headers: { "User-Agent": "AustinCares/1.0 (contact@eventcarpooling.com)" }, signal: AbortSignal.timeout(5000) }
-        );
-        if (geoRes.ok) {
-          const geoData = (await geoRes.json()) as Array<{ lat: string; lon: string }>;
-          if (geoData.length) {
-            await db.execute(
-              sql`UPDATE submitted_deals SET lat = ${parseFloat(geoData[0].lat)}, lng = ${parseFloat(geoData[0].lon)} WHERE id = ${row.id}`
-            );
-            logger.info({ id: row.id, address: cleanedAddress }, "Back-filled coordinates for submitted deal");
+        // Strip suite/bldg qualifiers for a simplified fallback (Nominatim often
+        // can't resolve unit numbers, but the street address resolves fine).
+        const simplified = cleanedAddress
+          .replace(/,?\s*(Ste|Suite|Apt|Unit|Bldg|Building|Floor|Fl|#)\s*[\w-]+/gi, "")
+          .replace(/\s{2,}/g, " ")
+          .trim();
+        const candidates = simplified !== cleanedAddress ? [cleanedAddress, simplified] : [cleanedAddress];
+        let geocoded = false;
+        for (const candidate of candidates) {
+          const encoded = encodeURIComponent(candidate);
+          const geoRes = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`,
+            { headers: { "User-Agent": "AustinCares/1.0 (contact@eventcarpooling.com)" }, signal: AbortSignal.timeout(5000) }
+          );
+          if (geoRes.ok) {
+            const geoData = (await geoRes.json()) as Array<{ lat: string; lon: string }>;
+            if (geoData.length) {
+              await db.execute(
+                sql`UPDATE submitted_deals SET lat = ${parseFloat(geoData[0].lat)}, lng = ${parseFloat(geoData[0].lon)} WHERE id = ${row.id}`
+              );
+              logger.info({ id: row.id, address: candidate }, "Back-filled coordinates for submitted deal");
+              geocoded = true;
+              break;
+            }
           }
+        }
+        if (!geocoded) {
+          logger.warn({ id: row.id, address: cleanedAddress }, "Could not geocode submitted deal address — no Nominatim results");
         }
       } catch (geoErr) {
         logger.warn({ err: geoErr, id: row.id }, "Failed to geocode submitted deal address (non-fatal)");

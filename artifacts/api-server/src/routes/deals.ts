@@ -5,22 +5,36 @@ import { desc, asc, sql } from "drizzle-orm";
 import OpenAI from "openai";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 
-/** Geocode an address string using Nominatim. Returns null if lookup fails. */
+/** Geocode an address string using Nominatim. Returns null if lookup fails.
+ *  Tries the full address first; if Nominatim returns nothing (suite/building
+ *  numbers are often not indexed), retries with unit/suite/bldg qualifiers
+ *  stripped so the street number + street name still resolves. */
 async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const encoded = encodeURIComponent(address);
-    const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`;
-    const res = await fetch(url, {
-      headers: { "User-Agent": "AustinCares/1.0 (contact@eventcarpooling.com)" },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as Array<{ lat: string; lon: string }>;
-    if (!data.length) return null;
-    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-  } catch {
-    return null;
+  // Strip common unit/suite/building qualifiers for the fallback attempt.
+  // e.g. "123 Main St, Ste 180, Austin TX" → "123 Main St, Austin TX"
+  const simplified = address
+    .replace(/,?\s*(Ste|Suite|Apt|Unit|Bldg|Building|Floor|Fl|#)\s*[\w-]+/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  const candidates = simplified !== address ? [address, simplified] : [address];
+
+  for (const candidate of candidates) {
+    try {
+      const encoded = encodeURIComponent(candidate);
+      const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`;
+      const res = await fetch(url, {
+        headers: { "User-Agent": "AustinCares/1.0 (contact@eventcarpooling.com)" },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!res.ok) continue;
+      const data = (await res.json()) as Array<{ lat: string; lon: string }>;
+      if (data.length) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    } catch {
+      // try next candidate
+    }
   }
+  return null;
 }
 
 const router: IRouter = Router();
