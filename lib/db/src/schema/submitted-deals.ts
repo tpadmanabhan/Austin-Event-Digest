@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 
 export const submittedDealsTable = pgTable("submitted_deals", {
@@ -11,8 +11,8 @@ export const submittedDealsTable = pgTable("submitted_deals", {
   locationName: text("location_name").notNull(),
   locationAddress: text("location_address").notNull(),
   imageUrl: text("image_url"),        // object storage path: /api/storage/objects/...
-  lat: doublePrecision("lat"),        // geocoded from locationAddress
-  lng: doublePrecision("lng"),
+  // lat/lng are added at runtime via startup migration (ADD COLUMN IF NOT EXISTS)
+  // and queried via raw SQL to avoid drizzle schema diff on first deploy
   // Submitter info — never returned in public API responses
   submitterName: text("submitter_name").notNull(),
   submitterEmail: text("submitter_email").notNull(),

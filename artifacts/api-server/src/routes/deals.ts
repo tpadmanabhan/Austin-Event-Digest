@@ -52,23 +52,19 @@ const SubmitDealBody = z.object({
  */
 router.get("/deals/submitted", async (req, res) => {
   try {
-    const deals = await db
-      .select({
-        id: submittedDealsTable.id,
-        business: submittedDealsTable.business,
-        deal: submittedDealsTable.deal,
-        savings: submittedDealsTable.savings,
-        day: submittedDealsTable.day,
-        locationName: submittedDealsTable.locationName,
-        locationAddress: submittedDealsTable.locationAddress,
-        imageUrl: submittedDealsTable.imageUrl,
-        lat: submittedDealsTable.lat,
-        lng: submittedDealsTable.lng,
-        createdAt: submittedDealsTable.createdAt,
-      })
-      .from(submittedDealsTable)
-      .orderBy(asc(submittedDealsTable.createdAt));
-
+    // lat/lng are added by startup migration (not in drizzle schema to avoid schema diff on first deploy)
+    const result = await db.execute(sql`
+      SELECT id, business, deal, savings, day,
+             location_name AS "locationName",
+             location_address AS "locationAddress",
+             image_url AS "imageUrl",
+             lat, lng,
+             created_at AS "createdAt"
+      FROM submitted_deals
+      ORDER BY created_at ASC
+    `);
+    // drizzle postgres.js execute returns rows as an array directly
+    const deals = Array.isArray(result) ? result : (result as any).rows ?? [];
     res.json({ deals });
   } catch (err) {
     req.log.error({ err }, "Error fetching submitted deals");
@@ -208,36 +204,26 @@ Extract the following and respond ONLY with valid JSON (no markdown):
     }
 
     // ── Save to DB ──────────────────────────────────────────────────────────
-    const [inserted] = await db
-      .insert(submittedDealsTable)
-      .values({
-        business,
-        deal,
-        savings,
-        day,
-        locationName,
-        locationAddress,
-        imageUrl,
-        lat: coords?.lat ?? null,
-        lng: coords?.lng ?? null,
-        submitterName: firstName,
-        submitterEmail: email,
-      })
-      .returning({
-        id: submittedDealsTable.id,
-        business: submittedDealsTable.business,
-        deal: submittedDealsTable.deal,
-        savings: submittedDealsTable.savings,
-        day: submittedDealsTable.day,
-        locationName: submittedDealsTable.locationName,
-        locationAddress: submittedDealsTable.locationAddress,
-        imageUrl: submittedDealsTable.imageUrl,
-        lat: submittedDealsTable.lat,
-        lng: submittedDealsTable.lng,
-        createdAt: submittedDealsTable.createdAt,
-      });
+    // lat/lng inserted via raw SQL (columns added by startup migration, not in drizzle schema)
+    const lat = coords?.lat ?? null;
+    const lng = coords?.lng ?? null;
+    const insertResult = await db.execute(sql`
+      INSERT INTO submitted_deals
+        (business, deal, savings, day, location_name, location_address, image_url, lat, lng, submitter_name, submitter_email)
+      VALUES
+        (${business}, ${deal}, ${savings}, ${day}, ${locationName}, ${locationAddress}, ${imageUrl}, ${lat}, ${lng}, ${firstName}, ${email})
+      RETURNING
+        id, business, deal, savings, day,
+        location_name AS "locationName",
+        location_address AS "locationAddress",
+        image_url AS "imageUrl",
+        lat, lng,
+        created_at AS "createdAt"
+    `);
+    const rows = Array.isArray(insertResult) ? insertResult : (insertResult as any).rows ?? [];
+    const inserted = rows[0];
 
-    req.log.info({ id: inserted.id, business, locationName, lat: coords?.lat, lng: coords?.lng }, "Community deal submitted");
+    req.log.info({ id: inserted?.id, business, locationName, lat, lng }, "Community deal submitted");
     res.json({ success: true, deal: inserted });
   } catch (err) {
     req.log.error({ err }, "Error submitting deal");
