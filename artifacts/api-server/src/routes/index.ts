@@ -8,6 +8,8 @@ import tenantsRouter from "./tenants";
 import gamificationRouter from "./gamification";
 import mapImageRouter from "./mapImage";
 import translateRouter from "./translate";
+import storageRouter from "./storage";
+import dealsRouter from "./deals";
 import { requireTenant, requirePlatformRoot } from "../middleware/resolveTenant";
 
 const router: IRouter = Router();
@@ -15,6 +17,7 @@ const router: IRouter = Router();
 // Platform-level routes — no tenant required (work on root domain)
 router.use(healthRouter);
 router.use(mapImageRouter);
+router.use(storageRouter);
 // Tenant config + list are used by city subdomains too — no host guard.
 // requirePlatformRoot is applied per-route inside tenantsRouter for onboarding-only endpoints.
 router.use(tenantsRouter);
@@ -25,6 +28,7 @@ router.use("/events", requireTenant, eventsRouter);
 router.use("/rsvp", requireTenant, rsvpRouter);
 router.use("/admin", requireTenant, adminRouter);
 router.use("/gamification", requireTenant, gamificationRouter);
+router.use(dealsRouter);
 router.use(translateRouter);
 
 export default router;
