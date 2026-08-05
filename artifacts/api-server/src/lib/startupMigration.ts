@@ -501,19 +501,24 @@ async function runTranslationCacheMigration(): Promise<void> {
 async function runSubmittedDealsMigration(): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS submitted_deals (
-      id               SERIAL       PRIMARY KEY,
-      business         TEXT         NOT NULL,
-      deal             TEXT         NOT NULL,
-      savings          TEXT         NOT NULL DEFAULT '',
-      day              TEXT         NOT NULL DEFAULT 'ANY DAY',
-      location_name    TEXT         NOT NULL,
-      location_address TEXT         NOT NULL,
+      id               SERIAL          PRIMARY KEY,
+      business         TEXT            NOT NULL,
+      deal             TEXT            NOT NULL,
+      savings          TEXT            NOT NULL DEFAULT '',
+      day              TEXT            NOT NULL DEFAULT 'ANY DAY',
+      location_name    TEXT            NOT NULL,
+      location_address TEXT            NOT NULL,
       image_url        TEXT,
-      submitter_name   TEXT         NOT NULL,
-      submitter_email  TEXT         NOT NULL,
-      created_at       TIMESTAMP    NOT NULL DEFAULT NOW()
+      lat              DOUBLE PRECISION,
+      lng              DOUBLE PRECISION,
+      submitter_name   TEXT            NOT NULL,
+      submitter_email  TEXT            NOT NULL,
+      created_at       TIMESTAMP       NOT NULL DEFAULT NOW()
     )
   `);
+  // Add lat/lng to existing tables that pre-date this column (idempotent)
+  await db.execute(sql`ALTER TABLE submitted_deals ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION`);
+  await db.execute(sql`ALTER TABLE submitted_deals ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION`);
   logger.info("submitted_deals table ready");
 }
 
@@ -603,6 +608,36 @@ export async function runStartupMigration(): Promise<void> {
     await runSubmittedDealsMigration();
   } catch (err) {
     logger.warn({ err }, "Submitted deals migration failed (non-fatal) — table may already exist");
+  }
+
+  // Back-fill lat/lng for any submitted deals that were saved before geocoding was added.
+  // Uses Nominatim; runs on every startup but is a no-op once all rows have coordinates.
+  try {
+    const nullCoordDeals = await db.execute(
+      sql`SELECT id, location_address FROM submitted_deals WHERE lat IS NULL OR lng IS NULL LIMIT 50`
+    ) as unknown as { rows: Array<{ id: number; location_address: string }> };
+    for (const row of nullCoordDeals.rows ?? []) {
+      try {
+        const encoded = encodeURIComponent(row.location_address);
+        const geoRes = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`,
+          { headers: { "User-Agent": "AustinCares/1.0 (contact@eventcarpooling.com)" }, signal: AbortSignal.timeout(5000) }
+        );
+        if (geoRes.ok) {
+          const geoData = (await geoRes.json()) as Array<{ lat: string; lon: string }>;
+          if (geoData.length) {
+            await db.execute(
+              sql`UPDATE submitted_deals SET lat = ${parseFloat(geoData[0].lat)}, lng = ${parseFloat(geoData[0].lon)} WHERE id = ${row.id}`
+            );
+            logger.info({ id: row.id, address: row.location_address }, "Back-filled coordinates for submitted deal");
+          }
+        }
+      } catch (geoErr) {
+        logger.warn({ err: geoErr, id: row.id }, "Failed to geocode submitted deal address (non-fatal)");
+      }
+    }
+  } catch (err) {
+    logger.warn({ err }, "Submitted deals coordinate back-fill failed (non-fatal)");
   }
 
   try {

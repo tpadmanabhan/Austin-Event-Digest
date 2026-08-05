@@ -5,6 +5,24 @@ import { desc, asc } from "drizzle-orm";
 import OpenAI from "openai";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 
+/** Geocode an address string using Nominatim. Returns null if lookup fails. */
+async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const encoded = encodeURIComponent(address);
+    const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "AustinCares/1.0 (contact@eventcarpooling.com)" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as Array<{ lat: string; lon: string }>;
+    if (!data.length) return null;
+    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch {
+    return null;
+  }
+}
+
 const router: IRouter = Router();
 
 const openai = new OpenAI({
@@ -44,6 +62,8 @@ router.get("/deals/submitted", async (req, res) => {
         locationName: submittedDealsTable.locationName,
         locationAddress: submittedDealsTable.locationAddress,
         imageUrl: submittedDealsTable.imageUrl,
+        lat: submittedDealsTable.lat,
+        lng: submittedDealsTable.lng,
         createdAt: submittedDealsTable.createdAt,
       })
       .from(submittedDealsTable)
@@ -181,6 +201,12 @@ Extract the following and respond ONLY with valid JSON (no markdown):
     // objectPath is like /objects/<uuid>, serving URL is /api/storage + objectPath
     const imageUrl = `/api/storage${objectPath}`;
 
+    // ── Geocode the address so the pin appears on the map ──────────────────
+    const coords = await geocodeAddress(locationAddress);
+    if (!coords) {
+      req.log.warn({ locationAddress }, "Geocoding failed for submitted deal address — pin will not show on map");
+    }
+
     // ── Save to DB ──────────────────────────────────────────────────────────
     const [inserted] = await db
       .insert(submittedDealsTable)
@@ -192,6 +218,8 @@ Extract the following and respond ONLY with valid JSON (no markdown):
         locationName,
         locationAddress,
         imageUrl,
+        lat: coords?.lat ?? null,
+        lng: coords?.lng ?? null,
         submitterName: firstName,
         submitterEmail: email,
       })
@@ -204,10 +232,12 @@ Extract the following and respond ONLY with valid JSON (no markdown):
         locationName: submittedDealsTable.locationName,
         locationAddress: submittedDealsTable.locationAddress,
         imageUrl: submittedDealsTable.imageUrl,
+        lat: submittedDealsTable.lat,
+        lng: submittedDealsTable.lng,
         createdAt: submittedDealsTable.createdAt,
       });
 
-    req.log.info({ id: inserted.id, business, locationName }, "Community deal submitted");
+    req.log.info({ id: inserted.id, business, locationName, lat: coords?.lat, lng: coords?.lng }, "Community deal submitted");
     res.json({ success: true, deal: inserted });
   } catch (err) {
     req.log.error({ err }, "Error submitting deal");

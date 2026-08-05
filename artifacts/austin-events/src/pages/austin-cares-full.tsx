@@ -36,17 +36,6 @@ interface Deal {
 
 const STATIC_DEALS: Deal[] = [
   {
-    day: "ANY DAY",
-    business: "Spokesman Coffee",
-    deal: "Locally roasted craft coffee & espresso drinks — Austin's neighborhood coffee house",
-    savings: "Burnet Rd location",
-    source: "Direct",
-    location: "4514 Burnet Rd, Austin",
-    url: "https://spokesmancoffee.com",
-    lat: 30.3157026,
-    lng: -97.7414891,
-  },
-  {
     day: "TUE",
     business: "Masala Wok",
     deal: "Tikka Tuesday — Tikka Masala + Rice + Naan + Drink",
@@ -606,6 +595,8 @@ export default function AustinCaresFullEdition() {
           source: "Community",
           location: d.locationAddress,
           imageUrl: d.imageUrl,
+          lat: d.lat ?? undefined,
+          lng: d.lng ?? undefined,
           isSubmitted: true,
         }));
         setSubmittedDeals(deals);
@@ -617,8 +608,12 @@ export default function AustinCaresFullEdition() {
     setSubmittedDeals(prev => [...prev, deal]);
   }, []);
 
-  // Merge static + submitted deals
-  const allDeals = [...STATIC_DEALS, ...submittedDeals];
+  // Merge static + submitted deals; submitted wins when business names match (it has a photo + poster's address)
+  const submittedNames = new Set(submittedDeals.map(d => d.business.toLowerCase().trim()));
+  const allDeals = [
+    ...STATIC_DEALS.filter(d => !submittedNames.has(d.business.toLowerCase().trim())),
+    ...submittedDeals,
+  ];
 
   const grouped = allDeals.reduce<Record<string, Deal[]>>((acc, d) => {
     (acc[d.day] ??= []).push(d);
