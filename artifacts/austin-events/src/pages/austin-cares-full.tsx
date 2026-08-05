@@ -47,6 +47,18 @@ const STATIC_DEALS: Deal[] = [
     lng: -97.7354,
   },
   {
+    day: "TUE",
+    business: "Sangam Chettinad",
+    deal: "Authentic Chettinad cuisine — weekly specials",
+    savings: "See location for details",
+    source: "Community",
+    location: "2800 E Palm Valley Blvd, Ste 180, Round Rock",
+    imageUrl: "/api/storage/objects/uploads/b64e3d00-cac3-40fa-a9a5-f176bffdec92",
+    lat: 30.527349,
+    lng: -97.6267319,
+    isSubmitted: true,
+  },
+  {
     day: "ANY DAY",
     business: "Schlotzsky's",
     deal: "$25 eGift Card Toward Sandwiches, Salads, Pizzas, Soups & Desserts",
@@ -608,11 +620,11 @@ export default function AustinCaresFullEdition() {
     setSubmittedDeals(prev => [...prev, deal]);
   }, []);
 
-  // Merge static + submitted deals; submitted wins when business names match (it has a photo + poster's address)
-  const submittedNames = new Set(submittedDeals.map(d => d.business.toLowerCase().trim()));
+  // Merge static + submitted deals; static wins when business names match (curated position/day takes priority)
+  const staticNames = new Set(STATIC_DEALS.map(d => d.business.toLowerCase().trim()));
   const allDeals = [
-    ...STATIC_DEALS.filter(d => !submittedNames.has(d.business.toLowerCase().trim())),
-    ...submittedDeals,
+    ...STATIC_DEALS,
+    ...submittedDeals.filter(d => !staticNames.has(d.business.toLowerCase().trim())),
   ];
 
   const grouped = allDeals.reduce<Record<string, Deal[]>>((acc, d) => {
