@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { z } from "zod";
 import { db, submittedDealsTable } from "@workspace/db";
-import { desc, asc } from "drizzle-orm";
+import { desc, asc, sql } from "drizzle-orm";
 import OpenAI from "openai";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 
