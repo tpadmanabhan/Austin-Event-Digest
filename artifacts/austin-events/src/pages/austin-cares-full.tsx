@@ -36,6 +36,17 @@ interface Deal {
 
 const STATIC_DEALS: Deal[] = [
   {
+    day: "ANY DAY",
+    business: "Spokesman Coffee",
+    deal: "Locally roasted craft coffee & espresso drinks — Austin's neighborhood coffee house",
+    savings: "Burnet Rd location",
+    source: "Direct",
+    location: "4514 Burnet Rd, Austin",
+    url: "https://spokesmancoffee.com",
+    lat: 30.3157026,
+    lng: -97.7414891,
+  },
+  {
     day: "TUE",
     business: "Masala Wok",
     deal: "Tikka Tuesday — Tikka Masala + Rice + Naan + Drink",
