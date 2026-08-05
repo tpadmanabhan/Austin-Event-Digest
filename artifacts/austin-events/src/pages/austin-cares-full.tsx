@@ -735,6 +735,9 @@ export default function AustinCaresFullEdition() {
           <p style={{ marginTop: 10, fontSize: 15, color: "#C9BFAE" }}>
             {weekLabel()}
           </p>
+          <p style={{ marginTop: 6, fontSize: 14, color: "#C9BFAE" }}>
+            Add your deals, too!
+          </p>
         </div>
       </div>
 
