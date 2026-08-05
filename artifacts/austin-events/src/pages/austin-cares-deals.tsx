@@ -193,6 +193,16 @@ export default function AustinCaresDeals() {
                 <p style={{ fontSize: 14.5, color: C.muted, marginTop: 6 }}>{body}</p>
               </div>
             ))}
+            {/* Add your deal CTA card */}
+            <a href="/full" style={{ textDecoration: "none" }}>
+              <div style={{ background: C.cream, borderRadius: 16, padding: "26px 22px", border: `2px dashed ${C.rust}`, cursor: "pointer", height: "100%", boxSizing: "border-box" }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: C.rust, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 22, marginBottom: 14, lineHeight: 1 }}>
+                  +
+                </div>
+                <h3 style={{ fontSize: 16.5, fontWeight: 700, color: C.char }}>Add your deal</h3>
+                <p style={{ fontSize: 14.5, color: C.muted, marginTop: 6 }}>Own a business with a weekly special? Submit it — it takes two minutes and goes out in Sunday's digest.</p>
+              </div>
+            </a>
           </div>
         </div>
       </section>
