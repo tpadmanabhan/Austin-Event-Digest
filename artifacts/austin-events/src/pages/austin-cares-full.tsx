@@ -122,13 +122,13 @@ function DealCard({ deal }: { deal: Deal }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Photo (community submissions only) */}
+      {/* Photo (community submissions only) — full image, no cropping */}
       {deal.imageUrl && (
-        <div style={{ width: "100%", height: 180, overflow: "hidden", background: C.line }}>
+        <div style={{ width: "100%", background: C.line, lineHeight: 0 }}>
           <img
             src={deal.imageUrl}
             alt={deal.business}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{ width: "100%", display: "block" }}
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
         </div>

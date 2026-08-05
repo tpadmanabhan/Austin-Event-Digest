@@ -152,7 +152,7 @@ router.post("/deals/submit", async (req, res) => {
       try {
         const visionRes = await openai.chat.completions.create({
           model: "gpt-5.6-luna",
-          max_tokens: 300,
+          max_completion_tokens: 300,
           messages: [
             {
               role: "user",

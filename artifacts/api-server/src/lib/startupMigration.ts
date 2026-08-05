@@ -613,12 +613,23 @@ export async function runStartupMigration(): Promise<void> {
   // Back-fill lat/lng for any submitted deals that were saved before geocoding was added.
   // Uses Nominatim; runs on every startup but is a no-op once all rows have coordinates.
   try {
-    const nullCoordDeals = await db.execute(
+    const rawResult = await db.execute(
       sql`SELECT id, location_address FROM submitted_deals WHERE lat IS NULL OR lng IS NULL LIMIT 50`
-    ) as unknown as { rows: Array<{ id: number; location_address: string }> };
-    for (const row of nullCoordDeals.rows ?? []) {
+    );
+    // drizzle + postgres.js returns rows as a plain array, not { rows: [] }
+    const nullCoordDeals: Array<{ id: number; location_address: string }> =
+      Array.isArray(rawResult) ? rawResult as any : (rawResult as any).rows ?? [];
+    for (const row of nullCoordDeals) {
       try {
-        const encoded = encodeURIComponent(row.location_address);
+        // Strip a leading "Address " label if the submitter accidentally typed it
+        const cleanedAddress = row.location_address.replace(/^Address\s+/i, "").trim();
+        // If the address was dirty, fix it in the DB too
+        if (cleanedAddress !== row.location_address) {
+          await db.execute(
+            sql`UPDATE submitted_deals SET location_address = ${cleanedAddress} WHERE id = ${row.id}`
+          );
+        }
+        const encoded = encodeURIComponent(cleanedAddress);
         const geoRes = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`,
           { headers: { "User-Agent": "AustinCares/1.0 (contact@eventcarpooling.com)" }, signal: AbortSignal.timeout(5000) }
@@ -629,7 +640,7 @@ export async function runStartupMigration(): Promise<void> {
             await db.execute(
               sql`UPDATE submitted_deals SET lat = ${parseFloat(geoData[0].lat)}, lng = ${parseFloat(geoData[0].lon)} WHERE id = ${row.id}`
             );
-            logger.info({ id: row.id, address: row.location_address }, "Back-filled coordinates for submitted deal");
+            logger.info({ id: row.id, address: cleanedAddress }, "Back-filled coordinates for submitted deal");
           }
         }
       } catch (geoErr) {
