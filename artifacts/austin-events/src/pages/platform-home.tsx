@@ -157,7 +157,17 @@ function PlatformHomeInner() {
             </p>
 
             <p className="text-base mb-4 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
-              {t.heroMission}
+              {t.heroMission}{" "}
+              <a
+                href="https://austincares.eventcarpooling.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#4ade80", fontWeight: 700, textDecoration: "underline" }}
+              >
+                {t.heroMissionLive}
+              </a>
+              {". "}
+              {t.heroMissionSuffix}
             </p>
 
             <p className="text-2xl font-bold mb-4 max-w-2xl mx-auto" style={{ color: "#f1f5f9" }}>
