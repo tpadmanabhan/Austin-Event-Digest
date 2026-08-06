@@ -463,36 +463,26 @@ function PlatformHomeInner() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55, delay: 0.1 }}
-                className="font-serif font-black leading-tight mb-3"
+                className="font-serif font-black leading-tight mb-5"
                 style={{ fontSize: "clamp(1.9rem, 5vw, 3.2rem)", color: "#1c1917", letterSpacing: "-0.02em" }}
               >
-                The best deal in Austin —{" "}
+                Helping solve Austin's{" "}
                 <span style={{ background: "linear-gradient(90deg, #059669, #d97706)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                  every day of the week.
+                  affordability crisis
                 </span>
+                {" "}—{" "}
+                <span style={{ color: "#44403c" }}>one great deal at a time.</span>
               </motion.h2>
-
-              {/* mission tagline */}
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: 0.15 }}
-                className="text-sm font-semibold italic mb-5"
-                style={{ color: "#92400e" }}
-              >
-                Helping to Solve the Affordability Crisis one deal at a time
-              </motion.p>
 
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.5, delay: 0.18 }}
                 className="text-base leading-relaxed mb-8 max-w-lg"
                 style={{ color: "#57534e" }}
               >
-                <strong style={{ color: "#065f46" }}>Austin Cares Daily Deals</strong> surfaces time-boxed discounts from local businesses, filtered by day and neighborhood — so you always know what's good near you, right now.
+                <strong style={{ color: "#065f46" }}>Austin Cares Daily Deals</strong> brings you the best local discounts every day of the week — sorted by day and neighborhood, so you always know what's good near you right now.
               </motion.p>
 
               {/* feature chips */}
