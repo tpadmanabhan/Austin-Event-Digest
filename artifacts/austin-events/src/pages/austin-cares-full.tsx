@@ -36,6 +36,17 @@ interface Deal {
 
 const STATIC_DEALS: Deal[] = [
   {
+    day: "MON",
+    business: "Spokesman Coffee",
+    deal: "Free drip coffee with any pastry purchase",
+    savings: "Free drip",
+    source: "Direct",
+    location: "4900 N Lamar Blvd #110, Austin",
+    url: "https://www.spokesmancoffee.com",
+    lat: 30.3330,
+    lng: -97.7388,
+  },
+  {
     day: "TUE",
     business: "Masala Wok",
     deal: "Tikka Tuesday — Tikka Masala + Rice + Naan + Drink",
