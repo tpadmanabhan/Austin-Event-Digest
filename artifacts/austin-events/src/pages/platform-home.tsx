@@ -433,6 +433,153 @@ function PlatformHomeInner() {
         </div>
       </section>
 
+      {/* AUSTINCARES DAILY DEALS LAUNCH */}
+      <section className="py-20 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #052e16 0%, #064e3b 45%, #065f46 100%)" }}>
+        {/* decorative blobs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div style={{ position: "absolute", top: "-60px", right: "-60px", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", bottom: "-80px", left: "-80px", width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle, rgba(251,191,36,0.18) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", top: "40%", left: "30%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(6,95,70,0.25) 0%, transparent 65%)" }} />
+        </div>
+
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            {/* left: text */}
+            <div className="flex-1 text-center lg:text-left">
+              {/* top badge */}
+              <motion.div
+                initial={{ opacity: 0, y: -12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-6"
+                style={{ background: "rgba(251,191,36,0.15)", color: "#fde047", border: "1px solid rgba(251,191,36,0.3)" }}
+              >
+                <span>🆕</span> Now Live
+              </motion.div>
+
+              <motion.h2
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.55, delay: 0.1 }}
+                className="font-serif font-black leading-tight mb-4"
+                style={{ fontSize: "clamp(1.9rem, 5vw, 3.2rem)", color: "#fff", letterSpacing: "-0.02em" }}
+              >
+                The best deal in Austin —{" "}
+                <span style={{ background: "linear-gradient(90deg, #34d399, #fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  every day of the week.
+                </span>
+              </motion.h2>
+
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-base leading-relaxed mb-8 max-w-lg"
+                style={{ color: "rgba(255,255,255,0.72)" }}
+              >
+                <strong style={{ color: "#a7f3d0" }}>Austin Cares Daily Deals</strong> surfaces time-boxed discounts from local businesses, filtered by day and neighborhood — so you always know what's good near you, right now.
+              </motion.p>
+
+              {/* feature chips */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.28 }}
+                className="flex flex-wrap justify-center lg:justify-start gap-3 mb-10"
+              >
+                {[
+                  { icon: "📅", label: "Sorted by day of week" },
+                  { icon: "📍", label: "Filtered by neighborhood" },
+                  { icon: "⏰", label: "Time-boxed discounts" },
+                  { icon: "🏪", label: "Local businesses only" },
+                ].map((chip) => (
+                  <span
+                    key={chip.label}
+                    className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
+                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                  >
+                    {chip.icon} {chip.label}
+                  </span>
+                ))}
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: 0.36 }}
+                className="flex flex-wrap justify-center lg:justify-start gap-4"
+              >
+                <a
+                  href="https://austincares.eventcarpooling.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 font-bold text-sm no-underline px-7 py-3 rounded-full transition-opacity hover:opacity-90"
+                  style={{ background: "linear-gradient(90deg, #10b981, #059669)", color: "#fff", boxShadow: "0 0 24px rgba(16,185,129,0.4)" }}
+                >
+                  Browse today's deals →
+                </a>
+                <a
+                  href="https://austincares.eventcarpooling.com/full"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 font-bold text-sm no-underline px-7 py-3 rounded-full transition-opacity hover:opacity-80"
+                  style={{ background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)" }}
+                >
+                  Add your deal
+                </a>
+              </motion.div>
+            </div>
+
+            {/* right: deal card mockup */}
+            <motion.div
+              initial={{ opacity: 0, x: 40, scale: 0.95 }}
+              whileInView={{ opacity: 1, x: 0, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex-shrink-0 w-full max-w-xs"
+            >
+              <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(12px)" }}>
+                {/* card header */}
+                <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                  <div className="flex items-center gap-2">
+                    <img src="/austin-cares-logo.png" alt="Austin Cares" className="w-7 h-7 rounded-lg object-cover" />
+                    <span className="text-sm font-bold" style={{ color: "#a7f3d0" }}>Austin Cares Deals</span>
+                  </div>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "rgba(251,191,36,0.2)", color: "#fde047" }}>TODAY</span>
+                </div>
+                {/* sample deal rows */}
+                {[
+                  { day: "MON", emoji: "☕", name: "Spokesman Coffee", deal: "Free drip with any pastry" },
+                  { day: "TUE", emoji: "🍛", name: "Sangam Chettinad", deal: "15% off dine-in lunch" },
+                  { day: "WED", emoji: "🥗", name: "Masala Wok", deal: "Buy one bowl, get one 50% off" },
+                ].map((item, i) => (
+                  <div
+                    key={item.day}
+                    className="px-5 py-3.5 flex items-center gap-3"
+                    style={{ borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.06)" : "none", opacity: i === 0 ? 1 : 0.65 }}
+                  >
+                    <span className="text-2xl">{item.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold" style={{ color: "#6ee7b7" }}>{item.day}</p>
+                      <p className="text-sm font-semibold truncate" style={{ color: "#fff" }}>{item.name}</p>
+                      <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.55)" }}>{item.deal}</p>
+                    </div>
+                  </div>
+                ))}
+                <div className="px-5 py-3 text-center">
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>+ more deals every day</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* SUPERCONNECTOR COMING SOON */}
       <section className="py-20 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #3b0764 40%, #1e1b4b 100%)" }}>
         {/* decorative blobs */}
