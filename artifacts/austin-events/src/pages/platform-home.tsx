@@ -434,12 +434,12 @@ function PlatformHomeInner() {
       </section>
 
       {/* AUSTINCARES DAILY DEALS LAUNCH */}
-      <section className="py-20 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #052e16 0%, #064e3b 45%, #065f46 100%)" }}>
+      <section className="py-20 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #faf5ec 0%, #f5ede0 50%, #fdf0e0 100%)" }}>
         {/* decorative blobs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div style={{ position: "absolute", top: "-60px", right: "-60px", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)" }} />
-          <div style={{ position: "absolute", bottom: "-80px", left: "-80px", width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle, rgba(251,191,36,0.18) 0%, transparent 70%)" }} />
-          <div style={{ position: "absolute", top: "40%", left: "30%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(6,95,70,0.25) 0%, transparent 65%)" }} />
+          <div style={{ position: "absolute", top: "-60px", right: "-60px", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(217,119,6,0.12) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", bottom: "-80px", left: "-80px", width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", top: "40%", left: "30%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 65%)" }} />
         </div>
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -453,7 +453,7 @@ function PlatformHomeInner() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
                 className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-6"
-                style={{ background: "rgba(251,191,36,0.15)", color: "#fde047", border: "1px solid rgba(251,191,36,0.3)" }}
+                style={{ background: "rgba(16,185,129,0.12)", color: "#059669", border: "1px solid rgba(16,185,129,0.3)" }}
               >
                 <span>🆕</span> Now Live
               </motion.div>
@@ -463,14 +463,26 @@ function PlatformHomeInner() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55, delay: 0.1 }}
-                className="font-serif font-black leading-tight mb-4"
-                style={{ fontSize: "clamp(1.9rem, 5vw, 3.2rem)", color: "#fff", letterSpacing: "-0.02em" }}
+                className="font-serif font-black leading-tight mb-3"
+                style={{ fontSize: "clamp(1.9rem, 5vw, 3.2rem)", color: "#1c1917", letterSpacing: "-0.02em" }}
               >
                 The best deal in Austin —{" "}
-                <span style={{ background: "linear-gradient(90deg, #34d399, #fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                <span style={{ background: "linear-gradient(90deg, #059669, #d97706)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                   every day of the week.
                 </span>
               </motion.h2>
+
+              {/* mission tagline */}
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: 0.15 }}
+                className="text-sm font-semibold italic mb-5"
+                style={{ color: "#92400e" }}
+              >
+                Helping to Solve the Affordability Crisis one deal at a time
+              </motion.p>
 
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
@@ -478,9 +490,9 @@ function PlatformHomeInner() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="text-base leading-relaxed mb-8 max-w-lg"
-                style={{ color: "rgba(255,255,255,0.72)" }}
+                style={{ color: "#57534e" }}
               >
-                <strong style={{ color: "#a7f3d0" }}>Austin Cares Daily Deals</strong> surfaces time-boxed discounts from local businesses, filtered by day and neighborhood — so you always know what's good near you, right now.
+                <strong style={{ color: "#065f46" }}>Austin Cares Daily Deals</strong> surfaces time-boxed discounts from local businesses, filtered by day and neighborhood — so you always know what's good near you, right now.
               </motion.p>
 
               {/* feature chips */}
@@ -500,7 +512,7 @@ function PlatformHomeInner() {
                   <span
                     key={chip.label}
                     className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
-                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    style={{ background: "rgba(255,255,255,0.7)", color: "#44403c", border: "1px solid rgba(120,80,40,0.15)" }}
                   >
                     {chip.icon} {chip.label}
                   </span>
@@ -519,7 +531,7 @@ function PlatformHomeInner() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 font-bold text-sm no-underline px-7 py-3 rounded-full transition-opacity hover:opacity-90"
-                  style={{ background: "linear-gradient(90deg, #10b981, #059669)", color: "#fff", boxShadow: "0 0 24px rgba(16,185,129,0.4)" }}
+                  style={{ background: "linear-gradient(90deg, #10b981, #059669)", color: "#fff", boxShadow: "0 4px 16px rgba(16,185,129,0.3)" }}
                 >
                   Browse today's deals →
                 </a>
@@ -528,7 +540,7 @@ function PlatformHomeInner() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 font-bold text-sm no-underline px-7 py-3 rounded-full transition-opacity hover:opacity-80"
-                  style={{ background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)" }}
+                  style={{ background: "transparent", color: "#1c1917", border: "1.5px solid rgba(28,25,23,0.3)" }}
                 >
                   Add your deal
                 </a>
@@ -543,14 +555,14 @@ function PlatformHomeInner() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="flex-shrink-0 w-full max-w-xs"
             >
-              <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(12px)" }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(120,80,40,0.15)", boxShadow: "0 8px 32px rgba(120,80,40,0.1)" }}>
                 {/* card header */}
-                <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid #f5ede0" }}>
                   <div className="flex items-center gap-2">
                     <img src="/austin-cares-logo.png" alt="Austin Cares" className="w-7 h-7 rounded-lg object-cover" />
-                    <span className="text-sm font-bold" style={{ color: "#a7f3d0" }}>Austin Cares Deals</span>
+                    <span className="text-sm font-bold" style={{ color: "#065f46" }}>Austin Cares Deals</span>
                   </div>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "rgba(251,191,36,0.2)", color: "#fde047" }}>TODAY</span>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#fef3c7", color: "#92400e" }}>TODAY</span>
                 </div>
                 {/* sample deal rows */}
                 {[
@@ -561,18 +573,18 @@ function PlatformHomeInner() {
                   <div
                     key={item.day}
                     className="px-5 py-3.5 flex items-center gap-3"
-                    style={{ borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.06)" : "none", opacity: i === 0 ? 1 : 0.65 }}
+                    style={{ borderBottom: i < 2 ? "1px solid #f5ede0" : "none", opacity: i === 0 ? 1 : 0.6 }}
                   >
                     <span className="text-2xl">{item.emoji}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold" style={{ color: "#6ee7b7" }}>{item.day}</p>
-                      <p className="text-sm font-semibold truncate" style={{ color: "#fff" }}>{item.name}</p>
-                      <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.55)" }}>{item.deal}</p>
+                      <p className="text-xs font-bold" style={{ color: "#059669" }}>{item.day}</p>
+                      <p className="text-sm font-semibold truncate" style={{ color: "#1c1917" }}>{item.name}</p>
+                      <p className="text-xs truncate" style={{ color: "#78716c" }}>{item.deal}</p>
                     </div>
                   </div>
                 ))}
-                <div className="px-5 py-3 text-center">
-                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>+ more deals every day</span>
+                <div className="px-5 py-3 text-center" style={{ background: "#faf5ec" }}>
+                  <span className="text-xs" style={{ color: "#a8a29e" }}>+ more deals every day</span>
                 </div>
               </div>
             </motion.div>
