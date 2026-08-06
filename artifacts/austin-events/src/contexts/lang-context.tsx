@@ -10,7 +10,7 @@ export const T = {
     footerTagline: "Helping cities connect in real life.",
     langToggle: "🇯🇵 日本語",
 
-    heroBadge: "🚀 We're Launching Something New",
+    heroBadge: "🚀 Something for everyone",
     heroH1a: "In Real Life,",
     heroH1b: "Near You",
     heroSub: "We put what's happening near you in your inbox — and we let anyone run one for their own neighborhood.",
