@@ -37,6 +37,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Health check — must respond before tenant resolution so the deployment
+// startup probe never touches the database. A suspended/cold DB would
+// otherwise make every health check return 500 and block the promote step.
+app.get("/api/healthz", (_req, res) => res.json({ status: "ok" }));
+app.get("/api", (_req, res) => res.json({ status: "ok" }));
+
 // Resolve tenant from subdomain for every request — must run after body parsing
 // so requireAdmin body-token fallback works.
 app.use(resolveTenant);
