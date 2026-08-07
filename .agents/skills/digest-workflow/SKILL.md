@@ -90,6 +90,10 @@ POST /api/events/digest/send
 
 Use `testEmail` — NOT `draftEmail` or `isDraft` (wrong field names cause a full subscriber send).
 
+## AustinCares Digest Notes
+
+AustinCares digests are **restricted to Civics and Wellness categories only** — enforced at ingest in `applyTenantCategoryRestriction()`. All other event categories are silently filtered out. If a digest generates with 0 events, this restriction is likely the cause.
+
 ## Geocoding
 
 ```

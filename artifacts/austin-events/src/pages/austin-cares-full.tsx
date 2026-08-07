@@ -602,6 +602,7 @@ const inputStyle: React.CSSProperties = {
 export default function AustinCaresFullEdition() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
+  const markersRef = useRef<unknown[]>([]);
   const [submittedDeals, setSubmittedDeals] = useState<Deal[]>([]);
 
   // Fetch community-submitted deals on mount
@@ -651,7 +652,7 @@ export default function AustinCaresFullEdition() {
 
   const mappedDeals = allDeals.filter(d => d.lat != null && d.lng != null);
 
-  // Map
+  // Map init — runs once to create the map and tile layer
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
     let mounted = true;
@@ -673,6 +674,28 @@ export default function AustinCaresFullEdition() {
         attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 19,
       }).addTo(map);
+    })();
+    return () => {
+      mounted = false;
+      if (mapRef.current) {
+        (mapRef.current as { remove: () => void }).remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Map markers — reruns whenever mappedDeals changes (picks up submitted deals after async fetch)
+  useEffect(() => {
+    if (!mapRef.current) return;
+    let cancelled = false;
+    (async () => {
+      const L = (await import("leaflet")).default;
+      if (cancelled || !mapRef.current) return;
+      const map = mapRef.current as { addLayer: (l: unknown) => void; fitBounds: (b: unknown, o: unknown) => void };
+
+      // Clear existing markers
+      markersRef.current.forEach(m => (m as { remove: () => void }).remove());
+      markersRef.current = [];
 
       mappedDeals.forEach(deal => {
         const icon = L.divIcon({
@@ -682,8 +705,8 @@ export default function AustinCaresFullEdition() {
           iconAnchor: [15, 15],
           tooltipAnchor: [0, -18],
         });
-        L.marker([deal.lat!, deal.lng!], { icon })
-          .addTo(map)
+        const marker = L.marker([deal.lat!, deal.lng!], { icon })
+          .addTo(mapRef.current as Parameters<typeof L.marker>[1] extends undefined ? never : any)
           .bindTooltip(
             `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-width:160px;">
               <strong style="font-size:13px;display:block;margin-bottom:3px;">${deal.business}</strong>
@@ -692,22 +715,17 @@ export default function AustinCaresFullEdition() {
             </div>`,
             { direction: "top", offset: [0, -8], opacity: 1 }
           );
+        markersRef.current.push(marker);
       });
 
       if (mappedDeals.length > 1) {
         const latlngs = mappedDeals.map(d => [d.lat!, d.lng!] as [number, number]);
-        map.fitBounds(latlngs, { padding: [60, 60], maxZoom: 13 });
+        (mapRef.current as any).fitBounds(latlngs, { padding: [60, 60], maxZoom: 13 });
       }
     })();
-    return () => {
-      mounted = false;
-      if (mapRef.current) {
-        (mapRef.current as { remove: () => void }).remove();
-        mapRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappedDeals]);
 
   // Google Fonts
   useEffect(() => {

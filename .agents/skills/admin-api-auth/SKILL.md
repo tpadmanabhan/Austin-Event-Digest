@@ -72,15 +72,16 @@ Authorization: Bearer <token>
 
 ## Which Cities Use Which Pattern
 
-| City | Pattern | Notes |
-|------|---------|-------|
-| Austin | Password-hash | Hash differs between dev and prod |
-| Tokyo | Password-hash | Hash differs between dev and prod |
-| Sacramento | Email-based | null passwordHash |
-| Portland | Email-based | null passwordHash |
-| St. Louis | Email-based | null passwordHash |
-| Bulverde | Email-based | null passwordHash |
-| Brushy Creek | Email-based | null passwordHash |
+| City | Slug | Pattern | Notes |
+|------|------|---------|-------|
+| Austin | `austin` | Password-hash | Hash differs between dev and prod |
+| Tokyo | `tokyo` | Password-hash | Hash differs between dev and prod |
+| AustinCares | `austincares` | Password-hash | Hash differs between dev and prod |
+| Sacramento | `sacramento` | Email-based | null passwordHash |
+| Portland | `portland` | Email-based | null passwordHash |
+| St. Louis | `stlouis` | Email-based | null passwordHash |
+| Bulverde | `bulverde` | Email-based | null passwordHash |
+| Brushy Creek | `brushycreek` | Email-based | null passwordHash |
 
 ## Source of Truth
 
