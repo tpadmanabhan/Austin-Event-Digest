@@ -143,7 +143,7 @@ export default function AustinCaresDeals() {
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" as const, marginTop: 32 }}>
             <Link href="/full" style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: C.rust, color: "#fff", boxShadow: `0 10px 26px rgba(196,80,43,.28)` }}>
-              Get this week's deals
+              Get Weekly Deals
             </Link>
             <a href="#business" style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: "transparent", color: C.char, border: `1.5px solid ${C.char}` }}>
               I run a business →
