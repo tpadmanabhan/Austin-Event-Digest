@@ -15,7 +15,7 @@ export const T = {
     heroH1b: "Near You",
     heroSub: "We put what's happening near you in your inbox — and we let anyone run one for their own neighborhood.",
     heroSlogan: "Stop scrolling. Start living.",
-    heroMission: "We help solve personalized event discovery and the logistics to get there. Be the change agent in your community. And because life is expensive, we surface local deals so living stays affordable. The AustinCares Daily Deals feature is now",
+    heroMission: "We help solve personalized event discovery and the logistics to get there. And because life is expensive, we surface local deals so living stays affordable. The AustinCares Daily Deals feature is now",
     heroMissionLive: "LIVE",
     heroMissionSuffix: "This will be coming to a city near you.",
     heroLuddite: "A Luddite's Dream",
