@@ -8,88 +8,95 @@ description: Generate, review, patch, and send a city's weekly event digest. Use
 ## Key Concepts
 
 - Each city is a **tenant** identified by a slug (e.g. `austin`, `stlouis`, `tokyo`, `austincares`).
-- A **digest** is a weekly curated list of events for a tenant. Identified by numeric `digestId`.
-- The admin panel at `https://<city>.eventcarpooling.com/admin` is the primary UI for managing digests.
-- All API calls require an **admin auth token** — see the `admin-api-auth` skill.
+- A **digest** is a weekly curated list of events. Identified by numeric `digestId`.
+- Dev and production digests are completely separate — changes to dev don't affect production and vice versa.
+- Use the `admin-api-auth` skill to get the right token for whichever environment you're targeting.
+
+## Finding the Right Digest
+
+```bash
+# Dev
+curl -s "http://localhost:$PORT/api/events/digest/list" -H "Host: austin.eventcarpooling.com" \
+  -H "Authorization: Bearer $DEV_TOKEN"
+
+# Production
+curl -s "https://austin.eventcarpooling.com/api/events/digest/list" \
+  -H "Authorization: Bearer $PROD_TOKEN"
+```
+
+Find the digest whose `weekOf` covers the target date.
 
 ## Step 1: Generate a Digest
 
 ```
 POST /api/events/digest/generate
-Host: <city>.eventcarpooling.com
-Authorization: Bearer <admin-token>
 { "weekStart": "2026-08-10" }   // Monday of target week (YYYY-MM-DD)
 ```
 
-Optional: `"weekEnd": "2026-08-16"` for multi-day ranges.
+Optional: `"weekEnd": "2026-08-16"` for multi-day ranges (bypasses Zod — intentional).
 
-This creates a new digest with auto-fetched events (Ticketmaster + any configured scrapers).
+## Step 2: Add an Event from a URL
 
-## Step 2: Review & Patch Events
+Use `parse-event-url` to extract structured data, then manually append to the events list and PATCH:
 
-Individual event fields can be corrected without regenerating the whole digest:
+```bash
+# 1. Parse the URL (returns title, date, venue, description, imageUrl)
+curl -s -X POST "/api/events/digest/{id}/parse-event-url" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"url":"https://partiful.com/e/..."}'
 
-```
-PATCH /api/events/digest/<digestId>/event/<eventId>
-{ "category": "Music", "venue": "Stubb's Amphitheater", "date": "2026-08-12" }
-```
-
-Add an event from a URL:
-```
-POST /api/events/digest/<digestId>/add-url
-{ "url": "https://eventbrite.com/e/..." }
+# 2. Fetch current events, append new one, write to file
+# 3. PATCH /api/events/digest/{id}/events with full updated array
 ```
 
-Delete a single event:
+> ⚠️ **PATCH replaces all events** — always fetch the existing list first and append; never send only the new event.
+
+> ⚠️ **Time zone:** `parse-event-url` returns times in UTC. Manually convert to local city time (Austin = CDT = UTC−5).
+
+> ⚠️ **Use `-d @file` not piped stdin** — piping JSON into curl can silently drop data. Always write to a temp file first.
+
+See `push-to-production` skill for the complete file-based patching workflow.
+
+## Step 3: Patch Individual Event Fields
+
 ```
-DELETE /api/events/digest/<digestId>/event/<eventId>
+PATCH /api/events/digest/<digestId>/events/:idx/venue
+{ "venue": "Corrected Venue Name, Address" }
 ```
 
-## Step 3: Set Spotlight
+Or use `PATCH /digest/:id/events` with the full array to edit any field.
 
-Each digest can have a Business Spotlight and a Community Spotlight:
+## Step 4: Set Spotlight
+
 ```
-PATCH /api/events/digest/<digestId>
+POST /api/events/digest/<digestId>/spotlight
 {
   "businessSpotlight": { "name": "...", "description": "...", "url": "..." },
   "communitySpotlight": { "name": "...", "description": "...", "url": "..." }
 }
 ```
 
-## Step 4: Send (Test First)
+## Step 5: Send (Always Test First)
 
-Always send a **test** to a single email before sending to all subscribers:
-```
+```bash
+# Test send to one address
 POST /api/events/digest/send
-{
-  "digestId": 123,
-  "testEmail": "raj@example.com"   // use `testEmail`, NOT `draftEmail` or `isDraft`
-}
-```
+{ "digestId": 123, "testEmail": "raj@example.com" }
 
-Send to all subscribers (omit `testEmail`):
-```
+# Send to all subscribers (omit testEmail)
 POST /api/events/digest/send
 { "digestId": 123 }
 ```
 
-⚠️ **Warning:** Omitting `testEmail` sends to all subscribers. Always test first.
+Use `testEmail` — NOT `draftEmail` or `isDraft` (wrong field names cause a full subscriber send).
 
 ## Geocoding
 
-After importing events, the server back-fills lat/lng for venues. Check coverage:
 ```
-GET /api/events/digest/<digestId>/geocode-status
+GET /api/events/digest/<digestId>/geocode-coverage
 ```
-The admin panel shows a geocode coverage indicator — aim for 100% before sending. Events without lat/lng won't appear on the map in the email.
 
-## Custom Date Ranges
-
-The `generate` endpoint accepts `weekEnd` for multi-day ranges (this field bypasses Zod schema validation — it's intentional). Useful for special editions.
-
-## Pushing to Production
-
-Use `POST /api/events/digest/import` to push a cleaned digest to the production API. See the `push-to-production` skill for details.
+Aim for 100% before sending — events without lat/lng won't appear on the digest map.
 
 ## Relevant Files
 

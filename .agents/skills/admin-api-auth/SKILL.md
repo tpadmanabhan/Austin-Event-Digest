@@ -9,15 +9,15 @@ There are **two different admin token patterns** depending on the city (tenant).
 
 ## Pattern 1: Password-Hash HMAC (Most Cities)
 
-For cities where the admin set a password (Austin, Sacramento, Portland, Tokyo, etc.):
+For cities where the admin set a password (Austin, Tokyo, etc.):
 
 ```
 token = HMAC-SHA256(tenant.passwordHash, "admin-session")
 ```
 
-- `tenant.passwordHash` comes from the `tenants` table in the database
+- `tenant.passwordHash` comes from the `tenants` table in the **target** database
 - The key is the literal string `"admin-session"`
-- **Do NOT** use `HMAC(SESSION_SECRET, ADMIN_PASSWORD)` — that's wrong and won't work
+- **Do NOT** use `HMAC(SESSION_SECRET, ADMIN_PASSWORD)` — that's wrong
 
 To compute in Node.js:
 ```js
@@ -25,48 +25,64 @@ import crypto from "crypto";
 const token = crypto.createHmac("sha256", passwordHash).update("admin-session").digest("hex");
 ```
 
+## ⚠️ Dev vs Production Tokens Are Different
+
+The dev database and the production (Neon) database have **different passwordHash values** for the same tenant. Always fetch the hash from the database you are targeting:
+
+**For dev API calls** (`http://localhost:$PORT/...`):
+```sql
+-- Run against dev DB (psql $DATABASE_URL or executeSql without environment param)
+SELECT password_hash FROM tenants WHERE slug = 'austin';
+```
+
+**For production API calls** (`https://austin.eventcarpooling.com/...`):
+```js
+// In CodeExecution:
+const result = await executeSql({
+  sqlQuery: "SELECT password_hash FROM tenants WHERE slug = 'austin'",
+  environment: "production"
+});
+```
+
+Then compute `HMAC(passwordHash, "admin-session")` using the hash from the matching environment.
+
 ## Pattern 2: Email-Based HMAC (Managed Cities)
 
-For cities with `null` passwordHash in the tenants table: **Sacramento, Portland, Bulverde, St. Louis, Brushy Creek**
+For cities with `null` passwordHash: **Sacramento, Portland, Bulverde, St. Louis, Brushy Creek**
 
 ```
 token = HMAC-SHA256(RSVP_HMAC_SECRET, "admin-email:{tenantId}:{email}")
 ```
 
 - `RSVP_HMAC_SECRET` is a Replit Secret (env var)
-- `tenantId` is the tenant's slug or numeric ID from the tenants table
-- `email` is the admin's email address for that city
+- `email` must be lowercase
 
-To compute in Node.js:
 ```js
 import crypto from "crypto";
-const message = `admin-email:${tenantId}:${adminEmail}`;
+const message = `admin-email:${tenantId}:${adminEmail.toLowerCase()}`;
 const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET).update(message).digest("hex");
 ```
 
 ## Using the Token
 
-Pass as a Bearer token in the Authorization header:
+Pass as a Bearer header:
 ```
 Authorization: Bearer <token>
 ```
-
-Or as `adminToken` query param for some endpoints.
 
 ## Which Cities Use Which Pattern
 
 | City | Pattern | Notes |
 |------|---------|-------|
-| Austin | Password-hash | Has passwordHash in tenants table |
-| Tokyo | Password-hash | Has passwordHash in tenants table |
+| Austin | Password-hash | Hash differs between dev and prod |
+| Tokyo | Password-hash | Hash differs between dev and prod |
 | Sacramento | Email-based | null passwordHash |
 | Portland | Email-based | null passwordHash |
 | St. Louis | Email-based | null passwordHash |
 | Bulverde | Email-based | null passwordHash |
 | Brushy Creek | Email-based | null passwordHash |
-| AustinCares | Password-hash | Check tenants table to confirm |
 
 ## Source of Truth
 
+`artifacts/api-server/src/middleware/requireAdmin.ts` — token verification logic
 `artifacts/api-server/src/middleware/resolveTenant.ts` — tenant resolution
-`artifacts/api-server/src/routes/events.ts` — admin token verification logic
