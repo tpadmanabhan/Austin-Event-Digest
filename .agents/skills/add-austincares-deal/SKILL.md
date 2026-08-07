@@ -3,13 +3,48 @@ name: add-austincares-deal
 description: Add a new deal to the AustinCares deals page and map. Use when the user wants to add, update, or remove a business deal on austincares.eventcarpooling.com — either as a static (curated) entry or a community submission.
 ---
 
-# Add AustinCares Deal
+# AustinCares — Full Reference
 
-There are two types of deals on the AustinCares page:
+AustinCares is a standalone tenant on `austincares.eventcarpooling.com` focused on affordability deals and community events. It has two pages, a deals API, and a digest restricted to Civics/Wellness events.
 
-## 1. Static (Curated) Deals
+---
 
-Hardcoded in `artifacts/austin-events/src/pages/austin-cares-full.tsx` in the `STATIC_DEALS` array at the top of the file (~line 37).
+## Page Routes
+
+| URL | Component | Purpose |
+|-----|-----------|---------|
+| `/` | `austin-cares-deals.tsx` | Marketing landing — sample map, day strip, business pitch, CTAs to `/full` |
+| `/full` | `austin-cares-full.tsx` | Live deals map + directory, community submission form |
+| `/admin` | `AdminLoginGate` | Standard admin panel (same as other cities) |
+| `/digest/:id` | Digest | Standard digest page |
+
+The landing page (`/`) uses **placeholder/sample data** — fake deal names and map pins. The real deals are on `/full`.
+
+---
+
+## Admin Auth
+
+AustinCares uses **password-hash HMAC** (same as Austin and Tokyo). Dev and prod hashes differ — always query the target DB:
+
+```js
+// Production token:
+const r = await executeSql({
+  sqlQuery: "SELECT password_hash FROM tenants WHERE slug = 'austincares'",
+  environment: "production"
+});
+// token = HMAC(passwordHash, "admin-session")
+```
+
+See `admin-api-auth` skill for the full token computation pattern.
+
+---
+
+## Deals System
+
+### Two types of deals
+
+#### 1. Static (Curated) Deals
+Hardcoded in `STATIC_DEALS` array at the top of `artifacts/austin-events/src/pages/austin-cares-full.tsx` (~line 37). Always appear regardless of DB state. Static entries **win** on deduplication — if a submitted deal has the same business name (case-insensitive), it is suppressed.
 
 **Shape:**
 ```ts
@@ -20,49 +55,87 @@ Hardcoded in `artifacts/austin-events/src/pages/austin-cares-full.tsx` in the `S
   savings: string,
   source: "Direct" | "Groupon" | "Community",
   location: string,       // human-readable address
-  url?: string,           // optional link
-  imageUrl?: string,      // optional: "/api/storage/objects/uploads/<uuid>"
+  url?: string,
+  imageUrl?: string,      // "/api/storage/objects/uploads/<uuid>"
   lat: number,            // required for map pin
   lng: number,            // required for map pin
-  isSubmitted?: boolean,  // true for community-sourced entries
+  isSubmitted?: boolean,  // true = teal "🌱 Community" badge
 }
 ```
 
-**Always include `lat` and `lng`** — deals without coordinates are silently excluded from the map (`mappedDeals` filter at line ~641).
+**Always include `lat` and `lng`** — deals without coordinates are silently excluded from the map.
 
-Use static entries for: featured partners, manually curated deals, any deal that needs to always appear regardless of DB state.
+#### Current Static Deals (all 7)
 
-## 2. Community Submitted Deals
+| Day | Business | Deal | Savings | Source | lat | lng |
+|-----|----------|------|---------|--------|-----|-----|
+| MON | Spokesman Coffee | Free drip coffee with any pastry purchase | Free drip | Direct | 30.3330 | -97.7388 |
+| TUE | Masala Wok | Tikka Tuesday — Tikka Masala + Rice + Naan + Drink | $11.95 all-day | Direct | 30.4161 | -97.7354 |
+| TUE | Sangam Chettinad | Authentic Chettinad cuisine — weekly specials | See location for details | Community | 30.5273 | -97.6267 |
+| ANY DAY | Schlotzsky's | $25 eGift Card Toward Sandwiches, Salads, Pizzas, Soups & Desserts | Pay $22.62 · Save $2.38 | Groupon | 30.1762 | -97.7834 |
+| ANY DAY | McAlister's Deli | $25 eGift Card Toward Sandwiches, Salads, Spuds, Desserts & Drinks | Pay $22.62 · Save $2.38 | Groupon | 30.3617 | -97.7307 |
+| ANY DAY | Rasoi Indian Restaurant | $25 Toward Food & Drinks — up to 22% off | From $13.50 | Groupon | 30.4350 | -97.7900 |
+| ANY DAY | Electric Gravy Mumbai Bar & Canteen | Indian Cuisine Food & Drinks | From $19 | Groupon | 30.2693 | -97.7266 |
 
-Stored in the `submitted_deals` table in the dev/prod PostgreSQL database. Submitted via `POST /deals/submit` or the AustinCares submission form.
+#### 2. Community Submitted Deals
+Stored in `submitted_deals` table. Submitted via the form on `/full` or `POST /api/deals/submit`.
 
-The startup migration (`artifacts/api-server/src/lib/startupMigration.ts`) back-fills `lat`/`lng` for submitted deals with null coordinates on server restart. If a pin is missing on the map, the record likely has null lat/lng — either restart the API server to trigger backfill, or patch it directly in the DB.
+**DB columns:** `id`, `business_name`, `deal_description`, `location_address`, `contact_name`, `contact_email`, `savings`, `day_of_week`, `photo_url`, `lat`, `lng`, `created_at`
 
-**Table columns:** `id`, `business_name`, `deal_description`, `location_address`, `contact_name`, `contact_email`, `savings`, `day_of_week`, `photo_url`, `lat`, `lng`, `created_at`
+On every API server restart, `startupMigration.ts` geocodes up to 50 submitted deals with null `lat`/`lng` via Nominatim (suite-stripped retry). If a pin is missing, restart the API server or patch lat/lng directly in the DB.
 
-## Map Pin Visibility
+---
 
-The map only renders deals where `d.lat != null && d.lng != null`. Static deals and submitted deals are merged in the frontend — static entries take precedence over submitted ones with the same business name (deduped by lowercase name).
+## API Routes
 
-## Where to Look
+All in `artifacts/api-server/src/routes/deals.ts`:
 
-- `artifacts/austin-events/src/pages/austin-cares-full.tsx` — STATIC_DEALS array, map rendering logic, deal cards
-- `artifacts/austin-events/src/pages/austin-cares-deals.tsx` — deals landing page
-- `artifacts/api-server/src/routes/deals.ts` — `GET /deals/submitted`, `POST /deals/submit`
-- `artifacts/api-server/src/lib/startupMigration.ts` — geocode backfill logic
+| Method | Route | Auth | What it does |
+|--------|-------|------|-------------|
+| `GET` | `/deals/submitted` | None | Returns public-safe fields from `submitted_deals` (excludes submitter name/email), oldest first |
+| `POST` | `/deals/submit` | None | Validates fields, downloads+validates image from object storage, calls OpenAI vision to extract business/deal/savings/day, geocodes address, inserts into DB |
 
-## Spokesman Coffee (reference entry)
+**Note:** Neither route requires auth. The submission endpoint collects private submitter info (name, email) but stores it server-side only — never returned in GET.
 
-```ts
-{
-  day: "MON",
-  business: "Spokesman Coffee",
-  deal: "Free drip coffee with any pastry purchase",
-  savings: "Free drip",
-  source: "Direct",
-  location: "4900 N Lamar Blvd #110, Austin",
-  url: "https://www.spokesmancoffee.com",
-  lat: 30.3330,
-  lng: -97.7388,
-}
-```
+---
+
+## Digest Behavior
+
+AustinCares digests are **restricted to Civics and Wellness categories only** — enforced in `applyTenantCategoryRestriction()` in `events.ts`. All other event categories are filtered out at ingest time.
+
+**Email theme:** Teal gradient (`#0a2e2e → #134040 → #1e6e6e`), primary `#1e6e6e`, emoji 🌱, guide text "Your weekly guide to community events and causes in Austin".
+
+**Known issue:** Austin Cares digest currently has 0 events (Task #95).
+
+---
+
+## Platform Home Section
+
+A "AustinCares Daily Deals" section lives in `artifacts/austin-events/src/pages/platform-home.tsx` (~line 446). It has:
+- "Now Live" badge, affordability headline
+- Deal sample cards (Spokesman Coffee MON, Sangam Chettinad TUE, Masala Wok WED) — **these are hardcoded mockup data**, not pulled live
+- CTAs: "Browse today's deals →" → `https://austincares.eventcarpooling.com`, "Add your deal" → `/full`
+
+**Note:** The platform-home mockup shows different day assignments and offers than what's actually in STATIC_DEALS. They don't need to match exactly (it's a visual preview), but keep them roughly current if static deals change significantly.
+
+---
+
+## Known Inconsistencies / Watch Points
+
+- **Landing page (`/`) uses placeholder data** — fake business names, fake map pins. The real experience is on `/full`.
+- **Map doesn't update when submissions load** — the Leaflet map effect has an empty dependency array; async-fetched submissions don't dynamically add pins after initial render. Refresh is required.
+- **Sangam Chettinad** still has placeholder deal description ("Authentic Chettinad cuisine — weekly specials") — noted as open.
+- **Platform home mockup** day/offer assignments may drift from actual STATIC_DEALS — update both together when changing deals.
+
+---
+
+## Relevant Files
+
+- `artifacts/austin-events/src/pages/austin-cares-full.tsx` — STATIC_DEALS, map, deal cards, submission form
+- `artifacts/austin-events/src/pages/austin-cares-deals.tsx` — marketing landing page
+- `artifacts/austin-events/src/pages/platform-home.tsx` — AustinCares section on main landing (~line 446)
+- `artifacts/api-server/src/routes/deals.ts` — GET + POST deals API
+- `artifacts/api-server/src/lib/startupMigration.ts` — geocode backfill for submitted deals
+- `artifacts/austin-events/src/App.tsx` — route definitions for austincares (lines 46–47)
+- `artifacts/api-server/src/lib/emailService.ts` — AustinCares email theme (~line 501)
+- `artifacts/api-server/src/routes/events.ts` — `applyTenantCategoryRestriction` (Civics + Wellness only)
