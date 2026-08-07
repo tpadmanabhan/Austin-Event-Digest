@@ -833,9 +833,9 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
     // Geocode venue coordinates in the background (fire-and-forget)
     geocodeAndPatchDigest(digest.id, taggedImportEvents as Array<Record<string, unknown>>).catch(() => {});
 
-    // Pre-translate event titles + descriptions for Tokyo (tenantId 8) so first page
+    // Pre-translate event titles + descriptions for Tokyo so first page
     // load is instant instead of waiting on OpenAI (fire-and-forget)
-    if (req.tenant!.id === 8) {
+    if (req.tenant!.slug === "tokyo") {
       prewarmTranslationCache(taggedImportEvents as EventItem[]).catch(() => {});
     }
   } catch (err) {
