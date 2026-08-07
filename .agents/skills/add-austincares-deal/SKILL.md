@@ -122,10 +122,10 @@ A "AustinCares Daily Deals" section lives in `artifacts/austin-events/src/pages/
 
 ## Known Inconsistencies / Watch Points
 
-- **Landing page (`/`) uses placeholder data** — fake business names, fake map pins. The real experience is on `/full`.
-- **Map doesn't update when submissions load** — the Leaflet map effect has an empty dependency array; async-fetched submissions don't dynamically add pins after initial render. Refresh is required.
-- **Sangam Chettinad** still has placeholder deal description ("Authentic Chettinad cuisine — weekly specials") — noted as open.
-- **Platform home mockup** day/offer assignments may drift from actual STATIC_DEALS — update both together when changing deals.
+- **Sangam Chettinad** still has a placeholder deal description ("Authentic Chettinad cuisine — weekly specials") — open.
+- **Platform home mockup** (`platform-home.tsx` ~line 446) has hardcoded sample deal cards. Update it alongside STATIC_DEALS when deals change significantly so they stay roughly in sync.
+- **Landing page sample digest** (`austin-cares-deals.tsx`) also has hardcoded deal rows (not pulled from STATIC_DEALS). Update both files together when static deals change.
+- **Testimonial quote** on the landing page is still a placeholder — "swap in a real review once live" note is in the component.
 
 ---
 
