@@ -18,7 +18,7 @@ AustinCares is a standalone tenant on `austincares.eventcarpooling.com` focused 
 | `/admin` | `AdminLoginGate` | Standard admin panel (same as other cities) |
 | `/digest/:id` | Digest | Standard digest page |
 
-The landing page (`/`) uses **placeholder/sample data** — fake deal names and map pins. The real deals are on `/full`.
+The landing page (`/`) shows a **sample preview** of real deals (top 3 from STATIC_DEALS: Spokesman Coffee, Masala Wok, Rasoi). The full live directory with all deals and the community submission form is on `/full`.
 
 ---
 
@@ -117,6 +117,21 @@ A "AustinCares Daily Deals" section lives in `artifacts/austin-events/src/pages/
 - CTAs: "Browse today's deals →" → `https://austincares.eventcarpooling.com`, "Add your deal" → `/full`
 
 **Note:** The platform-home mockup shows different day assignments and offers than what's actually in STATIC_DEALS. They don't need to match exactly (it's a visual preview), but keep them roughly current if static deals change significantly.
+
+---
+
+## Canonical Copy
+
+Key UI strings — do not revert these:
+
+| Location | Element | Text |
+|----------|---------|------|
+| Landing page (`/`) hero button | Primary CTA | "Get Weekly Deals" |
+| Landing page (`/`) nav + hero | Secondary CTA | "I run a business →" |
+| Full page (`/full`) header `<h1>` | Page title | "Weekly Deals" |
+| Full page (`/full`) header sub-label | Eyebrow | "AustinCares · Full Edition" |
+
+The full page header has **no date line** — the week date reference was intentionally removed.
 
 ---
 
