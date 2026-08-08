@@ -102,8 +102,20 @@ GET /api/events/digest/<digestId>/geocode-coverage
 
 Aim for 100% before sending — events without lat/lng won't appear on the digest map.
 
+## Stale Event Filtering
+
+Past events are filtered **at the API response layer** inside `digestToApi()` in `events.ts` via `filterStaleEvents()`. This runs on every `GET /digest/latest` and `GET /digest/list` call, for every city, regardless of whether the digest was sent or not.
+
+Rules:
+- Events with a parsed date before today (midnight) are stripped from the response
+- Spotlights (`isBusinessSpotlight`), community posts (`isPost`), and featured/Special Events (`featured: true`) are **never** removed
+- Events whose date string can't be parsed are kept (safe default)
+
+A separate nightly `scheduleDailyCleanup()` job (2 AM) also removes stale events from **unsent** digests at the DB level. Both layers work together — the API-layer filter is the safety net for sent digests.
+
 ## Relevant Files
 
-- `artifacts/api-server/src/routes/events.ts` — all digest endpoints
+- `artifacts/api-server/src/routes/events.ts` — all digest endpoints; `filterStaleEvents()` and `digestToApi()`
+- `artifacts/api-server/src/lib/dailyCleanup.ts` — nightly DB-level cleanup (unsent digests only)
 - `artifacts/api-server/src/lib/emailService.ts` — email rendering and sending
 - `artifacts/austin-events/src/pages/admin.tsx` — admin UI

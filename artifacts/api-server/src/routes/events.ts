@@ -64,13 +64,40 @@ function applyTenantCategoryRestriction(tenantSlug: string, events: EventItem[])
   return events.filter(e => allowed.includes(e.category));
 }
 
+const MONTH_IDX_CLEANUP: Record<string, number> = {
+  Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11,
+};
+
+/**
+ * Filters out past events from a digest's event list before serving to clients.
+ * Never removes spotlights, community posts, or featured (Special Event) entries.
+ * Applied in digestToApi so all cities are covered regardless of sent status.
+ */
+function filterStaleEvents(events: any[]): any[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return events.filter(ev => {
+    if (!ev.date || ev.isPost || ev.isBusinessSpotlight || ev.featured) return true;
+    const m = String(ev.date).match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+    if (!m) return true; // can't parse date → keep
+    const key = m[1].substring(0, 3);
+    const cap = key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
+    const month = MONTH_IDX_CLEANUP[cap];
+    if (month === undefined) return true;
+    const eventDate = new Date(today.getFullYear(), month, parseInt(m[2], 10));
+    // Handle year rollover: if parsed date is far in the past assume next year
+    if (today.getMonth() <= 1 && month >= 10) eventDate.setFullYear(today.getFullYear() - 1);
+    return eventDate >= today;
+  });
+}
+
 function digestToApi(d: typeof digestsTable.$inferSelect) {
   return {
     id: d.id,
     weekOf: d.weekOf,
     subject: d.subject,
     intro: d.intro,
-    events: (d.events as any[]) || [],
+    events: filterStaleEvents((d.events as any[]) || []),
     sentAt: d.sentAt,
     sentCount: d.sentCount,
     createdAt: d.createdAt,

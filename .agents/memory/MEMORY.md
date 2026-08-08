@@ -12,3 +12,4 @@
 - [Brushy Creek admin auth](brushycreek-admin-auth.md) — use email-based HMAC token (not password-hash token) for brushycreek admin API calls
 - [Draft send field name](stlouis-send-draft.md) — use `testEmail` (not `draftEmail`/`isDraft`) in POST /api/events/digest/send to avoid accidental full subscriber sends
 - [Tokyo translation cache](translation-cache.md) — DB cache for translations; `ANY(${array})` broken in drizzle sql; single batched frontend call; pre-warm on digest import
+- [Stale event filtering](stale-event-filtering.md) — past events filtered in `digestToApi()` at API response layer (all cities, all digests); deployed to production 2026-08-08
