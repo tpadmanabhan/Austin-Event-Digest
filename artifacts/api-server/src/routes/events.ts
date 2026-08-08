@@ -77,7 +77,10 @@ function filterStaleEvents(events: any[]): any[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return events.filter(ev => {
-    if (!ev.date || ev.isPost || ev.isBusinessSpotlight || ev.featured) return true;
+    // Community posts and spotlights have no event date — always keep
+    if (ev.isPost || ev.isBusinessSpotlight) return true;
+    // No date string → keep (can't determine staleness)
+    if (!ev.date) return true;
     const m = String(ev.date).match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
     if (!m) return true; // can't parse date → keep
     const key = m[1].substring(0, 3);
@@ -85,9 +88,11 @@ function filterStaleEvents(events: any[]): any[] {
     const month = MONTH_IDX_CLEANUP[cap];
     if (month === undefined) return true;
     const eventDate = new Date(today.getFullYear(), month, parseInt(m[2], 10));
-    // Handle year rollover: if parsed date is far in the past assume next year
+    // Handle year rollover (e.g. Dec digest referencing Jan event)
     if (today.getMonth() <= 1 && month >= 10) eventDate.setFullYear(today.getFullYear() - 1);
     return eventDate >= today;
+    // Note: featured ("Special Events") are intentionally NOT exempt — a featured
+    // event with a past date is still stale and should be removed.
   });
 }
 

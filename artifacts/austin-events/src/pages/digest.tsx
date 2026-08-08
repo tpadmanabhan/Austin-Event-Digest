@@ -499,7 +499,7 @@ export default function DigestView() {
             !e.isPost &&
             !e.isBusinessSpotlight &&
             !isAdult(e) &&
-            (e.featured || isEventTodayOrLater(e.date, e))
+            isEventTodayOrLater(e.date, e)
           );
           const catFiltered = categoryFilter === "All"
             ? upcomingEvents

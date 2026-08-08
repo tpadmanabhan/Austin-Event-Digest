@@ -15,10 +15,13 @@ Past events are stripped inside `filterStaleEvents()`, called from `digestToApi(
 
 ## What is never removed
 
-- `isBusinessSpotlight: true` — business spotlights
-- `isPost: true` — community posts
-- `featured: true` — Special Events / future-tagged events
+- `isBusinessSpotlight: true` — business spotlights (no event date)
+- `isPost: true` — community posts (no event date)
 - Events with unparseable date strings (safe default: keep)
+
+## ⚠️ featured events are NOT exempt
+
+`featured: true` ("Special Events") are tagged by `autoTagFutureEvents` when an event falls beyond the digest week's Saturday. They still have a date, and once that date passes they must be removed. Do NOT add `ev.featured` back to the "always keep" list — it caused old Sacramento events to persist indefinitely because all events in a sent digest get auto-tagged as featured when they're beyond the week end.
 
 ## Two-layer cleanup
 
