@@ -56,7 +56,8 @@ Hardcoded in `STATIC_DEALS` array at the top of `artifacts/austin-events/src/pag
   source: "Direct" | "Groupon" | "Community",
   location: string,       // human-readable address
   url?: string,
-  imageUrl?: string,      // "/api/storage/objects/uploads/<uuid>"
+  imageUrl?: string,      // MUST be an absolute URL — e.g. "https://austincares.eventcarpooling.com/api/storage/objects/uploads/<uuid>"
+                          // Relative paths ("/api/storage/...") silently fail in email clients. Always prefix with the full origin.
   lat: number,            // required for map pin
   lng: number,            // required for map pin
   isSubmitted?: boolean,  // true = teal "🌱 Community" badge

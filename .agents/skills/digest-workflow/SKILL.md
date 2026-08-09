@@ -162,6 +162,7 @@ AustinCares is a **weekly deals site**, not an events site. Its digest is popula
 - `category`: `"Wellness"` (prod workaround) or `"Food & Markets"` (post-deploy)
 - `source`: `"Direct"` | `"Groupon"` | `"Community"`
 - `lat`/`lng`: coordinates for map pins (required — missing pins are excluded from map)
+- `imageUrl`: **must be an absolute URL** (`https://austincares.eventcarpooling.com/api/storage/objects/uploads/<uuid>`). Relative paths silently fail in email clients. Dev code now auto-resolves relative URLs using `digest.siteUrl`, but always store absolute URLs in deal data to be safe on both old and new prod code.
 
 **Email:** AustinCares digest email renders "This Week's Deals 🏷️" (not "This Week's Picks"), "Deal locations in Austin" on the map, and a prominent teal CTA block linking to `https://austincares.eventcarpooling.com/full`.
 
