@@ -790,8 +790,8 @@ export function buildDigestEmailHtml(digest: {
     <!-- AustinCares Launch Promo (all cities except austincares) -->
     ${slug !== "austincares" ? `
     <div style="background:linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%); border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
-      <p style="margin:0 0 6px; color:#fbbf24; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ Now Live in Austin</p>
-      <p style="margin:0 0 10px; color:#ffffff; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best deal in Austin — every day of the week.</p>
+      <p style="margin:0 0 6px; color:#fbbf24; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ New · Austin Cares</p>
+      <p style="margin:0 0 10px; color:#ffffff; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
       <p style="margin:0 0 6px; color:#fde68a; font-size:13px; line-height:1.6;">A weekly digest of real, time-boxed discounts — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.</p>
       <p style="margin:0 0 18px; color:#fca5a5; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">Coming to a city near you 🌍</p>
       <a href="https://austincares.eventcarpooling.com" style="display:inline-block; background:#C4502B; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">Get Weekly Deals →</a>
@@ -1202,7 +1202,7 @@ export async function sendFeatureInterestEmails(email: string): Promise<void> {
         In the meantime, check out <a href="https://austin.eventcarpooling.com" style="color:#4f46e5; text-decoration:none; font-weight:600;">austin.eventcarpooling.com</a> to see a live example of what we're building.
       </p>
     </div>
-    <p style="text-align:center; color:#a8a29e; font-size:12px; margin:0;">EventCarpooling.com · Austin, TX</p>
+    <p style="text-align:center; color:#a8a29e; font-size:12px; margin:0;">EventCarpooling.com</p>
   </div>
 </body>
 </html>`;

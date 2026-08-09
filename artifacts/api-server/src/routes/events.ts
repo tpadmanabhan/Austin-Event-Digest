@@ -215,7 +215,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     })();
     const fallback = req.tenant!.slug === "stlouis"
       ? getStLouisSampleDigest(dateRange)
-      : generateSampleDigest(weekOf, customNotes || undefined);
+      : generateSampleDigest(weekOf, customNotes || undefined, req.tenant!);
 
     // Run category-based adapters for this tenant's configured categories (primary source)
     const adapterResult = await fetchEventsForTenant({ tenant: req.tenant!, weekOf, weekEnd });
@@ -257,7 +257,8 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
       const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
       const label = `${weekOf.toLocaleDateString("en-US", opts)}–${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-      const subjectEmoji = req.tenant!.slug === "austincares" ? "🏷️" : "🤠";
+      const _s = req.tenant!.slug;
+      const subjectEmoji = _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
       subject = `${subjectEmoji} ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
     } else {
       subject = fallback.subject;
@@ -271,7 +272,8 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
 
     if (mergedEvents.length > 0 || communityEvts.length > 0) {
       events = deduplicateEvents([...mergedEvents, ...communityEvts]);
-      const introBase = gmailIntro || fallback.intro;
+      // Gmail intro is Austin-specific — never use it for other cities
+      const introBase = (req.tenant!.slug === "austin" && gmailIntro) ? gmailIntro : fallback.intro;
       intro = customNotes ? `${introBase}\n\n${customNotes}` : introBase;
       req.log.info(
         { adapterEvents: adapterResult.events.length, communityEvents: communityEvts.length, sources: adapterResult.sources, total: events.length },

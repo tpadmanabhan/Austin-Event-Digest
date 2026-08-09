@@ -708,6 +708,7 @@ export async function fetchEventsFromGmail(since?: Date, before?: Date, weekOf?:
   const intro = newsletterEmails.length > 0
     ? `Hey Austin! I combed through ${newsletterEmails.length} newsletter${newsletterEmails.length === 1 ? "" : "s"} in my inbox and hand-picked the best events happening around the city. Here's your curated digest — get out there and enjoy Austin! 🤠`
     : "Hey Austin! Here's your curated guide to the best events in the city this week.";
+  // Note: this intro is Austin-specific. The generate endpoint should only use it for Austin (slug === "austin").
 
   return {
     emails: newsletterEmails.length,

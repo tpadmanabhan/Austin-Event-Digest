@@ -37,9 +37,12 @@ function weekDay(weekOf: Date, offset: number, time: string): string {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" }) + ` at ${time}`;
 }
 
-export function generateSampleDigest(weekOf?: Date, customNotes?: string): GeneratedDigest {
+export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant?: { slug?: string | null; city?: string | null; digestTitle?: string | null }): GeneratedDigest {
   const targetWeek = weekOf || getNextSunday();
   const dateRange = formatDateRange(targetWeek);
+  const slug = tenant?.slug ?? "austin";
+  const cityFirst = tenant?.city?.split(",")[0] || "Austin";
+  const digestName = tenant?.digestTitle || tenant?.city || "Austin";
 
   const SAMPLE_EVENTS: EventItem[] = [
     {
@@ -89,12 +92,15 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string): Gener
     },
   ];
   
-  const intro = customNotes
-    ? `Happy Sunday, Austin! Here's Raj's curated guide to the best events happening in Austin this week.\n\n${customNotes}\n\nAs always, get out there and enjoy this amazing city! 🤠`
-    : `Happy Sunday, Austin! Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Austin never disappoints, and this week is no exception. Get out there and enjoy it!`;
+  const cityIntro = customNotes
+    ? `Hey ${cityFirst}! Here's your curated guide to the best events happening this week.\n\n${customNotes}\n\nGet out there and enjoy ${cityFirst}!`
+    : `Hey ${cityFirst}! Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Get out there and enjoy it!`;
+  const intro = cityIntro;
+
+  const subjectEmoji = slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : "🤠";
 
   return {
-    subject: `🤠 Raj's Austin Events — Week of ${dateRange}`,
+    subject: `${subjectEmoji} ${digestName} Events — Week of ${dateRange}`,
     intro,
     events: SAMPLE_EVENTS,
   };
