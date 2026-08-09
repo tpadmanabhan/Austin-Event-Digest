@@ -76,6 +76,40 @@ POST /api/events/digest/<digestId>/spotlight
 }
 ```
 
+### Spotlight Audit (run before sending)
+
+Business spotlights (`isBusinessSpotlight: true`) and community posts (`isPost: true`) live inside the `events` array alongside regular events. They can accumulate duplicates or carry placeholder text if added more than once.
+
+**Check for duplicates and bad descriptions:**
+```python
+for i, e in enumerate(events):
+    if e.get('isBusinessSpotlight') or e.get('isPost'):
+        print(f"[{i}] {e.get('title')} | {e.get('link')} | desc: {e.get('description','')[:80]}")
+```
+
+Watch for:
+- **Duplicate spotlights** — same `link` appearing twice with different titles (e.g. one real title + one generic "Global AI startup based in Tokyo"). Keep the first, remove the second via index in the patched events array.
+- **Placeholder/template descriptions** — WordPress/Avada demo copy like *"Create a cutting-edge website for cryptocurrency services with Avada…"* indicates the description was never properly filled in. Replace with accurate copy.
+- **HTML entities in titles** — data from WordPress-based sites often contains `&#8211;` (en-dash), `&#8217;` (right quote), etc. Decode with `html.unescape()` before storing.
+
+**Fix:** Fetch all events, filter/edit in Python, write to temp file, PATCH back:
+```python
+import html as html_lib
+for e in events:
+    if e.get('isBusinessSpotlight'):
+        e['title'] = html_lib.unescape(e['title'])  # decode &#8211; → –
+# Remove duplicates: filter out any isBusinessSpotlight with same link as a previous one
+seen_links = set()
+fixed = []
+for e in events:
+    key = e.get('link') if (e.get('isBusinessSpotlight') or e.get('isPost')) else None
+    if key and key in seen_links:
+        continue  # drop duplicate spotlight
+    if key:
+        seen_links.add(key)
+    fixed.append(e)
+```
+
 ## Step 5: Geocode Events (Do Before Sending)
 
 After generating or patching events, trigger re-geocoding so all events get lat/lng for the map:
