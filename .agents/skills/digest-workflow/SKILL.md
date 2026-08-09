@@ -108,8 +108,13 @@ Past events are filtered **at the API response layer** inside `digestToApi()` in
 
 Rules:
 - Events with a parsed date before today (midnight) are stripped from the response
-- Spotlights (`isBusinessSpotlight`), community posts (`isPost`), and featured/Special Events (`featured: true`) are **never** removed
+- **Only** spotlights (`isBusinessSpotlight`) and community posts (`isPost`) are unconditionally kept — they have no event date
+- `featured: true` ("Special Events") are **NOT** exempt — they have a real date and are removed once that date passes
 - Events whose date string can't be parsed are kept (safe default)
+
+> ⚠️ Do not add `ev.featured` back to the "always keep" list. `autoTagFutureEvents` marks events beyond the digest week's Saturday as `featured: true`, but they still have a date. Exempting featured events caused sent digests to accumulate stale "Special Events" indefinitely (e.g. Sacramento showing Aug 2–7 events weeks later).
+
+The client-side filter in `digest.tsx` (`upcomingEvents`) also applies `isEventTodayOrLater()` to all events including featured — it does **not** short-circuit on `e.featured`.
 
 A separate nightly `scheduleDailyCleanup()` job (2 AM) also removes stale events from **unsent** digests at the DB level. Both layers work together — the API-layer filter is the safety net for sent digests.
 
