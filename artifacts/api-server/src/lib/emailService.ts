@@ -787,6 +787,16 @@ export function buildDigestEmailHtml(digest: {
       <a href="https://austincares.eventcarpooling.com/full" style="display:inline-block; background:#C4502B; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">See this week's deals →</a>
     </div>` : ""}
 
+    <!-- AustinCares Launch Promo (all cities except austincares) -->
+    ${slug !== "austincares" ? `
+    <div style="background:linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%); border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
+      <p style="margin:0 0 6px; color:#fbbf24; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ Now Live in Austin</p>
+      <p style="margin:0 0 10px; color:#ffffff; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best deal in Austin — every day of the week.</p>
+      <p style="margin:0 0 6px; color:#fde68a; font-size:13px; line-height:1.6;">A weekly digest of real, time-boxed discounts — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.</p>
+      <p style="margin:0 0 18px; color:#fca5a5; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">Coming to a city near you 🌍</p>
+      <a href="https://austincares.eventcarpooling.com" style="display:inline-block; background:#C4502B; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">Get Weekly Deals →</a>
+    </div>` : ""}
+
     <!-- Tokyo Launch Highlight (Tokyo only) -->
     ${slug === "tokyo" && digest.siteUrl && digest.digestId ? `
     <div style="background:#fff0f0; border:1.5px solid #dc2626; border-radius:14px; padding:20px 24px; margin-bottom:24px; text-align:center;">

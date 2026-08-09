@@ -700,6 +700,50 @@ export default function DigestView() {
           );
         })()}
 
+        {/* AustinCares launch promo — shown on every city digest except AustinCares itself */}
+        {tenant.slug !== "austincares" && (
+          <section className="mt-16 px-4 sm:px-0">
+            <div
+              className="rounded-3xl p-8 sm:p-10 overflow-hidden relative"
+              style={{ background: "linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%)" }}
+            >
+              <div className="relative z-10">
+                <div
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-5"
+                  style={{ background: "#fbbf24", color: "#1c1917" }}
+                >
+                  🏷️ Now Live in Austin
+                </div>
+                <h3
+                  className="font-serif text-2xl sm:text-3xl font-extrabold mb-3 leading-tight"
+                  style={{ color: "#fff" }}
+                >
+                  The best deal in Austin —{" "}
+                  <em style={{ color: "#fbbf24", fontStyle: "italic" }}>every day of the week.</em>
+                </h3>
+                <p className="text-sm leading-relaxed mb-2" style={{ color: "#fde68a" }}>
+                  AustinCares is a weekly digest of real, time-boxed discounts near you — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.
+                </p>
+                <p
+                  className="text-xs font-bold uppercase tracking-widest mb-7"
+                  style={{ color: "#fca5a5" }}
+                >
+                  Coming to a city near you 🌍
+                </p>
+                <a
+                  href="https://austincares.eventcarpooling.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-sm font-bold no-underline px-7 py-3 rounded-full transition-opacity hover:opacity-90"
+                  style={{ background: "#C4502B", color: "#fff" }}
+                >
+                  See this week's Austin deals →
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
+
         <section id="subscribe" className="mt-24 p-10 bg-secondary rounded-3xl text-secondary-foreground relative overflow-hidden scroll-mt-24">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--color-primary)_0%,transparent_70%)] opacity-20" />
           <div className="relative z-10">
