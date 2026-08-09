@@ -16,4 +16,5 @@
 - [Stale event filtering](stale-event-filtering.md) — past events filtered in `digestToApi()`; featured events NOT exempt (bug fix); home.tsx + digest.tsx client filters also fixed
 - [Ticketmaster classification](ticketmaster-classification.md) — only Music/Sports are reliable TM classificationNames; Arts & Theatre/Miscellaneous return 0; others query broadly
 - [Tokyo production auth](tokyo-prod-auth.md) — null password_hash in prod; use email-based HMAC (tenant ID 8), NOT password-hash pattern
+- [Carry-forward featured events](carry-forward-featured.md) — generate endpoint now auto-carries featured events from previous digest; live events win on title+date collision
 - [Email imageUrl absolute URL](email-imageurl-absolute.md) — relative paths (/api/storage/...) silently fail in email clients; always store and PATCH absolute https:// URLs

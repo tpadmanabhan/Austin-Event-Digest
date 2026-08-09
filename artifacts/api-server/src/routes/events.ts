@@ -53,6 +53,45 @@ function autoTagFutureEvents(events: EventItem[], weekOf: Date): EventItem[] {
 }
 
 /**
+ * Pulls featured (Special Event) entries from the most recent existing digest for
+ * this tenant whose dates fall on or after weekOf. These are manually-curated events
+ * that live adapters (Ticketmaster, Gmail, etc.) never return — multi-week shows,
+ * conferences, or anything added by hand to a previous digest. They would be silently
+ * dropped when a new digest is generated without this step.
+ */
+async function carryForwardFeaturedEvents(tenantId: number, weekOf: Date): Promise<EventItem[]> {
+  const MONTH_IDX: Record<string, number> = {
+    Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11,
+  };
+
+  const [prev] = await db
+    .select({ events: digestsTable.events })
+    .from(digestsTable)
+    .where(eq(digestsTable.tenantId, tenantId))
+    .orderBy(desc(digestsTable.weekOf), desc(digestsTable.id))
+    .limit(1);
+
+  if (!prev) return [];
+
+  const featured = ((prev.events as any[]) || []).filter((e: any) => e.featured === true);
+
+  // Only keep events whose date is still >= the new weekOf
+  return featured.filter((ev: any) => {
+    const dateStr = String(ev.date || "");
+    const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+    if (!m) return false;
+    const key = (m[1] as string).substring(0, 3);
+    const cap = key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
+    const mo = MONTH_IDX[cap];
+    if (mo === undefined) return false;
+    const eventDate = new Date(weekOf.getFullYear(), mo, parseInt(m[2] as string, 10));
+    // Handle year rollover (e.g. Dec digest carrying Jan events)
+    if (eventDate < weekOf) eventDate.setFullYear(weekOf.getFullYear() + 1);
+    return eventDate >= weekOf;
+  }) as EventItem[];
+}
+
+/**
  * Per-tenant category restriction. Returns only events whose category is in the
  * tenant's allowed list. If no restriction is configured, all events pass through.
  */
@@ -247,8 +286,19 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       );
     }
 
+    // Carry forward manually-curated featured events from the most recent previous
+    // digest (multi-week shows, conferences, anything added by hand). Live adapter
+    // events come first so deduplicateEvents keeps their version on title+date collisions.
+    const carried = await carryForwardFeaturedEvents(req.tenant!.id, weekOf);
+    const eventsWithCarried = carried.length > 0
+      ? deduplicateEvents([...events, ...carried] as EventItem[])
+      : events as EventItem[];
+    if (carried.length > 0) {
+      req.log.info({ carried: carried.map((e: EventItem) => e.title) }, "Carried forward featured events from previous digest");
+    }
+
     const taggedEvents = autoTagFutureEvents(
-      applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[]),
+      applyTenantCategoryRestriction(req.tenant!.slug, eventsWithCarried),
       weekOf,
     );
 

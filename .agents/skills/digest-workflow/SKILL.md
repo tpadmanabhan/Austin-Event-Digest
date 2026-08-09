@@ -150,6 +150,23 @@ curl -s -X PATCH "https://CITY.eventcarpooling.com/api/events/digest/ID/events" 
   -d @/tmp/patch.json
 ```
 
+## Carry-Forward of Manually-Curated Featured Events
+
+When `POST /api/events/digest/generate` runs, it automatically carries forward any `featured: true` events from the **most recent existing digest** for that tenant whose dates are still >= the new `weekOf`. This prevents multi-week events, conferences, or anything added by hand from being silently dropped each week.
+
+**How it works:**
+- After merging live adapter results + community events, the generate endpoint queries the previous digest
+- Featured events with a parseable future date are appended and deduplicated by `title|date`
+- Live-sourced events win on title+date collision (they come first in dedup); carry-forward fills the gaps
+- The server logs `"Carried forward featured events from previous digest"` with the event titles when any fire
+
+**What this covers:**
+- Multi-week shows (e.g. "Summer Stock Austin 2026: Newsies" running Aug 9 AND Aug 16)
+- Conferences spanning multiple days beyond the current week (e.g. "Fed Supernova 2026 Conference" Aug 18–20)
+- Any event manually PATCHed into a previous digest with `featured: true`
+
+**Key implementation file:** `artifacts/api-server/src/routes/events.ts` → `carryForwardFeaturedEvents(tenantId, weekOf)`
+
 ## AustinCares Digest Notes
 
 AustinCares is a **weekly deals site**, not an events site. Its digest is populated manually with the current week's deals (from `STATIC_DEALS` in `austin-cares-full.tsx`), not auto-generated from event adapters.
