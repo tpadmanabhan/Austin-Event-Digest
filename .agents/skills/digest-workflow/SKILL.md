@@ -91,6 +91,41 @@ POST /api/events/digest/<digestId>/regeocoded
 
 Community events added via PATCH will not be geocoded automatically — always trigger re-geocode after patching. Aim for 100% coverage before sending. Events without lat/lng won't appear on the digest map.
 
+### Geocoding Drift Audit (run before sending)
+
+Venue name–only strings like `"Atomic Lounge, St. Louis"` can silently geocode to a same-named venue in another city. Always audit coordinates against the city's bounding box before sending:
+
+```python
+# Approximate bounding boxes (lat_min, lat_max, lng_min, lng_max)
+CITY_BOUNDS = {
+  "austin":     (29.8, 30.6, -98.1, -97.4),
+  "stlouis":    (37.0, 40.0, -96.0, -88.0),
+  "sacramento": (38.3, 38.8, -121.7, -121.2),
+  "portland":   (45.2, 45.8, -122.9, -122.3),
+  "bulverde":   (29.5, 30.1, -98.6, -98.0),
+  "brushycreek":(30.4, 30.7, -97.9, -97.5),
+  "tokyo":      (35.5, 35.9, 139.5, 140.0),
+}
+# Flag any event whose lat/lng falls outside the city box
+```
+
+**Fix pattern when drift is found:**
+1. Update the event's `venue` to include a full street address (e.g. `"4140 Manchester Ave, St. Louis, MO 63110"` not just `"Atomic Cowboy, St. Louis"`)
+2. Null out `lat`/`lng` on the bad events and PATCH the digest
+3. Trigger `POST /api/events/digest/:id/regeocoded`
+4. **If the geocoder still drifts** (same venue name exists in multiple cities — e.g. "Atomic Cowboy" in both St. Louis and Denver), hardcode the correct coordinates directly via PATCH instead of relying on re-geocoding
+
+```python
+# Hardcode correct coords when geocoder can't disambiguate
+for e in events:
+    if e['title'] == 'Bad Event':
+        e['lat'] = 38.6274  # confirmed via Nominatim on full street address
+        e['lng'] = -90.2518
+        e['venue'] = '4140 Manchester Ave, St. Louis, MO 63110'
+```
+
+> ⚠️ Re-geocoding alone won't fix drift when the venue name is ambiguous across cities — you must fix the venue string AND set coords directly.
+
 ## Step 5b: Patch the Digest Intro
 
 The intro text is stored separately from events and can be patched independently:

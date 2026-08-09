@@ -19,3 +19,4 @@
 - [Carry-forward featured events](carry-forward-featured.md) — generate endpoint now auto-carries featured events from previous digest; live events win on title+date collision
 - [Email imageUrl absolute URL](email-imageurl-absolute.md) — relative paths (/api/storage/...) silently fail in email clients; always store and PATCH absolute https:// URLs
 - [City branding bleed](city-branding-bleed.md) — "Happy Sunday Austin" / Gmail 🤠 intro leaked into all cities; fixed in generateSampleDigest + events.ts; always audit intros before first send
+- [Geocoding drift](geocoding-drift.md) — venue name–only strings geocode to same-named venues in other cities; re-geocode alone won't fix it; must use full street address + hardcode coords
