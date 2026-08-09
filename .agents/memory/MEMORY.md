@@ -7,9 +7,12 @@
 - [Production admin token](prod-admin-token.md) — token = HMAC(tenant.passwordHash, "admin-session"); per-tenant from tenants table; never HMAC(SESSION_SECRET, ADMIN_PASSWORD)
 - [Digest 61 spotlights](digest-61-spotlights.md) — RacFit (Business) + Food & Climate Grants (Community) must be PATCHed into digest 61 (7/12) when generated
 - [Tailwind @theme inline runtime overrides](tailwind-theme-inline-runtime-vars.md) — @theme inline bakes utilities to raw vars; override --primary/--secondary etc directly, not --color-*
+- [AustinCares rebrand](austincares-rebrand.md) — now a weekly deals site; category restriction removed in dev; prod workaround uses category "Wellness"; email copy + CTA updated
 - [Admin page conventions](admin-page-conventions.md) — Save buttons + localStorage, spotlight "Create new digest" default, Send Draft week picker; apply to every current and future admin section
 - [Managed city admin auth](managed-city-admin-auth.md) — sacramento/portland/bulverde/stlouis have null passwordHash; use email-based HMAC(RSVP_HMAC_SECRET, "admin-email:{tenantId}:{email}") instead
 - [Brushy Creek admin auth](brushycreek-admin-auth.md) — use email-based HMAC token (not password-hash token) for brushycreek admin API calls
 - [Draft send field name](stlouis-send-draft.md) — use `testEmail` (not `draftEmail`/`isDraft`) in POST /api/events/digest/send to avoid accidental full subscriber sends
 - [Tokyo translation cache](translation-cache.md) — DB cache for translations; `ANY(${array})` broken in drizzle sql; single batched frontend call; pre-warm on digest import
-- [Stale event filtering](stale-event-filtering.md) — past events filtered in `digestToApi()` at API response layer (all cities, all digests); deployed to production 2026-08-08
+- [Stale event filtering](stale-event-filtering.md) — past events filtered in `digestToApi()`; featured events NOT exempt (bug fix); home.tsx + digest.tsx client filters also fixed
+- [Ticketmaster classification](ticketmaster-classification.md) — only Music/Sports are reliable TM classificationNames; Arts & Theatre/Miscellaneous return 0; others query broadly
+- [Tokyo production auth](tokyo-prod-auth.md) — null password_hash in prod; use email-based HMAC (tenant ID 8), NOT password-hash pattern

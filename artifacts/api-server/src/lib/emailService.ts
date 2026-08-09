@@ -154,7 +154,7 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 
       <!-- CTA -->
       <div style="text-align:center;">
-        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#fbbf24;color:#1c1917;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">Browse this week's events →</a>
+        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#fbbf24;color:#1c1917;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">${tenant?.slug === "austincares" ? "Browse this week's deals →" : "Browse this week's events →"}</a>
       </div>
     </div>
 
@@ -317,10 +317,10 @@ function buildStaticMapSection(
     <!-- Event Map Preview -->
     <div style="margin-bottom:24px; border-radius:14px; overflow:hidden; border:1px solid #e7e5e4;">
       <div style="background:#f8fafc; padding:10px 16px; border-bottom:1px solid #e7e5e4;">
-        <p style="margin:0; font-size:13px; font-weight:700; color:#1c1917;">🗺️ This week's event locations in ${cityLabel}</p>
+        <p style="margin:0; font-size:13px; font-weight:700; color:#1c1917;">${slug === "austincares" ? "🗺️ Deal locations in Austin" : `🗺️ This week's event locations in ${cityLabel}`}</p>
       </div>
       ${linkUrl ? `<a href="${escapeHtml(linkUrl)}" style="display:block; line-height:0;">` : ""}
-        <img src="${escapeHtml(mapUrl)}" alt="Map of this week's events in ${cityLabel}" width="580" height="260" style="display:block; width:100%; max-width:580px; height:auto; border:none;" />
+        <img src="${escapeHtml(mapUrl)}" alt="${slug === "austincares" ? "Map of deal locations in Austin" : `Map of this week's events in ${cityLabel}`}" width="580" height="260" style="display:block; width:100%; max-width:580px; height:auto; border:none;" />
       ${linkUrl ? `</a>` : ""}
       ${linkUrl ? `<div style="background:#f8fafc; padding:8px 16px; border-top:1px solid #e7e5e4; text-align:center;"><a href="${escapeHtml(linkUrl)}" style="color:#7c3aed; font-size:12px; font-weight:600; text-decoration:none;">Open interactive map &amp; sort by distance →</a></div>` : ""}
     </div>`;
@@ -511,9 +511,9 @@ export function buildDigestEmailHtml(digest: {
     linkColor: "#1e6e6e",
     curatorName: "",
     curatorUrl: null as string | null,
-    cityGuideText: "Your weekly guide to community events and causes in Austin",
-    digestDisplayName: tenant?.digestTitle || "Austin Cares Events",
-    headerEmoji: "🌱",
+    cityGuideText: "Your weekly guide to the best local deals in Austin",
+    digestDisplayName: tenant?.digestTitle || "Austin Cares Weekly Deals",
+    headerEmoji: "🏷️",
     eventBtnColor: "#1e6e6e",
     eventBtnBorder: "#1e6e6e",
     pillText: "rgba(224,244,244,0.9)",
@@ -660,9 +660,17 @@ export function buildDigestEmailHtml(digest: {
   `;
     }
 
+    // Resolve imageUrl to absolute — relative paths (e.g. /api/storage/...) don't load in email clients
+    const cardRawImg = event.imageUrl ? decodeHtmlEntities(event.imageUrl).trim() : null;
+    const cardAbsImg = cardRawImg
+      ? ((cardRawImg.startsWith("http://") || cardRawImg.startsWith("https://"))
+          ? cardRawImg
+          : (cardRawImg.startsWith("/") && digest.siteUrl ? `${digest.siteUrl}${cardRawImg}` : null))
+      : null;
+
     return `
     <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; margin-bottom:20px;">
-      ${event.imageUrl ? `<img src="${escapeHtml(decodeHtmlEntities(event.imageUrl))}" alt="${escapeHtml(event.title)}" style="width:100%; max-height:220px; object-fit:cover; display:block;" />` : ""}
+      ${cardAbsImg ? `<img src="${escapeHtml(cardAbsImg)}" alt="${escapeHtml(event.title)}" style="width:100%; max-height:220px; object-fit:cover; display:block;" />` : ""}
       <div style="padding:20px;">
       <div style="display:inline-block; ${categoryBadgeStyle(event.category)} font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(normalizeCategory(event.category))}</div>
       <h3 style="margin:0 0 8px; font-size:18px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
@@ -698,9 +706,12 @@ export function buildDigestEmailHtml(digest: {
     const safeLink = safeHref(event.link);
     // Decode then escape directly — same pattern as regular event cards
     const rawImageUrl = event.imageUrl ? decodeHtmlEntities(event.imageUrl).trim() : null;
-    const safeImageUrl = rawImageUrl && (rawImageUrl.startsWith("https://") || rawImageUrl.startsWith("http://"))
-      ? escapeHtml(rawImageUrl)
+    const resolvedImageUrl = rawImageUrl
+      ? ((rawImageUrl.startsWith("http://") || rawImageUrl.startsWith("https://"))
+          ? rawImageUrl
+          : (rawImageUrl.startsWith("/") && digest.siteUrl ? `${digest.siteUrl}${rawImageUrl}` : null))
       : null;
+    const safeImageUrl = resolvedImageUrl ? escapeHtml(resolvedImageUrl) : null;
     return `
     <div style="border-radius:16px; overflow:hidden; margin-bottom:20px; border:1px solid ${accentColor}33; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
       ${safeImageUrl
@@ -767,6 +778,15 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:10px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Open the full edition and tap <strong>Nearest first</strong> to sort by your location.</p>
     </div>` : ""}
 
+    <!-- AustinCares Deals CTA (AustinCares only) -->
+    ${slug === "austincares" ? `
+    <div style="background:linear-gradient(135deg,#0a2e2e 0%,#134040 55%,#1e6e6e 100%); border-radius:16px; padding:24px 28px; margin-bottom:24px; text-align:center;">
+      <p style="margin:0 0 6px; color:#a0d4d4; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ This Week's Deals</p>
+      <p style="margin:0 0 10px; color:#ffffff; font-size:19px; font-weight:800; letter-spacing:-0.3px;">Browse the full deals directory</p>
+      <p style="margin:0 0 18px; color:#e0f4f4; font-size:13px; line-height:1.6;">See every deal sorted by day — Monday specials, Tuesday discounts, weekend offers — and filter by distance from your spot.</p>
+      <a href="https://austincares.eventcarpooling.com/full" style="display:inline-block; background:#C4502B; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">See this week's deals →</a>
+    </div>` : ""}
+
     <!-- Tokyo Launch Highlight (Tokyo only) -->
     ${slug === "tokyo" && digest.siteUrl && digest.digestId ? `
     <div style="background:#fff0f0; border:1.5px solid #dc2626; border-radius:14px; padding:20px 24px; margin-bottom:24px; text-align:center;">
@@ -788,13 +808,13 @@ export function buildDigestEmailHtml(digest: {
     ${featuredCards}
 
     <!-- Events -->
-    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">This Week's Picks 🎯</h2>${eventCards}` : ""}
+    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">${slug === "austincares" ? "This Week's Deals 🏷️" : "This Week's Picks 🎯"}</h2>${eventCards}` : ""}
 
     <!-- Also Nearby -->
     ${alsoNearbyCards ? `
     <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:14px; padding:20px; margin-bottom:24px;">
       <h2 style="margin:0 0 4px; color:#1c1917; font-size:18px; font-weight:700;">📍 Also Nearby</h2>
-      <p style="margin:0 0 16px; color:#78716c; font-size:13px;">These events are a bit further out — but still in Austin.</p>
+      <p style="margin:0 0 16px; color:#78716c; font-size:13px;">${slug === "austincares" ? "These deals are a bit further out — but still worth the trip." : "These events are a bit further out — but still in Austin."}</p>
       ${alsoNearbyCards}
     </div>` : ""}
 

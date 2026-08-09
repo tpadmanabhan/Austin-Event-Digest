@@ -64,6 +64,20 @@ const CITY_METRO_IDS: Record<string, number> = {
   "Miami, FL": 31003,
   "Boston": 6480,
   "Boston, MA": 6480,
+  // Active tenant cities
+  "St. Louis": 10842,
+  "St. Louis, MO": 10842,
+  "Saint Louis": 10842,
+  "Saint Louis, MO": 10842,
+  "Sacramento": 23059,
+  "Sacramento, CA": 23059,
+  "Portland": 31503,
+  "Portland, OR": 31503,
+  // Brushy Creek / Bulverde → nearest major metro (Austin)
+  "Brushy Creek": 27781,
+  "Brushy Creek, TX": 27781,
+  "Bulverde": 27781,
+  "Bulverde, TX": 27781,
 };
 
 async function fetchSongkickEvents(query: SourceQuery): Promise<EventItem[]> {

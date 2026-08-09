@@ -461,7 +461,7 @@ export default function Home() {
               const upcomingEvents = latestDigest.events.filter((e: any) =>
                 !e.isPost &&
                 !e.isBusinessSpotlight &&
-                (e.featured || isEventTodayOrLater(e.date))
+                isEventTodayOrLater(e.date)
               );
               const visibleEvents = categoryFilter === "All"
                 ? upcomingEvents

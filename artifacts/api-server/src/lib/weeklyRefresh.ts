@@ -484,7 +484,7 @@ async function fetchTicketmaster(
 
 // ── Build community events for a specific week ────────────────────────────────
 
-function buildCommunityEvents(slug: string, weekStart: Date, nextWeekStart: Date): EventItem[] {
+export function buildCommunityEvents(slug: string, weekStart: Date, nextWeekStart: Date): EventItem[] {
   const defs = COMMUNITY_EVENTS[slug];
   if (!defs) return [];
 

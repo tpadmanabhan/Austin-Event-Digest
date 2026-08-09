@@ -4,16 +4,18 @@ import { getCityGeo, guessCategory, isWithinDateRange, formatISODate } from "./u
 import { logger } from "../logger";
 import { isAdultContent } from "../contentFilter";
 
-/** Maps canonical category names to Ticketmaster classification names */
+/**
+ * Maps canonical category names to Ticketmaster segment/classification names.
+ * Only "Music" and "Sports" are reliable TM segment names — they return events
+ * for most cities. "Arts & Theatre" and "Miscellaneous" consistently return 0
+ * results even when events exist (e.g. St. Louis Music events don't surface
+ * under "Arts & Theatre"). Categories not listed here query TM without a
+ * classification filter so the broader result set is returned, then
+ * filterByTenantCategories() handles local category matching via guessCategory().
+ */
 const TM_CLASSIFICATION: Record<string, string> = {
-  Music:            "Music",
-  Arts:             "Arts & Theatre",
-  "Arts & Culture": "Arts & Theatre",
-  Sports:           "Sports",
-  Tech:             "Miscellaneous",
-  Food:             "Miscellaneous",
-  Wellness:         "Sports",
-  Civics:           "Miscellaneous",
+  Music:   "Music",
+  Sports:  "Sports",
 };
 
 interface TmEvent {

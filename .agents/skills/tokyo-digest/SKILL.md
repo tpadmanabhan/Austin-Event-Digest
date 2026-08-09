@@ -39,16 +39,22 @@ The digest page fetches translations for all visible events in a single batched 
 
 ## Admin Auth for Tokyo
 
-Tokyo uses **password-hash HMAC** (same as Austin). Dev and production databases have different passwordHashes — always query the target DB:
+Tokyo's `password_hash` is **null in both dev and production**. Use the **email-based HMAC** pattern — NOT the password-hash pattern.
 
 ```js
-// Production:
-const result = await executeSql({
-  sqlQuery: "SELECT password_hash FROM tenants WHERE slug = 'tokyo'",
-  environment: "production"
-});
-// Then: HMAC(passwordHash, "admin-session")
+// Production (tenant ID 8):
+const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET)
+  .update("admin-email:8:aiimplementationclubaustin@gmail.com")
+  .digest("hex");
+// Use against https://tokyo.eventcarpooling.com/api/...
+
+// Dev (tenant ID 4):
+const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET)
+  .update("admin-email:4:aiimplementationclubaustin@gmail.com")
+  .digest("hex");
 ```
+
+> ⚠️ The `admin-api-auth` skill originally listed Tokyo as "Password-hash" — this is wrong. Tokyo was never assigned a password. Always use email-based auth.
 
 ## Generating a Tokyo Digest
 
@@ -66,6 +72,7 @@ After importing events, the translation pre-warm runs automatically. Allow 30–
 
 - **Language persistence is global** — if a user toggles to Japanese on Tokyo and then visits Austin, Austin may show partial Japanese UI if any key happens to have a Japanese variant. Only Tokyo has full Japanese translation coverage.
 - **Translation cache** — `ANY(${array})` syntax is broken in Drizzle's `sql` template for this use case; the translation cache uses a workaround (single batched frontend call). Do not change the cache query pattern without verifying the fix still works.
+- **Generating Tokyo digests falls back to Austin sample events** — Ticketmaster returns 0 results for Tokyo, Japan with the current adapter, so the generate endpoint uses `generateSampleDigest()` which produces Austin-flavored placeholder events. Do NOT push these to production. Use the import endpoint with curated Tokyo events instead (Task #117 tracks the underlying fix).
 
 ## Relevant Files
 

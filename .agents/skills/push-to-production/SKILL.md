@@ -62,7 +62,9 @@ curl -s -X PATCH "https://austin.eventcarpooling.com/api/events/digest/{digestId
   -d @/tmp/patch_payload.json
 ```
 
-Check `"success": true` and `"Total events"` count in the response.
+Check `"success": true` **and** that `digest.events` has a non-zero length in the response. A PATCH can return `success: true` with 0 events if the category restriction silently stripped everything — this is not an error at the HTTP level but is a silent data loss. Always log the event count and verify it matches what you sent.
+
+> ⚠️ **AustinCares production category restriction:** Until the next deploy, production enforces `Civics + Wellness` for AustinCares. If you PATCH deals with `category: "Food & Markets"` they will be silently stripped. Use `category: "Wellness"` as a workaround.
 
 ## How to Find the Production Digest ID
 

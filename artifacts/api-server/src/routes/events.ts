@@ -13,6 +13,7 @@ import { generateSampleDigest, getStLouisSampleDigest, getNextSunday } from "../
 import { sendEmail, buildDigestEmailHtml, translateEventsForEmail } from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
 import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } from "../lib/eventSources";
+import { buildCommunityEvents } from "../lib/weeklyRefresh";
 import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
 import { extractEventsFromSources } from "../lib/urlEventExtractor";
@@ -56,9 +57,9 @@ function autoTagFutureEvents(events: EventItem[], weekOf: Date): EventItem[] {
  * tenant's allowed list. If no restriction is configured, all events pass through.
  */
 function applyTenantCategoryRestriction(tenantSlug: string, events: EventItem[]): EventItem[] {
-  const RESTRICTIONS: Record<string, string[]> = {
-    austincares: ["Civics", "Wellness"],
-  };
+  // AustinCares was previously restricted to Civics + Wellness (events site).
+  // It is now a weekly deals site — no category restriction applies; all categories allowed.
+  const RESTRICTIONS: Record<string, string[]> = {};
   const allowed = RESTRICTIONS[tenantSlug];
   if (!allowed) return events;
   return events.filter(e => allowed.includes(e.category));
@@ -217,18 +218,25 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
       const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
       const label = `${weekOf.toLocaleDateString("en-US", opts)}–${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-      subject = `🤠 ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
+      const subjectEmoji = req.tenant!.slug === "austincares" ? "🏷️" : "🤠";
+      subject = `${subjectEmoji} ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
     } else {
       subject = fallback.subject;
     }
 
-    if (mergedEvents.length > 0) {
-      events = mergedEvents;
+    // Always supplement with curated community events for this city (recurring local spots,
+    // markets, parks, meetups). Merged in REGARDLESS of adapter results so that
+    // Ticketmaster / external-API events never overwrite them.
+    const nextWeekStart = new Date(weekOf.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const communityEvts = buildCommunityEvents(req.tenant!.slug, weekOf, nextWeekStart);
+
+    if (mergedEvents.length > 0 || communityEvts.length > 0) {
+      events = deduplicateEvents([...mergedEvents, ...communityEvts]);
       const introBase = gmailIntro || fallback.intro;
       intro = customNotes ? `${introBase}\n\n${customNotes}` : introBase;
       req.log.info(
-        { adapterEvents: adapterResult.events.length, sources: adapterResult.sources, total: mergedEvents.length, filtered: deduped.length - mergedEvents.length },
-        "Digest populated from discovered events"
+        { adapterEvents: adapterResult.events.length, communityEvents: communityEvts.length, sources: adapterResult.sources, total: events.length },
+        "Digest populated from discovered + community events"
       );
     } else {
       events = fallback.events;
@@ -806,8 +814,12 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
       const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
       const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
       const label = `${weekOf.toLocaleDateString("en-US", opts)}–${weekEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-      const subject = `🤠 ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
-      const intro = `Hey ${req.tenant!.city.split(",")[0]}! I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest — get out there and enjoy it! 🤠`;
+      const isAustinCares = req.tenant!.slug === "austincares";
+      const subjectEmoji2 = isAustinCares ? "🏷️" : "🤠";
+      const subject = `${subjectEmoji2} ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
+      const intro = isAustinCares
+        ? `Happy Sunday, Austin! Here are this week's best local deals — from Tuesday lunch specials to all-week savings at your favorite spots.\n\nThese deals are hand-picked from Austin restaurants and local businesses. Tap any deal below to claim it.`
+        : `Hey ${req.tenant!.city.split(",")[0]}! I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest — get out there and enjoy it! 🤠`;
 
       const [newDigest] = await db
         .insert(digestsTable)

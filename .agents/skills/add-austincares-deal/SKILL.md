@@ -5,7 +5,7 @@ description: Add a new deal to the AustinCares deals page and map. Use when the 
 
 # AustinCares — Full Reference
 
-AustinCares is a standalone tenant on `austincares.eventcarpooling.com` focused on affordability deals and community events. It has two pages, a deals API, and a digest restricted to Civics/Wellness events.
+AustinCares is a standalone tenant on `austincares.eventcarpooling.com` — a **weekly deals site**, not an events site. It has two pages, a deals API, and a digest email that links subscribers to the full deals directory. The digest is populated with weekly deals (formatted as event-like objects), not city events.
 
 ---
 
@@ -101,11 +101,33 @@ All in `artifacts/api-server/src/routes/deals.ts`:
 
 ## Digest Behavior
 
-AustinCares digests are **restricted to Civics and Wellness categories only** — enforced in `applyTenantCategoryRestriction()` in `events.ts`. All other event categories are filtered out at ingest time.
+### Weekly deals digest (Aug 9–15 = digest 113)
 
-**Email theme:** Teal gradient (`#0a2e2e → #134040 → #1e6e6e`), primary `#1e6e6e`, emoji 🌱, guide text "Your weekly guide to community events and causes in Austin".
+AustinCares digest is populated manually each week with the 7 static deals from `STATIC_DEALS`, formatted as event-like objects. There is no auto-generate — always PATCH digest events directly.
 
-**Known issue:** Austin Cares digest currently has 0 events (Task #95).
+**Populating deals:** Use `PATCH /api/events/digest/:id/events` with all 7 deals. Date each deal as **Saturday of the current week** (e.g. "Saturday, Aug 15 at 12:00 PM") so all deals stay visible throughout the week. `filterStaleEvents` removes entries whose date has passed — using the week's Saturday means deals don't disappear mid-week.
+
+**Category:** Use `"Wellness"` (production workaround, until next deploy). Dev code (`applyTenantCategoryRestriction`) has no restriction, so any category passes on dev. After the next deploy, use `"Food & Markets"`.
+
+**Intro:** Set a deals-focused intro by PATCHing `POST /api/events/digest/:id/intro`. Default auto-generated intros are Austin-events-flavored — always override for AustinCares.
+
+**Subject:** PATCH via `POST /api/events/digest/:id/meta` with `{ "subject": "🏷️ Austin Cares Weekly Deals: Week of Aug X–Y, 202Z" }` to avoid the 🤠 cowboy emoji and "Events" fallback that the production generate endpoint still produces.
+
+### Email theme (dev code — takes full effect after deploy)
+
+| Element | Value |
+|---------|-------|
+| Header emoji | 🏷️ |
+| Header title | `tenant.digestTitle` → "Austin Cares Weekly Deals" |
+| Subtitle | "Your weekly guide to the best local deals in Austin" |
+| Map heading | "Deal locations in Austin" |
+| Events section | "This Week's Deals 🏷️" |
+| Also Nearby copy | "These deals are a bit further out — but still worth the trip." |
+| Deals CTA block | Teal bg + rust "See this week's deals →" → `/full` |
+| Subscription email CTA | "Browse this week's deals →" |
+| FROM name | "Austin Cares" (set via `PATCH /api/admin/settings` `name` field) |
+
+> ⚠️ The header emoji, subtitle, and map heading require a **deploy** to take effect on production. All other items above are stored in the DB and work immediately.
 
 ---
 
@@ -153,4 +175,4 @@ The full page header has **no date line** — the week date reference was intent
 - `artifacts/api-server/src/lib/startupMigration.ts` — geocode backfill for submitted deals
 - `artifacts/austin-events/src/App.tsx` — route definitions for austincares (lines 46–47)
 - `artifacts/api-server/src/lib/emailService.ts` — AustinCares email theme (~line 501)
-- `artifacts/api-server/src/routes/events.ts` — `applyTenantCategoryRestriction` (Civics + Wellness only)
+- `artifacts/api-server/src/routes/events.ts` — `applyTenantCategoryRestriction` (empty in dev — no restriction for AustinCares; prod still enforces Wellness until deploy)
