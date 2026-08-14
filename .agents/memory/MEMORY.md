@@ -20,3 +20,4 @@
 - [Email imageUrl absolute URL](email-imageurl-absolute.md) — relative paths (/api/storage/...) silently fail in email clients; always store and PATCH absolute https:// URLs
 - [City branding bleed](city-branding-bleed.md) — "Happy Sunday Austin" / Gmail 🤠 intro leaked into all cities; fixed in generateSampleDigest + events.ts; always audit intros before first send
 - [Geocoding drift](geocoding-drift.md) — venue name–only strings geocode to same-named venues in other cities; re-geocode alone won't fix it; must use full street address + hardcode coords
+- [New city email map checklist](new-city-email-map.md) — new city slug must be in MAP_CENTERS + CITY_LABELS in buildStaticMapSection() or the map is silently dropped from emails
