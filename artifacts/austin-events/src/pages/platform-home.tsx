@@ -143,20 +143,20 @@ function PlatformHomeInner() {
               </span>
             </div>
 
-            <h1 className="font-serif font-bold text-white mb-6 leading-[1.15]" style={{ fontSize: "clamp(32px, 4.5vw, 60px)" }}>
+            <h1 className="font-serif font-bold text-white mb-6 leading-[1.15]" style={{ fontSize: "clamp(44px, 6vw, 80px)" }}>
               {t.heroH1a}{" "}
               <span className="italic" style={{ color: "#4ade80" }}>{t.heroH1b}</span>
             </h1>
 
-            <p className="text-lg mb-4 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
+            <p className="text-xl mb-4 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
               {t.heroSub}
             </p>
 
-            <p className="text-2xl font-bold mb-4 max-w-2xl mx-auto" style={{ color: "#f1f5f9" }}>
+            <p className="text-3xl font-bold mb-4 max-w-2xl mx-auto" style={{ color: "#f1f5f9" }}>
               {t.heroSlogan}
             </p>
 
-            <p className="text-base mb-4 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
+            <p className="text-lg mb-4 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
               {t.heroMission}{" "}
               <a
                 href="https://austincares.eventcarpooling.com"
@@ -170,18 +170,18 @@ function PlatformHomeInner() {
               {t.heroMissionSuffix}
             </p>
 
-            <p className="text-2xl font-bold mb-4 max-w-2xl mx-auto" style={{ color: "#f1f5f9" }}>
+            <p className="text-3xl font-bold mb-4 max-w-2xl mx-auto" style={{ color: "#f1f5f9" }}>
               {t.heroLuddite}
             </p>
 
-            <p className="text-base mb-10 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
+            <p className="text-lg mb-10 leading-relaxed max-w-2xl mx-auto" style={{ color: "#94a3b8" }}>
               {t.heroLudditeDesc}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center flex-wrap mb-8">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-base font-semibold text-white transition-all hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-lg font-semibold text-white transition-all hover:-translate-y-0.5"
                 style={{
                   background: "linear-gradient(135deg, #16a34a, #22c55e)",
                   boxShadow: "0 8px 24px rgba(22,163,74,0.4)",
@@ -249,7 +249,7 @@ function PlatformHomeInner() {
                   href={city.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-sm font-semibold transition-all hover:-translate-y-0.5"
+                  className="group inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-base font-semibold transition-all hover:-translate-y-0.5"
                   style={{
                     background: "rgba(255,255,255,0.06)",
                     borderColor: "rgba(255,255,255,0.15)",
@@ -272,7 +272,7 @@ function PlatformHomeInner() {
                     {city.icon}
                   </span>
                   <span className="flex flex-col items-start leading-tight">
-                    <span className="text-xs font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
+                    <span className="text-sm font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
                     <span>{city.label}</span>
                   </span>
                   <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
@@ -315,8 +315,8 @@ function PlatformHomeInner() {
                   style={{ borderRight: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none" }}
                 >
                   <div className="flex justify-center mb-2">{stat.icon}</div>
-                  <div className="text-3xl font-bold text-white leading-none">{stat.value}</div>
-                  <div className="text-xs mt-1 font-medium" style={{ color: "#64748b" }}>{stat.label}</div>
+                  <div className="text-4xl font-bold text-white leading-none">{stat.value}</div>
+                  <div className="text-sm mt-1 font-medium" style={{ color: "#64748b" }}>{stat.label}</div>
                 </div>
               ))}
             </div>
