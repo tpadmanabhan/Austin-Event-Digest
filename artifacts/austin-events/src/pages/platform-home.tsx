@@ -236,6 +236,13 @@ function PlatformHomeInner() {
                   iconShadow: "0 3px 10px rgba(204,0,0,0.5)",
                   label: "Tokyo Events",
                 },
+                {
+                  href: "https://dc.eventcarpooling.com",
+                  icon: "🦅",
+                  iconBg: "linear-gradient(135deg, #0a1f4e, #1a4a8a)",
+                  iconShadow: "0 3px 10px rgba(29,78,216,0.5)",
+                  label: "DC Events",
+                },
               ].map(city => (
                 <a
                   key={city.href}
@@ -850,10 +857,10 @@ function PlatformHomeInner() {
                 <div key={i} className="h-36 rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
-          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde"].includes(t.slug)).length > 0 ? (
+          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc"].includes(t.slug)).length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde"].includes(t.slug))
-                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde"].indexOf(b.slug))
+              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc"].includes(t.slug))
+                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc"].indexOf(b.slug))
                 .map((tenant, i) => {
                 const CardEl = motion.a;
                 const cardProps = { href: `https://${tenant.slug}.eventcarpooling.com` };
@@ -886,6 +893,9 @@ function PlatformHomeInner() {
                 } else if (tenant.slug === "bulverde") {
                   iconContent = "🌳";
                   iconStyle = { background: "linear-gradient(135deg, #162010, #2a4015)", boxShadow: "0 6px 20px rgba(22,32,16,0.5)" };
+                } else if (tenant.slug === "dc") {
+                  iconContent = "🦅";
+                  iconStyle = { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)", boxShadow: "0 6px 20px rgba(29,78,216,0.45)" };
                 } else {
                   iconContent = tenant.name.charAt(0);
                   iconStyle = { background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)`, color: "#fff", fontSize: "1.5rem", fontWeight: 700, fontFamily: "Georgia, serif" };
