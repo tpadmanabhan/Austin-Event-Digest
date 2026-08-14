@@ -68,11 +68,27 @@ curl -X POST "https://tokyo.eventcarpooling.com/api/events/digest/generate" \
 
 After importing events, the translation pre-warm runs automatically. Allow 30–60 seconds before the first page load for translations to finish.
 
+## Spotlight / Community Post Audit (Tokyo-specific)
+
+Business spotlights (`isBusinessSpotlight: true`) and community posts (`isPost: true`) in the Tokyo digest can accumulate duplicates if `POST /api/events/digest/:id/spotlight` is called more than once, or if events are patched in manually alongside an existing spotlight.
+
+**Check for duplicates before sending:**
+```python
+for i, e in enumerate(events):
+    if e.get('isBusinessSpotlight') or e.get('isPost'):
+        print(f"[{i}] {e.get('title')} | {e.get('link')}")
+```
+
+Watch for:
+- Same `link` appearing twice with different titles (remove the duplicate by index)
+- **Placeholder descriptions** — WordPress/Avada demo copy ("Create a cutting-edge website for cryptocurrency services with Avada…") means the description was never updated; replace with accurate copy
+- **HTML entities in titles** — WordPress-sourced data often contains `&#8211;` (en-dash), `&#8217;` (apostrophe), etc. Decode with Python's `html.unescape()` before storing
+
 ## Known Issues / Watch Points
 
 - **Language persistence is global** — if a user toggles to Japanese on Tokyo and then visits Austin, Austin may show partial Japanese UI if any key happens to have a Japanese variant. Only Tokyo has full Japanese translation coverage.
 - **Translation cache** — `ANY(${array})` syntax is broken in Drizzle's `sql` template for this use case; the translation cache uses a workaround (single batched frontend call). Do not change the cache query pattern without verifying the fix still works.
-- **Generating Tokyo digests falls back to Austin sample events** — Ticketmaster returns 0 results for Tokyo, Japan with the current adapter, so the generate endpoint uses `generateSampleDigest()` which produces Austin-flavored placeholder events. Do NOT push these to production. Use the import endpoint with curated Tokyo events instead (Task #117 tracks the underlying fix).
+- **Generating Tokyo digests falls back to Austin sample events** — Ticketmaster returns 0 results for Tokyo, Japan with the current adapter. `generateSampleDigest()` now generates a city-specific *intro* ("Hey Tokyo!") but the fallback *event list* still contains Austin venues (Barton Springs, ACL Live, etc.). Do NOT push these to production. Use the import endpoint with curated Tokyo events instead (Task #117 tracks the underlying fix).
 
 ## Relevant Files
 

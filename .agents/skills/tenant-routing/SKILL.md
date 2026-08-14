@@ -43,6 +43,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **Special features:** None beyond standard platform
 - **Layout:** Generic `home.tsx`; St. Louis-specific greeting/flag
 - **Community events:** Soulard Market, Gateway Arch, Art Museum, City Museum, STL Tech Meetup, Laumeier, Tower Grove
+- **⚠️ Geocoding drift:** Vague venue strings like "Atomic Lounge, St. Louis" geocoded to Las Vegas; "Atomic Garage, St. Louis" geocoded to Des Moines. Always audit coords against the St. Louis bounding box (lat 37–40, lng -96 to -88) before sending. See "Geocoding Drift Audit" in the digest-workflow skill for the fix pattern.
 
 ### 🏞️ Brushy Creek (`brushycreek.eventcarpooling.com`)
 - **Auth:** Email-based HMAC (null passwordHash) — see `brushycreek-admin-auth.md` in memory
@@ -72,7 +73,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **Curator:** *(blank)*
 - **Language:** English
 - **Positioning:** **Weekly deals site**, not an events site. Primary value = the deals directory, not the digest.
-- **Special features:** Dedicated pages — `/` → deals landing, `/full` → live deals map + directory + community submission form; digest email has a prominent "See this week's deals →" button to `/full`; events in digest restricted to Civics + Wellness only
+- **Special features:** Dedicated pages — `/` → deals landing, `/full` → live deals map + directory + community submission form; digest email has a prominent "See this week's deals →" button to `/full`; category restriction removed in dev code (`applyTenantCategoryRestriction` RESTRICTIONS map is empty); until next deploy use `category: "Wellness"` on deal objects to pass prod validation
 - **Layout:** `austin-cares-deals.tsx` and `austin-cares-full.tsx` (not generic `home.tsx`)
 
 ## Auth Quick Reference
@@ -94,11 +95,24 @@ See `admin-api-auth` skill for token computation details and pre-computed produc
 
 `GET /api/healthz` and `GET /api` are registered **before** `app.use(resolveTenant)` in `app.ts` — health probes never trigger DB lookups.
 
+## Per-City Email Intro
+
+Digest intros are now city-specific — `generateSampleDigest()` accepts a tenant param and generates "Hey [City]!" copy with the correct emoji per city. The Gmail reader intro ("Hey Austin! 🤠") is gated to `slug === "austin"` only in the generate endpoint, so it no longer bleeds into Sacramento, Portland, etc.
+
+Always audit stored intros before the first send for a new city:
+```sql
+SELECT slug, d.id, LEFT(d.intro, 100)
+FROM tenants t JOIN digests d ON d.tenant_id = t.id
+WHERE t.slug NOT IN ('austin') AND d.week_of = 'YYYY-MM-DD';
+```
+If any intro contains "Austin" → PATCH with `PATCH /api/events/digest/:id/intro`.
+
 ## Adding a New City
 
 1. Insert a row into `tenants` with `slug`, `name`, `domain`, `is_active = true`, and optionally `curator_name`, `admin_email`, `theme`
 2. Register the subdomain in Replit Domains
 3. The city immediately gets: digest page, Ticketmaster events, geocoding, admin panel, subscriber emails
+4. Add a theme block for the new slug in `emailService.ts` (colors, emoji, curator name, cityGuideText) — otherwise it falls back to Austin's green/cowboy theme
 
 ## Relevant Files
 
