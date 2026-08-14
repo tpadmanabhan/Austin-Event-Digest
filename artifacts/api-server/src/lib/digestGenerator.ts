@@ -97,7 +97,7 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant
     : `Hey ${cityFirst}! Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Get out there and enjoy it!`;
   const intro = cityIntro;
 
-  const subjectEmoji = slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : "🤠";
+  const subjectEmoji = slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
 
   return {
     subject: `${subjectEmoji} ${digestName} Events — Week of ${dateRange}`,

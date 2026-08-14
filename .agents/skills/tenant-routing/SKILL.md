@@ -68,6 +68,15 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **Special features:** AI translation of event titles/descriptions on digest import (prewarm via slug check, not hardcoded ID); language toggle persists globally as `ec-lang`
 - **Layout:** Generic `home.tsx` with Japanese-specific hero/category styling
 
+### 🏛️ DC (`dc.eventcarpooling.com`)
+- **Auth:** Email-based HMAC (null passwordHash)
+- **Curator:** *(blank)*
+- **Language:** English
+- **Special features:** None beyond standard platform
+- **Layout:** Generic `home.tsx`
+- **Community events:** Eastern Market (Arts + Civics), Smithsonian (Arts), DC Tech Meetup (Tech), National Mall Morning Run (Wellness), Kennedy Center Millennium Stage (Arts)
+- **⚠️ Geocoding drift:** "Washington" alone geocodes to Washington State — always use "Washington, DC" in venue strings. The Sage venue geocoded to WA state; The National Theatre geocoded to Africa on first pass. Always audit coords against DC metro bounds (lat 38.5–39.2, lng -77.5 to -76.7) before sending.
+
 ### 🌿 AustinCares (`austincares.eventcarpooling.com`)
 - **Auth:** Password-hash HMAC — **always query prod DB for fresh hash**
 - **Curator:** *(blank)*
@@ -88,6 +97,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 | St. Louis | Email-based HMAC | Null passwordHash |
 | Brushy Creek | Email-based HMAC | Null passwordHash |
 | Bulverde | Email-based HMAC | Null passwordHash |
+| DC | Email-based HMAC | Null passwordHash; prod ID unknown until first deploy |
 
 See `admin-api-auth` skill for token computation details and pre-computed production tokens.
 
@@ -109,10 +119,15 @@ If any intro contains "Austin" → PATCH with `PATCH /api/events/digest/:id/intr
 
 ## Adding a New City
 
-1. Insert a row into `tenants` with `slug`, `name`, `domain`, `is_active = true`, and optionally `curator_name`, `admin_email`, `theme`
-2. Register the subdomain in Replit Domains
-3. The city immediately gets: digest page, Ticketmaster events, geocoding, admin panel, subscriber emails
-4. Add a theme block for the new slug in `emailService.ts` (colors, emoji, curator name, cityGuideText) — otherwise it falls back to Austin's green/cowboy theme
+1. Add tenant seed to `startupMigration.ts` (idempotent `INSERT ... ON CONFLICT (slug) DO NOTHING`) — runs on next deploy
+2. Register the subdomain in Replit Domains (user action in Replit UI)
+3. Add a theme block for the new slug in `emailService.ts` (colors, emoji, curator name, cityGuideText) — otherwise it falls back to Austin's green/cowboy theme
+4. Add city geo entries to `eventSources/utils.ts` CITY_GEO map (both bare and "City, ST" variants)
+5. Add `slug/tz/tmCity` to `TENANT_CONFIGS` in `weeklyRefresh.ts`
+6. Add community events to `COMMUNITY_EVENTS` in `weeklyRefresh.ts`
+7. Add subject emoji to the `subjectEmoji` ternary in `digestGenerator.ts`
+8. Add city bounding box to `CITY_BOUNDS` in `digest-workflow` skill for geocoding drift audit
+9. Deploy → startupMigration seeds the tenant in production → generate digest, push events via API
 
 ## Relevant Files
 

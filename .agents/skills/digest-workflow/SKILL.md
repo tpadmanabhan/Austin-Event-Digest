@@ -139,6 +139,7 @@ CITY_BOUNDS = {
   "bulverde":   (29.5, 30.1, -98.6, -98.0),
   "brushycreek":(30.4, 30.7, -97.9, -97.5),
   "tokyo":      (35.5, 35.9, 139.5, 140.0),
+  "dc":         (38.5, 39.2, -77.5, -76.7),
 }
 # Flag any event whose lat/lng falls outside the city box
 ```

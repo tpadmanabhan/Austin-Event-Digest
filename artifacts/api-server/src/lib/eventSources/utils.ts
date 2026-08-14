@@ -55,6 +55,11 @@ const CITY_GEO: Record<string, CityGeo> = {
   "Brushy Creek, TX": { lat: 30.5085, lon: -97.7528, timezone: "America/Chicago", slug: "brushy-creek-tx" },
   "Bulverde, TX": { lat: 29.7474, lon: -98.4248, timezone: "America/Chicago", slug: "bulverde-tx" },
   "Bulverde": { lat: 29.7474, lon: -98.4248, timezone: "America/Chicago", slug: "bulverde-tx" },
+  // Washington DC
+  "Washington": { lat: 38.9072, lon: -77.0369, timezone: "America/New_York", slug: "washington-dc" },
+  "Washington, DC": { lat: 38.9072, lon: -77.0369, timezone: "America/New_York", slug: "washington-dc" },
+  "Washington, D.C.": { lat: 38.9072, lon: -77.0369, timezone: "America/New_York", slug: "washington-dc" },
+  "Washington DC": { lat: 38.9072, lon: -77.0369, timezone: "America/New_York", slug: "washington-dc" },
   // Non-geographic city strings — map to nearest real city
   "Austin Cares": { lat: 30.2672, lon: -97.7431, timezone: "America/Chicago", slug: "austin-tx" },
   // International cities

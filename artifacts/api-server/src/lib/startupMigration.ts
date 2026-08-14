@@ -720,7 +720,28 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Tokyo tenant seed failed (non-fatal)");
   }
 
-  for (const slug of ["portland", "sacramento", "stlouis", "tokyo"]) {
+  // Seed DC tenant (idempotent)
+  try {
+    await db.execute(sql`
+      INSERT INTO tenants (slug, name, city, accent_color, categories, is_active, email_verified, admin_email)
+      VALUES (
+        'dc',
+        'DC Events',
+        'Washington, DC',
+        '#003087',
+        '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb,
+        true,
+        true,
+        'aiimplementationclubaustin@gmail.com'
+      )
+      ON CONFLICT (slug) DO NOTHING
+    `);
+    logger.info("DC tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "DC tenant seed failed (non-fatal)");
+  }
+
+  for (const slug of ["portland", "sacramento", "stlouis", "tokyo", "dc"]) {
     try {
       await db.execute(
         sql`UPDATE tenants SET admin_email = 'aiimplementationclubaustin@gmail.com', is_active = true, email_verified = true WHERE slug = ${slug} AND (admin_email IS NULL OR admin_email != 'aiimplementationclubaustin@gmail.com')`

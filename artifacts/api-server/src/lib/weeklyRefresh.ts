@@ -393,6 +393,57 @@ const COMMUNITY_EVENTS: Record<string, CommunityEventDef[]> = {
       link: "https://www.meetup.com/stl-tech/",
     },
   ],
+
+  dc: [
+    {
+      title: "Eastern Market Weekend — Arts & Crafts",
+      dayOffset: 6, time: "9:00 AM",
+      venue: "Eastern Market, 225 7th St SE, Washington, DC 20003",
+      category: "Arts",
+      description: "DC's beloved Capitol Hill market comes alive on weekends with local artists, craftspeople, and antique vendors. Browse hand-crafted goods, original paintings, and unique finds just steps from the Capitol.",
+      link: "https://easternmarket-dc.org",
+    },
+    {
+      title: "Eastern Market Weekend — Fresh Produce & Food",
+      dayOffset: 0, time: "8:00 AM",
+      venue: "Eastern Market, 225 7th St SE, Washington, DC 20003",
+      category: "Civics",
+      description: "Stock up on seasonal produce, local cheeses, baked goods, and specialty foods at one of DC's oldest and most beloved markets — running every weekend rain or shine.",
+      link: "https://easternmarket-dc.org",
+    },
+    {
+      title: "Smithsonian Free Museum Day",
+      dayOffset: 3, time: "10:00 AM",
+      venue: "National Mall, Washington, DC 20560",
+      category: "Arts",
+      description: "All 19 Smithsonian museums on and around the National Mall are free and open to the public. From American History to Natural History to Air and Space — world-class culture, no ticket required.",
+      link: "https://www.si.edu/visit",
+    },
+    {
+      title: "DC Tech Meetup — Monthly Networking",
+      dayOffset: 2, time: "6:30 PM",
+      venue: "1776, 1 Dupont Cir NW, Washington, DC 20036",
+      category: "Tech",
+      description: "One of DC's largest tech community gatherings — founders, engineers, and policy folks connecting over the intersection of technology and the nation's capital. Lightning talks, demos, and open networking.",
+      link: "https://www.dctechmeetup.com",
+    },
+    {
+      title: "National Mall Morning Run",
+      dayOffset: 0, time: "7:00 AM",
+      venue: "Lincoln Memorial, Washington, DC 20037",
+      category: "Wellness",
+      description: "Join runners of all levels for an iconic loop past the Lincoln Memorial, WWII Memorial, and Washington Monument. One of the most scenic morning runs in America — free, no registration needed.",
+      link: "https://www.nps.gov/nama/index.htm",
+    },
+    {
+      title: "Kennedy Center Millennium Stage — Free Concert",
+      dayOffset: 5, time: "6:00 PM",
+      venue: "Kennedy Center, 2700 F St NW, Washington, DC 20566",
+      category: "Arts",
+      description: "The Kennedy Center's Millennium Stage hosts free performances every single day of the year. This week features local and national artists across genres — jazz, classical, folk, and world music. Walk in, no ticket required.",
+      link: "https://www.kennedy-center.org/millennium-stage/",
+    },
+  ],
 };
 
 // ── Tenant config ─────────────────────────────────────────────────────────────
@@ -410,6 +461,7 @@ const TENANT_CONFIGS: TenantConfig[] = [
   { slug: "bulverde",    tz: "America/Chicago", tmCity: "San Antonio, TX" },
   { slug: "stlouis",     tz: "America/Chicago" },
   { slug: "tokyo",       tz: "Asia/Tokyo", tmCity: "Tokyo" },
+  { slug: "dc",          tz: "America/New_York", tmCity: "Washington, DC" },
 ];
 
 // ── Ticketmaster fetch (server-side, direct env access) ───────────────────────

@@ -13,6 +13,12 @@ Venue strings like `"Atomic Lounge, St. Louis"` or `"Atomic Cowboy, St. Louis"` 
 
 The geocoder finds the most prominent match for the name, which is not always in the right city.
 
+## DC-Specific Drift Warning
+"Washington" alone geocodes to Washington State (lat ~47, lng ~-120). Always use "Washington, DC" in venue strings. Even then, first-pass geocoding can drift:
+- The Sage → WA state (47.4472, -120.3778); hardcoded to 38.8993, -77.0284
+- The National Theatre → Africa (2.03, 45.33); hardcoded to 38.8951, -77.0283
+Always run the bounding-box audit for DC: lat 38.5–39.2, lng -77.5 to -76.7.
+
 ## Audit Before Sending
 Check all geocoded events against the city bounding box:
 ```
@@ -22,6 +28,7 @@ sacramento: lat 38.3–38.8, lng -121.7 to -121.2
 portland:   lat 45.2–45.8, lng -122.9 to -122.3
 bulverde:   lat 29.5–30.1, lng -98.6 to -98.0
 tokyo:      lat 35.5–35.9, lng 139.5 to 140.0
+dc:         lat 38.5–39.2, lng -77.5 to -76.7
 ```
 
 ## Fix Workflow
