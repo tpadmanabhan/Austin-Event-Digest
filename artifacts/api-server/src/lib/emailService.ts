@@ -283,6 +283,7 @@ function buildStaticMapSection(
     sacramento:  { lat: 38.575, lng: -121.479 },
     stlouis:     { lat: 38.627, lng: -90.197 },
     tokyo:       { lat: 35.676, lng: 139.650 },
+    dc:          { lat: 38.907, lng: -77.037 },
   };
   const CITY_LABELS: Record<string, string> = {
     austin:      "Austin",
@@ -293,6 +294,7 @@ function buildStaticMapSection(
     sacramento:  "Sacramento",
     stlouis:     "St. Louis",
     tokyo:       "Tokyo",
+    dc:          "Washington, DC",
   };
   if (!slug || !(slug in MAP_CENTERS)) return "";
   const geocoded = events.filter(
