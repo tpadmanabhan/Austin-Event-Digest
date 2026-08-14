@@ -166,6 +166,7 @@ export default function Home() {
     sacramento:  [38.575, -121.479],
     stlouis:     [38.627, -90.197],
     tokyo:       [35.676,  139.650],
+    dc:          [38.907, -77.037],
   };
   const showMap = tenant.slug in MAP_CENTERS;
   const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
@@ -181,7 +182,9 @@ export default function Home() {
             ? "bulverde-hero.jpg"
             : isStLouis
               ? "stlouis-hero.jpg"
-              : "austin-hero.png";
+              : tenant.slug === "dc"
+                ? "dc-hero.jpg"
+                : "austin-hero.png";
   const heroSrc = isToky
     ? "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1400&auto=format&fit=crop&q=80"
     : tenant.hasHeroImage
@@ -199,9 +202,11 @@ export default function Home() {
             ? "Bulverde Community Park, Texas Hill Country"
             : isStLouis
               ? "St. Louis skyline and Gateway Arch at night"
-              : isToky
-                ? "Tokyo skyline with Tokyo Skytree at dusk"
-                : "Austin Texas stylized illustration";
+              : tenant.slug === "dc"
+                ? "Washington DC monuments with American flag at twilight"
+                : isToky
+                  ? "Tokyo skyline with Tokyo Skytree at dusk"
+                  : "Austin Texas stylized illustration";
 
   return (
     <Layout>

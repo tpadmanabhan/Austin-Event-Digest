@@ -74,6 +74,7 @@ const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET).update(m
 | St. Louis | 3 | `2fd6033d16c069bc3db90536c9e5dc463947c88538cd4a095b0f99510777cdb6` |
 | Brushy Creek | 7 | `65ebf3dcfe8ca96eda1e9fd9f7e7b37e02e8902d8dd356520d31a55ce43fea9d` |
 | Tokyo | 8 | `dc44914f68eaf2578b632218c1f0268b0e975e2eec46c5a260c6da5e8d1ad0d8` |
+| DC | 217 | `5658e7f85704b92e39c1ce382cf6afc477997aa42ff77ecc708d7dbddaf3b3ac` |
 
 > ⚠️ Email-based tokens depend on `RSVP_HMAC_SECRET` (a Replit Secret), not on the DB. They stay valid as long as the secret doesn't rotate. Re-compute if you get 401.
 
