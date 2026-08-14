@@ -354,6 +354,37 @@
   --sidebar-ring: 211 72% 38%;
 }
 
+/* ── Washington DC: navy blue (#1d4ed8 / #0a1f4e) ─────────────────────── */
+[data-tenant="dc"] {
+  --background: 220 70% 97%;      /* very light navy-tinted white */
+  --foreground: 222 47% 11%;      /* deep navy text */
+  --border: 220 55% 87%;
+  --input: 220 55% 87%;
+  --ring: 224 73% 48%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --card-border: 220 55% 87%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --popover-border: 220 55% 87%;
+  --primary: 224 73% 48%;         /* royal blue #1d4ed8 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 222 75% 18%;       /* dark navy #0a1f4e */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 220 60% 93%;
+  --muted-foreground: 220 25% 46%;
+  --accent: 217 91% 60%;          /* bright blue #3b82f6 */
+  --accent-foreground: 0 0% 100%;
+  --sidebar: 220 70% 97%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-border: 220 55% 87%;
+  --sidebar-primary: 224 73% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 60% 93%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-ring: 224 73% 48%;
+}
+
 @layer base {
   * {
     @apply border-border;
