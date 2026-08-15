@@ -57,7 +57,6 @@ function PlatformHomeInner() {
     { number: "01", icon: "📍", title: t.step1Title, description: t.step1Desc },
     { number: "02", icon: "📋", title: t.step2Title, description: t.step2Desc },
     { number: "03", icon: "🚀", title: t.step3Title, description: t.step3Desc },
-    { number: "04", icon: "🚗", title: t.step4Title, description: t.step4Desc, comingSoon: true },
   ];
 
   const FEATURES = [t.feat1, t.feat2, t.feat3, t.feat4];
@@ -599,111 +598,11 @@ function PlatformHomeInner() {
         </div>
       </section>
 
-      {/* SUPERCONNECTOR COMING SOON */}
-      <section className="py-20 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #3b0764 40%, #1e1b4b 100%)" }}>
-        {/* decorative blobs */}
+      {/* SMS FOR SMALL BUSINESSES — COMING SOON */}
+      <section className="py-20 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0c1a2e 0%, #1e3a5f 50%, #0f2847 100%)" }}>
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div style={{ position: "absolute", top: "-80px", left: "-80px", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%)" }} />
-          <div style={{ position: "absolute", bottom: "-60px", right: "-60px", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(250,204,21,0.2) 0%, transparent 70%)" }} />
-          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 65%)" }} />
-        </div>
-
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* top badge */}
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-8"
-            style={{ background: "rgba(250,204,21,0.15)", color: "#fde047", border: "1px solid rgba(250,204,21,0.3)" }}
-          >
-            <span>⚡</span> {t.gameBadge}
-          </motion.div>
-
-          {/* trophy */}
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.1 }}
-            className="text-7xl mb-6 select-none"
-          >
-            🏆
-          </motion.div>
-
-          {/* headline */}
-          <motion.h2
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.55, delay: 0.15 }}
-            className="font-serif font-black leading-tight mb-4"
-            style={{ fontSize: "clamp(2.2rem, 6vw, 4rem)", color: "#fff", letterSpacing: "-0.02em" }}
-          >
-            {t.gameH2a}
-            <br />
-            <span style={{ background: "linear-gradient(90deg, #a855f7, #facc15, #f97316, #a855f7)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              {t.gameH2b}
-            </span>
-          </motion.h2>
-
-          {/* coming soon pill */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.25 }}
-            className="inline-flex items-center gap-2 rounded-full px-6 py-2 mb-8 font-black text-lg uppercase tracking-widest"
-            style={{ background: "linear-gradient(90deg, #7c3aed, #a855f7)", color: "#fff", boxShadow: "0 0 32px rgba(168,85,247,0.5), 0 0 64px rgba(168,85,247,0.2)" }}
-          >
-            {t.gameComingSoon}
-          </motion.div>
-
-          {/* description */}
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-lg leading-relaxed max-w-2xl mx-auto mb-12"
-            style={{ color: "rgba(255,255,255,0.7)" }}
-          >
-            {t.gameDesc}
-          </motion.p>
-
-          {/* feature chips */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.38 }}
-            className="flex flex-wrap justify-center gap-3"
-          >
-            {[
-              { icon: "⚡", label: t.gameChip1 },
-              { icon: "🔥", label: t.gameChip2 },
-              { icon: "🎖️", label: t.gameChip3 },
-              { icon: "📅", label: t.gameChip4 },
-              { icon: "🏅", label: t.gameChip5 },
-            ].map((f) => (
-              <span
-                key={f.label}
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
-                style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
-              >
-                {f.icon} {f.label}
-              </span>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* THE RIDE — UPCOMING FEATURE */}
-      <section className="py-16 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0f2c1e 0%, #1a3a28 50%, #0d2318 100%)" }}>
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div style={{ position: "absolute", top: "-60px", right: "-60px", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(52,211,153,0.2) 0%, transparent 70%)" }} />
-          <div style={{ position: "absolute", bottom: "-40px", left: "-40px", width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", top: "-80px", right: "-80px", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", bottom: "-60px", left: "-60px", width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)" }} />
         </div>
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
@@ -713,29 +612,33 @@ function PlatformHomeInner() {
             transition={{ duration: 0.5 }}
           >
             <div
-              className="inline-flex items-center gap-2 rounded-full px-5 py-1.5 mb-6 text-xs font-bold uppercase tracking-widest"
-              style={{ background: "rgba(52,211,153,0.15)", color: "#6ee7b7", border: "1px solid rgba(52,211,153,0.3)" }}
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 text-xs font-bold uppercase tracking-widest"
+              style={{ background: "rgba(59,130,246,0.15)", color: "#93c5fd", border: "1px solid rgba(59,130,246,0.3)" }}
             >
-              🚗 {t.rideBadge}
+              📱 Coming Soon · Austin
             </div>
-            <div className="text-5xl mb-4">🤝</div>
-            <h2 className="font-serif font-black text-3xl sm:text-4xl mb-5" style={{ color: "#ecfdf5", letterSpacing: "-0.02em" }}>
-              {t.rideH2}
+            <div className="text-6xl mb-5 select-none">💬</div>
+            <h2
+              className="font-serif font-black leading-tight mb-5"
+              style={{ fontSize: "clamp(1.9rem, 5vw, 3.2rem)", color: "#fff", letterSpacing: "-0.02em" }}
+            >
+              SMS for Austin's{" "}
+              <span style={{ color: "#60a5fa" }}>Small Businesses</span>
             </h2>
-            <p className="text-lg leading-relaxed mb-8" style={{ color: "#a7f3d0" }}>
-              {t.rideDesc}
+            <p className="text-lg leading-relaxed mb-8 max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.65)" }}>
+              We're rolling out an SMS-powered tool built specifically for Austin's local service businesses — helping them connect with nearby customers in real time. No app download required.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               {[
-                { icon: "🏥", label: t.rideChip1 },
-                { icon: "🎓", label: t.rideChip2 },
-                { icon: "🛒", label: t.rideChip3 },
-                { icon: "💼", label: t.rideChip4 },
+                { icon: "⚡", label: "Real-Time Reach" },
+                { icon: "💬", label: "SMS-First" },
+                { icon: "📍", label: "Hyper-Local" },
+                { icon: "🚀", label: "No App Needed" },
               ].map((f) => (
                 <span
                   key={f.label}
                   className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
-                  style={{ background: "rgba(255,255,255,0.07)", color: "rgba(167,243,208,0.9)", border: "1px solid rgba(52,211,153,0.2)" }}
+                  style={{ background: "rgba(255,255,255,0.07)", color: "rgba(147,197,253,0.9)", border: "1px solid rgba(59,130,246,0.25)" }}
                 >
                   {f.icon} {f.label}
                 </span>
