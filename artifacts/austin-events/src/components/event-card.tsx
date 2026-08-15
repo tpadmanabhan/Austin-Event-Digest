@@ -5,6 +5,7 @@ import type { EventItem } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TurnstileWidget } from "@/components/turnstile-widget";
+import { useDomain } from "@/hooks/use-domain";
 
 const SOURCE_URLS: Record<string, string> = {
   "Ticketmaster": "https://www.ticketmaster.com",
@@ -207,6 +208,118 @@ function useRsvpState(digestId: number | undefined, eventTitle: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function slugify(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
+}
+
+// ---------------------------------------------------------------------------
+// Tell a Friend — SMS share box
+// ---------------------------------------------------------------------------
+
+function TellAFriendBox({ event, citySlug }: { event: EventItem; citySlug: string }) {
+  const [showForm, setShowForm] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("submitting");
+
+    const eventSlug = slugify(event.title);
+    const shareUrl = `https://${citySlug}.eventcarpooling.com#event-${eventSlug}`;
+
+    try {
+      const res = await fetch("/api/events/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone,
+          eventTitle: event.title,
+          eventDate: event.date,
+          eventVenue: event.venue,
+          eventDescription: event.description,
+          eventLink: event.link,
+          shareUrl,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus("done");
+      } else {
+        setStatus("error");
+        setErrorMsg(data.message || "Something went wrong.");
+      }
+    } catch {
+      setStatus("error");
+      setErrorMsg("Could not send. Please try again.");
+    }
+  };
+
+  if (status === "done") {
+    return (
+      <div className="flex items-center gap-2 text-xs font-semibold text-green-700 mt-2 pt-2.5 border-t border-border/50">
+        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+        Text sent! Your friend will get the details. 📱
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 pt-2.5 border-t border-border/50">
+      {!showForm ? (
+        <button
+          type="button"
+          onClick={() => setShowForm(true)}
+          className="w-full text-xs font-semibold text-muted-foreground hover:text-foreground border border-muted-foreground/25 hover:border-muted-foreground/50 rounded-lg px-3 py-1.5 transition-colors flex items-center justify-center gap-1.5"
+        >
+          📨 Tell a Friend
+        </button>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <p className="text-xs font-semibold text-foreground">Text this event to a friend:</p>
+          <Input
+            placeholder="Friend's phone number"
+            type="tel"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            className="h-9 text-sm rounded-lg"
+            required
+          />
+          <div className="flex gap-2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={status === "submitting" || !phone.trim()}
+              className="flex-1 text-xs disabled:opacity-50"
+            >
+              {status === "submitting"
+                ? <><Loader2 className="w-3 h-3 animate-spin mr-1" />Sending…</>
+                : "Send Text 📱"}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => { setShowForm(false); setStatus("idle"); setErrorMsg(""); }}
+              className="text-xs"
+            >
+              Cancel
+            </Button>
+          </div>
+          {status === "error" && (
+            <p className="text-xs text-destructive">{errorMsg}</p>
+          )}
+        </form>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // RSVP box
 // ---------------------------------------------------------------------------
 
@@ -364,6 +477,8 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
 // ---------------------------------------------------------------------------
 
 export function EventCard({ event, digestId, distanceMiles }: { event: EventItem; digestId?: number; distanceMiles?: number }) {
+  const { citySlug } = useDomain();
+  const cardSlug = slugify(event.title);
   const getCategoryIcon = (category: string) => {
     const cat = category.toLowerCase();
     if (cat.includes("music") || cat.includes("concert")) return <Music className="w-4 h-4" />;
@@ -382,7 +497,7 @@ export function EventCard({ event, digestId, distanceMiles }: { event: EventItem
   };
 
   return (
-    <div className={`group relative flex flex-col rounded-2xl bg-card border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full ${event.link ? "border-primary/40 border-t-2 border-t-primary hover:border-primary/60" : "border-border hover:border-primary/30"}`}>
+    <div id={`event-${cardSlug}`} className={`group relative flex flex-col rounded-2xl bg-card border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full ${event.link ? "border-primary/40 border-t-2 border-t-primary hover:border-primary/60" : "border-border hover:border-primary/30"}`}>
       {event.imageUrl && (
         <div className="w-full overflow-hidden bg-muted rounded-t-2xl" style={{ height: "120px" }}>
           <img
@@ -535,6 +650,7 @@ export function EventCard({ event, digestId, distanceMiles }: { event: EventItem
             eventVenue={event.venue}
           />
         )}
+        <TellAFriendBox event={event} citySlug={citySlug ?? "austin"} />
       </div>
     </div>
   );

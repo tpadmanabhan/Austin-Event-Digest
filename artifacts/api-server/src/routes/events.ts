@@ -1172,4 +1172,63 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// Tell a Friend — SMS share (POST /api/events/share)
+// ---------------------------------------------------------------------------
+router.post("/share", async (req, res) => {
+  const { phone, eventTitle, eventDate, eventVenue, eventDescription, eventLink, shareUrl } = req.body || {};
+
+  if (!phone || typeof phone !== "string" || !eventTitle || typeof eventTitle !== "string") {
+    res.status(400).json({ success: false, message: "Phone and event title are required." });
+    return;
+  }
+
+  // Normalise to E.164 US format
+  const digits = phone.replace(/\D/g, "");
+  let toPhone: string;
+  if (digits.length === 10) {
+    toPhone = `+1${digits}`;
+  } else if (digits.length === 11 && digits.startsWith("1")) {
+    toPhone = `+${digits}`;
+  } else {
+    res.status(400).json({ success: false, message: "Please enter a valid US phone number." });
+    return;
+  }
+
+  const twilioSid  = process.env["TWILIO_ACCOUNT_SID"];
+  const twilioAuth = process.env["TWILIO_AUTH_TOKEN"];
+  const twilioFrom = process.env["TWILIO_PHONE_NUMBER"];
+
+  if (!twilioSid || !twilioAuth || !twilioFrom) {
+    req.log.warn("Twilio not configured — SMS share skipped");
+    res.status(503).json({ success: false, message: "SMS not available yet — check back soon!" });
+    return;
+  }
+
+  try {
+    const twilio = (await import("twilio")).default;
+    const client = twilio(twilioSid, twilioAuth);
+
+    const descSnippet =
+      typeof eventDescription === "string" && eventDescription
+        ? eventDescription.length > 120
+          ? eventDescription.slice(0, 120) + "…"
+          : eventDescription
+        : "";
+
+    const msgParts: string[] = [`📅 ${eventTitle}`];
+    if (eventDate)  msgParts.push(`🗓 ${eventDate}`);
+    if (eventVenue) msgParts.push(`📍 ${eventVenue}`);
+    if (descSnippet) msgParts.push(`\n${descSnippet}`);
+    if (shareUrl)   msgParts.push(`\n🔗 ${shareUrl}`);
+    if (eventLink && eventLink !== shareUrl) msgParts.push(`Tickets/details: ${eventLink}`);
+
+    await client.messages.create({ body: msgParts.join("\n"), from: twilioFrom, to: toPhone });
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "Twilio SMS share error");
+    res.status(500).json({ success: false, message: "Failed to send text. Please try again." });
+  }
+});
+
 export default router;
