@@ -219,102 +219,12 @@ function slugify(title: string): string {
 // Tell a Friend — SMS share box
 // ---------------------------------------------------------------------------
 
-function TellAFriendBox({ event, citySlug }: { event: EventItem; citySlug: string }) {
-  const [showForm, setShowForm] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus("submitting");
-
-    const eventSlug = slugify(event.title);
-    const shareUrl = `https://${citySlug}.eventcarpooling.com#event-${eventSlug}`;
-
-    try {
-      const res = await fetch("/api/events/share", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone,
-          eventTitle: event.title,
-          eventDate: event.date,
-          eventVenue: event.venue,
-          eventDescription: event.description,
-          eventLink: event.link,
-          shareUrl,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setStatus("done");
-      } else {
-        setStatus("error");
-        setErrorMsg(data.message || "Something went wrong.");
-      }
-    } catch {
-      setStatus("error");
-      setErrorMsg("Could not send. Please try again.");
-    }
-  };
-
-  if (status === "done") {
-    return (
-      <div className="flex items-center gap-2 text-xs font-semibold text-green-700 mt-2 pt-2.5 border-t border-border/50">
-        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-        Text sent! Your friend will get the details. 📱
-      </div>
-    );
-  }
-
+function TellAFriendBox(_props: { event: EventItem; citySlug: string }) {
   return (
     <div className="mt-2 pt-2.5 border-t border-border/50">
-      {!showForm ? (
-        <button
-          type="button"
-          onClick={() => setShowForm(true)}
-          className="w-full text-xs font-semibold text-muted-foreground hover:text-foreground border border-muted-foreground/25 hover:border-muted-foreground/50 rounded-lg px-3 py-1.5 transition-colors flex items-center justify-center gap-1.5"
-        >
-          📨 Tell a Friend
-        </button>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-2">
-          <p className="text-xs font-semibold text-foreground">Text this event to a friend:</p>
-          <Input
-            placeholder="Friend's phone number"
-            type="tel"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-            className="h-9 text-sm rounded-lg"
-            required
-          />
-          <div className="flex gap-2">
-            <Button
-              type="submit"
-              size="sm"
-              disabled={status === "submitting" || !phone.trim()}
-              className="flex-1 text-xs disabled:opacity-50"
-            >
-              {status === "submitting"
-                ? <><Loader2 className="w-3 h-3 animate-spin mr-1" />Sending…</>
-                : "Send Text 📱"}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => { setShowForm(false); setStatus("idle"); setErrorMsg(""); }}
-              className="text-xs"
-            >
-              Cancel
-            </Button>
-          </div>
-          {status === "error" && (
-            <p className="text-xs text-destructive">{errorMsg}</p>
-          )}
-        </form>
-      )}
+      <div className="w-full text-xs font-semibold text-muted-foreground/50 border border-muted-foreground/15 rounded-lg px-3 py-1.5 flex items-center justify-center gap-1.5 cursor-default select-none">
+        📨 Tell a Friend — coming soon
+      </div>
     </div>
   );
 }
