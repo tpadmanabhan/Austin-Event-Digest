@@ -1225,9 +1225,14 @@ router.post("/share", async (req, res) => {
 
     await client.messages.create({ body: msgParts.join("\n"), from: twilioFrom, to: toPhone });
     res.json({ success: true });
-  } catch (err) {
+  } catch (err: unknown) {
     req.log.error({ err }, "Twilio SMS share error");
-    res.status(500).json({ success: false, message: "Failed to send text. Please try again." });
+    // Surface Twilio's own error message so the caller can diagnose account issues
+    const twilioMsg = (err as { message?: string })?.message;
+    const userMsg = twilioMsg && twilioMsg.length < 200
+      ? twilioMsg
+      : "Failed to send text. Please try again.";
+    res.status(500).json({ success: false, message: userMsg });
   }
 });
 
