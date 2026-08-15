@@ -153,6 +153,7 @@ export default function DigestView() {
     sacramento:  [38.575, -121.479],
     stlouis:     [38.627, -90.197],
     tokyo:       [35.676,  139.650],
+    dc:          [38.907,  -77.037],
   };
   const isLocationEnabled = tenant.slug in MAP_CENTERS;
   const showMap = tenant.slug in MAP_CENTERS;

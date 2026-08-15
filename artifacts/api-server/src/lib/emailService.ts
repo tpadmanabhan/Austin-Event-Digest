@@ -297,12 +297,26 @@ function buildStaticMapSection(
     dc:          "Washington, DC",
   };
   if (!slug || !(slug in MAP_CENTERS)) return "";
-  const geocoded = events.filter(
-    (e) => e.lat != null && e.lng != null && !e.isPost && !e.isBusinessSpotlight
-  );
-  if (geocoded.length === 0) return "";
 
   const center = MAP_CENTERS[slug];
+
+  // Haversine distance in miles — used to discard geocoding drift
+  const haversineMiles = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 3958.8;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+  const MAX_MAP_RADIUS_MILES = 150;
+
+  const geocoded = events.filter(
+    (e) =>
+      e.lat != null && e.lng != null &&
+      !e.isPost && !e.isBusinessSpotlight &&
+      haversineMiles(center.lat, center.lng, e.lat!, e.lng!) <= MAX_MAP_RADIUS_MILES
+  );
+  if (geocoded.length === 0) return "";
 
   // Self-hosted tile-stitcher — served from our own domain so email clients never block it
   const baseUrl = siteUrl ?? "https://austin.eventcarpooling.com";
