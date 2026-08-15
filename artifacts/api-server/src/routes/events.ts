@@ -1174,7 +1174,25 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
 
 // ---------------------------------------------------------------------------
 // Tell a Friend — SMS share (POST /api/events/share)
+// Uses Replit Connectors SDK — no TWILIO_ACCOUNT_SID / AUTH_TOKEN needed.
+// Only TWILIO_PHONE_NUMBER (the "from" number) must be set as a secret.
 // ---------------------------------------------------------------------------
+
+// Cache the account SID so we only look it up once per process.
+let _cachedTwilioAccountSid: string | null = null;
+
+async function getTwilioAccountSid(): Promise<string> {
+  if (_cachedTwilioAccountSid) return _cachedTwilioAccountSid;
+  const { ReplitConnectors } = await import("@replit/connectors-sdk");
+  const connectors = new ReplitConnectors();
+  const res = await connectors.proxy("twilio", "/2010-04-01/Accounts.json", { method: "GET" });
+  const data = await res.json() as { accounts?: Array<{ sid: string }> };
+  const sid = data?.accounts?.[0]?.sid;
+  if (!sid) throw new Error("Could not retrieve Twilio account SID from connector");
+  _cachedTwilioAccountSid = sid;
+  return sid;
+}
+
 router.post("/share", async (req, res) => {
   const { phone, eventTitle, eventDate, eventVenue, eventDescription, eventLink, shareUrl } = req.body || {};
 
@@ -1195,19 +1213,17 @@ router.post("/share", async (req, res) => {
     return;
   }
 
-  const twilioSid  = process.env["TWILIO_ACCOUNT_SID"];
-  const twilioAuth = process.env["TWILIO_AUTH_TOKEN"];
   const twilioFrom = process.env["TWILIO_PHONE_NUMBER"];
-
-  if (!twilioSid || !twilioAuth || !twilioFrom) {
-    req.log.warn("Twilio not configured — SMS share skipped");
+  if (!twilioFrom) {
+    req.log.warn("TWILIO_PHONE_NUMBER not set — SMS share unavailable");
     res.status(503).json({ success: false, message: "SMS not available yet — check back soon!" });
     return;
   }
 
   try {
-    const twilio = (await import("twilio")).default;
-    const client = twilio(twilioSid, twilioAuth);
+    const { ReplitConnectors } = await import("@replit/connectors-sdk");
+    const connectors = new ReplitConnectors();
+    const accountSid = await getTwilioAccountSid();
 
     const descSnippet =
       typeof eventDescription === "string" && eventDescription
@@ -1217,13 +1233,25 @@ router.post("/share", async (req, res) => {
         : "";
 
     const msgParts: string[] = [`📅 ${eventTitle}`];
-    if (eventDate)  msgParts.push(`🗓 ${eventDate}`);
-    if (eventVenue) msgParts.push(`📍 ${eventVenue}`);
+    if (eventDate)   msgParts.push(`🗓 ${eventDate}`);
+    if (eventVenue)  msgParts.push(`📍 ${eventVenue}`);
     if (descSnippet) msgParts.push(`\n${descSnippet}`);
-    if (shareUrl)   msgParts.push(`\n🔗 ${shareUrl}`);
+    if (shareUrl)    msgParts.push(`\n🔗 ${shareUrl}`);
     if (eventLink && eventLink !== shareUrl) msgParts.push(`Tickets/details: ${eventLink}`);
 
-    await client.messages.create({ body: msgParts.join("\n"), from: twilioFrom, to: toPhone });
+    const body = new URLSearchParams({ To: toPhone, From: twilioFrom, Body: msgParts.join("\n") }).toString();
+
+    const msgRes = await connectors.proxy(
+      "twilio",
+      `/2010-04-01/Accounts/${accountSid}/Messages.json`,
+      { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body }
+    );
+
+    const msgData = await msgRes.json() as { sid?: string; status?: string; error_message?: string };
+    if (!msgRes.ok || msgData.error_message) {
+      throw new Error(msgData.error_message ?? `Twilio status ${msgRes.status}`);
+    }
+
     res.json({ success: true });
   } catch (err) {
     req.log.error({ err }, "Twilio SMS share error");
