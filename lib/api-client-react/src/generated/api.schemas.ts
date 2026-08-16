@@ -106,6 +106,8 @@ export interface SendDigestRequest {
   digestId: number;
   /** If provided, only sends to this test email */
   testEmail?: string;
+  /** Must be true to trigger a full subscriber send (safety guard) */
+  confirm?: boolean;
 }
 
 export interface TenantPublic {

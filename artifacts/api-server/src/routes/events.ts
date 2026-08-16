@@ -1284,7 +1284,19 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
     return;
   }
 
-  const { digestId, testEmail } = parseResult.data;
+  const { digestId, testEmail, confirm } = parseResult.data;
+
+  // Safety guard: a full subscriber send requires explicit opt-in.
+  // Without testEmail OR confirm:true, reject the request immediately so that
+  // a mis-typed field name (e.g. previewOnly instead of testEmail) can never
+  // accidentally trigger a live blast.
+  if (!testEmail && confirm !== true) {
+    res.status(400).json({
+      error: "confirmation_required",
+      message: "Sending to all subscribers requires confirm: true in the request body.",
+    });
+    return;
+  }
 
   try {
     const [digest] = await db

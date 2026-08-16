@@ -188,6 +188,7 @@ export default function AdminDashboard() {
   const [testEmail, setTestEmail] = useState("");
 
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const [sendConfirmPending, setSendConfirmPending] = useState(false);
 
   // Manual add-subscriber form
   const [addSubEmail, setAddSubEmail] = useState("");
@@ -763,13 +764,15 @@ export default function AdminDashboard() {
 
   const onSend = (digestId: number, isTest: boolean) => {
     send(
-      { data: { digestId, testEmail: isTest ? testEmail : undefined } },
+      { data: { digestId, testEmail: isTest ? testEmail : undefined, ...(!isTest ? { confirm: true } : {}) } },
       {
         onSuccess: () => {
           setSendDialogTarget(null);
+          setSendConfirmPending(false);
           toast({ title: isTest ? "Test email sent!" : "Digest sent to all subscribers!" });
         },
         onError: (err) => {
+          setSendConfirmPending(false);
           toast({ variant: "destructive", title: "Failed to send", description: err.message });
         }
       }
@@ -2064,7 +2067,7 @@ export default function AdminDashboard() {
       </Dialog>
 
       {/* SEND DIALOG */}
-      <Dialog open={sendDialogTarget !== null} onOpenChange={(o) => !o && setSendDialogTarget(null)}>
+      <Dialog open={sendDialogTarget !== null} onOpenChange={(o) => { if (!o) { setSendDialogTarget(null); setSendConfirmPending(false); } }}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl">Send Digest</DialogTitle>
@@ -2107,16 +2110,47 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-3 border-t border-border pt-6">
-              <h4 className="text-sm font-bold text-destructive">Production Send</h4>
-              <p className="text-sm text-muted-foreground">This will blast the email to all {subsData?.total || 0} active subscribers. This cannot be undone.</p>
-              <Button 
-                variant="destructive" 
-                className="w-full rounded-xl h-12 text-base font-semibold shadow-lg shadow-destructive/20"
-                onClick={() => sendDialogTarget && onSend(sendDialogTarget, false)}
-                disabled={isSending}
-              >
-                {isSending ? "Sending..." : `Send to all ${subsData?.total || 0} subscribers`}
-              </Button>
+              <h4 className="text-sm font-bold text-destructive">Send to All Subscribers</h4>
+              {!sendConfirmPending ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    This will send the email to all <strong>{subsData?.total || 0} active subscribers</strong>. Confirm before sending.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-xl h-11 text-base font-semibold border-destructive/40 text-destructive hover:bg-destructive/5 hover:border-destructive/70"
+                    onClick={() => setSendConfirmPending(true)}
+                    disabled={isSending}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Send to all {subsData?.total || 0} subscribers…
+                  </Button>
+                </>
+              ) : (
+                <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 space-y-3">
+                  <p className="text-sm font-semibold text-destructive">
+                    Are you sure? This will immediately email {subsData?.total || 0} subscriber{(subsData?.total || 0) !== 1 ? "s" : ""}. This cannot be undone.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 rounded-lg"
+                      onClick={() => setSendConfirmPending(false)}
+                      disabled={isSending}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="flex-1 rounded-lg font-semibold shadow-md shadow-destructive/20"
+                      onClick={() => sendDialogTarget && onSend(sendDialogTarget, false)}
+                      disabled={isSending}
+                    >
+                      {isSending ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Sending…</> : "Yes, send now"}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>

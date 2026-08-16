@@ -487,6 +487,9 @@ components:
           type: string
           format: email
           description: If provided, only sends to this test email
+        confirm:
+          type: boolean
+          description: Must be true to trigger a full subscriber send (safety guard)
       required:
         - digestId
 

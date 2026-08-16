@@ -207,6 +207,10 @@ export const SendDigestBody = zod.object({
     .email()
     .optional()
     .describe("If provided, only sends to this test email"),
+  confirm: zod
+    .boolean()
+    .optional()
+    .describe("Must be true to trigger a full subscriber send (safety guard)"),
 });
 
 export const SendDigestResponse = zod.object({
