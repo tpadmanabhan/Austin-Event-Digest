@@ -18,7 +18,8 @@ import { buildCommunityEvents } from "../lib/weeklyRefresh";
 import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
 import { extractEventsFromSources } from "../lib/urlEventExtractor";
-import { geocodeAndPatchDigest, geocodeEvents } from "../lib/geocodeVenue";
+import { geocodeAndPatchDigest, geocodeEvents, geocodeVenue } from "../lib/geocodeVenue";
+import { safeOutboundFetch } from "../lib/safeOutboundFetch";
 import { prewarmTranslationCache } from "../lib/translationPrewarm";
 import { signSubscriberToken } from "../lib/subscriberToken";
 
@@ -463,14 +464,7 @@ router.patch("/digest/:id/meta", requireAdmin, async (req, res) => {
 // Fetch basic og:/JSON-LD metadata from a URL for spotlight entries
 async function fetchUrlMeta(url: string): Promise<{ title: string; description: string; imageUrl: string | null }> {
   try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(10000),
-      redirect: "follow",
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
-      },
-    });
+    const res = await safeOutboundFetch(url, { timeoutMs: 10000 });
     if (!res.ok) return { title: "", description: "", imageUrl: null };
     const html = await res.text();
     const og = (prop: string) => {
@@ -575,14 +569,7 @@ router.post("/digest/:id/parse-event-url", requireAdmin, async (req, res) => {
   try {
     let html = "";
     try {
-      const pageRes = await fetch(url, {
-        signal: AbortSignal.timeout(12000),
-        redirect: "follow",
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-          "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
-        },
-      });
+      const pageRes = await safeOutboundFetch(url, { timeoutMs: 12000 });
       if (pageRes.ok) html = await pageRes.text();
     } catch { /* fall through to og fallback */ }
 
@@ -650,6 +637,109 @@ router.post("/digest/:id/parse-event-url", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.warn({ url, err }, "Failed to parse event URL");
     res.status(500).json({ error: "server_error", message: "Failed to parse URL" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Scrape a single event URL and append it (with geocoding) to an existing digest
+// POST /digest/:id/scrape-event
+// Body: { url, title?, date?, venue?, description?, category?, featured?, imageUrl? }
+// If title/description are omitted, the server fetches them from the URL.
+// ---------------------------------------------------------------------------
+router.post("/digest/:id/scrape-event", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+
+  const {
+    url,
+    title: titleIn,
+    date: dateIn,
+    venue: venueIn,
+    description: descIn,
+    category: categoryIn,
+    featured: featuredIn,
+    imageUrl: imageUrlIn,
+  } = req.body || {};
+
+  // Basic format check — full SSRF validation (DNS resolution + redirect re-check) is
+  // handled by safeOutboundFetch when the URL is actually fetched below.
+  if (typeof url !== "string" || !url.startsWith("http")) {
+    res.status(400).json({ error: "invalid_request", message: "url is required and must start with http" });
+    return;
+  }
+  try { new URL(url); } catch {
+    res.status(400).json({ error: "invalid_request", message: "url must be a valid URL" });
+    return;
+  }
+
+  try {
+    const [existing] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .limit(1);
+
+    if (!existing) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+
+    // Use provided fields or fall back to URL scrape
+    let title = typeof titleIn === "string" && titleIn.trim() ? titleIn.trim() : "";
+    let description = typeof descIn === "string" && descIn.trim() ? descIn.trim() : "";
+    let imageUrl: string | null = typeof imageUrlIn === "string" && imageUrlIn.startsWith("http") ? imageUrlIn : null;
+
+    if (!title || !description) {
+      const meta = await fetchUrlMeta(url);
+      if (!title) title = meta.title;
+      if (!description) description = meta.description;
+      if (!imageUrl) imageUrl = meta.imageUrl;
+    }
+
+    const date = typeof dateIn === "string" ? dateIn.trim() : "";
+    const venue = typeof venueIn === "string" ? venueIn.trim() : "";
+    const category = typeof categoryIn === "string" && categoryIn.trim() ? categoryIn.trim() : "Community";
+    const featured = featuredIn === true || featuredIn === "true";
+
+    // Geocode the venue synchronously so the event lands with coordinates
+    let lat: number | null = null;
+    let lng: number | null = null;
+    if (venue) {
+      const coords = await geocodeVenue(venue);
+      lat = coords.lat;
+      lng = coords.lng;
+    }
+
+    const event: EventItem = {
+      title: title || url,
+      date,
+      venue,
+      description,
+      link: url,
+      imageUrl,
+      category,
+      source: url,
+      featured,
+      ...(lat !== null ? { lat } : {}),
+      ...(lng !== null ? { lng } : {}),
+    } as EventItem;
+
+    const currentEvents = (existing.events as EventItem[]) || [];
+    const updatedEvents = autoTagFutureEvents([...currentEvents, event], new Date(existing.weekOf));
+
+    await db
+      .update(digestsTable)
+      .set({ events: updatedEvents })
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)));
+
+    req.log.info({ digestId: id, url, title: event.title, geocoded: lat !== null }, "Event scraped and added to digest");
+    res.json({ success: true, event: { title: event.title, date, venue, lat, lng, category, featured } });
+  } catch (err) {
+    req.log.error({ err }, "Error scraping event for digest");
+    res.status(500).json({ error: "server_error", message: "Failed to add event" });
   }
 });
 
@@ -1116,7 +1206,7 @@ router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
     .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id))).limit(1);
   if (!digest) { res.status(404).json({ error: "not_found" }); return; }
   const tenant = req.tenant!;
-  const siteUrl = tenant.siteUrl || "";
+  const siteUrl = `https://${tenant.slug}.eventcarpooling.com`;
   const html = buildDigestEmailHtml({
     events: (digest.events as any[]) || [],
     subject: digest.subject,
@@ -1124,10 +1214,7 @@ router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
     weekOf: digest.weekOf instanceof Date ? digest.weekOf.toISOString() : String(digest.weekOf),
     digestId: digest.id,
     siteUrl,
-    tenantSlug: tenant.slug,
-    unsubscribeUrl: `${siteUrl}/unsubscribe`,
-    preferencesUrl: `${siteUrl}/preferences`,
-  });
+  }, undefined, undefined, tenant);
   res.setHeader("Content-Type", "text/html");
   res.send(html);
 });

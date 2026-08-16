@@ -78,6 +78,8 @@ const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET).update(m
 | Tokyo | 8 | aiimplementationclubaustin@gmail.com |
 | DC | 217 | aiimplementationclubaustin@gmail.com |
 
+Compute the token at runtime using the formula above — never store pre-computed values here.
+
 > ⚠️ Always compute tokens fresh in CodeExecution — never store precomputed token values in files or documentation. Tokens depend on `RSVP_HMAC_SECRET` (a Replit Secret) and are valid as long as the secret doesn't rotate. Re-compute if you get 401.
 ## Using the Token
 

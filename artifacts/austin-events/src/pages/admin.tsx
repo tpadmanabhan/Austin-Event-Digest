@@ -206,6 +206,87 @@ export default function AdminDashboard() {
   const [eventFeatured, setEventFeatured] = useState(false);
   const [removingStale, setRemovingStale] = useState<number | null>(null);
 
+  // "Add Event from URL" modal — tied to a specific digest row
+  const [addEventDigestId, setAddEventDigestId] = useState<number | null>(null);
+  const [addEventUrl, setAddEventUrl] = useState("");
+  const [addEventTitle, setAddEventTitle] = useState("");
+  const [addEventDate, setAddEventDate] = useState("");
+  const [addEventVenue, setAddEventVenue] = useState("");
+  const [addEventDesc, setAddEventDesc] = useState("");
+  const [addEventCategory, setAddEventCategory] = useState("");
+  const [addEventFeatured, setAddEventFeatured] = useState(false);
+  const [addEventImageUrl, setAddEventImageUrl] = useState("");
+  const [isFetchingAddEvent, setIsFetchingAddEvent] = useState(false);
+  const [isSavingAddEvent, setIsSavingAddEvent] = useState(false);
+
+  const openAddEventModal = (digestId: number) => {
+    setAddEventDigestId(digestId);
+    setAddEventUrl("");
+    setAddEventTitle("");
+    setAddEventDate("");
+    setAddEventVenue("");
+    setAddEventDesc("");
+    setAddEventCategory("");
+    setAddEventFeatured(false);
+    setAddEventImageUrl("");
+  };
+
+  const onAutoFillAddEvent = async () => {
+    if (!addEventUrl.trim().startsWith("http") || addEventDigestId === null) return;
+    setIsFetchingAddEvent(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch(`/api/events/digest/${addEventDigestId}/parse-event-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ url: addEventUrl.trim() }),
+      });
+      const data = await res.json() as { success?: boolean; event?: { title?: string; date?: string; venue?: string; description?: string; imageUrl?: string | null }; message?: string };
+      if (!res.ok) throw new Error(data.message || "Failed to parse URL");
+      const ev = data.event || {};
+      if (ev.title) setAddEventTitle(ev.title);
+      if (ev.date) setAddEventDate(ev.date);
+      if (ev.venue) setAddEventVenue(ev.venue);
+      if (ev.description) setAddEventDesc(ev.description);
+      if (ev.imageUrl) setAddEventImageUrl(ev.imageUrl);
+      toast({ title: "Fields auto-filled — review before saving" });
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Couldn't auto-fill", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsFetchingAddEvent(false);
+    }
+  };
+
+  const onSaveAddEvent = async () => {
+    if (!addEventUrl.trim().startsWith("http") || addEventDigestId === null) return;
+    setIsSavingAddEvent(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const body: Record<string, unknown> = { url: addEventUrl.trim(), featured: addEventFeatured };
+      if (addEventTitle.trim()) body.title = addEventTitle.trim();
+      if (addEventDate.trim()) body.date = addEventDate.trim();
+      if (addEventVenue.trim()) body.venue = addEventVenue.trim();
+      if (addEventDesc.trim()) body.description = addEventDesc.trim();
+      if (addEventCategory.trim()) body.category = addEventCategory.trim();
+      if (addEventImageUrl.trim()) body.imageUrl = addEventImageUrl.trim();
+      const res = await fetch(`/api/events/digest/${addEventDigestId}/scrape-event`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json() as { success?: boolean; event?: { title?: string; lat?: number | null }; message?: string };
+      if (!res.ok) throw new Error(data.message || "Failed to add event");
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      const geocodeNote = data.event?.lat != null ? " · geocoded ✓" : "";
+      toast({ title: `Event added to digest #${addEventDigestId}${geocodeNote}` });
+      setAddEventDigestId(null);
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Failed to add event", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsSavingAddEvent(false);
+    }
+  };
+
   // Geocode coverage for the Send dialog (Austin only)
   const [sendDialogGeocov, setSendDialogGeocov] = useState<GeocovData | null>(null);
   const [sendDialogGeocovLoading, setSendDialogGeocovLoading] = useState(false);
@@ -1398,6 +1479,15 @@ export default function AdminDashboard() {
                               >
                                 <Eye className="w-3.5 h-3.5 mr-1.5" /> Draft to me
                               </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-lg shadow-none gap-1.5 text-orange-600 border-orange-200 hover:bg-orange-50 hover:border-orange-300 dark:border-orange-800 dark:text-orange-400 dark:hover:bg-orange-950"
+                                onClick={() => openAddEventModal(digest.id)}
+                                title="Add a single event from a URL to this digest"
+                              >
+                                <Plus className="w-3.5 h-3.5" /> Add Event
+                              </Button>
                               <Button 
                                 variant="secondary" 
                                 size="sm" 
@@ -1837,6 +1927,105 @@ export default function AdminDashboard() {
               onClick={() => deleteTarget !== null && onDelete(deleteTarget)}
             >
               {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ADD EVENT FROM URL DIALOG — per digest row */}
+      <Dialog open={addEventDigestId !== null} onOpenChange={(o) => { if (!o) setAddEventDigestId(null); }}>
+        <DialogContent className="sm:max-w-lg rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-2xl">Add Event from URL</DialogTitle>
+            <DialogDescription>
+              Paste an event URL — fields will be auto-filled from the page. Review and save to append to digest #{addEventDigestId}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-3 space-y-3">
+            {/* URL row */}
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                placeholder="https://eventbrite.com/e/... or any event URL"
+                value={addEventUrl}
+                onChange={e => setAddEventUrl(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && !isFetchingAddEvent) onAutoFillAddEvent(); }}
+                className="rounded-xl text-sm flex-1"
+                autoFocus
+              />
+              <Button
+                variant="outline"
+                onClick={onAutoFillAddEvent}
+                disabled={isFetchingAddEvent || !addEventUrl.trim().startsWith("http")}
+                className="rounded-xl shrink-0 border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950 gap-1.5 text-xs"
+              >
+                {isFetchingAddEvent ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                Auto-fill
+              </Button>
+            </div>
+
+            {/* Editable fields */}
+            <Input
+              type="text"
+              placeholder="Title"
+              value={addEventTitle}
+              onChange={e => setAddEventTitle(e.target.value)}
+              className="rounded-xl text-sm"
+            />
+            <Textarea
+              placeholder="Description"
+              value={addEventDesc}
+              onChange={e => setAddEventDesc(e.target.value)}
+              className="rounded-xl text-sm resize-none"
+              rows={3}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                type="text"
+                placeholder="Date (e.g. Sunday, Aug 17 at 2:00 PM)"
+                value={addEventDate}
+                onChange={e => setAddEventDate(e.target.value)}
+                className="rounded-xl text-sm"
+              />
+              <Input
+                type="text"
+                placeholder="Venue / address"
+                value={addEventVenue}
+                onChange={e => setAddEventVenue(e.target.value)}
+                className="rounded-xl text-sm"
+              />
+            </div>
+            <div className="flex gap-3 items-center">
+              <select
+                value={addEventCategory}
+                onChange={e => setAddEventCategory(e.target.value)}
+                className="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">Category (auto-detect)</option>
+                {tenant.categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <label className="flex items-center gap-1.5 text-sm text-amber-600 cursor-pointer shrink-0 select-none">
+                <input
+                  type="checkbox"
+                  checked={addEventFeatured}
+                  onChange={e => setAddEventFeatured(e.target.checked)}
+                  className="w-4 h-4 accent-amber-500"
+                />
+                <Star className={`w-3.5 h-3.5 ${addEventFeatured ? "fill-amber-500 text-amber-500" : "text-muted-foreground"}`} />
+                Special Event
+              </label>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setAddEventDigestId(null)} className="rounded-xl">Cancel</Button>
+            <Button
+              onClick={onSaveAddEvent}
+              disabled={isSavingAddEvent || !addEventUrl.trim().startsWith("http")}
+              className="rounded-xl gap-2 bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              {isSavingAddEvent ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <><Plus className="w-4 h-4" /> Add to Digest</>}
             </Button>
           </DialogFooter>
         </DialogContent>

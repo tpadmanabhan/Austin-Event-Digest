@@ -30,7 +30,7 @@ router.post("/subscribe", async (req, res) => {
     return;
   }
 
-  const { email, birthMonth, birthDay, address, radiusMiles, walkableOnly } = parseResult.data;
+  const { email, birthMonth, birthDay, address, radiusMiles, walkableOnly } = parseResult.data as any;
   const tenantId = req.tenant!.id;
   const isAustin = req.tenant?.slug === "austin";
 

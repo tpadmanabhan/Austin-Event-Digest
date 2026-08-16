@@ -926,7 +926,7 @@ export function buildDigestEmailHtml(digest: {
       <a href="${escapeHtml(digest.siteUrl)}" style="display:inline-block; background:#dc2626; color:#fff; font-size:14px; font-weight:700; text-decoration:none; padding:11px 26px; border-radius:100px; letter-spacing:-0.1px;">View full edition →</a>
     </div>` : ""}
 
-    ${buildStaticMapSection(cleanDigestEvents, slug, digest.siteUrl, digest.digestId)}
+    ${buildStaticMapSection(cleanDigestEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
 
     <!-- Business Spotlights -->
     ${bizSpotlightCards}

@@ -81,7 +81,8 @@ router.get("/map-image", async (req: Request, res: Response) => {
     const tileResults = await Promise.all(tileJobs);
 
     // Build sharp composite inputs for tiles
-    const composites: sharp.OverlayOptions[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const composites: any[] = [];
     for (const { tx, ty, buf } of tileResults) {
       if (!buf) continue;
       const left = Math.round(tx * 256 - originPxX);
