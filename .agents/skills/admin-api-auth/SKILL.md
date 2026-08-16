@@ -68,18 +68,17 @@ const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET).update(m
 
 **Production tenant IDs for email-based cities:**
 
-| City | Prod Tenant ID | Admin Email | Token (pre-computed, valid until RSVP_HMAC_SECRET rotates) |
-|------|---------------|-------------|-------|
-| Brushy Creek | 3 | rohanvivier@gmail.com | `65ebf3dcfe8ca96eda1e9fd9f7e7b37e02e8902d8dd356520d31a55ce43fea9d` |
-| Sacramento | 4 | aiimplementationclubaustin@gmail.com | `080845489daa18a35b88458323e7329e751bd4aeed2e204e39f813a740304753` |
-| Portland | 5 | aiimplementationclubaustin@gmail.com | `594826f3ea05285a9b54d82e693e3b4e66533ddc52ae0894954f4b7c8b56c464` |
-| Bulverde | 6 | aiimplementationclubaustin@gmail.com | `256f55c15ad8908b99e9fb68d4a952b24a7b5597e07896e278d6f3968ba8a307` |
-| St. Louis | 7 | aiimplementationclubaustin@gmail.com | `2fd6033d16c069bc3db90536c9e5dc463947c88538cd4a095b0f99510777cdb6` |
-| Tokyo | 8 | aiimplementationclubaustin@gmail.com | `dc44914f68eaf2578b632218c1f0268b0e975e2eec46c5a260c6da5e8d1ad0d8` |
-| DC | 217 | aiimplementationclubaustin@gmail.com | `5658e7f85704b92e39c1ce382cf6afc477997aa42ff77ecc708d7dbddaf3b3ac` |
+| City | Prod Tenant ID | Admin Email |
+|------|---------------|-------------|
+| Brushy Creek | 3 | rohanvivier@gmail.com |
+| Sacramento | 4 | aiimplementationclubaustin@gmail.com |
+| Portland | 5 | aiimplementationclubaustin@gmail.com |
+| Bulverde | 6 | aiimplementationclubaustin@gmail.com |
+| St. Louis | 7 | aiimplementationclubaustin@gmail.com |
+| Tokyo | 8 | aiimplementationclubaustin@gmail.com |
+| DC | 217 | aiimplementationclubaustin@gmail.com |
 
-> ⚠️ Email-based tokens depend on `RSVP_HMAC_SECRET` (a Replit Secret), not on the DB. They stay valid as long as the secret doesn't rotate. Re-compute if you get 401.
-
+> ⚠️ Always compute tokens fresh in CodeExecution — never store precomputed token values in files or documentation. Tokens depend on `RSVP_HMAC_SECRET` (a Replit Secret) and are valid as long as the secret doesn't rotate. Re-compute if you get 401.
 ## Using the Token
 
 Pass as a Bearer header:

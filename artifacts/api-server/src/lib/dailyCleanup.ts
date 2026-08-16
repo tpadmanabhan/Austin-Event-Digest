@@ -1,5 +1,6 @@
 import { db, digestsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
+import type { EventItem } from "@workspace/db";
 import { logger } from "./logger";
 
 const MONTH_MAP: Record<string, number> = {
@@ -7,16 +8,49 @@ const MONTH_MAP: Record<string, number> = {
   Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
 };
 
-function isStaleEvent(ev: Record<string, unknown>, today: Date): boolean {
-  // Never remove spotlights, community posts, or featured (Special Events)
+/**
+ * Returns true if the event's date has already passed relative to `today`.
+ *
+ * Year inference — weekOf-anchored policy:
+ *   Yearless date strings (e.g. "Jan 15", "Aug 3") are interpreted in the context
+ *   of the digest's `weekOf` date:
+ *
+ *   1. Construct the event date using weekOf's year.
+ *   2. If that date falls before weekOf, the event refers to the following year
+ *      (classic case: a December digest listing a January event). Bump one year.
+ *   3. Compare the resolved date to `today`.
+ *
+ *   This is the same anchoring strategy used by autoTagFutureEvents and
+ *   carryForwardFeaturedEvents, so year resolution is consistent across the app.
+ *
+ * Never marks spotlights, community posts, or featured (Special Event) entries
+ * as stale — those are protected from automated removal.
+ */
+export function isStaleEvent(
+  ev: Record<string, unknown>,
+  today: Date,
+  weekOf: Date,
+): boolean {
+  // Protected entries are never stale
   if (!ev["date"] || ev["isPost"] || ev["isBusinessSpotlight"] || ev["featured"]) return false;
+
   const dateStr = String(ev["date"]);
   const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
   if (!m) return false;
+
   const cap = m[1].substring(0, 3).charAt(0).toUpperCase() + m[1].substring(1, 3).toLowerCase();
   const month = MONTH_MAP[cap];
   if (month === undefined) return false;
-  return new Date(today.getFullYear(), month, parseInt(m[2], 10)) < today;
+
+  const eventDate = new Date(weekOf.getFullYear(), month, parseInt(m[2], 10));
+
+  // If the event date falls before weekOf, it must refer to the next year
+  // (e.g. "Jan 10" in a December digest → Jan 10 of the following year)
+  if (eventDate < weekOf) {
+    eventDate.setFullYear(weekOf.getFullYear() + 1);
+  }
+
+  return eventDate < today;
 }
 
 async function runDailyCleanup(): Promise<void> {
@@ -24,11 +58,11 @@ async function runDailyCleanup(): Promise<void> {
   today.setHours(0, 0, 0, 0);
 
   try {
-    // Only process unsent digests
+    // Only process unsent digests (sentAt IS NULL is the authoritative unsent signal)
     const digests = await db
-      .select({ id: digestsTable.id, events: digestsTable.events })
+      .select({ id: digestsTable.id, events: digestsTable.events, weekOf: digestsTable.weekOf })
       .from(digestsTable)
-      .where(eq(digestsTable.sentCount, 0));
+      .where(isNull(digestsTable.sentAt));
 
     let totalRemoved = 0;
     let digestsUpdated = 0;
@@ -37,11 +71,15 @@ async function runDailyCleanup(): Promise<void> {
       const events = digest.events as Record<string, unknown>[];
       if (!Array.isArray(events) || events.length === 0) continue;
 
-      const fresh = events.filter(ev => !isStaleEvent(ev, today));
+      const weekOf = new Date(digest.weekOf);
+      weekOf.setHours(0, 0, 0, 0);
+
+      const fresh = events.filter(ev => !isStaleEvent(ev, today, weekOf));
+
       if (fresh.length < events.length) {
         await db
           .update(digestsTable)
-          .set({ events: fresh })
+          .set({ events: fresh as unknown as EventItem[] })
           .where(eq(digestsTable.id, digest.id));
         totalRemoved += events.length - fresh.length;
         digestsUpdated++;
