@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { db, rsvpsTable, digestsTable, tenantsTable, adminOtpsTable, type InsertTenant, type EventItem } from "@workspace/db";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { isStaleEvent } from "../lib/dailyCleanup";
@@ -51,7 +51,7 @@ router.post("/login", async (req, res) => {
     return;
   }
 
-  const token = adminTokenForHash(req.tenant.passwordHash);
+    const token = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
   res.json({ token });
 });
 
@@ -65,7 +65,7 @@ router.post("/verify", (req, res) => {
 
   // Check password-based token
   if (req.tenant?.passwordHash) {
-    const expected = adminTokenForHash(req.tenant.passwordHash);
+    const expected = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
     if (token === expected) { res.json({ valid: true }); return; }
   }
 
@@ -276,7 +276,7 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
       return;
     }
 
-    const events = (digest.events as Record<string, unknown>[]) || [];
+    const events = (latest.events as Record<string, unknown>[]) || [];
     const event = events.find((e: any) => e.title === eventTitle)
       ?? events.find((e: any) =>
         e.title.toLowerCase().includes(eventTitle.toLowerCase()) ||
@@ -287,7 +287,7 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
       return;
     }
 
-    const since = new Date(digest.weekOf);
+  const since = new Date("2026-06-25T00:00:00Z");
     const rsvps = await db
       .select()
       .from(rsvpsTable)
@@ -338,7 +338,7 @@ router.post("/fix-broken-links", requireAdmin, async (req, res) => {
       .where(eq(digestsTable.tenantId, tenantId));
     let totalFixed = 0;
     for (const digest of digests) {
-      const events = (digest.events as Record<string, unknown>[]) || [];
+    const events = (latest.events as Record<string, unknown>[]) || [];
       let changed = false;
       const fixed = events.map((e: any) => {
         if (e.link && /6amcity\.com\/[a-z]{2}\/[a-z-]+\/events\//i.test(e.link)) {
@@ -409,18 +409,17 @@ router.post("/dismiss-first-run", requireAdmin, async (req, res) => {
   const tenantId = req.tenant!.id;
   try {
     await db
-      .update(tenantsTable)
-      .set({ firstRun: false })
-      .where(eq(tenantsTable.id, tenantId));
-    res.json({ success: true });
+      .update(digestsTable)
+      .set({ subject })
+      .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, tenantId)));
+    res.json({ success: true, digestId, subject });
   } catch (err) {
-    req.log.error({ err }, "Error dismissing first-run");
+    req.log.error({ err }, "Error patching digest subject");
     res.status(500).json({ error: "server_error" });
   }
 });
 
-// Fetch current tenant settings (for prefilling the admin settings form)
-router.get("/settings", requireAdmin, async (req, res) => {
+router.get("/rsvps", requireAdmin, async (req, res) => {
   const tenantId = req.tenant!.id;
   try {
     const [tenant] = await db
@@ -439,6 +438,8 @@ router.get("/settings", requireAdmin, async (req, res) => {
       .from(tenantsTable)
       .where(eq(tenantsTable.id, tenantId))
       .limit(1);
+
+  const { name, accentColor, categories, adminEmail, digestTitle, curatorName, heroImageUrl, brandIconUrl } = req.body ?? {};
 
     if (!tenant) {
       res.status(404).json({ error: "not_found", message: "Tenant not found" });
@@ -665,6 +666,93 @@ router.post("/send-test-welcome", requireAdmin, async (req, res) => {
   }
   await sendWelcomeEmail(email, name ?? null, req.tenant ?? null);
   res.json({ success: true, sentTo: email });
+});
+
+// ── Community deal moderation ─────────────────────────────────────────────────
+
+/** Guard: community deal endpoints are only meaningful for the austincares tenant. */
+function requireAustinCares(req: Request, res: Response, next: NextFunction): void {
+  if ((req as any).tenant?.slug !== "austincares") {
+    res.status(403).json({ error: "forbidden", message: "Deal moderation is only available for the AustinCares tenant" });
+    return;
+  }
+  next();
+}
+
+/**
+ * GET /admin/deals/pending
+ * Returns all community deals awaiting moderation, including submitter name/email.
+ * Admin-only, AustinCares tenant only.
+ */
+router.get("/deals/pending", requireAdmin, requireAustinCares, async (req, res) => {
+  try {
+    const result = await db.execute(drizzleSql`
+      DELETE FROM submitted_deals WHERE id = ${id}
+      RETURNING id
+    `);
+    const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+    const deals = Array.isArray(rows) ? rows : (rows as any).rows ?? [];
+    res.json({ deals });
+  } catch (err) {
+    req.log.error({ err }, "Error fetching pending deals");
+    res.status(500).json({ error: "server_error", message: "Failed to fetch pending deals" });
+  }
+});
+
+/**
+ * POST /admin/deals/:id/approve
+ * Sets a submitted deal's status to 'approved', making it visible publicly.
+ */
+router.post("/deals/:id/approve", requireAdmin, requireAustinCares, async (req, res) => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid deal ID" });
+    return;
+  }
+  try {
+    const result = await db.execute(drizzleSql`
+      DELETE FROM submitted_deals WHERE id = ${id}
+      RETURNING id
+    `);
+    const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+    if (rows.length === 0) {
+      res.status(404).json({ error: "not_found", message: "Deal not found" });
+      return;
+    }
+    req.log.info({ id }, "Community deal approved");
+    res.json({ success: true, deal: rows[0] });
+  } catch (err) {
+    req.log.error({ err }, "Error approving deal");
+    res.status(500).json({ error: "server_error", message: "Failed to approve deal" });
+  }
+});
+
+/**
+ * POST /admin/deals/:id/dismiss
+ * Deletes a submitted deal (spam / irrelevant). Not recoverable.
+ */
+router.post("/deals/:id/dismiss", requireAdmin, requireAustinCares, async (req, res) => {
+  const id = parseInt(String(req.params.id), 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid deal ID" });
+    return;
+  }
+  try {
+    const result = await db.execute(drizzleSql`
+      DELETE FROM submitted_deals WHERE id = ${id}
+      RETURNING id
+    `);
+    const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+    if (rows.length === 0) {
+      res.status(404).json({ error: "not_found", message: "Deal not found" });
+      return;
+    }
+    req.log.info({ id }, "Community deal dismissed and deleted");
+    res.json({ success: true, id });
+  } catch (err) {
+    req.log.error({ err }, "Error dismissing deal");
+    res.status(500).json({ error: "server_error", message: "Failed to dismiss deal" });
+  }
 });
 
 export default router;

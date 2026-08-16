@@ -13,6 +13,8 @@ export const submittedDealsTable = pgTable("submitted_deals", {
   imageUrl: text("image_url"),        // object storage path: /api/storage/objects/...
   // lat/lng and expires_at are added at runtime via startup migration (ADD COLUMN IF NOT EXISTS)
   // and queried via raw SQL to avoid drizzle schema diff on first deploy
+  // Moderation — pending until an admin approves; never returned in public API responses
+  status: text("status").notNull().default("pending"),
   // Submitter info — never returned in public API responses
   submitterName: text("submitter_name").notNull(),
   submitterEmail: text("submitter_email").notNull(),

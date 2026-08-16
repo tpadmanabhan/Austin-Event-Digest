@@ -649,6 +649,11 @@ async function runSubmittedDealsMigration(): Promise<void> {
   await db.execute(sql`ALTER TABLE submitted_deals ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION`);
   // Add expires_at for optional deal expiry + 30-day auto-cleanup
   await db.execute(sql`ALTER TABLE submitted_deals ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP`);
+  // Add status column for admin moderation (pending/approved).
+  // Use DEFAULT 'approved' so existing rows (already live before this feature) stay visible.
+  // Then switch the column default to 'pending' so new submissions require review.
+  await db.execute(sql`ALTER TABLE submitted_deals ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'approved'`);
+  await db.execute(sql`ALTER TABLE submitted_deals ALTER COLUMN status SET DEFAULT 'pending'`);
   logger.info("submitted_deals table ready");
 }
 

@@ -438,7 +438,7 @@ interface FormState {
 
 type SubmitStatus = "idle" | "uploading" | "analyzing" | "done" | "error";
 
-function DealSubmissionForm({ onDealAdded }: { onDealAdded: (deal: Deal) => void }) {
+function DealSubmissionForm() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>({
     firstName: "", email: "", locationName: "", locationAddress: "",
@@ -524,14 +524,13 @@ function DealSubmissionForm({ onDealAdded }: { onDealAdded: (deal: Deal) => void
         isSubmitted: true,
       };
 
-      onDealAdded(newDeal);
       setStatus("done");
       setForm({ firstName: "", email: "", locationName: "", locationAddress: "", expiresAt: "", file: null, previewUrl: null });
     } catch (err: any) {
       setStatus("error");
       setErrorMsg(err?.message || "Something went wrong. Please try again.");
     }
-  }, [form, onDealAdded]);
+  }, [form]);
 
   const isLoading = status === "uploading" || status === "analyzing";
   const statusLabel = status === "uploading" ? "Uploading photo…" : status === "analyzing" ? "Analyzing deal with AI…" : "";
@@ -596,16 +595,16 @@ function DealSubmissionForm({ onDealAdded }: { onDealAdded: (deal: Deal) => void
 
           {status === "done" ? (
             <div style={{ textAlign: "center", padding: "24px 0" }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
-              <div style={{ fontWeight: 700, fontSize: 17, color: C.char, marginBottom: 6 }}>Deal added!</div>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+              <div style={{ fontWeight: 700, fontSize: 17, color: C.char, marginBottom: 6 }}>Deal submitted!</div>
               <p style={{ fontSize: 14, color: C.muted, marginBottom: 20 }}>
-                Your deal is now live in the directory below.
+                Thanks! Your deal is pending review and will appear in the directory once approved.
               </p>
               <button
                 onClick={() => { setOpen(false); setStatus("idle"); }}
                 style={{ background: C.rust, color: "#fff", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif" }}
               >
-                Add another deal
+                Submit another deal
               </button>
             </div>
           ) : (
@@ -824,12 +823,24 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
 };
 
-// ── Main Page ──────────────────────────────────────────────────────────────────
+interface PendingDeal {
+  id: number;
+  business: string;
+  deal: string;
+  savings: string;
+  day: string;
+  locationName: string;
+  locationAddress: string;
+  imageUrl?: string;
+  submitterName: string;
+  submitterEmail: string;
+  createdAt: string;
+}
 export default function AustinCaresFullEdition() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
   const markersRef = useRef<unknown[]>([]);
-  const [submittedDeals, setSubmittedDeals] = useState<Deal[]>([]);
+  const [submittedDeals, setSubmittedDeals] = useState<Deal[]>([]); // approved community deals
 
   // Fetch community-submitted deals on mount
   useEffect(() => {
@@ -852,10 +863,6 @@ export default function AustinCaresFullEdition() {
         setSubmittedDeals(deals);
       })
       .catch(() => {}); // non-fatal
-  }, []);
-
-  const handleDealAdded = useCallback((deal: Deal) => {
-    setSubmittedDeals(prev => [...prev, deal]);
   }, []);
 
   // Merge static + submitted deals; static wins when business names match (curated position/day takes priority)
@@ -1054,7 +1061,9 @@ export default function AustinCaresFullEdition() {
         )}
 
         {/* ── SUBMIT FORM ── */}
-        <DealSubmissionForm onDealAdded={handleDealAdded} />
+        <DealSubmissionForm />
+        {/* ── ADMIN REVIEW ── */}
+        <AdminDealReview />
       </div>
 
       {/* ── FOOTER ── */}
@@ -1071,6 +1080,230 @@ export default function AustinCaresFullEdition() {
         >
           ← Back to AustinCares
         </a>
+      </div>
+    </div>
+  );
+}
+
+function AdminDealReview() {
+  const [token, setToken] = useState<string | null>(null);
+  const [inputToken, setInputToken] = useState("");
+  const [showLogin, setShowLogin] = useState(false);
+  const [pending, setPending] = useState<PendingDeal[]>([]);
+  const [loadErr, setLoadErr] = useState("");
+  const [actioning, setActioning] = useState<Record<number, "approving" | "dismissing">>({});
+
+  // Read token from sessionStorage on mount
+  useEffect(() => {
+    const stored = sessionStorage.getItem("admin_token");
+    if (stored) setToken(stored);
+  }, []);
+
+  // Fetch pending deals when token is set
+  useEffect(() => {
+    if (!token) return;
+    setLoadErr("");
+    fetch("/api/admin/deals/pending", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async r => {
+        if (r.status === 401) { setToken(null); sessionStorage.removeItem("admin_token"); return; }
+        const data = await r.json();
+        setPending(data.deals ?? []);
+      })
+      .catch(() => setLoadErr("Failed to load pending deals."));
+  }, [token]);
+
+  const handleLogin = useCallback(() => {
+    const t = inputToken.trim();
+    if (!t) return;
+    setToken(t);
+    sessionStorage.setItem("admin_token", t);
+    setInputToken("");
+    setShowLogin(false);
+  }, [inputToken]);
+
+  const handleApprove = useCallback(async (id: number) => {
+    setActioning(a => ({ ...a, [id]: "approving" }));
+    try {
+      const r = await fetch(`/api/admin/deals/${id}/approve`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (r.ok) setPending(p => p.filter(d => d.id !== id));
+    } finally {
+      setActioning(a => { const n = { ...a }; delete n[id]; return n; });
+    }
+  }, [token]);
+
+  const handleDismiss = useCallback(async (id: number) => {
+    setActioning(a => ({ ...a, [id]: "dismissing" }));
+    try {
+      const r = await fetch(`/api/admin/deals/${id}/dismiss`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (r.ok) setPending(p => p.filter(d => d.id !== id));
+    } finally {
+      setActioning(a => { const n = { ...a }; delete n[id]; return n; });
+    }
+  }, [token]);
+
+  // Not logged in — small unobtrusive link + optional token prompt
+  if (!token) {
+    return (
+      <div style={{ marginTop: 56, textAlign: "center" }}>
+        {!showLogin ? (
+          <button
+            onClick={() => setShowLogin(true)}
+            style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline", fontFamily: "'Inter', system-ui, sans-serif" }}
+          >
+            Admin login
+          </button>
+        ) : (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const, justifyContent: "center" }}>
+            <input
+              type="password"
+              placeholder="Paste admin token"
+              value={inputToken}
+              onChange={e => setInputToken(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleLogin()}
+              style={{ ...inputStyle, width: 220, fontSize: 13 }}
+              autoFocus
+            />
+            <button
+              onClick={handleLogin}
+              style={{ background: C.rust, color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif" }}
+            >
+              Sign in
+            </button>
+            <button
+              onClick={() => { setShowLogin(false); setInputToken(""); }}
+              style={{ background: "none", border: "none", color: C.muted, fontSize: 13, cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif" }}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 64, marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+        <span style={{
+          background: C.rust, color: "#fff",
+          fontWeight: 800, fontSize: 11, letterSpacing: "0.13em",
+          textTransform: "uppercase" as const, padding: "5px 13px", borderRadius: 8,
+        }}>
+          Admin
+        </span>
+        <h2 style={{ ...serif, fontSize: 20, fontWeight: 600, color: C.char, margin: 0 }}>
+          Pending deals {pending.length > 0 && (
+            <span style={{ fontSize: 14, fontWeight: 700, color: C.rust, marginLeft: 6 }}>
+              ({pending.length})
+            </span>
+          )}
+        </h2>
+        <div style={{ flex: 1 }} />
+        <button
+          onClick={() => { setToken(null); sessionStorage.removeItem("admin_token"); }}
+          style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline", fontFamily: "'Inter', system-ui, sans-serif" }}
+        >
+          Sign out
+        </button>
+      </div>
+
+      {loadErr && (
+        <div style={{ padding: "10px 14px", borderRadius: 8, background: "#FEF2F2", border: "1px solid #FECACA", color: "#B91C1C", fontSize: 13.5 }}>
+          {loadErr}
+        </div>
+      )}
+
+      {pending.length === 0 && !loadErr && (
+        <div style={{ padding: "28px 0", textAlign: "center", color: C.muted, fontSize: 14 }}>
+          No pending deals — you're all caught up ✓
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 16 }}>
+        {pending.map(deal => {
+          const busy = actioning[deal.id];
+          return (
+            <div
+              key={deal.id}
+              style={{
+                background: C.paper,
+                border: `1.5px solid ${C.line}`,
+                borderRadius: 16,
+                overflow: "hidden",
+              }}
+            >
+              {deal.imageUrl && (
+                <div style={{ width: "100%", background: C.line, lineHeight: 0 }}>
+                  <img
+                    src={deal.imageUrl}
+                    alt={deal.business}
+                    style={{ width: "100%", maxHeight: 220, objectFit: "cover" as const, display: "block" }}
+                    onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                </div>
+              )}
+              <div style={{ padding: "18px 20px" }}>
+                <div style={{ fontWeight: 700, fontSize: 16, color: C.char, marginBottom: 4 }}>{deal.business}</div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: C.rust, marginBottom: 8 }}>{deal.deal}</div>
+                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8, marginBottom: 12, fontSize: 13, color: C.muted }}>
+                  <span>📍 {deal.locationAddress}</span>
+                  {deal.savings && <span style={{ color: "#15803D", fontWeight: 600 }}>{deal.savings}</span>}
+                  <span style={{ background: C.oliveSoft, color: C.olive, borderRadius: 6, padding: "1px 8px", fontWeight: 700, fontSize: 11 }}>{deal.day}</span>
+                </div>
+                {/* Submitter info — admin-only */}
+                <div style={{
+                  background: "#F8F4EF", borderRadius: 8, padding: "10px 14px",
+                  fontSize: 13, color: C.brown, marginBottom: 14,
+                  border: `1px solid ${C.line}`,
+                }}>
+                  <span style={{ fontWeight: 700 }}>Submitted by:</span>{" "}
+                  {deal.submitterName} · <a href={`mailto:${deal.submitterEmail}`} style={{ color: C.rust }}>{deal.submitterEmail}</a>
+                  <span style={{ marginLeft: 10, color: C.muted, fontSize: 11 }}>
+                    {new Date(deal.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button
+                    onClick={() => handleApprove(deal.id)}
+                    disabled={!!busy}
+                    style={{
+                      background: busy === "approving" ? "#B0A090" : "#15803D",
+                      color: "#fff", border: "none", borderRadius: 8,
+                      padding: "9px 18px", fontWeight: 700, fontSize: 13.5,
+                      cursor: busy ? "not-allowed" : "pointer",
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                    }}
+                  >
+                    {busy === "approving" ? "Approving…" : "✓ Approve"}
+                  </button>
+                  <button
+                    onClick={() => handleDismiss(deal.id)}
+                    disabled={!!busy}
+                    style={{
+                      background: busy === "dismissing" ? "#B0A090" : "transparent",
+                      color: busy ? "#B0A090" : C.rust,
+                      border: `1.5px solid ${busy ? "#B0A090" : C.rust}`,
+                      borderRadius: 8,
+                      padding: "9px 18px", fontWeight: 700, fontSize: 13.5,
+                      cursor: busy ? "not-allowed" : "pointer",
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                    }}
+                  >
+                    {busy === "dismissing" ? "Dismissing…" : "✕ Dismiss"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

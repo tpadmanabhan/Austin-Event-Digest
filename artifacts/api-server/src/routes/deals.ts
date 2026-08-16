@@ -79,7 +79,8 @@ router.get("/deals/submitted", async (req, res) => {
              expires_at AS "expiresAt",
              created_at AS "createdAt"
       FROM submitted_deals
-      WHERE expires_at IS NULL OR expires_at > NOW()
+      WHERE status = 'approved'
+        AND (expires_at IS NULL OR expires_at > NOW())
       ORDER BY created_at ASC
     `);
     // drizzle postgres.js execute returns rows as an array directly
@@ -97,7 +98,9 @@ router.get("/deals/submitted", async (req, res) => {
  * Calls OpenAI vision to extract deal metadata, saves to DB, returns public deal card.
  */
 router.post("/deals/submit", async (req, res) => {
-  const parsed = SubmitDealBody.safeParse(req.body);
+          const parsed = JSON.parse(jsonMatch[0]);
+
+  const { firstName, email, locationName, locationAddress, objectPath, expiresAt } = parsed.data;
   if (!parsed.success) {
     res.status(400).json({
       error: "invalid_request",
@@ -200,6 +203,8 @@ Extract the following and respond ONLY with valid JSON (no markdown):
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
+
+  const { firstName, email, locationName, locationAddress, objectPath, expiresAt } = parsed.data;
           if (parsed.business) business = String(parsed.business).slice(0, 200);
           if (parsed.deal) deal = String(parsed.deal).slice(0, 300);
           if (parsed.savings) savings = String(parsed.savings).slice(0, 100);
