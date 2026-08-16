@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
-import { Save, Palette, Check, Tag, Mail, ImageIcon, Loader2, X } from "lucide-react";
+import { Save, Palette, Check, Tag, Mail, ImageIcon, Loader2, X, User } from "lucide-react";
 
 const ALL_CATEGORIES = [
   { name: "Tech",     emoji: "💻", description: "Startup meetups, AI demos, developer nights." },
@@ -24,6 +24,8 @@ export function AdminSettingsTab() {
   const [categories, setCategories] = useState<string[]>(tenant.categories);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [curatorName, setCuratorName] = useState("");
+  const [initialCuratorName, setInitialCuratorName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [initialAdminEmail, setInitialAdminEmail] = useState("");
 
@@ -46,11 +48,14 @@ export function AdminSettingsTab() {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (!res.ok) return;
-        const data = await res.json() as { tenant?: { adminEmail?: string | null; heroImageUrl?: string | null; brandIconUrl?: string | null } };
+        const data = await res.json() as { tenant?: { curatorName?: string | null; adminEmail?: string | null; heroImageUrl?: string | null; brandIconUrl?: string | null } };
         const email = data.tenant?.adminEmail ?? "";
+        const curator = data.tenant?.curatorName ?? "";
         const hero = data.tenant?.heroImageUrl ?? null;
         const icon = data.tenant?.brandIconUrl ?? null;
         if (!cancelled) {
+          setCuratorName(curator);
+          setInitialCuratorName(curator);
           setAdminEmail(email);
           setInitialAdminEmail(email);
           setHeroImageUrl(hero);
@@ -69,6 +74,7 @@ export function AdminSettingsTab() {
   const isDirty =
     name !== tenant.name ||
     accentColor !== tenant.accentColor ||
+    curatorName !== initialCuratorName ||
     adminEmail !== initialAdminEmail ||
     heroImageUrl !== initialHeroImageUrl ||
     brandIconUrl !== initialBrandIconUrl ||
@@ -150,6 +156,7 @@ export function AdminSettingsTab() {
           name: name.trim(),
           accentColor,
           categories,
+          ...(curatorName !== initialCuratorName ? { curatorName: curatorName.trim() || null } : {}),
           ...(adminEmail.trim() && adminEmail.trim() !== initialAdminEmail ? { adminEmail: adminEmail.trim() } : {}),
           ...(heroImageUrl !== initialHeroImageUrl ? { heroImageUrl } : {}),
           ...(brandIconUrl !== initialBrandIconUrl ? { brandIconUrl } : {}),
@@ -165,6 +172,7 @@ export function AdminSettingsTab() {
       // Apply the new accent color immediately
       document.documentElement.style.setProperty("--color-primary", accentColor);
 
+      setInitialCuratorName(curatorName.trim());
       if (adminEmail.trim()) setInitialAdminEmail(adminEmail.trim());
 
       // Invalidate tenant config so the rest of the app picks up the changes
@@ -190,6 +198,23 @@ export function AdminSettingsTab() {
           onChange={e => setName(e.target.value)}
           className="rounded-xl max-w-sm"
           placeholder="Austin Events"
+        />
+      </div>
+
+      {/* Curator name */}
+      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <User className="w-5 h-5 text-primary" />
+          <h3 className="font-serif font-bold text-lg">Curator name</h3>
+        </div>
+        <p className="text-sm text-muted-foreground -mt-2">
+          Shown as a byline on the digest page and in emails ("— Name"). Leave blank to hide the attribution.
+        </p>
+        <Input
+          value={curatorName}
+          onChange={e => setCuratorName(e.target.value)}
+          className="rounded-xl max-w-sm"
+          placeholder="e.g. Raj, Bob, Phil…"
         />
       </div>
 

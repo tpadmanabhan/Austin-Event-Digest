@@ -265,7 +265,6 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
   }
 
   const tenantId = req.tenant!.id;
-
   try {
     const [digest] = await db
       .select()
@@ -277,7 +276,7 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
       return;
     }
 
-    const events = (digest.events as any[]) || [];
+    const events = (digest.events as Record<string, unknown>[]) || [];
     const event = events.find((e: any) => e.title === eventTitle)
       ?? events.find((e: any) =>
         e.title.toLowerCase().includes(eventTitle.toLowerCase()) ||
@@ -288,14 +287,12 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
       return;
     }
 
+    const since = new Date(digest.weekOf);
     const rsvps = await db
       .select()
       .from(rsvpsTable)
-      .where(and(
-        eq(rsvpsTable.tenantId, tenantId),
-        eq(rsvpsTable.digestId, digestId),
-        eq(rsvpsTable.eventTitle, eventTitle),
-      ));
+      .where(and(eq(rsvpsTable.tenantId, tenantId), gte(rsvpsTable.createdAt, since)))
+      .orderBy(rsvpsTable.createdAt);
 
     if (rsvps.length < 2) {
       res.json({ sent: 0, message: "Fewer than 2 RSVPs — nothing to notify", rsvpCount: rsvps.length });
@@ -311,9 +308,9 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
         await sendRsvpGroupNotification({
           to: recipient.email,
           matches: others,
-          eventTitle: event.title,
-          eventDate: event.date,
-          eventVenue: event.venue,
+          eventTitle: String(event.title ?? ""),
+          eventDate: String(event.date ?? ""),
+          eventVenue: String(event.venue ?? ""),
           newsletterName: req.tenant!.name,
         });
         results.push({ to: recipient.email, success: true, matchCount: others.length });
@@ -341,7 +338,7 @@ router.post("/fix-broken-links", requireAdmin, async (req, res) => {
       .where(eq(digestsTable.tenantId, tenantId));
     let totalFixed = 0;
     for (const digest of digests) {
-      const events = (digest.events as any[]) || [];
+      const events = (digest.events as Record<string, unknown>[]) || [];
       let changed = false;
       const fixed = events.map((e: any) => {
         if (e.link && /6amcity\.com\/[a-z]{2}\/[a-z-]+\/events\//i.test(e.link)) {
@@ -434,6 +431,7 @@ router.get("/settings", requireAdmin, async (req, res) => {
         accentColor: tenantsTable.accentColor,
         categories: tenantsTable.categories,
         digestTitle: tenantsTable.digestTitle,
+        curatorName: tenantsTable.curatorName,
         adminEmail: tenantsTable.adminEmail,
         heroImageUrl: tenantsTable.heroImageUrl,
         brandIconUrl: tenantsTable.brandIconUrl,
@@ -454,9 +452,9 @@ router.get("/settings", requireAdmin, async (req, res) => {
   }
 });
 
-// Update tenant settings (name, accentColor, categories)
+// Update tenant settings (name, accentColor, categories, curatorName, etc.)
 router.patch("/settings", requireAdmin, async (req, res) => {
-  const { name, accentColor, categories, adminEmail, digestTitle, heroImageUrl, brandIconUrl } = req.body ?? {};
+  const { name, accentColor, categories, adminEmail, digestTitle, curatorName, heroImageUrl, brandIconUrl } = req.body ?? {};
   const tenantId = req.tenant!.id;
 
   const updates: Record<string, unknown> = {};
@@ -502,6 +500,14 @@ router.patch("/settings", requireAdmin, async (req, res) => {
     updates.digestTitle = digestTitle === null ? null : digestTitle.trim();
   }
 
+  if (curatorName !== undefined) {
+    if (curatorName !== null && typeof curatorName !== "string") {
+      res.status(400).json({ error: "invalid_request", message: "curatorName must be a string or null" });
+      return;
+    }
+    updates.curatorName = curatorName === null || curatorName.trim().length === 0 ? null : curatorName.trim();
+  }
+
   if (heroImageUrl !== undefined) {
     if (heroImageUrl !== null && typeof heroImageUrl !== "string") {
       res.status(400).json({ error: "invalid_request", message: "heroImageUrl must be a string or null" });
@@ -535,6 +541,7 @@ router.patch("/settings", requireAdmin, async (req, res) => {
         accentColor: tenantsTable.accentColor,
         categories: tenantsTable.categories,
         digestTitle: tenantsTable.digestTitle,
+        curatorName: tenantsTable.curatorName,
         heroImageUrl: tenantsTable.heroImageUrl,
         brandIconUrl: tenantsTable.brandIconUrl,
       });

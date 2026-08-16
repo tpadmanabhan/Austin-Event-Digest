@@ -284,6 +284,12 @@ async function runTenantMigration(): Promise<void> {
   // Task #81: hero and brand icon image URLs per tenant
   await db.execute(sql`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS hero_image_url TEXT`);
   await db.execute(sql`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS brand_icon_url TEXT`);
+  await db.execute(sql`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS curator_name TEXT`);
+  // Backfill curator names for existing cities so they are not lost after this migration
+  await db.execute(sql`UPDATE tenants SET curator_name = 'Raj'          WHERE slug = 'austin'      AND curator_name IS NULL`);
+  await db.execute(sql`UPDATE tenants SET curator_name = 'Bob'          WHERE slug = 'sacramento'  AND curator_name IS NULL`);
+  await db.execute(sql`UPDATE tenants SET curator_name = 'Phil'         WHERE slug = 'stlouis'     AND curator_name IS NULL`);
+  await db.execute(sql`UPDATE tenants SET curator_name = 'Rohan Vivier' WHERE slug = 'brushycreek' AND curator_name IS NULL`);
   await db.execute(sql`
     ALTER TABLE tenants ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false
   `);

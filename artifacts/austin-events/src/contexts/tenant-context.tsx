@@ -8,6 +8,7 @@ export interface TenantConfig {
   accentColor: string;
   categories: string[];
   digestTitle: string | null;
+  curatorName: string | null;
   firstRun: boolean;
   hasEmailAdmin: boolean;
   hasHeroImage?: boolean;

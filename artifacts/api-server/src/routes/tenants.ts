@@ -96,6 +96,7 @@ router.get("/tenant/config", async (req, res) => {
         accentColor: tenantsTable.accentColor,
         categories: tenantsTable.categories,
         digestTitle: tenantsTable.digestTitle,
+        curatorName: tenantsTable.curatorName,
         firstRun: tenantsTable.firstRun,
         adminEmail: tenantsTable.adminEmail,
         heroImageUrl: tenantsTable.heroImageUrl,

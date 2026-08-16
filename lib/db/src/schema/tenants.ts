@@ -8,6 +8,7 @@ export const tenantsTable = pgTable("tenants", {
   accentColor: text("accent_color").notNull().default("#7c3aed"),
   categories: jsonb("categories").notNull().$type<string[]>(),
   digestTitle: text("digest_title"),
+  curatorName: text("curator_name"),
   passwordHash: text("password_hash"),
   adminEmail: text("admin_email"),
   heroImageUrl: text("hero_image_url"),

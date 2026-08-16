@@ -98,14 +98,18 @@ export interface WelcomeEmailTenant {
   name: string;
   city: string;
   digestTitle?: string | null;
+  curatorName?: string | null;
 }
 
 export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmailTenant | null, subscriberEmail?: string | null): string {
   const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
   const cityLabel = tenant?.city || "Austin, TX";
   const siteUrl = tenant?.slug ? `https://${tenant.slug}.eventcarpooling.com` : "https://austin.eventcarpooling.com";
-  const curatorLine = tenant && tenant.slug !== "austin"
-    ? `Curated with ❤️ for ${escapeHtml(tenant.city || tenant.name)}`
+  // When a tenant is provided, the DB value is authoritative.
+  // null/blank = no attribution line. Only fall back to hardcoded text when
+  // no tenant is supplied at all (e.g. internal previews).
+  const curatorLine = tenant != null
+    ? (tenant.curatorName ? `Curated with ❤️ by ${escapeHtml(tenant.curatorName)}` : "")
     : "Curated with ❤️ by Raj from Austin, TX";
   const unsubUrl = subscriberEmail
     ? `${siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`
@@ -245,7 +249,7 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 
     <!-- Footer -->
     <div style="text-align:center;padding:4px 0 16px;">
-      <p style="margin:0 0 6px;color:#78716c;font-size:13px;">${curatorLine}</p>
+      ${curatorLine ? `<p style="margin:0 0 6px;color:#78716c;font-size:13px;">${curatorLine}</p>` : ""}
       <p style="margin:0;color:#a8a29e;font-size:12px;">You subscribed at ${escapeHtml(tenant?.slug ? `${tenant.slug}.eventcarpooling.com` : "austin.eventcarpooling.com")} — <a href="${escapeHtml(unsubUrl)}" style="color:#a8a29e;">unsubscribe anytime</a></p>
     </div>
 
@@ -477,7 +481,7 @@ export function buildDigestEmailHtml(digest: {
   siteUrl?: string;
   alsoNearby?: DigestEventItem[];
   preferencesUrl?: string | null;
-}, subscriberName?: string | null, subscriberEmail?: string | null, tenant?: { slug?: string | null; name?: string | null; city?: string | null; digestTitle?: string | null }): string {
+}, subscriberName?: string | null, subscriberEmail?: string | null, tenant?: { slug?: string | null; name?: string | null; city?: string | null; digestTitle?: string | null; curatorName?: string | null }): string {
   const weekDate = new Date(digest.weekOf).toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -708,6 +712,15 @@ export function buildDigestEmailHtml(digest: {
     rideBtnBg: "#93c5fd",
     rideBtnColor: "#1e293b",
   };
+
+  // When a tenant is provided, the DB value is authoritative — always override the
+  // hardcoded slug defaults so admins can change or clear the curator without a deploy.
+  if (tenant !== undefined) {
+    theme.curatorName = tenant.curatorName ?? "";
+    theme.curatorUrl = tenant.curatorName === "Raj"
+      ? "https://customersuccessforgood.com/"
+      : null;
+  }
 
   const unsubscribeUrl = digest.siteUrl && subscriberEmail
     ? `${digest.siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`
