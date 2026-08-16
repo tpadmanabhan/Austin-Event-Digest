@@ -1,7 +1,8 @@
 import { Router, type IRouter } from "express";
 import { z } from "zod";
 import { db, submittedDealsTable } from "@workspace/db";
-import { desc, asc, sql } from "drizzle-orm";
+import { desc, asc, sql, eq } from "drizzle-orm";
+import { requireAdmin } from "../middleware/requireAdmin";
 import OpenAI from "openai";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 
@@ -98,9 +99,7 @@ router.get("/deals/submitted", async (req, res) => {
  * Calls OpenAI vision to extract deal metadata, saves to DB, returns public deal card.
  */
 router.post("/deals/submit", async (req, res) => {
-          const parsed = JSON.parse(jsonMatch[0]);
-
-  const { firstName, email, locationName, locationAddress, objectPath, expiresAt } = parsed.data;
+  const parsed = SubmitDealBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({
       error: "invalid_request",
@@ -108,7 +107,6 @@ router.post("/deals/submit", async (req, res) => {
     });
     return;
   }
-
   const { firstName, email, locationName, locationAddress, objectPath, expiresAt } = parsed.data;
 
   try {
@@ -203,8 +201,6 @@ Extract the following and respond ONLY with valid JSON (no markdown):
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
-
-  const { firstName, email, locationName, locationAddress, objectPath, expiresAt } = parsed.data;
           if (parsed.business) business = String(parsed.business).slice(0, 200);
           if (parsed.deal) deal = String(parsed.deal).slice(0, 300);
           if (parsed.savings) savings = String(parsed.savings).slice(0, 100);
@@ -255,6 +251,58 @@ Extract the following and respond ONLY with valid JSON (no markdown):
   } catch (err) {
     req.log.error({ err }, "Error submitting deal");
     res.status(500).json({ error: "server_error", message: "Failed to submit deal" });
+  }
+});
+
+/**
+ * PATCH /admin/deals/:id
+ * Admin endpoint to correct a submitted deal's fields.
+ * Accepts any subset of: business, deal, savings, day, locationName, locationAddress.
+ */
+const PatchDealBody = z.object({
+  business: z.string().min(1).max(200).optional(),
+  deal: z.string().min(1).max(500).optional(),
+  savings: z.string().max(100).optional(),
+  day: z.string().max(50).optional(),
+  locationName: z.string().max(200).optional(),
+  locationAddress: z.string().max(300).optional(),
+});
+
+router.patch("/admin/deals/:id", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid deal id" });
+    return;
+  }
+  const parsed = PatchDealBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "invalid_request", message: parsed.error.message });
+    return;
+  }
+  if (Object.keys(parsed.data).length === 0) {
+    res.status(400).json({ error: "invalid_request", message: "No fields to update" });
+    return;
+  }
+  try {
+    const f = parsed.data;
+    // Build SET clauses using drizzle sql template tag for safe parameterization
+    const parts: ReturnType<typeof sql>[] = [];
+    if (f.business !== undefined)        parts.push(sql`business = ${f.business}`);
+    if (f.deal !== undefined)            parts.push(sql`deal = ${f.deal}`);
+    if (f.savings !== undefined)         parts.push(sql`savings = ${f.savings}`);
+    if (f.day !== undefined)             parts.push(sql`day = ${f.day}`);
+    if (f.locationName !== undefined)    parts.push(sql`location_name = ${f.locationName}`);
+    if (f.locationAddress !== undefined) parts.push(sql`location_address = ${f.locationAddress}`);
+
+    // Join SET clauses with commas
+    const setClause = sql.join(parts, sql`, `);
+    await db.execute(sql`UPDATE submitted_deals SET ${setClause} WHERE id = ${id}`);
+
+    req.log.info({ id, fields: f }, "Admin patched submitted deal");
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "Error patching deal");
+    res.status(500).json({ error: "server_error", message: "Failed to patch deal" });
   }
 });
 

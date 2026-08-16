@@ -304,7 +304,7 @@ function PlatformHomeInner() {
               style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 40 }}
             >
               {[
-                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "3", label: t.statCities },
+                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "7", label: t.statCities },
                 { icon: <Star className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "5", label: t.statCategories },
                 { icon: <Users className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "10+", label: t.statSources },
               ].map((stat, i) => (
