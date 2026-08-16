@@ -28,3 +28,4 @@ Each tenant has its own passwordHash → its own token.
 - Do NOT use `HMAC(SESSION_SECRET, ADMIN_PASSWORD)` — that was wrong and returns 401
 - Do NOT reuse tokens across tenants — each tenant has a different passwordHash → different token
 - The production generate endpoint falls back to `generateSampleDigest()` when adapters return nothing — always verify events are real before keeping generated digests; delete immediately if they contain hallucinated fallback events (e.g. "Barton Springs Sunday Swim", "South Congress Farmers Market")
+- Austin `password_hash` rotates on every deploy — always re-query prod DB before computing the Austin token; stale token returns 401 on writes but 200 on public GETs (which don't require auth)
