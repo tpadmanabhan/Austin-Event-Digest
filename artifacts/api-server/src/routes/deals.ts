@@ -231,9 +231,9 @@ Extract the following and respond ONLY with valid JSON (no markdown):
     const expiresAtDate = expiresAt ? new Date(`${expiresAt}T23:59:59`) : null;
     const insertResult = await db.execute(sql`
       INSERT INTO submitted_deals
-        (business, deal, savings, day, location_name, location_address, image_url, lat, lng, submitter_name, submitter_email, expires_at)
+        (business, deal, savings, day, location_name, location_address, image_url, lat, lng, submitter_name, submitter_email, expires_at, status)
       VALUES
-        (${business}, ${deal}, ${savings}, ${day}, ${locationName}, ${locationAddress}, ${imageUrl}, ${lat}, ${lng}, ${firstName}, ${email}, ${expiresAtDate})
+        (${business}, ${deal}, ${savings}, ${day}, ${locationName}, ${locationAddress}, ${imageUrl}, ${lat}, ${lng}, ${firstName}, ${email}, ${expiresAtDate}, 'approved')
       RETURNING
         id, business, deal, savings, day,
         location_name AS "locationName",

@@ -471,6 +471,12 @@ export default function AustinCaresDeals() {
             >
               Get Weekly Deals
             </button>
+            <a
+              href="/full"
+              style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: C.char, color: "#fff", border: "none", cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif" }}
+            >
+              See this week's deals →
+            </a>
             <button
               onClick={() => setBizModalOpen(true)}
               style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: "transparent", color: C.char, border: `1.5px solid ${C.char}`, cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif" }}
