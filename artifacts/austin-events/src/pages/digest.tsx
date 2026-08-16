@@ -537,7 +537,7 @@ export default function DigestView() {
 
           return (
             <>
-              {/* Event Map — Austin & Brushy Creek only */}
+              {/* Event Map */}
               {showMap && (
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-6 flex items-center gap-3">
@@ -552,6 +552,50 @@ export default function DigestView() {
                   />
                 </section>
               )}
+
+              {/* ── Coming Soon: New Features ───────────────────────────────── */}
+              <div className="mb-12">
+                <div
+                  className="rounded-3xl p-8 sm:p-10 overflow-hidden relative"
+                  style={{ background: "linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#0f3460 100%)" }}
+                >
+                  <div className="relative z-10">
+                    <div
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-5"
+                      style={{ background: "rgba(255,255,255,0.12)", color: "#93c5fd", border: "1px solid rgba(147,197,253,0.3)" }}
+                    >
+                      🚀 Coming Soon
+                    </div>
+                    <h3 className="font-serif text-2xl sm:text-3xl font-extrabold mb-3 leading-tight" style={{ color: "#fff" }}>
+                      Two new features{" "}
+                      <span style={{ color: "#60a5fa", fontStyle: "italic" }}>rolling out soon</span>
+                    </h3>
+                    <div className="grid sm:grid-cols-2 gap-5 mb-6">
+                      <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                        <div className="text-2xl mb-2">📨</div>
+                        <p className="font-bold text-white mb-1">Tell a Friend</p>
+                        <p className="text-sm leading-relaxed" style={{ color: "#94a3b8" }}>
+                          Text any event directly to a friend's phone — one tap, no app download required. Just enter their number and they get the full event details instantly.
+                        </p>
+                      </div>
+                      <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                        <div className="text-2xl mb-2">💬</div>
+                        <p className="font-bold text-white mb-1">SMS for Local Businesses</p>
+                        <p className="text-sm leading-relaxed" style={{ color: "#94a3b8" }}>
+                          An SMS-powered tool built for {tenant.city.split(",")[0]}'s local service businesses — connecting them with nearby customers in real time. No app download required.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {["⚡ Real-Time Reach", "💬 SMS-First", "📍 Hyper-Local", "🚀 No App Needed"].map(tag => (
+                        <span key={tag} className="px-3 py-1 rounded-full text-xs font-semibold" style={{ background: "rgba(255,255,255,0.08)", color: "#cbd5e1", border: "1px solid rgba(255,255,255,0.12)" }}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {categoryFilter === "All" && businessSpotlights.length > 0 && (
                 <section className="mb-12">
