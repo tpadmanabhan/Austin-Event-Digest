@@ -317,7 +317,24 @@ Look for "Austin" or "🤠" in non-Austin city intros. If found, PATCH with a ci
 **4. Relevant files:**
 - `artifacts/api-server/src/lib/digestGenerator.ts` → `generateSampleDigest(weekOf, customNotes, tenant)` — city-aware fallback intro/subject
 - `artifacts/api-server/src/routes/events.ts` → generate endpoint, line `introBase` — Gmail intro gated to Austin
-- `artifacts/api-server/src/lib/emailService.ts` → AustinCares promo block, subject emoji map
+- `artifacts/api-server/src/lib/emailService.ts` → AustinCares promo block, subject emoji map, email body structure
+
+## Email Template — Current Structure (all cities)
+
+Changes applied in `artifacts/api-server/src/lib/emailService.ts` as of Aug 2026:
+
+**Removed blocks (no longer in any city email):**
+- ~~Superconnector feature block~~ — was ~40 lines promoting the Superconnector feature; removed
+- ~~Ride / carpool feature block~~ — was ~40 lines promoting carpool/ride feature; removed
+
+**Added block (all cities, after map section):**
+- **"Two new features rolling out soon"** Coming Soon block — appears immediately after `buildStaticMapSection(...)`, before events list. Contains:
+  - 📨 Tell a Friend — share link to bring a friend
+  - 💬 SMS for Local Businesses — city-name dynamic (e.g. "SMS for Austin Businesses")
+  - Pills: ⚡ Real-Time Reach, 💬 SMS-First, 📍 Hyper-Local, 🚀 No App Needed
+  - Teal background, styled inline for email clients
+
+If you don't see this block in a test email, check that the production server has been published with these changes.
 
 ## ⚠️ Carry-Forward Leak: Austin Sample Events in Non-Austin Digests
 

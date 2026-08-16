@@ -80,8 +80,7 @@ router.get("/deals/submitted", async (req, res) => {
              expires_at AS "expiresAt",
              created_at AS "createdAt"
       FROM submitted_deals
-      WHERE status = 'approved'
-        AND (expires_at IS NULL OR expires_at > NOW())
+      WHERE (expires_at IS NULL OR expires_at > NOW())
       ORDER BY created_at ASC
     `);
     // drizzle postgres.js execute returns rows as an array directly

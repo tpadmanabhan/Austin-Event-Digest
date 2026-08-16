@@ -81,7 +81,9 @@ Hardcoded in `STATIC_DEALS` array at the top of `artifacts/austin-events/src/pag
 #### 2. Community Submitted Deals
 Stored in `submitted_deals` table. Submitted via the form on `/full` or `POST /api/deals/submit`.
 
-**DB columns:** `id`, `business_name`, `deal_description`, `location_address`, `contact_name`, `contact_email`, `savings`, `day_of_week`, `photo_url`, `lat`, `lng`, `created_at`
+**DB columns:** `id`, `business`, `deal`, `savings`, `day`, `location_name`, `location_address`, `image_url`, `lat`, `lng`, `submitter_name`, `submitter_email`, `expires_at`, `status`, `created_at`
+
+> ⚠️ The column names above are the actual SQL names. Earlier skill versions listed incorrect aliases (`business_name`, `deal_description`, `day_of_week`, etc.) — those are wrong.
 
 On every API server restart, `startupMigration.ts` geocodes up to 50 submitted deals with null `lat`/`lng` via Nominatim (suite-stripped retry). If a pin is missing, restart the API server or patch lat/lng directly in the DB.
 
@@ -93,10 +95,11 @@ All in `artifacts/api-server/src/routes/deals.ts`:
 
 | Method | Route | Auth | What it does |
 |--------|-------|------|-------------|
-| `GET` | `/deals/submitted` | None | Returns public-safe fields from `submitted_deals` (excludes submitter name/email), oldest first |
-| `POST` | `/deals/submit` | None | Validates fields, downloads+validates image from object storage, calls OpenAI vision to extract business/deal/savings/day, geocodes address, inserts into DB |
+| `GET` | `/deals/submitted` | None | Returns public-safe fields from `submitted_deals` where `status = 'approved'`, oldest first |
+| `POST` | `/deals/submit` | None | Validates fields, downloads+validates image from object storage, calls OpenAI vision to extract business/deal/savings/day, geocodes address, inserts into DB with `status = 'approved'` (auto-approved on submission) |
+| `PATCH` | `/api/admin/deals/:id` | Admin Bearer | Updates any combination of `business`, `deal`, `savings`, `day`, `locationName`, `locationAddress` on a submitted deal. Body: `{ business?, deal?, savings?, day?, locationName?, locationAddress? }`. Use to fix typos in live community deals. |
 
-**Note:** Neither route requires auth. The submission endpoint collects private submitter info (name, email) but stores it server-side only — never returned in GET.
+**Note:** `POST /deals/submit` and `GET /deals/submitted` require no auth. Submitted deals are **auto-approved on insert** (`status = 'approved'`); there is no pending/moderation queue yet. The PATCH admin endpoint requires an admin Bearer token (see `admin-api-auth` skill).
 
 ---
 
@@ -110,7 +113,7 @@ AustinCares digest is populated manually each week with real curated Austin deal
 
 **Populating deals:** Use `PATCH /api/events/digest/:id/events` with all 7 deals. Date each deal as **Saturday of the current week** (e.g. "Saturday, Aug 15 at 12:00 PM") so all deals stay visible throughout the week. `filterStaleEvents` removes entries whose date has passed — using the week's Saturday means deals don't disappear mid-week.
 
-**Category:** Use `"Wellness"` (production workaround, until next deploy). Dev code (`applyTenantCategoryRestriction`) has no restriction, so any category passes on dev. After the next deploy, use `"Food & Markets"`.
+**Category:** Use `"Food & Markets"`. The old `Civics + Wellness only` restriction was removed in dev and is now deployed — no more `"Wellness"` workaround needed.
 
 **Intro:** Set a deals-focused intro by PATCHing `POST /api/events/digest/:id/intro`. Default auto-generated intros are Austin-events-flavored — always override for AustinCares.
 
@@ -151,8 +154,9 @@ Key UI strings — do not revert these:
 
 | Location | Element | Text |
 |----------|---------|------|
-| Landing page (`/`) hero button | Primary CTA | "Get Weekly Deals" |
-| Landing page (`/`) nav + hero | Secondary CTA | "I run a business →" |
+| Landing page (`/`) hero | Primary CTA button | "Get Weekly Deals" → `scrollToSubscribe` |
+| Landing page (`/`) hero | Secondary CTA link | "See this week's deals →" → `/full` (dark filled, `<a>` tag) |
+| Landing page (`/`) hero + nav | Tertiary CTA button | "I run a business →" → opens biz modal |
 | Full page (`/full`) header `<h1>` | Page title | "Weekly Deals" |
 | Full page (`/full`) header sub-label | Eyebrow | "AustinCares · Full Edition" |
 
@@ -178,4 +182,4 @@ The full page header has **no date line** — the week date reference was intent
 - `artifacts/api-server/src/lib/startupMigration.ts` — geocode backfill for submitted deals
 - `artifacts/austin-events/src/App.tsx` — route definitions for austincares (lines 46–47)
 - `artifacts/api-server/src/lib/emailService.ts` — AustinCares email theme (~line 501)
-- `artifacts/api-server/src/routes/events.ts` — `applyTenantCategoryRestriction` (empty in dev — no restriction for AustinCares; prod still enforces Wellness until deploy)
+- `artifacts/api-server/src/routes/events.ts` — `applyTenantCategoryRestriction` (no restriction for AustinCares — deployed)
