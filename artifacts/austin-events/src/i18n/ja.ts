@@ -59,6 +59,25 @@ export const JA = {
   backToAllEditions:        "← 全号一覧へ",
   thisWeeksCuratedEvents:   "今週の厳選イベント",
   eventsNearestFirst:       "イベント — 近い順",
+
+  // Unsubscribe page
+  unsubscribeTitle:           "配信設定",
+  unsubscribeManagingFor:     "配信設定を管理:",
+  unsubscribeNoEmail:         "このリンクにメールアドレスが見つかりません。",
+  unsubscribeKeepSubscribed:  "✓ 配信を続ける",
+  unsubscribeButton:          "すべてのメールを配信停止",
+  unsubscribingButton:        "停止中...",
+  unsubscribeFootnote:        (url: string) => `いつでも再登録できます — `,
+  unsubscribeFootnoteLink:    "登録ページへ",
+  unsubscribeSuccessTitle:    "配信停止しました",
+  unsubscribeSuccessBody:     (digestName: string) => `のメーリングリストから削除されました。今後はメールをお送りしません。`,
+  unsubscribeSuccessBack:     "イベントページに戻る",
+  unsubscribeSuccessResubLink:"再登録はこちら",
+  unsubscribeSuccessResubPre: "気が変わったら？",
+  unsubscribeErrorTitle:      "エラーが発生しました",
+  unsubscribeErrorBody:       "リクエストを処理できませんでした。再度お試しいただくか、",
+  unsubscribeErrorContact:    "こちらからお問い合わせください",
+  unsubscribeTryAgain:        "もう一度試す",
 } as const;
 
 export type JaKey = keyof typeof JA;

@@ -98,14 +98,87 @@ export interface WelcomeEmailTenant {
   digestTitle?: string | null;
 }
 
-export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmailTenant | null): string {
+export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmailTenant | null, subscriberEmail?: string | null): string {
   const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
   const cityLabel = tenant?.city || "Austin, TX";
-  const greeting = `Hey ${cityLabel.split(",")[0]}! 👋`;
   const siteUrl = tenant?.slug ? `https://${tenant.slug}.eventcarpooling.com` : "https://austin.eventcarpooling.com";
   const curatorLine = tenant && tenant.slug !== "austin"
     ? `Curated with ❤️ for ${escapeHtml(tenant.city || tenant.name)}`
     : "Curated with ❤️ by Raj from Austin, TX";
+  const unsubUrl = subscriberEmail
+    ? `${siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}`
+    : siteUrl;
+
+  // Tokyo: Japanese welcome email
+  if (tenant?.slug === "tokyo") {
+    const tokyoDigestName = tenant.digestTitle || "東京イベント週刊ダイジェスト";
+    const tokyoUnsubUrl = subscriberEmail
+      ? `${siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}&lang=ja`
+      : `${siteUrl}/unsubscribe?lang=ja`;
+    return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登録完了！${escapeHtml(tokyoDigestName)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic','Meiryo',sans-serif;">
+  <div style="max-width:580px;margin:0 auto;padding:32px 16px;">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#030C18 0%,#0A2548 55%,#1B5EA8 100%);border-radius:20px;padding:40px 32px 32px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;">
+      <div style="font-size:44px;margin-bottom:8px;line-height:1;">🗼</div>
+      <h1 style="margin:0 0 6px;color:#EBF3FC;font-size:28px;font-weight:800;letter-spacing:-0.5px;">${escapeHtml(tokyoDigestName)}</h1>
+      <p style="margin:0;color:#B8D4EF;font-size:14px;letter-spacing:0.5px;">週刊ダイジェスト · 東京</p>
+    </div>
+
+    <!-- Main card -->
+    <div style="background:#ffffff;border:1px solid #dbeafe;border-radius:16px;padding:32px;margin-bottom:16px;">
+      <p style="margin:0 0 16px;color:#1e3a5f;font-size:16px;font-weight:700;">
+        東京のイベントダイジェストへようこそ！🎉
+      </p>
+      <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.8;">
+        メーリングリストへの登録が完了しました。毎週日曜日、AIが東京中のイベント情報をリサーチし、今週の厳選イベントをお届けします。
+      </p>
+      <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.8;">
+        <strong>毎週日曜日</strong>に、日曜日から土曜日までの一週間分のイベントをまとめてお届けします。週のはじまりに、今週の予定をチェックしましょう。
+      </p>
+
+      <!-- What to expect -->
+      <div style="background:#EBF3FC;border:1px solid #bfdbfe;border-radius:12px;padding:20px;margin-bottom:24px;">
+        <p style="margin:0 0 12px;color:#0A2548;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">毎号の内容</p>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:5px 0;font-size:14px;">🎸</td>
+            <td style="padding:5px 8px;color:#374151;font-size:14px;">ライブ・コンサート</td>
+            <td style="padding:5px 0;font-size:14px;">🍽️</td>
+            <td style="padding:5px 8px;color:#374151;font-size:14px;">グルメ・マーケット</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 0;font-size:14px;">💻</td>
+            <td style="padding:5px 8px;color:#374151;font-size:14px;">テック・スタートアップ</td>
+            <td style="padding:5px 0;font-size:14px;">🌱</td>
+            <td style="padding:5px 8px;color:#374151;font-size:14px;">アート・ウェルネス・地域活動</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center;">
+        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#1B5EA8;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">今週のイベントを見る →</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding:4px 0 16px;">
+      <p style="margin:0 0 6px;color:#78716c;font-size:13px;">東京のイベント情報をAIでキュレーション ❤️</p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">${escapeHtml("tokyo.eventcarpooling.com")} で登録しました — <a href="${escapeHtml(tokyoUnsubUrl)}" style="color:#a8a29e;">配信停止はこちら</a></p>
+    </div>
+
+  </div>
+</body>
+</html>`;
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -161,7 +234,7 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
     <!-- Footer -->
     <div style="text-align:center;padding:4px 0 16px;">
       <p style="margin:0 0 6px;color:#78716c;font-size:13px;">${curatorLine}</p>
-      <p style="margin:0;color:#a8a29e;font-size:12px;">You subscribed at ${escapeHtml(tenant?.slug ? `${tenant.slug}.eventcarpooling.com` : "austin.eventcarpooling.com")} — <a href="${escapeHtml(siteUrl)}" style="color:#a8a29e;">unsubscribe anytime</a></p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">You subscribed at ${escapeHtml(tenant?.slug ? `${tenant.slug}.eventcarpooling.com` : "austin.eventcarpooling.com")} — <a href="${escapeHtml(unsubUrl)}" style="color:#a8a29e;">unsubscribe anytime</a></p>
     </div>
 
   </div>
@@ -170,11 +243,15 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 }
 
 export async function sendWelcomeEmail(to: string, name?: string | null, tenant?: WelcomeEmailTenant | null): Promise<void> {
-  const html = buildWelcomeEmailHtml(name, tenant);
+  const html = buildWelcomeEmailHtml(name, tenant, to);
   const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
+  const isTokyoTenant = tenant?.slug === "tokyo";
+  const subject = isTokyoTenant
+    ? `登録完了！🗼 ${tenant?.digestTitle || "東京イベント週刊ダイジェスト"}`
+    : `You're in! 🤠 Welcome to ${digestName}`;
   const result = await sendEmail({
     to,
-    subject: `You're in! 🤠 Welcome to ${digestName}`,
+    subject,
     html,
   });
   if (result.success) {
