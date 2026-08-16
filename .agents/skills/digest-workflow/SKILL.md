@@ -439,11 +439,22 @@ Rules:
 - `featured: true` ("Special Events") are **NOT** exempt — they have a real date and are removed once that date passes
 - Events whose date string can't be parsed are kept (safe default)
 
+**Year-rollover fix (Task #217):** `filterStaleEvents` previously inferred the event year as the current calendar year, which caused Dec→Jan and cross-year events to be incorrectly marked stale. The fix uses the same robust year-inference as `autoTagFutureEvents`: if the parsed month/day falls before `weekOf`, the year is bumped by 1. This ensures events tagged as "next week's" by `autoTagFutureEvents` survive the stale filter and appear on the map.
+
 > ⚠️ Do not add `ev.featured` back to the "always keep" list. `autoTagFutureEvents` marks events beyond the digest week's Saturday as `featured: true`, but they still have a date. Exempting featured events caused sent digests to accumulate stale "Special Events" indefinitely (e.g. Sacramento showing Aug 2–7 events weeks later).
 
 The client-side filter in `digest.tsx` (`upcomingEvents`) also applies `isEventTodayOrLater()` to all events including featured — it does **not** short-circuit on `e.featured`.
 
 A separate nightly `scheduleDailyCleanup()` job (2 AM) also removes stale events from **unsent** digests at the DB level. Both layers work together — the API-layer filter is the safety net for sent digests.
+
+## City-Scoped Digest Queries (Task #214)
+
+All digest queries (`/api/events/digest/latest`, `/api/events/digest/list`) are scoped to the **requesting tenant** via `req.tenant!.id`. This means every city's subdomain returns that city's own digest — no city ever falls back to Austin's.
+
+- The fix replaced hardcoded `tenantId: 1` in `events.ts` with `where(eq(digestsTable.tenantId, req.tenant!.id))`
+- Tenant is resolved from the request host in `resolveTenant.ts` (subdomain → slug → DB lookup)
+- The frontend (`home.tsx`, `digest.tsx`) calls the same `/api/events/digest/latest` URL without any city param — city identity comes entirely from the request host/tenant context
+- In dev, the tenant is set via the `Host:` header or a dev default (slug `austin`)
 
 ## Community Events (Always Merged In)
 

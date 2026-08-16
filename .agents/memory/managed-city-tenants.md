@@ -35,28 +35,31 @@ Auth pattern: email-based HMAC (null password_hash). Token = HMAC(RSVP_HMAC_SECR
 | sacramento | 134 | aiimplementationclubaustin@gmail.com |
 
 ## Production tenant IDs (confirmed)
-| Slug | Prod ID | Email |
-|------|---------|-------|
-| austin | 1 | aiimplementationclubaustin@gmail.com |
-| austincares | 2 | rohanvivier@gmail.com |
-| brushycreek | 3 | rohanvivier@gmail.com |
-| sacramento | 4 | aiimplementationclubaustin@gmail.com |
-| portland | 5 | aiimplementationclubaustin@gmail.com |
-| bulverde | 6 | aiimplementationclubaustin@gmail.com |
+| Slug | Prod ID | Email | Auth pattern |
+|------|---------|-------|-------------|
+| austin | 1 | aiimplementationclubaustin@gmail.com | password-hash HMAC |
+| austincares | 2 | rohanvivier@gmail.com | password-hash HMAC |
+| brushycreek | 3 | rohanvivier@gmail.com | email-based HMAC |
+| sacramento | 4 | aiimplementationclubaustin@gmail.com | email-based HMAC |
+| portland | 5 | aiimplementationclubaustin@gmail.com | email-based HMAC |
+| bulverde | 6 | aiimplementationclubaustin@gmail.com | email-based HMAC |
+| stlouis | 7 | aiimplementationclubaustin@gmail.com | email-based HMAC |
+| tokyo | 8 | aiimplementationclubaustin@gmail.com | email-based HMAC |
+| dc | 217 | aiimplementationclubaustin@gmail.com | email-based HMAC |
 
-**Note:** startup migration now has INSERT statements for all 4 new cities (idempotent ON CONFLICT DO NOTHING) — future deploys are safe.
+**Note:** startup migration now has INSERT statements for all cities (idempotent ON CONFLICT DO NOTHING) — future deploys are safe.
 
 ## Aug 16–22 digest IDs
 | City | Dev ID | Prod ID | Events (prod) |
 |------|--------|---------|--------------|
-| austin | 55 | — | — |
+| austin | 55 | 127 | 23 (sent Aug 16) |
 | stlouis | 56 | — | — |
 | tokyo | 57 | — | — |
 | bulverde | 58 | 124 | 31 |
 | sacramento | 59 | 126 | 28 |
 | portland | 60 | 125 | 33 |
 | brushycreek | 61 | 123 | 11 |
-| austincares | 62 | 122 | 8 (7 deals + 1 spotlight) |
+| austincares | 62 | 117 | 13 (11 deals + spotlight + post; Task #213) |
 
 ## How to apply
 Before any work involving a city that might not exist in the dev DB, run:
