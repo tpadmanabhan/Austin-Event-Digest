@@ -32,6 +32,7 @@ interface Deal {
   lng?: number;
   imageUrl?: string;
   isSubmitted?: boolean;
+  verifiedAt?: string; // ISO date — shown as freshness badge; amber "check this deal" warning when >60 days old
 }
 
 const STATIC_DEALS: Deal[] = [
@@ -46,6 +47,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.spokesmancoffee.com",
     lat: 30.3330,
     lng: -97.7388,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "MON",
@@ -57,6 +59,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.sienaaustin.com/weekly-shcedule/",
     lat: 30.3640,
     lng: -97.7700,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "MON",
@@ -68,6 +71,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.lousaustin.com/barton",
     lat: 30.2638,
     lng: -97.7529,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "MON",
@@ -91,6 +95,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.grubhub.com/restaurant/masala-wok-10515-n-mopac-expy-ste-a155-austin/659613",
     lat: 30.4161,
     lng: -97.7354,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "TUE",
@@ -114,6 +119,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.lousaustin.com/barton",
     lat: 30.2638,
     lng: -97.7529,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "TUE",
@@ -137,6 +143,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://nomadecocina.com/happy-hour/",
     lat: 30.2461,
     lng: -97.7566,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "WED",
@@ -148,6 +155,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.lousaustin.com/barton",
     lat: 30.2638,
     lng: -97.7529,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "WED",
@@ -207,6 +215,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.austintexas.gov/health/programs/immunizations",
     lat: 30.2513,
     lng: -97.6951,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "ANY DAY",
@@ -218,6 +227,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://foundcom.org/financial-wellness/",
     lat: 30.2850,
     lng: -97.7350,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "ANY DAY",
@@ -229,6 +239,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://blackmenshealthclinic.org/healthycuts/",
     lat: 30.2680,
     lng: -97.7350,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "ANY DAY",
@@ -240,6 +251,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://austinhabitat.org/programs/housingcounseling/",
     lat: 30.2280,
     lng: -97.7757,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "ANY DAY",
@@ -251,6 +263,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.groupon.com/deals/schlotzskys-25",
     lat: 30.1762,
     lng: -97.7834,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "ANY DAY",
@@ -262,6 +275,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.groupon.com/deals/mcalisters-deli-25",
     lat: 30.3617,
     lng: -97.7307,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "ANY DAY",
@@ -273,6 +287,7 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.groupon.com/deals/rasoi-indian-restaurant-12522599",
     lat: 30.4350,
     lng: -97.7900,
+    verifiedAt: "2026-08-16",
   },
   {
     day: "ANY DAY",
@@ -284,8 +299,8 @@ const STATIC_DEALS: Deal[] = [
     url: "https://www.groupon.com/deals/electric-gravy-mumbai-bar-canteen",
     lat: 30.2693,
     lng: -97.7266,
-  },
-];
+    verifiedAt: "2026-08-16",
+  },];
 
 const DAY_ORDER = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN", "ANY DAY", "WEEKLY"];
 
@@ -365,6 +380,24 @@ function DealCard({ deal }: { deal: Deal }) {
                 via {deal.source} ↗
               </span>
             )}
+            {deal.verifiedAt && (() => {
+              const daysSince = Math.floor((Date.now() - new Date(deal.verifiedAt!).getTime()) / 86_400_000);
+              const stale = daysSince > 60;
+              const label = stale
+                ? "⚠️ Check this deal"
+                : `✓ Verified ${new Date(deal.verifiedAt!).toLocaleDateString("en-US", { month: "short", year: "2-digit" })}`;
+              return (
+                <span style={{
+                  fontSize: 11, fontWeight: stale ? 700 : 500,
+                  background: stale ? "#FEF3C7" : "#F9FAFB",
+                  color: stale ? "#B45309" : "#6B7280",
+                  border: `1px solid ${stale ? "#FCD34D" : "#E5E7EB"}`,
+                  borderRadius: 6, padding: "2px 7px",
+                }}>
+                  {label}
+                </span>
+              );
+            })()}
           </div>
         </div>
         {deal.url && (
