@@ -34,16 +34,29 @@ Auth pattern: email-based HMAC (null password_hash). Token = HMAC(RSVP_HMAC_SECR
 | portland | 133 | aiimplementationclubaustin@gmail.com |
 | sacramento | 134 | aiimplementationclubaustin@gmail.com |
 
-## Aug 16–22 digest IDs (dev)
-| City | Digest ID | Events | Notes |
-|------|-----------|--------|-------|
-| austin | 55 | 22 | TM + 4 curated + 2 spotlights |
-| stlouis | 56 | 20 | TM + 5 curated + 2 spotlights |
-| tokyo | 57 | 8 | TM + 2 curated + 2 spotlights |
-| bulverde | 58 | 30 | TM + 3 curated + 2 spotlights |
-| sacramento | 59 | 22 | TM + 5 curated + 2 spotlights |
-| portland | 60 | 26 | TM + 6 curated + 2 spotlights |
-| brushycreek | 61 | 9 | TM + 3 curated + 2 spotlights |
+## Production tenant IDs (confirmed)
+| Slug | Prod ID | Email |
+|------|---------|-------|
+| austin | 1 | aiimplementationclubaustin@gmail.com |
+| austincares | 2 | rohanvivier@gmail.com |
+| brushycreek | 3 | rohanvivier@gmail.com |
+| sacramento | 4 | aiimplementationclubaustin@gmail.com |
+| portland | 5 | aiimplementationclubaustin@gmail.com |
+| bulverde | 6 | aiimplementationclubaustin@gmail.com |
+
+**Note:** startup migration now has INSERT statements for all 4 new cities (idempotent ON CONFLICT DO NOTHING) — future deploys are safe.
+
+## Aug 16–22 digest IDs
+| City | Dev ID | Prod ID | Events (prod) |
+|------|--------|---------|--------------|
+| austin | 55 | — | — |
+| stlouis | 56 | — | — |
+| tokyo | 57 | — | — |
+| bulverde | 58 | 124 | 31 |
+| sacramento | 59 | 126 | 28 |
+| portland | 60 | 125 | 33 |
+| brushycreek | 61 | 123 | 11 |
+| austincares | 62 | 122 | 8 (7 deals + 1 spotlight) |
 
 ## How to apply
 Before any work involving a city that might not exist in the dev DB, run:

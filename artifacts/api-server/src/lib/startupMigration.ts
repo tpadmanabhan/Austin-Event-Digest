@@ -700,6 +700,90 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "St. Louis accent color migration failed (non-fatal)");
   }
 
+  // Seed Portland tenant (idempotent)
+  try {
+    await db.execute(sql`
+      INSERT INTO tenants (slug, name, city, accent_color, categories, is_active, email_verified, admin_email)
+      VALUES (
+        'portland',
+        'Portland Events',
+        'Portland, OR',
+        '#22C55E',
+        '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb,
+        true,
+        true,
+        'aiimplementationclubaustin@gmail.com'
+      )
+      ON CONFLICT (slug) DO NOTHING
+    `);
+    logger.info("Portland tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "Portland tenant seed failed (non-fatal)");
+  }
+
+  // Seed Sacramento tenant (idempotent)
+  try {
+    await db.execute(sql`
+      INSERT INTO tenants (slug, name, city, accent_color, categories, is_active, email_verified, admin_email)
+      VALUES (
+        'sacramento',
+        'Sacramento Events',
+        'Sacramento, CA',
+        '#EAB308',
+        '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb,
+        true,
+        true,
+        'aiimplementationclubaustin@gmail.com'
+      )
+      ON CONFLICT (slug) DO NOTHING
+    `);
+    logger.info("Sacramento tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "Sacramento tenant seed failed (non-fatal)");
+  }
+
+  // Seed Brushy Creek tenant (idempotent)
+  try {
+    await db.execute(sql`
+      INSERT INTO tenants (slug, name, city, accent_color, categories, is_active, email_verified, admin_email)
+      VALUES (
+        'brushycreek',
+        'Brushy Creek Events',
+        'Round Rock / Brushy Creek, TX',
+        '#22C55E',
+        '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb,
+        true,
+        true,
+        'rohanvivier@gmail.com'
+      )
+      ON CONFLICT (slug) DO NOTHING
+    `);
+    logger.info("Brushy Creek tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "Brushy Creek tenant seed failed (non-fatal)");
+  }
+
+  // Seed Bulverde tenant (idempotent)
+  try {
+    await db.execute(sql`
+      INSERT INTO tenants (slug, name, city, accent_color, categories, is_active, email_verified, admin_email)
+      VALUES (
+        'bulverde',
+        'Bulverde Events',
+        'Bulverde, TX',
+        '#16A34A',
+        '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb,
+        true,
+        true,
+        'aiimplementationclubaustin@gmail.com'
+      )
+      ON CONFLICT (slug) DO NOTHING
+    `);
+    logger.info("Bulverde tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "Bulverde tenant seed failed (non-fatal)");
+  }
+
   // Seed Tokyo tenant (idempotent)
   try {
     await db.execute(sql`
