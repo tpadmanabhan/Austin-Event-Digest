@@ -11,6 +11,7 @@
 import { db, digestsTable, tenantsTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { logger } from "./logger";
+import { isAdultContent } from "./contentFilter";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -530,6 +531,8 @@ async function fetchTicketmaster(
         const key = ev.name.toLowerCase().replace(/\s+/g, "").substring(0, 40);
         if (seen.has(key)) continue;
         seen.add(key);
+        // Skip adult-content events before they reach the digest
+        if (isAdultContent(ev.name, ev.description || ev.info || "")) continue;
         const isFeatured = startIso >= nextWeekIso;
         allEvents.push({
           title:       ev.name.trim(),
@@ -647,7 +650,8 @@ async function refreshTenant(
   }
 
   const rawExisting = (digest.events as EventItem[]) || [];
-  const existing = filterPastEvents(rawExisting);
+  // Strip adult-content events from already-stored records before merge
+  const existing = filterPastEvents(rawExisting).filter(e => !isAdultContent(e.title, e.description));
   const dropped = rawExisting.length - existing.length;
 
   // Fetch TM events + build community events in parallel
@@ -683,7 +687,9 @@ async function refreshTenant(
     return ev;
   });
 
-  const merged = [...updatedExisting, ...toAddCommunity, ...toAddTm];
+  // Final adult-content pass before DB write
+  const merged = [...updatedExisting, ...toAddCommunity, ...toAddTm]
+    .filter(e => !isAdultContent(e.title, e.description));
 
   if (!safetyCheck(slug, rawExisting.length, merged.length)) return;
 

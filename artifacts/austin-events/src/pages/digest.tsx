@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
@@ -11,6 +11,29 @@ import { useTenant } from "@/contexts/tenant-context";
 import { useLanguage } from "@/contexts/language-context";
 import { JA } from "@/i18n/ja";
 import { EventMap } from "@/components/event-map";
+
+// Fallback blocklist used before the API responds or if the fetch fails
+const ADULT_BLOCKED_FALLBACK = [
+  "drag queen","burlesque","strip club","stripclub","gentlemen's club",
+  "gentlemens club","adult comedy","adult entertainment","adult show",
+  "adult cabaret","lingerie party","erotic","nude","naked","naughty","XXX",
+];
+
+function useAdultBlocklist(): string[] {
+  const [blocklist, setBlocklist] = useState<string[]>(ADULT_BLOCKED_FALLBACK);
+  const fetched = useRef(false);
+  useEffect(() => {
+    if (fetched.current) return;
+    fetched.current = true;
+    fetch("/api/content/blocklist")
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { phrases: string[] } | null) => {
+        if (data?.phrases?.length) setBlocklist(data.phrases);
+      })
+      .catch(() => { /* keep fallback */ });
+  }, []);
+  return blocklist;
+}
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 3958.8;
@@ -136,6 +159,7 @@ export default function DigestView() {
   const isStLouis = tenant.slug === "stlouis";
   const isToky = tenant.slug === "tokyo";
   const { lang, translate } = useLanguage();
+  const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
   const [translating, setTranslating] = useState(false);
 
@@ -492,10 +516,9 @@ export default function DigestView() {
         )}
 
         {(() => {
-          const communityPosts = digest.events.filter((e: any) => e.isPost === true);
-          const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true);
-          const ADULT_BLOCKED = ["drag queen","burlesque","strip club","stripclub","gentlemen's club","gentlemens club","adult comedy","adult entertainment","adult show","adult cabaret","lingerie party","erotic","nude","naked","naughty","XXX"];
-          const isAdult = (e: any) => { const t = `${e.title ?? ""} ${e.description ?? ""}`.toLowerCase(); return ADULT_BLOCKED.some(p => t.includes(p.toLowerCase())); };
+          const communityPosts = digest.events.filter((e: any) => e.isPost === true && !isAdult(e));
+          const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true && !isAdult(e));
+          const isAdult = (e: any) => { const t = `${e.title ?? ""} ${e.description ?? ""}`.toLowerCase(); return adultBlocklist.some(p => t.includes(p.toLowerCase())); };
           const upcomingEvents = digest.events.filter((e: any) =>
             !e.isPost &&
             !e.isBusinessSpotlight &&
@@ -545,7 +568,7 @@ export default function DigestView() {
                     🗺️ This week on the map
                   </h2>
                   <EventMap
-                    events={digest.events as any[]}
+                    events={(digest.events as any[]).filter((e: any) => !isAdult(e))}
                     center={mapCenter}
                     radiusMiles={30}
                     height={400}

@@ -13,6 +13,7 @@ import { generateSampleDigest, getStLouisSampleDigest, getNextSunday } from "../
 import { sendEmail, buildDigestEmailHtml, translateEventsForEmail } from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
 import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } from "../lib/eventSources";
+import { isAdultContent } from "../lib/contentFilter";
 import { buildCommunityEvents } from "../lib/weeklyRefresh";
 import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
@@ -137,12 +138,15 @@ function filterStaleEvents(events: any[]): any[] {
 }
 
 function digestToApi(d: typeof digestsTable.$inferSelect) {
+  // Apply both stale-event and adult-content filters before serving to any client
+  const staleFiltered = filterStaleEvents((d.events as any[]) || []);
+  const clean = staleFiltered.filter((e: any) => !isAdultContent(e.title ?? "", e.description ?? ""));
   return {
     id: d.id,
     weekOf: d.weekOf,
     subject: d.subject,
     intro: d.intro,
-    events: filterStaleEvents((d.events as any[]) || []),
+    events: clean,
     sentAt: d.sentAt,
     sentCount: d.sentCount,
     createdAt: d.createdAt,
@@ -239,7 +243,11 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
           "Gmail supplement result"
         );
         if (gmailResult.weekFiltered && gmailResult.events.length > 0) {
-          combinedEvents = [...combinedEvents, ...gmailResult.events];
+          // Filter adult content from Gmail-parsed events before merging
+          const cleanGmailEvents = gmailResult.events.filter(
+            (e: EventItem) => !isAdultContent(e.title, e.description ?? ""),
+          );
+          combinedEvents = [...combinedEvents, ...cleanGmailEvents];
           gmailIntro = gmailResult.intro;
         }
       } catch (err) {
@@ -308,7 +316,8 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     }
 
     const taggedEvents = autoTagFutureEvents(
-      applyTenantCategoryRestriction(req.tenant!.slug, eventsWithCarried),
+      applyTenantCategoryRestriction(req.tenant!.slug, eventsWithCarried)
+        .filter((e: EventItem) => !isAdultContent(e.title, e.description ?? "")),
       weekOf,
     );
 
@@ -834,7 +843,7 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
     const finalEvents = applyTenantCategoryRestriction(
       req.tenant!.slug,
       filtered.length > 0 ? filtered : deduped,
-    );
+    ).filter((e: EventItem) => !isAdultContent(e.title, e.description ?? ""));
 
     const sourceResults = results.map(r => ({ url: r.url, eventCount: r.events.length, error: r.error }));
 
@@ -922,7 +931,8 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
     }
 
     const taggedImportEvents = autoTagFutureEvents(
-      applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[]),
+      applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[])
+        .filter((e: EventItem) => !isAdultContent(e.title, e.description ?? "")),
       weekOf,
     );
 

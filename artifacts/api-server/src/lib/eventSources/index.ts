@@ -3,6 +3,7 @@ import type { Tenant } from "@workspace/db";
 import { getAdaptersForCategories } from "./registry";
 import { deduplicateEvents, filterByTenantCategories } from "./utils";
 import { logger } from "../logger";
+import { isAdultContent } from "../contentFilter";
 
 export { deduplicateEvents, filterByTenantCategories, canonicalizeCategory } from "./utils";
 
@@ -64,7 +65,10 @@ export async function fetchEventsForTenant(opts: FetchEventsForTenantOptions): P
   }
 
   const deduplicated = deduplicateEvents(allEvents);
-  const filtered = filterByTenantCategories(deduplicated, categories);
+  const categoryFiltered = filterByTenantCategories(deduplicated, categories);
+  // Adult-content safety net — remove any off-brand events that slipped through
+  // any adapter (Ticketmaster, Luma, Eventbrite, Meetup, etc.)
+  const filtered = categoryFiltered.filter(e => !isAdultContent(e.title, e.description));
 
   logger.info(
     {

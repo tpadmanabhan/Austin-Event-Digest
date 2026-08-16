@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import OpenAI from "openai";
 import { logger } from "./logger";
+import { isAdultContent } from "./contentFilter";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
@@ -802,10 +803,14 @@ export function buildDigestEmailHtml(digest: {
   `;
   };
 
-  const featuredEvents = digest.events.filter(e => e.featured);
-  const bizSpotlights = digest.events.filter(e => !e.featured && e.isBusinessSpotlight);
-  const commSpotlights = digest.events.filter(e => !e.featured && e.isPost);
-  const regularEventsRaw = [...digest.events.filter(e => !e.featured && !e.isBusinessSpotlight && !e.isPost)];
+  // Strip adult-content events before building any section of the email
+  const cleanDigestEvents = digest.events.filter(
+    e => !isAdultContent(e.title ?? "", e.description ?? ""),
+  );
+  const featuredEvents = cleanDigestEvents.filter(e => e.featured);
+  const bizSpotlights = cleanDigestEvents.filter(e => !e.featured && e.isBusinessSpotlight);
+  const commSpotlights = cleanDigestEvents.filter(e => !e.featured && e.isPost);
+  const regularEventsRaw = [...cleanDigestEvents.filter(e => !e.featured && !e.isBusinessSpotlight && !e.isPost)];
   const hasDistance = regularEventsRaw.some(e => e.distanceMi != null);
   const regularEvents = hasDistance
     ? regularEventsRaw.sort((a, b) => (a.distanceMi ?? Infinity) - (b.distanceMi ?? Infinity))
@@ -921,7 +926,7 @@ export function buildDigestEmailHtml(digest: {
       <a href="${escapeHtml(digest.siteUrl)}" style="display:inline-block; background:#dc2626; color:#fff; font-size:14px; font-weight:700; text-decoration:none; padding:11px 26px; border-radius:100px; letter-spacing:-0.1px;">View full edition →</a>
     </div>` : ""}
 
-    ${buildStaticMapSection(digest.events, slug, digest.siteUrl, digest.digestId)}
+    ${buildStaticMapSection(cleanDigestEvents, slug, digest.siteUrl, digest.digestId)}
 
     <!-- Business Spotlights -->
     ${bizSpotlightCards}
