@@ -120,7 +120,7 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
 
     events.push({
       title: ev.name.trim(),
-      date: formatISODate(startIso, timezone),
+      date: formatISODate(startIso, timezone, ev.dates?.start?.localDate),
       venue: venueName.substring(0, 120),
       description,
       category: guessCategory(`${ev.name} ${ev.classifications?.[0]?.segment?.name || ""}`),

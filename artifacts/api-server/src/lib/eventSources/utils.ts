@@ -138,11 +138,33 @@ export function getCategorySearchQuery(category: string): string {
   return keywords.slice(0, 3).join(" ");
 }
 
-export function formatISODate(isoStr: string, timezone = "America/Chicago"): string {
+/**
+ * Formats an ISO datetime string into a human-readable date + time string.
+ *
+ * @param isoStr    - The ISO datetime string (may or may not include timezone).
+ * @param timezone  - IANA timezone for display (e.g. "America/Chicago").
+ * @param localDate - Optional YYYY-MM-DD string representing the authoritative
+ *   calendar date. When provided, the weekday/month/day portion is derived from
+ *   this value (parsed at noon UTC to be timezone-safe) rather than from `isoStr`.
+ *   This prevents UTC-midnight crossover from shifting the displayed day when
+ *   `isoStr` has no timezone marker (e.g. Ticketmaster localDate+localTime
+ *   strings like "2025-07-31T00:00:00" which Node parses as UTC and can land
+ *   on the wrong calendar day in the city's timezone).
+ */
+export function formatISODate(isoStr: string, timezone = "America/Chicago", localDate?: string): string {
   try {
     const d = new Date(isoStr);
     if (isNaN(d.getTime())) return isoStr;
-    const datePart = d.toLocaleDateString("en-US", {
+
+    // Use localDate (YYYY-MM-DD) as the authoritative calendar date when supplied.
+    // Parsing at T12:00:00Z guarantees the same calendar date displays in any timezone.
+    let dateForDisplay = d;
+    if (localDate) {
+      const noon = new Date(`${localDate}T12:00:00Z`);
+      if (!isNaN(noon.getTime())) dateForDisplay = noon;
+    }
+
+    const datePart = dateForDisplay.toLocaleDateString("en-US", {
       weekday: "long", month: "short", day: "numeric",
       timeZone: timezone,
     });

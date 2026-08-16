@@ -63,13 +63,30 @@ function currentWeekStart(): Date {
   return sun;
 }
 
-/** Format ISO string as "Weekday, Mon D at H:MM AM/PM" in a given timezone */
-function formatTmDate(isoStr: string, tz: string): string {
+/**
+ * Format ISO string as "Weekday, Mon D at H:MM AM/PM" in a given timezone.
+ *
+ * @param localDate - Optional YYYY-MM-DD string (Ticketmaster's authoritative
+ *   calendar date). When supplied, the weekday/month/day is derived from this
+ *   value (parsed at noon UTC) rather than from `isoStr`. This prevents UTC
+ *   midnight crossover from displaying the wrong calendar day — especially
+ *   critical for Tokyo (UTC+9) where a `T19:00:00Z` fallback lands the next
+ *   calendar day, and for US cities where early-morning events shift to the day
+ *   before.
+ */
+function formatTmDate(isoStr: string, tz: string, localDate?: string): string {
   try {
     const d = new Date(isoStr);
-    const weekday = d.toLocaleDateString("en-US", { weekday: "long", timeZone: tz });
-    const month   = d.toLocaleDateString("en-US", { month: "short",  timeZone: tz });
-    const day     = d.toLocaleDateString("en-US", { day: "numeric",  timeZone: tz });
+    // Use localDate as the authoritative calendar date when available.
+    // Parsing at T12:00:00Z keeps the same calendar date in any timezone.
+    let dateForDisplay = d;
+    if (localDate) {
+      const noon = new Date(`${localDate}T12:00:00Z`);
+      if (!isNaN(noon.getTime())) dateForDisplay = noon;
+    }
+    const weekday = dateForDisplay.toLocaleDateString("en-US", { weekday: "long", timeZone: tz });
+    const month   = dateForDisplay.toLocaleDateString("en-US", { month: "short",  timeZone: tz });
+    const day     = dateForDisplay.toLocaleDateString("en-US", { day: "numeric",  timeZone: tz });
     const time    = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: tz });
     return `${weekday}, ${month} ${day} at ${time}`;
   } catch {
@@ -516,7 +533,7 @@ async function fetchTicketmaster(
         const isFeatured = startIso >= nextWeekIso;
         allEvents.push({
           title:       ev.name.trim(),
-          date:        formatTmDate(startIso, tz),
+          date:        formatTmDate(startIso, tz, ev.dates?.start?.localDate),
           venue:       venueName.substring(0, 120),
           description: ((ev.description || ev.info || `${ev.name} at ${venueName}`) as string).substring(0, 400),
           category:    guessCategory(`${ev.name} ${cls}`),
