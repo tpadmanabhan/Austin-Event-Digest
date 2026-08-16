@@ -823,6 +823,10 @@ router.patch("/digest/:id/events/:idx/venue", requireAdmin, async (req, res) => 
       return;
     }
 
+    // Preserve existing coordinates so we can fall back if geocoding the new venue fails
+    const existingLat = events[idx]?.["lat"] ?? null;
+    const existingLng = events[idx]?.["lng"] ?? null;
+
     // Clear existing coordinates so the geocoder re-runs for the new venue text
     const updatedEvent: Record<string, unknown> = { ...events[idx], venue: venue.trim() };
     delete updatedEvent["lat"];
@@ -830,7 +834,14 @@ router.patch("/digest/:id/events/:idx/venue", requireAdmin, async (req, res) => 
 
     // Geocode just this single event (synchronous so the response includes fresh coords)
     const geocoded = await geocodeEvents([updatedEvent]);
-    const finalEvent = geocoded[0] ?? updatedEvent;
+    const geocodedEvent = geocoded[0] ?? updatedEvent;
+
+    // If geocoding returned null coords (e.g. Japanese venue names unresolvable by Nominatim),
+    // restore the original coordinates so hardcoded map pins are not lost
+    const finalEvent: Record<string, unknown> =
+      (geocodedEvent["lat"] == null && geocodedEvent["lng"] == null && existingLat != null)
+        ? { ...geocodedEvent, lat: existingLat, lng: existingLng }
+        : geocodedEvent;
 
     const finalEvents = [
       ...events.slice(0, idx),
