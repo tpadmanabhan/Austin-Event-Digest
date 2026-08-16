@@ -102,9 +102,11 @@ All in `artifacts/api-server/src/routes/deals.ts`:
 
 ## Digest Behavior
 
-### Weekly deals digest (Aug 9–15 = digest 113)
+### Weekly deals digest (Aug 16–22 = dev 62, prod 122)
 
-AustinCares digest is populated manually each week with the 7 static deals from `STATIC_DEALS`, formatted as event-like objects. There is no auto-generate — always PATCH digest events directly.
+AustinCares digest is populated manually each week with real curated Austin deals, formatted as event-like objects. There is no auto-generate — always PATCH digest events directly.
+
+**Current week's deals (Aug 16–22):** Revelry Kitchen daily happy hour, Nômadé Cocina Tres Amigos $10 deal (Mon–Thu), Tequila Tuesday + Wine Wednesday at Nômadé, Siena's $26 Monday pasta dinner, DoorDash Flavor Fest 30% off, Lou's Barton Springs weeknight specials. Business spotlight: Revelry Kitchen. Nonprofit spotlight: Keep Austin Beautiful.
 
 **Populating deals:** Use `PATCH /api/events/digest/:id/events` with all 7 deals. Date each deal as **Saturday of the current week** (e.g. "Saturday, Aug 15 at 12:00 PM") so all deals stay visible throughout the week. `filterStaleEvents` removes entries whose date has passed — using the week's Saturday means deals don't disappear mid-week.
 

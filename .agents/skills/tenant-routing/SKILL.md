@@ -97,7 +97,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 | St. Louis | Email-based HMAC | Null passwordHash |
 | Brushy Creek | Email-based HMAC | Null passwordHash |
 | Bulverde | Email-based HMAC | Null passwordHash |
-| DC | Email-based HMAC | Null passwordHash; prod ID unknown until first deploy |
+| DC | Email-based HMAC | Null passwordHash; prod ID 217 |
 
 See `admin-api-auth` skill for token computation details and pre-computed production tokens.
 
@@ -116,6 +116,20 @@ FROM tenants t JOIN digests d ON d.tenant_id = t.id
 WHERE t.slug NOT IN ('austin') AND d.week_of = 'YYYY-MM-DD';
 ```
 If any intro contains "Austin" → PATCH with `PATCH /api/events/digest/:id/intro`.
+
+## Production Tenant IDs (confirmed)
+
+| Slug | Prod ID | Admin Email |
+|------|---------|-------------|
+| austin | 1 | aiimplementationclubaustin@gmail.com |
+| austincares | 2 | rohanvivier@gmail.com |
+| brushycreek | 3 | rohanvivier@gmail.com |
+| sacramento | 4 | aiimplementationclubaustin@gmail.com |
+| portland | 5 | aiimplementationclubaustin@gmail.com |
+| bulverde | 6 | aiimplementationclubaustin@gmail.com |
+| stlouis | 7 | aiimplementationclubaustin@gmail.com |
+| tokyo | 8 | aiimplementationclubaustin@gmail.com |
+| dc | 217 | aiimplementationclubaustin@gmail.com |
 
 ## Adding a New City
 

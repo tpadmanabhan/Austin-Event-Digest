@@ -79,6 +79,32 @@ Look for the digest whose `weekOf` matches the target week.
 
 Production runs on **Neon PostgreSQL** (console.neon.tech). The compute endpoint auto-suspends when idle. If production API calls fail with 500 or hang, go to console.neon.tech and re-enable the endpoint.
 
+> ⚠️ **`executeSql` with `environment: "production"` is read-only** — SELECT queries work but INSERT / UPDATE / DELETE return `cannot execute ... in a read-only transaction`. To write production data, use the API (PATCH/POST to the production endpoint with a valid admin token). The only way to create new tenants in production is by updating `startupMigration.ts` and deploying.
+
+## Email-Based HMAC Cities
+
+For cities with null passwordHash (Sacramento, Portland, Bulverde, St. Louis, Brushy Creek, Tokyo, DC), compute the token as:
+
+```js
+// In a shell script:
+node -e "
+const crypto = require('crypto');
+const tok = crypto.createHmac('sha256', process.env.RSVP_HMAC_SECRET)
+  .update('admin-email:<prodTenantId>:<adminEmail@example.com>')
+  .digest('hex');
+console.log(tok);
+"
+```
+
+Pre-computed tokens and all production tenant IDs are in the `admin-api-auth` skill.
+
+## New City Onboarding (Production)
+
+1. Add `INSERT ... ON CONFLICT (slug) DO NOTHING` to `startupMigration.ts` and deploy → tenant is created in production
+2. Optionally INSERT directly via `executeSql` environment:"production" — **this does NOT work** (read-only). Deploy is the only path.
+3. After deploy, run `POST /api/events/digest/generate` on the production API to seed the first digest
+4. PATCH the production digest with events (from dev or curated), add spotlights, patch intro, geocode
+
 ## Health Check
 
 `GET /api/healthz` and `GET /api` return `{ status: "ok" }` without querying the database. These are registered **before** `app.use(resolveTenant)` in `app.ts` — do not remove them or move them after resolveTenant.

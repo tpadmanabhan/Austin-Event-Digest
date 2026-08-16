@@ -70,11 +70,17 @@ Or use `PATCH /digest/:id/events` with the full array to edit any field.
 
 ```
 POST /api/events/digest/<digestId>/spotlight
-{
-  "businessSpotlight": { "name": "...", "description": "...", "url": "..." },
-  "communitySpotlight": { "name": "...", "description": "...", "url": "..." }
-}
+{ "url": "https://...", "type": "business", "title": "Business Name", "description": "One sentence about them." }
+
+POST /api/events/digest/<digestId>/spotlight
+{ "url": "https://...", "type": "community", "title": "Nonprofit Name", "description": "One sentence about them." }
 ```
+
+Call the endpoint **once per spotlight** — one call for `type: "business"` and a separate call for `type: "community"`. Do NOT use the old `{ businessSpotlight, communitySpotlight }` shape — that is the wrong endpoint.
+
+> ⚠️ **Common mistake:** The skill documentation used to show a single call with `{ businessSpotlight: {...}, communitySpotlight: {...} }`. That shape does not work. The real endpoint takes one spotlight per POST, keyed by `type`.
+
+Verify each response returns `success: true` and an increasing `events` count (+1 per spotlight call).
 
 ### Spotlight Audit (run before sending)
 
@@ -294,7 +300,16 @@ When `POST /api/events/digest/generate` runs, it automatically carries forward a
 
 ## AustinCares Digest Notes
 
-AustinCares is a **weekly deals site**, not an events site. Its digest is populated manually with the current week's deals (from `STATIC_DEALS` in `austin-cares-full.tsx`), not auto-generated from event adapters.
+AustinCares is a **weekly deals site**, not an events site. Its digest is populated manually each week with real local Austin deals, not auto-generated from event adapters.
+
+**Current week (Aug 16–22, 2026):** dev digest ID 62, production digest ID 122. 7 real deals:
+- Revelry Kitchen + Bar — daily happy hour 4-7 PM ($5 apps, $1 off drafts, $2 off wine) · 1410 East 6th St
+- Nômadé Cocina — Tres Amigos: 1 margarita + 2 tacos for $10 (Mon–Thu 4:30–6 PM) · 2330 E Cesar Chavez
+- Nômadé Cocina — Tequila Tuesday: 50% off tequila pours · same address
+- Nômadé Cocina — Wine Wednesday: 50% off wine bottles · same address
+- Siena Austin — $26 Monday pasta dinner (2 courses, anniversary special) · 6203 N Capital of Texas Hwy
+- DoorDash Austin Flavor Fest — 30% off select Austin restaurants through August
+- Lou's Barton Springs — weeknight specials · 2109 Barton Springs Rd
 
 **Category restriction — production workaround:** The old restriction (`Civics + Wellness only`) has been removed in dev code (`applyTenantCategoryRestriction` RESTRICTIONS map is now empty). Until the next deploy, production still enforces it. When PATCHing deals to production, use `category: "Wellness"` on all deal objects so they pass through. After deploy, use `category: "Food & Markets"`.
 
