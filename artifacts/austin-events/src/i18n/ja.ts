@@ -37,9 +37,28 @@ export const JA = {
   checkBack:          (cat: string) => `次号で${cat}のイベントをお楽しみに`,
   viewAllEvents:      "すべてのイベントを見る →",
 
-  // Subscribe section
-  subscribeHeading:   "週刊ニュースレターを受け取る",
-  subscribeSubtext:   "東京の厳選イベント情報を毎週お届けします。",
+  // Subscribe section (digest page bottom banner)
+  subscribeHeading:   "次号もお見逃しなく",
+  subscribeSubtext:   (city: string) => `来週の厳選${city}イベントをメールでお届けします。`,
+
+  // Subscribe form (inline form component)
+  subscribeFormHeading: "週刊ニュースレターを受け取る",
+  emailPlaceholder:     "メールアドレス",
+  subscribeCta:         "無料で登録する",
+  subscribing:          "登録中...",
+  noSpam:               "スパムなし。いつでも配信停止できます。",
+  subscribedTitle:      "登録完了！",
+  subscribedDesc:       "今週日曜日のダイジェストをお楽しみに。",
+
+  // Home page digest preview section
+  insideLatestIssue:  "最新号の内容",
+  snackPeekSubtext:   "今週号の厳選イベントをご紹介します。",
+  readFullEdition:    "全号を読む",
+
+  // Digest page navigation & section headings
+  backToAllEditions:        "← 全号一覧へ",
+  thisWeeksCuratedEvents:   "今週の厳選イベント",
+  eventsNearestFirst:       "イベント — 近い順",
 } as const;
 
 export type JaKey = keyof typeof JA;

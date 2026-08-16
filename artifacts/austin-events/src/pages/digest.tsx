@@ -295,7 +295,7 @@ export default function DigestView() {
 
       <article className="max-w-4xl mx-auto px-4 sm:px-6 py-12 lg:py-20">
         <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-10 text-sm font-medium">
-          <ArrowLeft className="w-4 h-4" /> Back to all editions
+          <ArrowLeft className="w-4 h-4" /> {jt("Back to all editions", JA.backToAllEditions)}
         </Link>
         
         <header className="mb-16">
@@ -711,7 +711,7 @@ export default function DigestView() {
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
                   <h2 className="font-serif text-3xl font-bold flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {geoActive ? "Events — Nearest First" : "This Week's Curated Events"}
+                    {geoActive ? jt("Events — Nearest First", JA.eventsNearestFirst) : jt("This Week's Curated Events", JA.thisWeeksCuratedEvents)}
                   </h2>
                   {dimmedByRadius > 0 && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
@@ -792,9 +792,9 @@ export default function DigestView() {
         <section id="subscribe" className="mt-24 p-10 bg-secondary rounded-3xl text-secondary-foreground relative overflow-hidden scroll-mt-24">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--color-primary)_0%,transparent_70%)] opacity-20" />
           <div className="relative z-10">
-            <h3 className="font-serif text-3xl font-bold mb-2 text-center">Don't miss the next one</h3>
+            <h3 className="font-serif text-3xl font-bold mb-2 text-center">{jt("Don't miss the next one", JA.subscribeHeading)}</h3>
             <p className="text-secondary-foreground/80 mb-8 max-w-lg mx-auto text-lg text-center">
-              Get next week's best {cityShortName} events delivered straight to your inbox.
+              {jt(`Get next week's best ${cityShortName} events delivered straight to your inbox.`, JA.subscribeSubtext(cityShortName))}
             </p>
             <div className="max-w-xl mx-auto bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60">
               <SubscribeForm />

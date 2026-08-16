@@ -396,9 +396,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <div className="max-w-2xl">
-              <h2 className="font-serif text-4xl font-bold mb-4">Inside the Latest Issue</h2>
+              <h2 className="font-serif text-4xl font-bold mb-4">{jt("Inside the Latest Issue", JA.insideLatestIssue)}</h2>
               <p className="text-muted-foreground text-lg">
-                A sneak peek at what subscribers received this week.
+                {jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
               </p>
             </div>
             {latestDigest && (
@@ -406,7 +406,7 @@ export default function Home() {
                 href={`/digest/${latestDigest.id}`}
                 className="inline-flex items-center gap-2 text-primary font-semibold hover:text-primary/80 transition-colors group"
               >
-                Read full edition
+                {jt("Read full edition", JA.readFullEdition)}
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Link>
             )}

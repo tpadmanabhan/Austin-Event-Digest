@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import { useTenant } from "@/contexts/tenant-context";
+import { useLanguage } from "@/contexts/language-context";
+import { JA } from "@/i18n/ja";
 
 const subscribeSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -18,6 +20,9 @@ export function SubscribeForm() {
   const { toast } = useToast();
   const tenant = useTenant();
   const isAustin = tenant.slug === "austin" || tenant.slug === "brushycreek";
+  const isToky = tenant.slug === "tokyo";
+  const { lang } = useLanguage();
+  const jt = (en: string, ja: string) => (isToky && lang === "ja") ? ja : en;
   const [subscribed, setSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -90,8 +95,8 @@ export function SubscribeForm() {
         <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
           <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h3 className="font-serif text-2xl font-bold mb-2">You're on the list!</h3>
-        <p className="text-muted-foreground mb-4">Get ready for your first digest this Sunday.</p>
+        <h3 className="font-serif text-2xl font-bold mb-2">{jt("You're on the list!", JA.subscribedTitle)}</h3>
+        <p className="text-muted-foreground mb-4">{jt("Get ready for your first digest this Sunday.", JA.subscribedDesc)}</p>
       </div>
     );
   }
@@ -100,13 +105,13 @@ export function SubscribeForm() {
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <h3 className="font-semibold text-lg flex items-center gap-2">
         <Mail className="w-5 h-5 text-primary" />
-        Get the weekly newsletter
+        {jt("Get the weekly newsletter", JA.subscribeFormHeading)}
       </h3>
 
       {/* Email */}
       <div className="space-y-1.5">
         <Input
-          placeholder="Email Address"
+          placeholder={jt("Email Address", JA.emailPlaceholder)}
           type="email"
           className="h-12 rounded-xl bg-background/50"
           {...form.register("email")}
@@ -244,10 +249,10 @@ export function SubscribeForm() {
         disabled={isSubmitting || !captchaToken}
         className="w-full h-12 text-base rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
       >
-        {isSubmitting ? "Subscribing..." : "Subscribe for Free"}
+        {isSubmitting ? jt("Subscribing...", JA.subscribing) : jt("Subscribe for Free", JA.subscribeCta)}
       </Button>
       <p className="text-xs text-center text-muted-foreground mt-3">
-        No spam. Unsubscribe anytime.
+        {jt("No spam. Unsubscribe anytime.", JA.noSpam)}
       </p>
     </form>
   );
