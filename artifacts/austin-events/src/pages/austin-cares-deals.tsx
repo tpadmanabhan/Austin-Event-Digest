@@ -18,9 +18,16 @@ const C = {
 const serif: React.CSSProperties = { fontFamily: "'Fraunces', Georgia, serif" };
 
 const DEAL_LOCATIONS = [
-  { name: "Spokesman Coffee",        deal: "Free drip coffee with any pastry purchase",         lat: 30.3330, lng: -97.7388 },
-  { name: "Masala Wok",             deal: "Tikka Tuesday — Tikka Masala + Rice + Naan + Drink", lat: 30.4161, lng: -97.7354 },
-  { name: "Rasoi Indian Restaurant", deal: "$25 Toward Food & Drinks — up to 22% off",          lat: 30.4350, lng: -97.7900 },
+  { name: "Spokesman Coffee",           deal: "Mon: Free drip coffee with any pastry",              lat: 30.3330, lng: -97.7388 },
+  { name: "Lou's Barton Springs",       deal: "Mon–Wed: Half-off chicken, $10 shots, half-off burgers", lat: 30.2638, lng: -97.7529 },
+  { name: "Siena Austin",              deal: "Mon: $26 pasta dinner · Tue: $45 three-course",      lat: 30.3640, lng: -97.7700 },
+  { name: "Eureka! Restaurant",         deal: "Mon: $10 martinis all day",                          lat: 30.2671, lng: -97.7404 },
+  { name: "Nômadé Cocina",             deal: "Wed: 50% off wine · Weekdays: $10 marg + 2 tacos",   lat: 30.2461, lng: -97.7566 },
+  { name: "Masala Wok",                deal: "Tue: Tikka Masala + Naan + Drink — $11.95",          lat: 30.4161, lng: -97.7354 },
+  { name: "Rasoi Indian Restaurant",    deal: "Any day: $25 toward food & drinks",                  lat: 30.4350, lng: -97.7900 },
+  { name: "Flow Yoga Austin",          deal: "Sat 9 AM: Free outdoor yoga in the park",            lat: 30.2588, lng: -97.7683 },
+  { name: "Austin Public Health",       deal: "Any day: Free vaccines & health screenings",         lat: 30.2513, lng: -97.6951 },
+  { name: "Austin Habitat Counseling",  deal: "Any day: Free homeownership & financial counseling", lat: 30.2280, lng: -97.7757 },
 ];
 
 export default function AustinCaresDeals() {
