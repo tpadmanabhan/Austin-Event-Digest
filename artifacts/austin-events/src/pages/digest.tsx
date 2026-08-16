@@ -516,9 +516,9 @@ export default function DigestView() {
         )}
 
         {(() => {
+          const isAdult = (e: any) => { const t = `${e.title ?? ""} ${e.description ?? ""}`.toLowerCase(); return adultBlocklist.some(p => t.includes(p.toLowerCase())); };
           const communityPosts = digest.events.filter((e: any) => e.isPost === true && !isAdult(e));
           const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true && !isAdult(e));
-          const isAdult = (e: any) => { const t = `${e.title ?? ""} ${e.description ?? ""}`.toLowerCase(); return adultBlocklist.some(p => t.includes(p.toLowerCase())); };
           const upcomingEvents = digest.events.filter((e: any) =>
             !e.isPost &&
             !e.isBusinessSpotlight &&
