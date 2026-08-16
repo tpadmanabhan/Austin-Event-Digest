@@ -149,6 +149,7 @@ async function fetchSongkickEvents(query: SourceQuery): Promise<EventItem[]> {
       category: "Music",
       link: ev.uri || ev.venue?.uri || null,
       imageUrl: null,
+      source: "Songkick",
     });
   }
 

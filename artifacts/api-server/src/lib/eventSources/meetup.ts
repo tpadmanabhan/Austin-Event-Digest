@@ -122,6 +122,7 @@ async function fetchMeetupEvents(query: SourceQuery): Promise<EventItem[]> {
       category: guessCategory(`${ev.title} ${description}`),
       link: ev.eventUrl || null,
       imageUrl: null,
+      source: "Meetup",
     });
   }
 

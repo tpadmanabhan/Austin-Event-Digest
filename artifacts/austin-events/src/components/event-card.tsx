@@ -11,6 +11,10 @@ const SOURCE_URLS: Record<string, string> = {
   "Ticketmaster": "https://www.ticketmaster.com",
   "Eventbrite": "https://www.eventbrite.com",
   "Luma": "https://lu.ma",
+  "Bandsintown": "https://www.bandsintown.com",
+  "Songkick": "https://www.songkick.com",
+  "Meetup": "https://www.meetup.com",
+  "Station Austin": "https://stationaustin.org",
   "The Austin Business Review": "https://austinbusinessreview.com/",
   "ATX Today": "https://atxtoday.6amcity.com",
   "Greater Asian Chamber of Commerce": "https://members.austinasianchamber.org/events?_gl=1*1gwyy91*_ga*MjM4NTUzNjU2LjE3Nzg0NTE2NDk.*_ga_34Z9ZMSYKX*czE3ODExMDA1NzIkbzYkZzAkdDE3ODExMDA1NzIkajYwJGwwJGgw",
@@ -508,48 +512,48 @@ export function EventCard({ event, digestId, distanceMiles }: { event: EventItem
           {event.description}
         </p>
 
-        {(event as any).source && (
-          <p className="text-xs text-muted-foreground/60 italic mb-4 flex items-center gap-1.5">
-            <span>via</span>
+        {event.source && (
+          <div className="mb-4">
             {(() => {
-              const src = (event as any).source as string;
-              const href = event.link || SOURCE_URLS[src];
+              const src = event.source as string;
+              const href = SOURCE_URLS[src] || (src.startsWith("http") ? src : null);
               let faviconDomain = "";
               try {
                 faviconDomain = new URL(src.startsWith("http") ? src : SOURCE_URLS[src] || "").hostname;
               } catch { /* ignore */ }
               const favicon = faviconDomain
                 ? `https://www.google.com/s2/favicons?domain=${faviconDomain}&sz=32`
-                : src === "Eventbrite"
-                  ? `https://www.google.com/s2/favicons?domain=eventbrite.com&sz=32`
-                  : null;
-              const label = SOURCE_URLS[src] ? src : src.startsWith("http") ? (() => { try { return new URL(src).hostname.replace(/^www\./, ""); } catch { return src; } })() : src;
-              return (
-                <>
+                : null;
+              const label = SOURCE_URLS[src]
+                ? src
+                : src.startsWith("http")
+                  ? (() => { try { return new URL(src).hostname.replace(/^www\./, ""); } catch { return src; } })()
+                  : src;
+              const pill = (
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted/70 border border-border/60 px-2 py-0.5 text-[11px] text-muted-foreground leading-none">
                   {favicon && (
                     <img
                       src={favicon}
                       alt=""
-                      className="w-4 h-4 rounded-[3px] inline-block align-middle shrink-0"
+                      className="w-3 h-3 rounded-[2px] shrink-0"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                     />
                   )}
-                  {href ? (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline underline-offset-2 hover:text-primary transition-colors not-italic"
-                    >
-                      {label}
-                    </a>
-                  ) : (
-                    label
-                  )}
-                </>
+                  <span>via {label}</span>
+                </span>
               );
+              return href ? (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex hover:opacity-80 transition-opacity"
+                >
+                  {pill}
+                </a>
+              ) : pill;
             })()}
-          </p>
+          </div>
         )}
 
         {digestId && (

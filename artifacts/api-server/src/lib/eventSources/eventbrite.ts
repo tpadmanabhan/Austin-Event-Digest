@@ -96,6 +96,7 @@ async function fetchEventbriteEvents(query: SourceQuery): Promise<EventItem[]> {
       category: guessCategory(`${ev.name.text} ${description}`),
       link: decodeHtmlEntities(ev.url || null),
       imageUrl: decodeHtmlEntities(ev.logo?.url || null),
+      source: "Eventbrite",
     });
   }
 

@@ -100,6 +100,7 @@ async function fetchBandsintownEvents(query: SourceQuery): Promise<EventItem[]> 
       category: "Music",
       link: ticketUrl,
       imageUrl: null,
+      source: "Bandsintown",
     });
   }
 
