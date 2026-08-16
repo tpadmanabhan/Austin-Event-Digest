@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, digestsTable, subscribersTable, type EventItem } from "@workspace/db";
+import { db, digestsTable, subscribersTable, type EventItem, EventItemSchema } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import {
   GenerateDigestBody,
@@ -364,6 +364,49 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
   }
 });
 
+/**
+ * Normalises an incoming event object before writing it to the DB.
+ *
+ * Spotlights and community posts legitimately have no date/venue/category/
+ * description, but EventItemSchema requires those fields as strings.  Filling
+ * in empty-string defaults here means the Zod parse on read never throws and
+ * can never take a city page offline.
+ *
+ * Regular events are validated strictly; a validation failure returns the raw
+ * Zod issues to the caller so they know exactly which field is wrong.
+ */
+function normaliseEventForStorage(raw: unknown): { ok: true; event: EventItem } | { ok: false; error: string } {
+  if (typeof raw !== "object" || raw === null) {
+    return { ok: false, error: "Event must be an object" };
+  }
+  const e = raw as Record<string, unknown>;
+  const isSpotlightOrPost = e["isBusinessSpotlight"] === true || e["isPost"] === true;
+
+  if (isSpotlightOrPost) {
+    // Auto-fill required string fields with safe defaults so reads never throw
+    const filled = {
+      ...e,
+      date: typeof e["date"] === "string" ? e["date"] : "",
+      venue: typeof e["venue"] === "string" ? e["venue"] : "",
+      description: typeof e["description"] === "string" ? e["description"] : "",
+      category: typeof e["category"] === "string" ? e["category"]
+        : e["isBusinessSpotlight"] ? "Business" : "Community",
+    };
+    const result = EventItemSchema.safeParse(filled);
+    if (!result.success) {
+      return { ok: false, error: result.error.issues.map(i => i.message).join("; ") };
+    }
+    return { ok: true, event: result.data };
+  }
+
+  // Regular event — validate strictly
+  const result = EventItemSchema.safeParse(e);
+  if (!result.success) {
+    return { ok: false, error: result.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ") };
+  }
+  return { ok: true, event: result.data };
+}
+
 router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
   const id = parseInt(req.params["id"] as string, 10);
   if (isNaN(id)) {
@@ -375,6 +418,21 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
     res.status(400).json({ error: "invalid_request", message: "events[] is required" });
     return;
   }
+
+  // Normalise / validate every event before touching the DB
+  const normalised: EventItem[] = [];
+  for (let i = 0; i < events.length; i++) {
+    const result = normaliseEventForStorage(events[i]);
+    if (!result.ok) {
+      res.status(400).json({
+        error: "invalid_event",
+        message: `Event at index ${i} failed validation: ${result.error}`,
+      });
+      return;
+    }
+    normalised.push(result.event);
+  }
+
   try {
     const [existing] = await db
       .select({ weekOf: digestsTable.weekOf })
@@ -382,8 +440,8 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .limit(1);
     const taggedEvents = existing
-      ? autoTagFutureEvents(applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[]), new Date(existing.weekOf))
-      : applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[]);
+      ? autoTagFutureEvents(applyTenantCategoryRestriction(req.tenant!.slug, normalised), new Date(existing.weekOf))
+      : applyTenantCategoryRestriction(req.tenant!.slug, normalised);
     const [updated] = await db
       .update(digestsTable)
       .set({ events: taggedEvents })
