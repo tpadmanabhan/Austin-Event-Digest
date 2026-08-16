@@ -336,40 +336,42 @@ Changes applied in `artifacts/api-server/src/lib/emailService.ts` as of Aug 2026
 
 If you don't see this block in a test email, check that the production server has been published with these changes.
 
-## ⚠️ Carry-Forward Leak: Austin Sample Events in Non-Austin Digests
+## ⚠️ Carry-Forward Leak: Austin Sample Events in Non-Austin Digests (FIXED)
 
-`generateSampleDigest()` fallback events (Barton Springs Sunday Swim, South Congress Farmers Market, Alamo Drafthouse, Austin City Limits Live) can end up as `featured: true` in any city's digest — the carry-forward mechanism then propagates them into the next week's digest for that same city. This has been observed in Tokyo and Brushy Creek.
-
-**After generating any non-Austin digest, always check for Austin venue bleed:**
+This bug is **fixed in deployed code**. Previously, the no-events fallback path unconditionally used `generateSampleDigest()` which always embedded Austin venues (Barton Springs, South Congress, Alamo Drafthouse, ACL Live). The fix gates sample-event fallback by tenant:
 
 ```js
-const AUSTIN_LEAKS = ['Barton Springs', 'South Congress Farmers Market', 'Alamo Drafthouse', 'Austin City Limits Live'];
-const leaked = events.filter(e => AUSTIN_LEAKS.some(t => (e.title || '').includes(t)));
-if (leaked.length) {
-  console.log('REMOVE THESE:', leaked.map(e => e.title));
-  events = events.filter(e => !AUSTIN_LEAKS.some(t => (e.title || '').includes(t)));
-  // PATCH back without these events
-}
+// events.ts ~line 333
+const isAustinFamily = slug === "austin" || slug === "stlouis";
+events = isAustinFamily ? fallback.events : [];
 ```
 
-Also check for events with "Various East Austin Locations" or "East Austin Studio Tour" in non-Austin digests — these are Austin-area multi-venue events that may carry forward incorrectly.
+- **Austin + St. Louis** retain the curated fallback event list when adapters return nothing
+- **All other cities** (Sacramento, Portland, Bulverde, Brushy Creek, Tokyo, DC) get an empty draft — no Austin venues bleed in
+- Intro/subject fallback still generates city-specifically; only the event objects are blocked
+
+**If you still see Austin events in a non-Austin digest**, those are old carry-forward artifacts from before this fix. Remove them manually: fetch events, filter out any with "Barton Springs", "South Congress Farmers Market", "Alamo Drafthouse", "Austin City Limits Live", "East Austin Studio Tour", then PATCH back.
 
 ## Carry-Forward of Manually-Curated Featured Events
 
 When `POST /api/events/digest/generate` runs, it automatically carries forward any `featured: true` events from the **most recent existing digest** for that tenant whose dates are still >= the new `weekOf`. This prevents multi-week events, conferences, or anything added by hand from being silently dropped each week.
 
 **How it works:**
-- After merging live adapter results + community events, the generate endpoint queries the previous digest
-- Featured events with a parseable future date are appended and deduplicated by `title|date`
-- Live-sourced events win on title+date collision (they come first in dedup); carry-forward fills the gaps
+- `carryForwardFeaturedEvents(tenantId, weekOf)` queries the single most-recent digest for the tenant (newest `weekOf DESC, id DESC`)
+- Keeps only entries with `e.featured === true` (strict boolean)
+- Parses the date using month-name format (`Jan`…`Dec` + 1–2 digit day); entries with unparseable dates are discarded
+- Year is inferred from `weekOf`'s year — bumped by 1 if the resolved date falls before `weekOf` (Dec→Jan rollover support)
+- Event is retained iff resolved date `>= weekOf` (same-day is kept; past featured events are not)
+- Carried events are **appended after** live adapter + community events, then deduplicated — live events win on title+date collision
+- The merged list then goes through category restriction and adult-content filtering; a carried event can still be removed by those filters
 - The server logs `"Carried forward featured events from previous digest"` with the event titles when any fire
 
 **What this covers:**
 - Multi-week shows (e.g. "Summer Stock Austin 2026: Newsies" running Aug 9 AND Aug 16)
-- Conferences spanning multiple days beyond the current week (e.g. "Fed Supernova 2026 Conference" Aug 18–20)
+- Conferences spanning multiple days beyond the current week
 - Any event manually PATCHed into a previous digest with `featured: true`
 
-**Key implementation file:** `artifacts/api-server/src/routes/events.ts` → `carryForwardFeaturedEvents(tenantId, weekOf)`
+**Key implementation file:** `artifacts/api-server/src/routes/events.ts` → `carryForwardFeaturedEvents(tenantId, weekOf)` (~line 93)
 
 ## AustinCares Digest Notes
 
@@ -447,8 +449,24 @@ A separate nightly `scheduleDailyCleanup()` job (2 AM) also removes stale events
 
 The generate endpoint always calls `buildCommunityEvents()` after adapter results and merges community events via `deduplicateEvents()`. Community events are curated recurring local events defined in `weeklyRefresh.ts` (COMMUNITY_EVENTS map, keyed by tenant slug).
 
-Cities with defined community events: **austincares, sacramento, portland, bulverde, stlouis**.
-Cities with NO community events defined: **austin, brushycreek** (rely entirely on adapters).
+Cities with defined community events: **austin, austincares, sacramento, portland, bulverde, stlouis**.
+Cities with NO community events defined: **brushycreek** (relies entirely on adapters).
+
+**Austin community events (9 entries, added Task #175):**
+
+| Title | Day | Venue |
+|-------|-----|-------|
+| Barton Springs Pool — Morning Swim | Sunday | Barton Springs Pool, 2201 Barton Springs Rd |
+| SFC Farmers Market — Downtown Austin | Saturday | Republic Square Park, 422 W 4th St |
+| Barton Creek Greenbelt — Trail Hike | Monday | Barton Creek Greenbelt, Barton Springs Rd Entrance |
+| Blanton Museum of Art — Free First Thursday | Thursday | Blanton Museum of Art, 200 E MLK Jr Blvd |
+| Lady Bird Lake — Hike and Bike Trail | Friday | Hike-and-Bike Trailhead, Barton Springs Rd & S Lamar Blvd |
+| Austin Animal Center — Community Dog Walk | Tuesday | Austin Animal Center, 7201 Levander Loop |
+| Keep Austin Beautiful — Trail Cleanup | following Sunday | Barton Creek Greenbelt, Barton Springs Rd Entrance |
+| Mount Bonnell — Sunrise Scenic Walk | following Sunday | Mount Bonnell, 3800 Mount Bonnell Rd |
+| Austin Central Library — Free Programs & Maker Studio | following Tuesday | Austin Central Library, 710 W Cesar Chavez St |
+
+Austin was also added to `TENANT_CONFIGS` in `weeklyRefresh.ts` (slug `austin`, tz `America/Chicago`) enabling its weekly refresh scheduler.
 
 Community events are NOT geocoded automatically at merge time — always fire `POST /digest/:id/regeocoded` after building a digest that includes them.
 
