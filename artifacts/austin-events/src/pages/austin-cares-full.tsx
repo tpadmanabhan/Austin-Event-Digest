@@ -519,6 +519,8 @@ function DealSubmissionForm({ onDealAdded }: { onDealAdded: (deal: Deal) => void
         source: "Community",
         location: deal.locationAddress,
         imageUrl: deal.imageUrl,
+        lat: deal.lat ?? undefined,
+        lng: deal.lng ?? undefined,
         isSubmitted: true,
       };
 
