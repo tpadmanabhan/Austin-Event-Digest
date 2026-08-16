@@ -453,6 +453,15 @@ export default function Home() {
             </div>
           )}
 
+          {/* Coming Soon feature preview */}
+          <div className="mb-10 flex justify-center">
+            <img
+              src={`${import.meta.env.BASE_URL}images/coming-soon-preview.png`}
+              alt="Coming soon: Tell a Friend and SMS for Local Businesses"
+              className="w-full max-w-xs rounded-3xl shadow-2xl"
+            />
+          </div>
+
           {isLoadingLatest ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3].map(i => (
