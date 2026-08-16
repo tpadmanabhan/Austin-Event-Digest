@@ -280,11 +280,19 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
         "Digest populated from discovered + community events"
       );
     } else {
-      events = fallback.events;
+      // For Austin and St. Louis, fall back to curated sample events so the
+      // digest is never blank. For every other city (Tokyo, Sacramento, etc.)
+      // create an empty draft instead — Austin-themed placeholder events
+      // (Barton Springs, South Congress, ACL Live …) must never appear under
+      // a foreign city's brand.
+      const isAustinFamily = req.tenant!.slug === "austin" || req.tenant!.slug === "stlouis";
+      events = isAustinFamily ? fallback.events : [];
       intro = customNotes ? `${fallback.intro}\n\n${customNotes}` : fallback.intro;
       req.log.info(
-        { weekOf: weekOf.toISOString().substring(0, 10) },
-        "No events discovered from any source — using sample digest data"
+        { weekOf: weekOf.toISOString().substring(0, 10), tenant: req.tenant!.slug, usedSample: isAustinFamily },
+        isAustinFamily
+          ? "No events discovered from any source — using sample digest data"
+          : "No events discovered from any source — creating empty draft (non-Austin tenant)"
       );
     }
 
