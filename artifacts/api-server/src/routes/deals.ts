@@ -199,12 +199,12 @@ Extract the following and respond ONLY with valid JSON (no markdown):
         const text = visionRes.choices[0]?.message?.content?.trim() ?? "";
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          if (parsed.business) business = String(parsed.business).slice(0, 200);
-          if (parsed.deal) deal = String(parsed.deal).slice(0, 300);
-          if (parsed.savings) savings = String(parsed.savings).slice(0, 100);
-          if (parsed.day && /^(MON|TUE|WED|THU|FRI|SAT|SUN|ANY DAY|WEEKLY)$/i.test(parsed.day.trim())) {
-            day = parsed.day.trim().toUpperCase();
+          const aiParsed = JSON.parse(jsonMatch[0]);
+          if (aiParsed.business) business = String(aiParsed.business).slice(0, 200);
+          if (aiParsed.deal) deal = String(aiParsed.deal).slice(0, 300);
+          if (aiParsed.savings) savings = String(aiParsed.savings).slice(0, 100);
+          if (aiParsed.day && /^(MON|TUE|WED|THU|FRI|SAT|SUN|ANY DAY|WEEKLY)$/i.test(aiParsed.day.trim())) {
+            day = aiParsed.day.trim().toUpperCase();
           }
         }
       } catch (aiErr) {

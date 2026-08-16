@@ -141,6 +141,81 @@ function guessCategory(text: string): string {
 
 const COMMUNITY_EVENTS: Record<string, CommunityEventDef[]> = {
 
+  austin: [
+    {
+      title: "Barton Springs Pool — Morning Swim",
+      dayOffset: 0, time: "8:00 AM",
+      venue: "Barton Springs Pool, 2201 Barton Springs Rd, Austin, TX 78746",
+      category: "Wellness",
+      description: "Beat the Texas heat with a dip in Austin's iconic spring-fed pool inside Zilker Park. Water stays a refreshing 68°F year-round. One of Austin's most beloved outdoor traditions — arrive early on weekends.",
+      link: "https://www.austintexas.gov/department/barton-springs-pool",
+    },
+    {
+      title: "SFC Farmers Market — Downtown Austin",
+      dayOffset: 6, time: "9:00 AM",
+      venue: "Republic Square Park, 422 W 4th St, Austin, TX 78701",
+      category: "Food",
+      description: "Austin's premier Saturday farmers market at Republic Square Park. 60+ local farms and food artisans — organic produce, pasture-raised meats, artisan cheeses, fresh tortillas, and some of the best breakfast tacos in Texas.",
+      link: "https://www.sfcfarmersmarket.org",
+    },
+    {
+      title: "Barton Creek Greenbelt — Trail Hike",
+      dayOffset: 1, time: "7:30 AM",
+      venue: "Barton Creek Greenbelt, Barton Springs Rd Entrance, Austin, TX 78746",
+      category: "Sports",
+      description: "Explore 12+ miles of limestone trails, creek crossings, and natural swimming holes in the heart of Austin. Popular spots include Twin Falls and the Sculpture Falls. Free, no reservation needed — bring water and sunscreen.",
+      link: "https://www.austintexas.gov/department/barton-creek-greenbelt",
+    },
+    {
+      title: "Blanton Museum of Art — Free First Thursday",
+      dayOffset: 4, time: "11:00 AM",
+      venue: "Blanton Museum of Art, 200 E MLK Jr Blvd, Austin, TX 78712",
+      category: "Arts",
+      description: "The University of Texas's world-class art museum opens free to the public every Thursday. Over 21,000 works including major holdings of Latin American art, European paintings, and contemporary works. One of Austin's best free cultural institutions.",
+      link: "https://blantonmuseum.org",
+    },
+    {
+      title: "Lady Bird Lake — Hike and Bike Trail",
+      dayOffset: 5, time: "7:00 AM",
+      venue: "Hike-and-Bike Trailhead, Barton Springs Rd & S Lamar Blvd, Austin, TX 78704",
+      category: "Sports",
+      description: "Austin's most beloved outdoor escape: a 10-mile loop around Lady Bird Lake through Zilker Park and downtown. Free and open every day — join runners, cyclists, and walkers of all paces. The Butler Trail section is especially beautiful at sunrise.",
+      link: "https://www.austintexas.gov/page/hike-and-bike-trail",
+    },
+    {
+      title: "Austin Animal Center — Community Dog Walk",
+      dayOffset: 2, time: "8:00 AM",
+      venue: "Austin Animal Center, 7201 Levander Loop, Austin, TX 78702",
+      category: "Wellness",
+      description: "Help shelter dogs get exercise and socialization before they find their forever homes. Drop-in friendly — just show up with your walking shoes. Austin Animal Center is the largest no-kill animal shelter in the US.",
+      link: "https://www.austintexas.gov/department/austin-animal-center",
+    },
+    {
+      title: "Keep Austin Beautiful — Trail Cleanup",
+      dayOffset: 7, time: "8:00 AM",
+      venue: "Barton Creek Greenbelt, Barton Springs Rd Entrance, Austin, TX 78746",
+      category: "Civics",
+      description: "Join Keep Austin Beautiful's weekly volunteer cleanup and protect one of the city's most beloved green spaces. Gloves, bags, and good company provided — bring water and sunscreen. A staple of Austin civic life.",
+      link: "https://www.keepaustinbeautiful.org",
+    },
+    {
+      title: "Mount Bonnell — Sunrise Scenic Walk",
+      dayOffset: 7, time: "7:00 AM",
+      venue: "Mount Bonnell, 3800 Mount Bonnell Rd, Austin, TX 78731",
+      category: "Wellness",
+      description: "Austin's highest point offers panoramic views of Lake Austin and the Hill Country at just 775 feet. A short 102-step climb rewards you with one of the city's finest vistas — free, open daily from 5 AM to 10 PM. A classic Austin Sunday morning.",
+      link: "https://www.austintexas.gov/page/mount-bonnell",
+    },
+    {
+      title: "Austin Central Library — Free Programs & Maker Studio",
+      dayOffset: 9, time: "10:00 AM",
+      venue: "Austin Central Library, 710 W Cesar Chavez St, Austin, TX 78701",
+      category: "Arts",
+      description: "Austin's stunning six-story central library hosts free community programs, author talks, maker studio sessions, and digital media labs all week. No library card required to attend public events — check the weekly calendar for this week's lineup.",
+      link: "https://library.austintexas.gov/central-library",
+    },
+  ],
+
   austincares: [
     {
       title: "Central Texas Food Bank — Volunteer Shift",
@@ -473,6 +548,7 @@ interface TenantConfig {
 }
 
 const TENANT_CONFIGS: TenantConfig[] = [
+  { slug: "austin",      tz: "America/Chicago" },
   { slug: "austincares", tz: "America/Chicago" },
   { slug: "sacramento",  tz: "America/Los_Angeles" },
   { slug: "portland",    tz: "America/Los_Angeles" },

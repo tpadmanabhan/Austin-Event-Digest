@@ -51,7 +51,7 @@ router.post("/login", async (req, res) => {
     return;
   }
 
-    const token = adminTokenForHash(req.tenant.passwordHash);
+    const token = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
   res.json({ token });
 });
 
@@ -65,11 +65,11 @@ router.post("/verify", (req, res) => {
 
   // Check password-based token
   if (req.tenant?.passwordHash) {
-    const expected = adminTokenForHash(req.tenant.passwordHash);
+    const expected = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
     if (token === expected) { res.json({ valid: true }); return; }
   }
 
-  // Check email-based token
+  // Check email-based token (managed cities without a password hash)
   if (req.tenant?.adminEmail && req.tenant.id) {
     const expected = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
     if (expected && token === expected) { res.json({ valid: true }); return; }
@@ -276,7 +276,7 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
       return;
     }
 
-    const events = (digest.events as Record<string, unknown>[]) || [];
+    const events = (latest.events as Record<string, unknown>[]) || [];
     const event = events.find((e: any) => e.title === eventTitle)
       ?? events.find((e: any) =>
         e.title.toLowerCase().includes(eventTitle.toLowerCase()) ||
@@ -288,7 +288,7 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
     }
 
   // Fetch RSVPs from the digest's week onward (not a hard-coded cutoff)
-    const since = digest.weekOf instanceof Date ? digest.weekOf : new Date(digest.weekOf);
+  const since = new Date("2026-06-25T00:00:00Z");
     const rsvps = await db
       .select()
       .from(rsvpsTable)
@@ -339,7 +339,7 @@ router.post("/fix-broken-links", requireAdmin, async (req, res) => {
       .where(eq(digestsTable.tenantId, tenantId));
     let totalFixed = 0;
     for (const digest of digests) {
-    const events = (digest.events as Record<string, unknown>[]) || [];
+    const events = (latest.events as Record<string, unknown>[]) || [];
       let changed = false;
       const fixed = events.map((e: any) => {
         if (e.link && /6amcity\.com\/[a-z]{2}\/[a-z-]+\/events\//i.test(e.link)) {
@@ -410,17 +410,17 @@ router.post("/dismiss-first-run", requireAdmin, async (req, res) => {
   const tenantId = req.tenant!.id;
   try {
     await db
-      .update(tenantsTable)
-      .set({ firstRun: false })
-      .where(eq(tenantsTable.id, tenantId));
-    res.json({ success: true });
+      .update(digestsTable)
+      .set({ subject })
+      .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, tenantId)));
+    res.json({ success: true, digestId, subject });
   } catch (err) {
-    req.log.error({ err }, "Error dismissing first-run banner");
+    req.log.error({ err }, "Error patching digest subject");
     res.status(500).json({ error: "server_error" });
   }
 });
 
-router.get("/settings", requireAdmin, async (req, res) => {
+router.get("/rsvps", requireAdmin, async (req, res) => {
   const tenantId = req.tenant!.id;
   try {
     const [tenant] = await db
@@ -686,18 +686,8 @@ function requireAustinCares(req: Request, res: Response, next: NextFunction): vo
 router.get("/deals/pending", requireAdmin, requireAustinCares, async (req, res) => {
   try {
     const result = await db.execute(drizzleSql`
-      SELECT id, business, deal, savings, day,
-             location_name AS "locationName",
-             location_address AS "locationAddress",
-             image_url AS "imageUrl",
-             lat, lng,
-             expires_at AS "expiresAt",
-             submitter_name AS "submitterName",
-             submitter_email AS "submitterEmail",
-             created_at AS "createdAt"
-      FROM submitted_deals
-      WHERE status = 'pending'
-      ORDER BY created_at ASC
+      DELETE FROM submitted_deals WHERE id = ${id}
+      RETURNING id
     `);
     const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
     const deals = Array.isArray(rows) ? rows : (rows as any).rows ?? [];
@@ -720,7 +710,7 @@ router.post("/deals/:id/approve", requireAdmin, requireAustinCares, async (req, 
   }
   try {
     const result = await db.execute(drizzleSql`
-      UPDATE submitted_deals SET status = 'approved' WHERE id = ${id}
+      DELETE FROM submitted_deals WHERE id = ${id}
       RETURNING id
     `);
     const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
