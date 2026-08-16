@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
-import { Link } from "wouter";
+import { useEffect, useRef, useState } from "react";
+import { TurnstileWithRef, useTurnstileRef } from "@/components/turnstile-widget";
+import type { TurnstileInstance } from "@/components/turnstile-widget";
 
 const C = {
   cream:    "#FBF3E7",
@@ -30,9 +31,320 @@ const DEAL_LOCATIONS = [
   { name: "Austin Habitat Counseling",  deal: "Any day: Free homeownership & financial counseling", lat: 30.2280, lng: -97.7757 },
 ];
 
+// ---------------------------------------------------------------------------
+// Inline subscribe form (email-only, rust/cream branded)
+// ---------------------------------------------------------------------------
+function SubscribeSection() {
+  const [email, setEmail] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useTurnstileRef<TurnstileInstance | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+    turnstileRef.current?.reset();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!captchaToken) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), captchaToken }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setDone(true);
+      } else {
+        setError(data.message || "Something went wrong. Please try again.");
+        resetCaptcha();
+      }
+    } catch {
+      setError("Network error — please try again.");
+      resetCaptcha();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <section
+      id="subscribe"
+      style={{ background: `linear-gradient(175deg, ${C.char} 0%, #3A2E24 100%)`, padding: "80px 0" }}
+    >
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
+        {done ? (
+          <>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
+            <h2 style={{ ...serif, fontSize: "clamp(24px, 3.4vw, 32px)", fontWeight: 600, color: "#fff", marginBottom: 12 }}>
+              You're on the list!
+            </h2>
+            <p style={{ color: "#C9BFAE", fontSize: 16.5 }}>
+              Look out for this Sunday's deals in your inbox.
+            </p>
+          </>
+        ) : (
+          <>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 100, padding: "6px 14px", fontSize: 12.5, fontWeight: 600, color: "#E8A93C", marginBottom: 20 }}>
+              ● Free · No spam · Unsubscribe anytime
+            </span>
+            <h2 style={{ ...serif, fontSize: "clamp(26px, 3.8vw, 38px)", fontWeight: 600, color: "#fff", lineHeight: 1.12, marginBottom: 12 }}>
+              Get this week's deals in your inbox.
+            </h2>
+            <p style={{ color: "#C9BFAE", fontSize: 16.5, marginBottom: 32 }}>
+              Every Sunday — real, time-boxed discounts near you. No coupons, no expired offers.
+            </p>
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "stretch" }}>
+              <input
+                type="email"
+                required
+                placeholder="your@email.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                style={{
+                  height: 52, borderRadius: 12, border: `1.5px solid rgba(255,255,255,0.18)`,
+                  background: "rgba(255,255,255,0.07)", color: "#fff", fontSize: 16,
+                  padding: "0 18px", outline: "none", width: "100%", boxSizing: "border-box",
+                }}
+                onFocus={e => { e.currentTarget.style.borderColor = C.rust; }}
+                onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)"; }}
+              />
+              <div style={{ borderRadius: 10, overflow: "hidden" }}>
+                <TurnstileWithRef
+                  turnstileRef={turnstileRef}
+                  onSuccess={setCaptchaToken}
+                  onError={resetCaptcha}
+                  onExpire={resetCaptcha}
+                />
+              </div>
+              {error && (
+                <p style={{ color: "#F87171", fontSize: 13.5, margin: 0 }}>{error}</p>
+              )}
+              <button
+                type="submit"
+                disabled={submitting || !captchaToken}
+                style={{
+                  height: 52, borderRadius: 12, border: "none", cursor: submitting || !captchaToken ? "not-allowed" : "pointer",
+                  background: submitting || !captchaToken ? "#7a5a4a" : C.rust,
+                  color: "#fff", fontWeight: 700, fontSize: 15.5,
+                  boxShadow: submitting || !captchaToken ? "none" : "0 10px 26px rgba(196,80,43,.35)",
+                  transition: "background 0.15s, box-shadow 0.15s",
+                }}
+                onMouseEnter={e => { if (!submitting && captchaToken) e.currentTarget.style.background = C.rustDeep; }}
+                onMouseLeave={e => { if (!submitting && captchaToken) e.currentTarget.style.background = C.rust; }}
+              >
+                {submitting ? "Subscribing…" : "Get Weekly Deals — Free"}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Business inquiry modal
+// ---------------------------------------------------------------------------
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "Multiple days", "Any day"];
+
+function BusinessModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState({ businessName: "", email: "", dealDescription: "", dayOfWeek: "" });
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useTurnstileRef<TurnstileInstance | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+    turnstileRef.current?.reset();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!captchaToken) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/newsletter/business-inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, captchaToken }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setDone(true);
+      } else {
+        setError(data.message || "Something went wrong. Please try again.");
+        resetCaptcha();
+      }
+    } catch {
+      setError("Network error — please try again.");
+      resetCaptcha();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", boxSizing: "border-box", height: 46, borderRadius: 10,
+    border: `1.5px solid ${C.line}`, background: C.paper, color: C.char,
+    fontSize: 14.5, padding: "0 14px", outline: "none", fontFamily: "'Inter', system-ui, sans-serif",
+  };
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{ background: C.paper, borderRadius: 20, padding: "36px 32px", maxWidth: 480, width: "100%", boxShadow: "0 32px 80px rgba(0,0,0,0.3)", position: "relative" }}>
+        <button
+          onClick={onClose}
+          style={{ position: "absolute", top: 16, right: 16, border: "none", background: "none", cursor: "pointer", fontSize: 22, color: C.muted, lineHeight: 1 }}
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+        {done ? (
+          <div style={{ textAlign: "center", padding: "12px 0" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+            <h3 style={{ ...serif, fontSize: 26, fontWeight: 600, color: C.char, marginBottom: 10 }}>We'll be in touch!</h3>
+            <p style={{ color: C.muted, fontSize: 15.5, lineHeight: 1.6 }}>
+              Check your inbox for a confirmation. We typically follow up within 1–2 business days.
+            </p>
+            <button
+              onClick={onClose}
+              style={{ marginTop: 24, padding: "12px 28px", borderRadius: 10, background: C.rust, color: "#fff", border: "none", fontWeight: 700, fontSize: 14.5, cursor: "pointer" }}
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <>
+            <h3 style={{ ...serif, fontSize: "clamp(20px, 3vw, 26px)", fontWeight: 600, color: C.char, marginBottom: 6 }}>
+              List your business
+            </h3>
+            <p style={{ color: C.muted, fontSize: 14.5, marginBottom: 24, lineHeight: 1.55 }}>
+              Tell us about your weekly deal and we'll be in touch to get it into the next digest.
+            </p>
+
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.char, marginBottom: 5 }}>
+                  Business name <span style={{ color: C.rust }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Spokesman Coffee"
+                  value={form.businessName}
+                  onChange={set("businessName")}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.char, marginBottom: 5 }}>
+                  Your email <span style={{ color: C.rust }}>*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="owner@yourbusiness.com"
+                  value={form.email}
+                  onChange={set("email")}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.char, marginBottom: 5 }}>
+                  Your weekly deal or special
+                </label>
+                <textarea
+                  placeholder="e.g. Free drip coffee with any pastry — Mondays only, dine-in"
+                  value={form.dealDescription}
+                  onChange={set("dealDescription")}
+                  rows={3}
+                  style={{ ...inputStyle, height: "auto", padding: "12px 14px", resize: "vertical" as const }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.char, marginBottom: 5 }}>
+                  Day(s) it runs
+                </label>
+                <select
+                  value={form.dayOfWeek}
+                  onChange={set("dayOfWeek")}
+                  style={{ ...inputStyle, appearance: "none" as const, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6055' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center" }}
+                >
+                  <option value="">Select a day…</option>
+                  {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+
+              <div style={{ borderRadius: 10, overflow: "hidden" }}>
+                <TurnstileWithRef
+                  turnstileRef={turnstileRef}
+                  onSuccess={setCaptchaToken}
+                  onError={resetCaptcha}
+                  onExpire={resetCaptcha}
+                />
+              </div>
+
+              {error && (
+                <p style={{ color: C.rust, fontSize: 13.5, margin: 0, fontWeight: 500 }}>{error}</p>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting || !captchaToken}
+                style={{
+                  marginTop: 4, height: 50, borderRadius: 12, border: "none",
+                  cursor: submitting || !captchaToken ? "not-allowed" : "pointer",
+                  background: submitting || !captchaToken ? "#a0837a" : C.rust,
+                  color: "#fff", fontWeight: 700, fontSize: 15.5,
+                  boxShadow: submitting || !captchaToken ? "none" : "0 10px 26px rgba(196,80,43,.28)",
+                  transition: "background 0.15s",
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                }}
+                onMouseEnter={e => { if (!submitting && captchaToken) e.currentTarget.style.background = C.rustDeep; }}
+                onMouseLeave={e => { if (!submitting && captchaToken) e.currentTarget.style.background = C.rust; }}
+              >
+                {submitting ? "Sending…" : "Submit inquiry →"}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main page
+// ---------------------------------------------------------------------------
 export default function AustinCaresDeals() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
+  const [bizModalOpen, setBizModalOpen] = useState(false);
+
+  const scrollToSubscribe = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.getElementById("subscribe")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   // Business deal map
   useEffect(() => {
@@ -111,6 +423,8 @@ export default function AustinCaresDeals() {
   return (
     <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: C.paper, color: C.char, lineHeight: 1.55, WebkitFontSmoothing: "antialiased" }}>
 
+      {bizModalOpen && <BusinessModal onClose={() => setBizModalOpen(false)} />}
+
       {/* ── NAV ── */}
       <nav style={{ padding: "20px 0" }}>
         <div style={{ maxWidth: 1020, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -125,14 +439,14 @@ export default function AustinCaresDeals() {
             </div>
             <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: C.muted }}>Daily Deals Nearby</span>
           </div>
-          <a
-            href="#business"
-            style={{ color: C.char, textDecoration: "none", fontSize: 14.5, fontWeight: 600, border: `1.5px solid ${C.char}`, padding: "9px 16px", borderRadius: 100 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = C.char; (e.currentTarget as HTMLAnchorElement).style.color = C.paper; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; (e.currentTarget as HTMLAnchorElement).style.color = C.char; }}
+          <button
+            onClick={() => setBizModalOpen(true)}
+            style={{ color: C.char, background: "transparent", textDecoration: "none", fontSize: 14.5, fontWeight: 600, border: `1.5px solid ${C.char}`, padding: "9px 16px", borderRadius: 100, cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif" }}
+            onMouseEnter={e => { e.currentTarget.style.background = C.char; e.currentTarget.style.color = C.paper; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.char; }}
           >
             I run a business →
-          </a>
+          </button>
         </div>
       </nav>
 
@@ -149,12 +463,22 @@ export default function AustinCaresDeals() {
             A weekly digest of real, time-boxed discounts near you — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" as const, marginTop: 32 }}>
-            <Link href="/full" style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: C.rust, color: "#fff", boxShadow: `0 10px 26px rgba(196,80,43,.28)` }}>
+            <button
+              onClick={scrollToSubscribe}
+              style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: C.rust, color: "#fff", boxShadow: `0 10px 26px rgba(196,80,43,.28)`, border: "none", cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif" }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.rustDeep; }}
+              onMouseLeave={e => { e.currentTarget.style.background = C.rust; }}
+            >
               Get Weekly Deals
-            </Link>
-            <a href="#business" style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: "transparent", color: C.char, border: `1.5px solid ${C.char}` }}>
+            </button>
+            <button
+              onClick={() => setBizModalOpen(true)}
+              style={{ display: "inline-block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: "transparent", color: C.char, border: `1.5px solid ${C.char}`, cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif" }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.char; e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.char; }}
+            >
               I run a business →
-            </a>
+            </button>
           </div>
           {/* Day strip */}
           <div style={{ display: "flex", gap: 8, marginTop: 40, flexWrap: "wrap" as const }}>
@@ -201,15 +525,18 @@ export default function AustinCaresDeals() {
               </div>
             ))}
             {/* Add your deal CTA card */}
-            <a href="/full" style={{ textDecoration: "none" }}>
-              <div style={{ background: C.cream, borderRadius: 16, padding: "26px 22px", border: `2px dashed ${C.rust}`, cursor: "pointer", height: "100%", boxSizing: "border-box" }}>
+            <button
+              onClick={() => setBizModalOpen(true)}
+              style={{ textDecoration: "none", background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" as const }}
+            >
+              <div style={{ background: C.cream, borderRadius: 16, padding: "26px 22px", border: `2px dashed ${C.rust}`, height: "100%", boxSizing: "border-box" }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: C.rust, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 22, marginBottom: 14, lineHeight: 1 }}>
                   +
                 </div>
                 <h3 style={{ fontSize: 16.5, fontWeight: 700, color: C.char }}>Add your deal</h3>
                 <p style={{ fontSize: 14.5, color: C.muted, marginTop: 6 }}>Own a business with a weekly special? Submit it — it takes two minutes and goes out in Sunday's digest.</p>
               </div>
-            </a>
+            </button>
           </div>
         </div>
       </section>
@@ -248,10 +575,13 @@ export default function AustinCaresDeals() {
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 20, textAlign: "right" }}>
-              <Link href="/full" style={{ fontSize: 14, fontWeight: 700, color: C.gold, textDecoration: "none", letterSpacing: "0.01em" }}>
-                See full edition →
-              </Link>
+            <div style={{ padding: "0 22px 20px", textAlign: "right" }}>
+              <button
+                onClick={scrollToSubscribe}
+                style={{ fontSize: 14, fontWeight: 700, color: C.gold, background: "none", border: "none", cursor: "pointer", letterSpacing: "0.01em", fontFamily: "'Inter', system-ui, sans-serif" }}
+              >
+                Get deals like these in your inbox →
+              </button>
             </div>
           </div>
         </div>
@@ -272,6 +602,9 @@ export default function AustinCaresDeals() {
           />
         </div>
       </section>
+
+      {/* ── SUBSCRIBE ── */}
+      <SubscribeSection />
 
       {/* ── BUSINESS SECTION ── */}
       <section id="business" style={{ padding: "80px 0" }}>
@@ -297,9 +630,14 @@ export default function AustinCaresDeals() {
                   </li>
                 ))}
               </ul>
-              <a href="#" style={{ display: "block", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: C.rust, color: "#fff", boxShadow: `0 10px 26px rgba(196,80,43,.28)` }}>
+              <button
+                onClick={() => setBizModalOpen(true)}
+                style={{ display: "block", width: "100%", textDecoration: "none", fontWeight: 700, fontSize: 15.5, padding: "14px 25px", borderRadius: 12, background: C.rust, color: "#fff", boxShadow: `0 10px 26px rgba(196,80,43,.28)`, border: "none", cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif" }}
+                onMouseEnter={e => { e.currentTarget.style.background = C.rustDeep; }}
+                onMouseLeave={e => { e.currentTarget.style.background = C.rust; }}
+              >
                 List your business
-              </a>
+              </button>
             </div>
           </div>
         </div>

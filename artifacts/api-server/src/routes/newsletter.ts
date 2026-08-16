@@ -8,7 +8,7 @@ import {
   UnsubscribeFromNewsletterResponse,
   GetSubscribersResponse,
 } from "@workspace/api-zod";
-import { sendWelcomeEmail, sendNewSubscriberAdminNotification, sendFeatureInterestEmails } from "../lib/emailService";
+import { sendEmail, sendWelcomeEmail, sendNewSubscriberAdminNotification, sendFeatureInterestEmails } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
@@ -16,6 +16,11 @@ import { geocodeVenue } from "../lib/geocodeVenue";
 import { verifySubscriberToken } from "../lib/subscriberToken";
 
 const router: IRouter = Router();
+
+/** Escapes HTML special characters to prevent injection in email bodies. */
+function esc(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
 
 router.post("/subscribe", async (req, res) => {
   const captchaOk = await verifyTurnstileToken(req.body?.captchaToken, req.ip);
@@ -258,6 +263,80 @@ router.post("/subscribers/import", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error importing subscribers");
     res.status(500).json({ error: "server_error", message: "Failed to import subscribers" });
+  }
+});
+
+// POST /newsletter/business-inquiry — captures "List your business" leads from AustinCares
+router.post("/business-inquiry", async (req, res) => {
+  // Require a valid Turnstile token before sending any email
+  const captchaOk = await verifyTurnstileToken(req.body?.captchaToken, req.ip);
+  if (!captchaOk) {
+    res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
+    return;
+  }
+
+  const { businessName, email, dealDescription, dayOfWeek } = req.body ?? {};
+
+  const emailStr = typeof email === "string" ? email.trim().toLowerCase() : "";
+  const nameStr = typeof businessName === "string" ? businessName.trim() : "";
+  const dealStr = typeof dealDescription === "string" ? dealDescription.trim() : "";
+  const dayStr = typeof dayOfWeek === "string" ? dayOfWeek.trim() : "";
+
+  if (!emailStr || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr)) {
+    res.status(400).json({ error: "invalid_request", message: "A valid email address is required." });
+    return;
+  }
+  if (!nameStr) {
+    res.status(400).json({ error: "invalid_request", message: "Business name is required." });
+    return;
+  }
+
+  try {
+    const adminEmail = req.tenant?.adminEmail || "AIimplementationclubaustin@gmail.com";
+
+    // Admin notification — awaited so a delivery failure is surfaced to the caller
+    const adminResult = await sendEmail({
+      to: adminEmail,
+      subject: `🏷️ New business listing inquiry: ${nameStr}`,
+      html: `
+        <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
+          <h2 style="margin:0 0 16px;color:#1c1917;">New Business Listing Inquiry</h2>
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <tr><td style="padding:8px 0;color:#78716c;width:120px;">Business</td><td style="padding:8px 0;font-weight:600;">${esc(nameStr)}</td></tr>
+            <tr><td style="padding:8px 0;color:#78716c;">Email</td><td style="padding:8px 0;"><a href="mailto:${encodeURIComponent(emailStr)}">${esc(emailStr)}</a></td></tr>
+            ${dealStr ? `<tr><td style="padding:8px 0;color:#78716c;vertical-align:top;">Deal</td><td style="padding:8px 0;">${esc(dealStr)}</td></tr>` : ""}
+            ${dayStr ? `<tr><td style="padding:8px 0;color:#78716c;">Day</td><td style="padding:8px 0;">${esc(dayStr)}</td></tr>` : ""}
+          </table>
+          <p style="margin:24px 0 0;font-size:13px;color:#78716c;">Reply directly to this email to follow up with the business.</p>
+        </div>
+      `,
+      replyTo: emailStr,
+    });
+
+    if (!adminResult.success) {
+      req.log.error({ adminEmail, businessName: nameStr }, "Business inquiry admin notification failed to send");
+      res.status(503).json({ error: "email_failed", message: "We couldn't record your inquiry right now — please try again in a moment." });
+      return;
+    }
+
+    // Confirmation to the business — best-effort; failure is logged but not surfaced
+    sendEmail({
+      to: emailStr,
+      subject: "Thanks for your interest in AustinCares! 🏷️",
+      html: `
+        <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
+          <h2 style="margin:0 0 12px;color:#1c1917;">We got your inquiry, ${esc(nameStr)}!</h2>
+          <p style="color:#57534e;line-height:1.6;">Thanks for reaching out about listing your business on AustinCares. We'll be in touch within a couple of business days to get your deal set up.</p>
+          <p style="color:#57534e;line-height:1.6;">In the meantime, feel free to reply to this email with any questions.</p>
+          <p style="margin:24px 0 0;color:#78716c;font-size:13px;">— The AustinCares team</p>
+        </div>
+      `,
+    }).catch((err: unknown) => { req.log.warn({ err, email: emailStr }, "Business inquiry confirmation email failed (best-effort)"); });
+
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "Error handling business inquiry");
+    res.status(500).json({ error: "server_error", message: "Failed to submit inquiry. Please try again." });
   }
 });
 
