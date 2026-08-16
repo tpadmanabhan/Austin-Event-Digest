@@ -288,8 +288,8 @@ describe("geocodeVenue — city-bounds validation", () => {
   it("rejects a fresh Nominatim result outside the city bounds and stores null", async () => {
     // Cache miss
     mockExecute
-      .mockResolvedValueOnce({ rows: [] })  // cacheGet: miss
-      .mockResolvedValueOnce({});           // cacheSet(null)
+      .mockResolvedValueOnce({ rows: [] } as any)  // cacheGet: miss
+      .mockResolvedValueOnce({} as any);           // cacheSet(null)
 
     // Nominatim returns Portland, TX instead of Portland, OR
     vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
@@ -303,8 +303,8 @@ describe("geocodeVenue — city-bounds validation", () => {
 
   it("accepts a fresh Nominatim result that is within city bounds", async () => {
     mockExecute
-      .mockResolvedValueOnce({ rows: [] })  // cacheGet: miss
-      .mockResolvedValueOnce({});           // cacheSet
+      .mockResolvedValueOnce({ rows: [] } as any)  // cacheGet: miss
+      .mockResolvedValueOnce({} as any);           // cacheSet
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
       nominatimResponse([{ lat: String(PORTLAND_OR.lat), lon: String(PORTLAND_OR.lng) }])
@@ -317,7 +317,7 @@ describe("geocodeVenue — city-bounds validation", () => {
 
   it("rejects a cached result that is outside the city bounds (no HTTP call)", async () => {
     // Cache hit with Portland, TX coords
-    mockExecute.mockResolvedValueOnce({ rows: [{ lat: PORTLAND_TX.lat, lng: PORTLAND_TX.lng }] });
+    mockExecute.mockResolvedValueOnce({ rows: [{ lat: PORTLAND_TX.lat, lng: PORTLAND_TX.lng }] } as any);
 
     vi.stubGlobal("fetch", vi.fn());
 
@@ -329,7 +329,7 @@ describe("geocodeVenue — city-bounds validation", () => {
   });
 
   it("accepts a cached result within the city bounds", async () => {
-    mockExecute.mockResolvedValueOnce({ rows: [{ lat: AUSTIN_TX.lat, lng: AUSTIN_TX.lng }] });
+    mockExecute.mockResolvedValueOnce({ rows: [{ lat: AUSTIN_TX.lat, lng: AUSTIN_TX.lng }] } as any);
 
     vi.stubGlobal("fetch", vi.fn());
 
@@ -339,13 +339,13 @@ describe("geocodeVenue — city-bounds validation", () => {
   });
 
   it("allows any coords when no citySlug is provided (backwards-compatible)", async () => {
-    mockExecute.mockResolvedValueOnce({ rows: [] });  // cache miss
+    mockExecute.mockResolvedValueOnce({ rows: [] } as any);  // cache miss
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
       nominatimResponse([{ lat: String(PORTLAND_TX.lat), lon: String(PORTLAND_TX.lng) }])
     ));
     // Second call for cacheSet
-    mockExecute.mockResolvedValueOnce({});
+    mockExecute.mockResolvedValueOnce({} as any);
 
     const result = await geocodeVenue("Anywhere Venue");
     // Without a slug, no bounds check — coords are returned as-is
@@ -382,7 +382,7 @@ describe("geocodeEvents — city-bounds validation", () => {
 
   it("nulls out-of-bounds cached coords when geocoding a new venue", async () => {
     // Cache returns Portland, TX for a Portland, OR city
-    mockExecute.mockResolvedValueOnce({ rows: [{ lat: PORTLAND_TX.lat, lng: PORTLAND_TX.lng }] });
+    mockExecute.mockResolvedValueOnce({ rows: [{ lat: PORTLAND_TX.lat, lng: PORTLAND_TX.lng }] } as any);
 
     vi.stubGlobal("fetch", vi.fn());
 
@@ -395,8 +395,8 @@ describe("geocodeEvents — city-bounds validation", () => {
 
   it("nulls out-of-bounds fresh Nominatim result when geocoding a new venue", async () => {
     mockExecute
-      .mockResolvedValueOnce({ rows: [] })  // cache miss
-      .mockResolvedValueOnce({});           // cacheSet(null)
+      .mockResolvedValueOnce({ rows: [] } as any)  // cache miss
+      .mockResolvedValueOnce({} as any);           // cacheSet(null)
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
       nominatimResponse([{ lat: String(PORTLAND_TX.lat), lon: String(PORTLAND_TX.lng) }])
@@ -410,8 +410,8 @@ describe("geocodeEvents — city-bounds validation", () => {
 
   it("accepts in-bounds fresh Nominatim result", async () => {
     mockExecute
-      .mockResolvedValueOnce({ rows: [] })  // cache miss
-      .mockResolvedValueOnce({});           // cacheSet
+      .mockResolvedValueOnce({ rows: [] } as any)  // cache miss
+      .mockResolvedValueOnce({} as any);           // cacheSet
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
       nominatimResponse([{ lat: String(PORTLAND_OR.lat), lon: String(PORTLAND_OR.lng) }])
