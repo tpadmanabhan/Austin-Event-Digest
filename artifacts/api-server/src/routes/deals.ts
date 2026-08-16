@@ -58,6 +58,8 @@ const SubmitDealBody = z.object({
   objectPath: z.string().regex(OBJECT_PATH_PATTERN, {
     message: "objectPath must be a valid upload path (e.g. /objects/<uuid>)",
   }),
+  // Optional ISO date string (YYYY-MM-DD) — deal expiry chosen by submitter
+  expiresAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 /**
@@ -66,15 +68,18 @@ const SubmitDealBody = z.object({
  */
 router.get("/deals/submitted", async (req, res) => {
   try {
-    // lat/lng are added by startup migration (not in drizzle schema to avoid schema diff on first deploy)
+    // lat/lng and expires_at are added by startup migration (not in drizzle schema to avoid schema diff on first deploy)
+    // Exclude rows whose expires_at is set and already in the past
     const result = await db.execute(sql`
       SELECT id, business, deal, savings, day,
              location_name AS "locationName",
              location_address AS "locationAddress",
              image_url AS "imageUrl",
              lat, lng,
+             expires_at AS "expiresAt",
              created_at AS "createdAt"
       FROM submitted_deals
+      WHERE expires_at IS NULL OR expires_at > NOW()
       ORDER BY created_at ASC
     `);
     // drizzle postgres.js execute returns rows as an array directly
@@ -101,7 +106,7 @@ router.post("/deals/submit", async (req, res) => {
     return;
   }
 
-  const { firstName, email, locationName, locationAddress, objectPath } = parsed.data;
+  const { firstName, email, locationName, locationAddress, objectPath, expiresAt } = parsed.data;
 
   try {
     // ── Download image from GCS and convert to base64 ──────────────────────
@@ -218,20 +223,23 @@ Extract the following and respond ONLY with valid JSON (no markdown):
     }
 
     // ── Save to DB ──────────────────────────────────────────────────────────
-    // lat/lng inserted via raw SQL (columns added by startup migration, not in drizzle schema)
+    // lat/lng and expires_at inserted via raw SQL (columns added by startup migration, not in drizzle schema)
     const lat = coords?.lat ?? null;
     const lng = coords?.lng ?? null;
+    // Parse expiresAt date string into a Date (or null if not provided)
+    const expiresAtDate = expiresAt ? new Date(`${expiresAt}T23:59:59`) : null;
     const insertResult = await db.execute(sql`
       INSERT INTO submitted_deals
-        (business, deal, savings, day, location_name, location_address, image_url, lat, lng, submitter_name, submitter_email)
+        (business, deal, savings, day, location_name, location_address, image_url, lat, lng, submitter_name, submitter_email, expires_at)
       VALUES
-        (${business}, ${deal}, ${savings}, ${day}, ${locationName}, ${locationAddress}, ${imageUrl}, ${lat}, ${lng}, ${firstName}, ${email})
+        (${business}, ${deal}, ${savings}, ${day}, ${locationName}, ${locationAddress}, ${imageUrl}, ${lat}, ${lng}, ${firstName}, ${email}, ${expiresAtDate})
       RETURNING
         id, business, deal, savings, day,
         location_name AS "locationName",
         location_address AS "locationAddress",
         image_url AS "imageUrl",
         lat, lng,
+        expires_at AS "expiresAt",
         created_at AS "createdAt"
     `);
     const rows = Array.isArray(insertResult) ? insertResult : (insertResult as any).rows ?? [];

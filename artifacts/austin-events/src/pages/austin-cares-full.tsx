@@ -431,6 +431,7 @@ interface FormState {
   email: string;
   locationName: string;
   locationAddress: string;
+  expiresAt: string;
   file: File | null;
   previewUrl: string | null;
 }
@@ -441,7 +442,7 @@ function DealSubmissionForm({ onDealAdded }: { onDealAdded: (deal: Deal) => void
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>({
     firstName: "", email: "", locationName: "", locationAddress: "",
-    file: null, previewUrl: null,
+    expiresAt: "", file: null, previewUrl: null,
   });
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -499,6 +500,7 @@ function DealSubmissionForm({ onDealAdded }: { onDealAdded: (deal: Deal) => void
           locationName: form.locationName,
           locationAddress: form.locationAddress,
           objectPath,
+          ...(form.expiresAt ? { expiresAt: form.expiresAt } : {}),
         }),
       });
       if (!submitRes.ok) {
@@ -522,7 +524,7 @@ function DealSubmissionForm({ onDealAdded }: { onDealAdded: (deal: Deal) => void
 
       onDealAdded(newDeal);
       setStatus("done");
-      setForm({ firstName: "", email: "", locationName: "", locationAddress: "", file: null, previewUrl: null });
+      setForm({ firstName: "", email: "", locationName: "", locationAddress: "", expiresAt: "", file: null, previewUrl: null });
     } catch (err: any) {
       setStatus("error");
       setErrorMsg(err?.message || "Something went wrong. Please try again.");
@@ -658,6 +660,23 @@ function DealSubmissionForm({ onDealAdded }: { onDealAdded: (deal: Deal) => void
                     style={inputStyle}
                     disabled={isLoading}
                   />
+                </div>
+                {/* Deal valid until (optional) */}
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={labelStyle}>
+                    Deal valid until <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: C.muted }}>(optional)</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={form.expiresAt}
+                    onChange={e => handleChange("expiresAt", e.target.value)}
+                    min={new Date().toISOString().slice(0, 10)}
+                    style={{ ...inputStyle, width: "auto", minWidth: 180 }}
+                    disabled={isLoading}
+                  />
+                  <p style={{ margin: "4px 0 0", fontSize: 12, color: C.muted }}>
+                    Leave blank and the deal will be shown for 30 days.
+                  </p>
                 </div>
               </div>
 

@@ -1,5 +1,5 @@
 import { db, digestsTable } from "@workspace/db";
-import { eq, isNull, desc } from "drizzle-orm";
+import { eq, isNull, desc, sql } from "drizzle-orm";
 import type { EventItem } from "@workspace/db";
 import { logger } from "./logger";
 
@@ -53,9 +53,36 @@ export function isStaleEvent(
   return eventDate < today;
 }
 
+/**
+ * Removes expired and abandoned community-submitted deals:
+ *   - Rows with expires_at set and in the past (hard expiry — submitter chose end date)
+ *   - Rows older than 30 days with NO expires_at set (default 30-day TTL)
+ * Non-fatal; logged on success.
+ */
+async function runSubmittedDealsCleanup(): Promise<void> {
+  try {
+    const result = await db.execute(sql`
+      DELETE FROM submitted_deals
+      WHERE
+        (expires_at IS NOT NULL AND expires_at < NOW())
+        OR
+        (expires_at IS NULL AND created_at < NOW() - INTERVAL '30 days')
+    `);
+    const deleted = (result as any).rowCount ?? (result as any).count ?? 0;
+    if (deleted > 0) {
+      logger.info({ deleted }, "Daily cleanup: removed expired/abandoned community deals");
+    }
+  } catch (err) {
+    logger.warn({ err }, "Submitted-deals cleanup failed (non-fatal)");
+  }
+}
+
 async function runDailyCleanup(): Promise<void> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  // Clean up expired / old community deals
+  await runSubmittedDealsCleanup();
 
   try {
     // Only process unsent digests (sentAt IS NULL is the authoritative unsent signal)

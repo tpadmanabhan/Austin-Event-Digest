@@ -641,6 +641,8 @@ async function runSubmittedDealsMigration(): Promise<void> {
   // Add lat/lng to existing tables that pre-date this column (idempotent)
   await db.execute(sql`ALTER TABLE submitted_deals ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION`);
   await db.execute(sql`ALTER TABLE submitted_deals ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION`);
+  // Add expires_at for optional deal expiry + 30-day auto-cleanup
+  await db.execute(sql`ALTER TABLE submitted_deals ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP`);
   logger.info("submitted_deals table ready");
 }
 
