@@ -758,7 +758,7 @@ export default function DigestView() {
                   <div className={geoActive ? "flex flex-col gap-6" : "grid sm:grid-cols-2 gap-8"}>
                     {regularEvents.map((event: any, i: number) => (
                       <div key={i} style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
-                        <EventCard event={translateEvent(event)} digestId={digest.id} distanceMiles={getDistanceMiles(event)} />
+                        <EventCard event={translateEvent(event)} digestId={digest.id} distanceMiles={getDistanceMiles(event)} translating={isToky && lang === "ja" && translating} />
                       </div>
                     ))}
                   </div>

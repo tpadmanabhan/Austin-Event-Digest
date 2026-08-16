@@ -390,7 +390,7 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
 // EventCard
 // ---------------------------------------------------------------------------
 
-export function EventCard({ event, digestId, distanceMiles }: { event: EventItem; digestId?: number; distanceMiles?: number }) {
+export function EventCard({ event, digestId, distanceMiles, translating }: { event: EventItem; digestId?: number; distanceMiles?: number; translating?: boolean }) {
   const { citySlug } = useDomain();
   const cardSlug = slugify(event.title);
   const getCategoryIcon = (category: string) => {
@@ -412,6 +412,11 @@ export function EventCard({ event, digestId, distanceMiles }: { event: EventItem
 
   return (
     <div id={`event-${cardSlug}`} className={`group relative flex flex-col rounded-2xl bg-card border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full ${event.link ? "border-primary/40 border-t-2 border-t-primary hover:border-primary/60" : "border-border hover:border-primary/30"}`}>
+      {translating && (
+        <div className="absolute inset-0 z-10 rounded-2xl bg-card/80 backdrop-blur-[1px] flex items-center justify-center animate-pulse pointer-events-none">
+          <span className="text-sm font-medium text-muted-foreground tracking-wide">翻訳中…</span>
+        </div>
+      )}
       {event.imageUrl && (
         <div className="w-full overflow-hidden bg-muted rounded-t-2xl" style={{ height: "120px" }}>
           <img

@@ -123,12 +123,14 @@ export default function Home() {
   const isToky = tenant.slug === "tokyo";
   const { lang, translate } = useLanguage();
   const [homeTranslatedMap, setHomeTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
+  const [homeTranslating, setHomeTranslating] = useState(false);
 
   useEffect(() => {
     if (!isToky || lang !== "ja") return;
     const events: any[] = latestDigest?.events ?? [];
     const untranslated = events.filter((e: any) => e?.title && !homeTranslatedMap.has(e.title));
     if (!untranslated.length) return;
+    setHomeTranslating(true);
     const titles = untranslated.map((e: any) => e.title || "");
     const descs  = untranslated.map((e: any) => e.description || "");
     // Single batched call: titles first, then descriptions — avoids concurrent request failures
@@ -142,7 +144,7 @@ export default function Home() {
         });
         return next;
       });
-    });
+    }).finally(() => setHomeTranslating(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang, isToky, latestDigest]);
 
@@ -678,12 +680,12 @@ export default function Home() {
                               </div>
                               <div className="p-6 sm:p-8">
                                 <div className="max-w-xl">
-                                  <EventCard event={translateEvent(event)} digestId={latestDigest.id} />
+                                  <EventCard event={translateEvent(event)} digestId={latestDigest.id} translating={isToky && lang === "ja" && homeTranslating} />
                                 </div>
                               </div>
                             </div>
                           ) : (
-                            <EventCard event={translateEvent(event)} digestId={latestDigest.id} />
+                            <EventCard event={translateEvent(event)} digestId={latestDigest.id} translating={isToky && lang === "ja" && homeTranslating} />
                           )}
                         </motion.div>
                       ))}
