@@ -1,7 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { runStartupMigration } from "./lib/startupMigration";
-import { scheduleDailyCleanup } from "./lib/dailyCleanup";
+import { scheduleDailyCleanup, scheduleWeeklySundayCleanup } from "./lib/dailyCleanup";
 import { scheduleWeeklyRefresh } from "./lib/weeklyRefresh";
 
 const rawPort = process.env["PORT"];
@@ -28,4 +28,5 @@ app.listen(port, async (err) => {
   await runStartupMigration();
   scheduleDailyCleanup();
   scheduleWeeklyRefresh();
+  scheduleWeeklySundayCleanup();
 });

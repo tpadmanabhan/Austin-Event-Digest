@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
-import { db, rsvpsTable, digestsTable, tenantsTable, adminOtpsTable, type InsertTenant } from "@workspace/db";
+import { db, rsvpsTable, digestsTable, tenantsTable, adminOtpsTable, type InsertTenant, type EventItem } from "@workspace/db";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { isStaleEvent } from "../lib/dailyCleanup";
 import { sql as drizzleSql } from "drizzle-orm";
 import { createHash, randomInt } from "crypto";
 import { sendRsvpGroupNotification, buildDigestEmailHtml, sendWelcomeEmail, sendEmail } from "../lib/emailService";
@@ -606,6 +607,46 @@ router.get("/rsvps", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error fetching RSVPs");
     res.status(500).json({ error: "server_error", message: "Failed to fetch RSVPs" });
+  }
+});
+
+// Manually clean past events from the current tenant's latest digest
+router.post("/digest/cleanup-latest", requireAdmin, async (req, res) => {
+  const tenantId = req.tenant!.id;
+  try {
+    const [latest] = await db
+      .select({ id: digestsTable.id, events: digestsTable.events, weekOf: digestsTable.weekOf })
+      .from(digestsTable)
+      .where(eq(digestsTable.tenantId, tenantId))
+      .orderBy(desc(digestsTable.weekOf), desc(digestsTable.id))
+      .limit(1);
+
+    if (!latest) {
+      res.status(404).json({ error: "not_found", message: "No digest found" });
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekOf = new Date(latest.weekOf);
+    weekOf.setHours(0, 0, 0, 0);
+
+    const events = (latest.events as Record<string, unknown>[]) || [];
+    const fresh = events.filter(ev => !isStaleEvent(ev, today, weekOf));
+    const removed = events.length - fresh.length;
+
+    if (removed > 0) {
+      await db
+        .update(digestsTable)
+        .set({ events: fresh as unknown as EventItem[] })
+        .where(eq(digestsTable.id, latest.id));
+    }
+
+    req.log.info({ digestId: latest.id, removed }, "Manual cleanup: removed past events from latest digest");
+    res.json({ success: true, removed, digestId: latest.id });
+  } catch (err) {
+    req.log.error({ err }, "Error cleaning up latest digest");
+    res.status(500).json({ error: "server_error", message: "Failed to clean up digest" });
   }
 });
 

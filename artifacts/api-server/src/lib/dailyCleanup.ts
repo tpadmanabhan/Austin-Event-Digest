@@ -1,5 +1,5 @@
 import { db, digestsTable } from "@workspace/db";
-import { eq, isNull } from "drizzle-orm";
+import { eq, isNull, desc } from "drizzle-orm";
 import type { EventItem } from "@workspace/db";
 import { logger } from "./logger";
 
@@ -95,6 +95,104 @@ async function runDailyCleanup(): Promise<void> {
   } catch (err) {
     logger.warn({ err }, "Daily cleanup job failed (non-fatal)");
   }
+}
+
+/**
+ * Removes past events from the LATEST digest of every tenant.
+ * Unlike runDailyCleanup (which only touches unsent digests), this also
+ * processes sent digests so that live city pages stop showing last week's events
+ * after the new week begins each Sunday.
+ *
+ * Spotlights, community posts, and featured (Special Event) entries are always preserved.
+ * Exported so the admin API can call it as a manual trigger too.
+ */
+export async function cleanLatestDigestsAllTenants(): Promise<{ tenantsProcessed: number; totalRemoved: number }> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Fetch all digests ordered newest-first, then take the first one per tenant
+  const allDigests = await db
+    .select({ id: digestsTable.id, tenantId: digestsTable.tenantId, events: digestsTable.events, weekOf: digestsTable.weekOf })
+    .from(digestsTable)
+    .orderBy(desc(digestsTable.weekOf), desc(digestsTable.id));
+
+  const seen = new Set<number>();
+  const latest: typeof allDigests = [];
+  for (const d of allDigests) {
+    if (!seen.has(d.tenantId)) {
+      seen.add(d.tenantId);
+      latest.push(d);
+    }
+  }
+
+  let totalRemoved = 0;
+  let tenantsProcessed = 0;
+
+  for (const digest of latest) {
+    const events = digest.events as Record<string, unknown>[];
+    if (!Array.isArray(events) || events.length === 0) continue;
+
+    const weekOf = new Date(digest.weekOf);
+    weekOf.setHours(0, 0, 0, 0);
+
+    const fresh = events.filter(ev => !isStaleEvent(ev, today, weekOf));
+
+    if (fresh.length < events.length) {
+      await db
+        .update(digestsTable)
+        .set({ events: fresh as unknown as EventItem[] })
+        .where(eq(digestsTable.id, digest.id));
+      totalRemoved += events.length - fresh.length;
+      tenantsProcessed++;
+    }
+  }
+
+  if (totalRemoved > 0 || latest.length > 0) {
+    logger.info(
+      { totalRemoved, tenantsProcessed, tenantsChecked: latest.length },
+      "Sunday cleanup: removed past events from latest digests",
+    );
+  }
+
+  return { tenantsProcessed, totalRemoved };
+}
+
+/**
+ * Schedules the Sunday cleanup to run each Sunday at 4:00 AM.
+ * Runs against the latest digest for every tenant (including sent digests),
+ * clearing last-week events before the day gets going.
+ */
+export function scheduleWeeklySundayCleanup(): void {
+  function msUntilSunday4am(): number {
+    const now = new Date();
+    const target = new Date(now);
+    // Days until next Sunday (0 = today if today is Sunday)
+    const daysUntilSun = (7 - now.getDay()) % 7;
+    target.setDate(now.getDate() + daysUntilSun);
+    target.setHours(4, 0, 0, 0);
+    // If we're already past Sunday 4 AM this week, push to next Sunday
+    if (target <= now) target.setDate(target.getDate() + 7);
+    return Math.max(target.getTime() - now.getTime(), 60_000);
+  }
+
+  function scheduleNext(): void {
+    const delay = msUntilSunday4am();
+    const nextRun = new Date(Date.now() + delay);
+    logger.info({ nextRun: nextRun.toISOString() }, "Sunday digest cleanup scheduled");
+
+    setTimeout(async () => {
+      try {
+        const result = await cleanLatestDigestsAllTenants();
+        logger.info(result, "Sunday digest cleanup complete");
+      } catch (err) {
+        logger.warn({ err }, "Sunday digest cleanup failed (non-fatal)");
+      }
+      scheduleNext();
+    }, delay);
+  }
+
+  scheduleNext();
+  logger.info("Sunday digest cleanup scheduler started (runs every Sunday at 4 AM)");
 }
 
 export function scheduleDailyCleanup(): void {

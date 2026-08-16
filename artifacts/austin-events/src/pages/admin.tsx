@@ -205,6 +205,7 @@ export default function AdminDashboard() {
   const [isFetchingEventUrl, setIsFetchingEventUrl] = useState(false);
   const [eventFeatured, setEventFeatured] = useState(false);
   const [removingStale, setRemovingStale] = useState<number | null>(null);
+  const [isCleaningLatest, setIsCleaningLatest] = useState(false);
 
   // "Add Event from URL" modal — tied to a specific digest row
   const [addEventDigestId, setAddEventDigestId] = useState<number | null>(null);
@@ -573,6 +574,25 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Failed", description: err instanceof Error ? err.message : String(err) });
     } finally {
       setRemovingStale(null);
+    }
+  };
+
+  const onCleanLatestDigest = async () => {
+    setIsCleaningLatest(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      const res = await fetch("/api/admin/digest/cleanup-latest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      const data = await res.json() as { success?: boolean; removed?: number; message?: string };
+      if (!res.ok) throw new Error(data.message || "Failed");
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      toast({ title: data.removed ? `Removed ${data.removed} past event${data.removed !== 1 ? "s" : ""} from latest digest` : "No past events found in latest digest" });
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Cleanup failed", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsCleaningLatest(false);
     }
   };
 
@@ -1417,6 +1437,18 @@ export default function AdminDashboard() {
             </div>
 
             <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+              <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-muted/30">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Digest List</span>
+                <button
+                  onClick={onCleanLatestDigest}
+                  disabled={isCleaningLatest}
+                  className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted/60 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors"
+                  title="Remove past events from the latest digest now (runs automatically every Sunday)"
+                >
+                  {isCleaningLatest ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                  Clean up past events
+                </button>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap">
                   <thead className="bg-muted/50 text-muted-foreground uppercase text-xs tracking-wider">
