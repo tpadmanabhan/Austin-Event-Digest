@@ -9,6 +9,43 @@ function sleep(ms: number): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// CJK / Japanese detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true if the string contains CJK Unified Ideographs, Hiragana,
+ * Katakana, or CJK Compatibility Ideographs — i.e. is likely a Japanese
+ * or Chinese venue name that Nominatim cannot resolve on its own.
+ */
+export function containsCJK(text: string): boolean {
+  return /[\u3000-\u9fff\uf900-\ufaff\u3040-\u309f\u30a0-\u30ff]/.test(text);
+}
+
+// ---------------------------------------------------------------------------
+// Geographic validation for Tokyo venue results
+// ---------------------------------------------------------------------------
+
+/**
+ * Bounding box for the Tokyo metropolitan area (covers Tokyo, Yokohama,
+ * Saitama, Chiba, and the broader Kanto region).
+ *
+ * lat 35.0–36.5 N, lng 138.5–140.5 E
+ *
+ * This deliberately excludes neighbouring countries whose geocoders might
+ * return a false match for a generic Japanese venue name:
+ *   - Seoul, South Korea (37.5 N, 127 E) — lng 127 < 138.5  ✗
+ *   - Taipei, Taiwan    (25.0 N, 121 E)  — both out of range ✗
+ *   - Beijing, China    (39.9 N, 116 E)  — lng 116 < 138.5  ✗
+ *
+ * If Tokyo events are ever supplemented with venues in other Japanese cities
+ * (Osaka, Kyoto, etc.) this function will need to be widened or replaced with
+ * a proper Japan national bounding box.
+ */
+export function isInTokyoRegion(lat: number, lng: number): boolean {
+  return lat >= 35.0 && lat <= 36.5 && lng >= 138.5 && lng <= 140.5;
+}
+
+// ---------------------------------------------------------------------------
 // Cache helpers
 // ---------------------------------------------------------------------------
 
@@ -40,6 +77,29 @@ async function cacheSet(venue: string, lat: number | null, lng: number | null): 
   } catch (err) {
     logger.warn({ err, venue }, "Failed to write venue geocode cache");
   }
+}
+
+async function cacheDelete(venue: string): Promise<void> {
+  try {
+    await db.execute(sql`
+      DELETE FROM venue_geocode_cache WHERE venue_text = ${venue}
+    `);
+  } catch (err) {
+    logger.warn({ err, venue }, "Failed to delete venue geocode cache entry");
+  }
+}
+
+/**
+ * Checks a cached result for a CJK venue. Returns true when the cached value
+ * is valid and should be used as-is. Returns false when the entry is stale
+ * (null — previously failed before Photon was added, or foreign — a bad
+ * Nominatim result from before geographic validation existed) and should be
+ * deleted and re-geocoded.
+ */
+function isCJKCacheValid(lat: number | null, lng: number | null): boolean {
+  if (lat === null || lng === null) return false;         // previously unresolvable — retry with Photon
+  if (!isInTokyoRegion(lat, lng)) return false;          // foreign match — stale bad result
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -88,21 +148,115 @@ async function nominatim(query: string): Promise<{ lat: number; lng: number } | 
 }
 
 // ---------------------------------------------------------------------------
+// Photon (Komoot) geocoder — free, no API key, better Japanese coverage
+// ---------------------------------------------------------------------------
+
+/**
+ * Queries the Photon geocoder (https://photon.komoot.io), which is based on
+ * OpenStreetMap data but has better international/Japanese venue coverage than
+ * Nominatim. Used as a fallback when Nominatim fails for CJK venue names.
+ */
+async function photonQuery(query: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1&lang=ja`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": NOMINATIM_UA },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as {
+      features?: Array<{ geometry?: { coordinates?: [number, number] } }>;
+    };
+    const coords = data.features?.[0]?.geometry?.coordinates;
+    if (!Array.isArray(coords) || coords.length < 2) return null;
+    const lng = coords[0];
+    const lat = coords[1];
+    if (isNaN(lat) || isNaN(lng)) return null;
+    return { lat, lng };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Geocode a Japanese/CJK venue name.
+ *
+ * Strategy (each result is validated against the Tokyo regional bounding box
+ * before being accepted, so same-named venues in Seoul, Taipei, etc. cannot
+ * silently win):
+ *  1. Nominatim — exact query
+ *  2. Nominatim with ", Tokyo, Japan" appended (helps bare venue names)
+ *  3. Photon   — exact query          (better Japanese OSM coverage)
+ *  4. Photon   with ", Tokyo, Japan" appended
+ */
+export async function geocodeJapanese(venue: string): Promise<{ lat: number; lng: number } | null> {
+  const hasTokyo = /tokyo|japan/i.test(venue);
+
+  // 1. Nominatim — exact query, validate against Tokyo bbox
+  const nom1 = await nominatimQuery(venue);
+  if (nom1 && isInTokyoRegion(nom1.lat, nom1.lng)) return nom1;
+
+  await sleep(1100);
+
+  // 2. Nominatim with Tokyo, Japan suffix
+  if (!hasTokyo) {
+    const nom2 = await nominatimQuery(`${venue}, Tokyo, Japan`);
+    if (nom2 && isInTokyoRegion(nom2.lat, nom2.lng)) return nom2;
+    await sleep(1100);
+  }
+
+  // 3. Photon — exact query, validate against Tokyo bbox
+  const photon1 = await photonQuery(venue);
+  if (photon1 && isInTokyoRegion(photon1.lat, photon1.lng)) return photon1;
+
+  await sleep(1100);
+
+  // 4. Photon with Tokyo, Japan suffix
+  if (!hasTokyo) {
+    const photon2 = await photonQuery(`${venue}, Tokyo, Japan`);
+    if (photon2 && isInTokyoRegion(photon2.lat, photon2.lng)) return photon2;
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 /**
  * Geocode a single venue string. Checks the cache first; calls Nominatim on a
  * miss and stores the result (including null for unresolvable venues).
+ *
+ * For CJK (Japanese) venues, uses an enhanced multi-provider strategy and
+ * validates every result against the Tokyo regional bbox. Stale cache entries
+ * (null — pre-Photon failures, or foreign coords — bad Nominatim matches) are
+ * deleted and retried transparently.
  */
 export async function geocodeVenue(venueText: string): Promise<{ lat: number | null; lng: number | null }> {
   const clean = venueText.trim();
   if (!clean) return { lat: null, lng: null };
 
   const cached = await cacheGet(clean);
-  if (cached.found) return { lat: cached.lat, lng: cached.lng };
+  if (cached.found) {
+    if (containsCJK(clean)) {
+      if (isCJKCacheValid(cached.lat, cached.lng)) {
+        return { lat: cached.lat, lng: cached.lng };
+      }
+      // Stale or foreign — delete entry and fall through to fresh geocode
+      await cacheDelete(clean);
+    } else {
+      return { lat: cached.lat, lng: cached.lng };
+    }
+  }
 
-  const coords = await nominatim(clean);
+  let coords: { lat: number; lng: number } | null;
+  if (containsCJK(clean)) {
+    coords = await geocodeJapanese(clean);
+  } else {
+    coords = await nominatim(clean);
+  }
+
   await cacheSet(clean, coords?.lat ?? null, coords?.lng ?? null);
   return { lat: coords?.lat ?? null, lng: coords?.lng ?? null };
 }
@@ -113,6 +267,7 @@ export async function geocodeVenue(venueText: string): Promise<{ lat: number | n
  * - Cache hits are resolved without any HTTP call (no delay).
  * - Nominatim calls are rate-limited to one per 1.1 s to respect the usage policy.
  * - Events with no venue or already-set coordinates are passed through unchanged.
+ * - For CJK venues, stale/foreign cache entries are invalidated and retried.
  * - Any per-event error leaves the event unmodified (never drops an event).
  */
 export async function geocodeEvents(
@@ -133,18 +288,37 @@ export async function geocodeEvents(
     try {
       const cached = await cacheGet(venue);
       if (cached.found) {
-        result.push({ ...event, lat: cached.lat, lng: cached.lng });
-        continue;
+        if (containsCJK(venue)) {
+          if (isCJKCacheValid(cached.lat, cached.lng)) {
+            // Valid cached Tokyo coords — use directly
+            result.push({ ...event, lat: cached.lat, lng: cached.lng });
+            continue;
+          }
+          // Stale null or foreign coords — invalidate and re-geocode below
+          await cacheDelete(venue);
+        } else {
+          result.push({ ...event, lat: cached.lat, lng: cached.lng });
+          continue;
+        }
       }
 
-      // Rate-limit only for real Nominatim requests
+      // Rate-limit only for real geocoding requests
       if (needsDelay) await sleep(1100);
       needsDelay = true;
 
-      const coords = await nominatim(venue);
+      let coords: { lat: number; lng: number } | null;
+      if (containsCJK(venue)) {
+        // geocodeJapanese has its own internal sleeps — reset the outer delay flag
+        needsDelay = false;
+        coords = await geocodeJapanese(venue);
+        needsDelay = true;
+      } else {
+        coords = await nominatim(venue);
+      }
+
       await cacheSet(venue, coords?.lat ?? null, coords?.lng ?? null);
       result.push({ ...event, lat: coords?.lat ?? null, lng: coords?.lng ?? null });
-      logger.debug({ venue, found: !!coords }, "Geocoded venue via Nominatim");
+      logger.debug({ venue, found: !!coords, cjk: containsCJK(venue) }, "Geocoded venue");
     } catch (err) {
       logger.warn({ venue, err }, "Geocoding error — event kept without coordinates");
       result.push(event);

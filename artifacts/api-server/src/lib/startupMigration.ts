@@ -485,6 +485,128 @@ async function runGeocodeCacheMigration(): Promise<void> {
   logger.info("venue_geocode_cache table ready");
 }
 
+/**
+ * Pre-seeds the venue_geocode_cache with known Tokyo venue coordinates.
+ * These are major / recurring event venues that Nominatim consistently fails
+ * to resolve for Japanese-character names. Rows are inserted with ON CONFLICT
+ * DO NOTHING so re-running on startup is always a safe no-op.
+ */
+async function seedTokyoVenueCache(): Promise<void> {
+  // [venue_text, lat, lng] — English and Japanese names for each venue
+  const TOKYO_VENUES: Array<[string, number, number]> = [
+    // ── Major concert / multi-purpose halls ──────────────────────────────────
+    ["Tokyo International Forum", 35.6766, 139.7638],
+    ["東京国際フォーラム", 35.6766, 139.7638],
+    ["Nippon Budokan", 35.6930, 139.7499],
+    ["日本武道館", 35.6930, 139.7499],
+    ["Tokyo Dome", 35.7056, 139.7518],
+    ["東京ドーム", 35.7056, 139.7518],
+    ["Tokyo Dome City Hall", 35.7059, 139.7518],
+    ["Tokyo Metropolitan Gymnasium", 35.6832, 139.7147],
+    ["東京体育館", 35.6832, 139.7147],
+    ["NHK Hall", 35.6646, 139.6968],
+    ["NHKホール", 35.6646, 139.6968],
+    ["Tokyo Opera City Concert Hall", 35.6809, 139.6922],
+    ["東京オペラシティコンサートホール", 35.6809, 139.6922],
+    ["Bunkamura Orchard Hall", 35.6603, 139.6986],
+    ["Bunkamura オーチャードホール", 35.6603, 139.6986],
+    ["Suntory Hall", 35.6703, 139.7296],
+    ["サントリーホール", 35.6703, 139.7296],
+    ["Tokyo Bunka Kaikan", 35.7149, 139.7753],
+    ["東京文化会館", 35.7149, 139.7753],
+    // ── Live music clubs ─────────────────────────────────────────────────────
+    ["Zepp Tokyo", 35.6197, 139.7766],
+    ["Zepp DiverCity Tokyo", 35.6197, 139.7766],
+    ["Zepp Shinjuku", 35.6939, 139.7037],
+    ["Shibuya O-EAST", 35.6621, 139.6987],
+    ["渋谷O-EAST", 35.6621, 139.6987],
+    ["Shibuya O-West", 35.6612, 139.6979],
+    ["渋谷O-West", 35.6612, 139.6979],
+    ["WWW Shibuya", 35.6612, 139.6993],
+    ["WWW X Shibuya", 35.6613, 139.6993],
+    ["Club Quattro Shibuya", 35.6610, 139.6996],
+    ["Womb Tokyo", 35.6582, 139.6955],
+    ["Blue Note Tokyo", 35.6660, 139.7124],
+    ["ブルーノート東京", 35.6660, 139.7124],
+    ["Liquid Room Ebisu", 35.6474, 139.7148],
+    ["Liquid Room", 35.6474, 139.7148],
+    ["Ebisu The Garden Hall", 35.6475, 139.7134],
+    ["恵比寿ガーデンホール", 35.6475, 139.7134],
+    ["Club Asia Shibuya", 35.6582, 139.6960],
+    ["CIRCUS Tokyo", 35.6673, 139.7073],
+    ["Unit Daikanyama", 35.6483, 139.7024],
+    ["Daikanyama Unit", 35.6483, 139.7024],
+    ["代官山Unit", 35.6483, 139.7024],
+    ["EX Theater Roppongi", 35.6639, 139.7291],
+    ["EXシアター六本木", 35.6639, 139.7291],
+    ["Roppongi Hills Arena", 35.6604, 139.7292],
+    ["六本木ヒルズアリーナ", 35.6604, 139.7292],
+    // ── Exhibition / convention centres ──────────────────────────────────────
+    ["Tokyo Big Sight", 35.6298, 139.7944],
+    ["東京ビッグサイト", 35.6298, 139.7944],
+    ["Tokyo International Exhibition Center", 35.6298, 139.7944],
+    ["Makuhari Messe", 35.6490, 140.0327],
+    ["幕張メッセ", 35.6490, 140.0327],
+    ["Tokyo Motor Show / Tokyo Big Sight", 35.6298, 139.7944],
+    // ── Stadiums / arenas ────────────────────────────────────────────────────
+    ["National Olympic Stadium Tokyo", 35.6782, 139.7143],
+    ["国立競技場", 35.6782, 139.7143],
+    ["Ajinomoto Stadium", 35.6645, 139.5272],
+    ["味の素スタジアム", 35.6645, 139.5272],
+    ["Jingu Stadium", 35.6775, 139.7165],
+    ["神宮球場", 35.6775, 139.7165],
+    ["Meiji Jingu Baseball Stadium", 35.6775, 139.7165],
+    // ── Cultural centres / theatres ───────────────────────────────────────────
+    ["Shibuya Cultural Center Owada", 35.6632, 139.7003],
+    ["渋谷区文化総合センター大和田", 35.6632, 139.7003],
+    ["Harajuku Quest Hall", 35.6700, 139.7046],
+    ["Shibuya Pleasure Pleasure", 35.6590, 139.6998],
+    ["Shibuya Stream", 35.6580, 139.7016],
+    ["渋谷ストリーム", 35.6580, 139.7016],
+    // ── Broad area fallbacks (for venue-less Tokyo events) ───────────────────
+    ["Shibuya, Tokyo", 35.6598, 139.7004],
+    ["渋谷", 35.6598, 139.7004],
+    ["Shinjuku, Tokyo", 35.6938, 139.7034],
+    ["新宿", 35.6938, 139.7034],
+    ["Roppongi, Tokyo", 35.6604, 139.7292],
+    ["六本木", 35.6604, 139.7292],
+    ["Akihabara, Tokyo", 35.6980, 139.7730],
+    ["秋葉原", 35.6980, 139.7730],
+    ["Harajuku, Tokyo", 35.6716, 139.7027],
+    ["原宿", 35.6716, 139.7027],
+    ["Daikanyama, Tokyo", 35.6483, 139.7018],
+    ["代官山", 35.6483, 139.7018],
+    ["Ebisu, Tokyo", 35.6474, 139.7134],
+    ["恵比寿", 35.6474, 139.7134],
+    ["Shimokitazawa, Tokyo", 35.6611, 139.6681],
+    ["下北沢", 35.6611, 139.6681],
+  ];
+
+  let inserted = 0;
+  for (const [venueText, lat, lng] of TOKYO_VENUES) {
+    try {
+      // ON CONFLICT: overwrite only when the existing row has NULL coords (legacy
+      // negative-cache entries from before Photon was added). Leave valid coords alone.
+      const result = await db.execute(sql`
+        INSERT INTO venue_geocode_cache (venue_text, lat, lng, geocoded_at)
+        VALUES (${venueText}, ${lat}, ${lng}, NOW())
+        ON CONFLICT (venue_text) DO UPDATE
+          SET lat = EXCLUDED.lat,
+              lng = EXCLUDED.lng,
+              geocoded_at = NOW()
+          WHERE venue_geocode_cache.lat IS NULL
+      `);
+      // drizzle/postgres.js returns rowCount on INSERT
+      if ((result as any).rowCount > 0 || (result as any).count > 0) inserted++;
+    } catch {
+      // Non-fatal — table may not exist yet on very first boot
+    }
+  }
+  if (inserted > 0) {
+    logger.info({ inserted }, "Seeded Tokyo venue geocode cache");
+  }
+}
+
 async function runTranslationCacheMigration(): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS translation_cache (
@@ -596,6 +718,12 @@ export async function runStartupMigration(): Promise<void> {
     await runGeocodeCacheMigration();
   } catch (err) {
     logger.warn({ err }, "Geocode cache migration failed (non-fatal) — table may already exist");
+  }
+
+  try {
+    await seedTokyoVenueCache();
+  } catch (err) {
+    logger.warn({ err }, "Tokyo venue cache seed failed (non-fatal)");
   }
 
   try {
