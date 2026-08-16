@@ -968,6 +968,51 @@ export function buildDigestEmailHtml(digest: {
 
     ${buildStaticMapSection(cleanDigestEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
 
+    <!-- Coming Soon: New Features -->
+    <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
+      <!-- Badge -->
+      <div style="display:inline-block; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:100px; padding:5px 14px; margin-bottom:16px;">
+        <span style="color:#e2e8f0; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">🚀 Coming Soon</span>
+      </div>
+
+      <!-- Heading -->
+      <p style="margin:0 0 20px; color:${theme.textStrong}; font-size:22px; font-weight:800; letter-spacing:-0.4px; line-height:1.25;">Two new features <em style="color:#60a5fa; font-style:italic;">rolling out soon</em></p>
+
+      <!-- Feature 1: Tell a Friend -->
+      <div style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px 20px; margin-bottom:12px;">
+        <p style="margin:0 0 6px; font-size:22px; line-height:1;">📨</p>
+        <p style="margin:0 0 6px; color:${theme.textStrong}; font-size:16px; font-weight:700;">Tell a Friend</p>
+        <p style="margin:0; color:${theme.textOnDark}; font-size:13px; line-height:1.65;">Text any event directly to a friend's phone — one tap, no app download required. Just enter their number and they get the full event details instantly.</p>
+      </div>
+
+      <!-- Feature 2: SMS for Local Businesses -->
+      <div style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px 20px; margin-bottom:20px;">
+        <p style="margin:0 0 6px; font-size:22px; line-height:1;">💬</p>
+        <p style="margin:0 0 6px; color:${theme.textStrong}; font-size:16px; font-weight:700;">SMS for Local Businesses</p>
+        <p style="margin:0; color:${theme.textOnDark}; font-size:13px; line-height:1.65;">An SMS-powered tool built for ${escapeHtml(cityName)}'s local service businesses — connecting them with nearby customers in real time. No app download required.</p>
+      </div>
+
+      <!-- Pills -->
+      <table style="border-collapse:collapse;">
+        <tr>
+          <td style="padding:4px 8px 4px 0;">
+            <span style="display:inline-block; background:rgba(255,255,255,0.08); color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">⚡ Real-Time Reach</span>
+          </td>
+          <td style="padding:4px 0 4px 0;">
+            <span style="display:inline-block; background:rgba(255,255,255,0.08); color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">💬 SMS-First</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:4px 8px 4px 0;">
+            <span style="display:inline-block; background:rgba(255,255,255,0.08); color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">📍 Hyper-Local</span>
+          </td>
+          <td style="padding:4px 0 4px 0;">
+            <span style="display:inline-block; background:rgba(255,255,255,0.08); color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">🚀 No App Needed</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
     <!-- Business Spotlights -->
     ${bizSpotlightCards}
 
