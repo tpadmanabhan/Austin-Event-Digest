@@ -110,6 +110,18 @@ const MONTH_IDX_CLEANUP: Record<string, number> = {
 };
 
 /**
+ * Strips a leading "Hey [City]!" / "Hey [City]," greeting from a digest intro.
+ * The email template already renders its own greeting, so storing the opener
+ * causes it to appear twice whenever a digest is regenerated.
+ *
+ * Matches: "Hey Austin!" / "Hey Austin," / "Hey St. Louis! " etc.
+ * Case-insensitive; trims any trailing whitespace left after removal.
+ */
+function stripGreeting(intro: string): string {
+  return intro.replace(/^Hey [^!,\n]+[!,]\s*/i, "").trimStart();
+}
+
+/**
  * Filters out past events from a digest's event list before serving to clients.
  * Never removes spotlights, community posts, or featured (Special Event) entries.
  * Applied in digestToApi so all cities are covered regardless of sent status.
@@ -281,7 +293,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     if (mergedEvents.length > 0 || communityEvts.length > 0) {
       events = deduplicateEvents([...mergedEvents, ...communityEvts]);
       // Gmail intro is Austin-specific — never use it for other cities
-      const introBase = (req.tenant!.slug === "austin" && gmailIntro) ? gmailIntro : fallback.intro;
+      const introBase = stripGreeting((req.tenant!.slug === "austin" && gmailIntro) ? gmailIntro : fallback.intro);
       intro = customNotes ? `${introBase}\n\n${customNotes}` : introBase;
       req.log.info(
         { adapterEvents: adapterResult.events.length, communityEvents: communityEvts.length, sources: adapterResult.sources, total: events.length },
@@ -295,7 +307,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       // a foreign city's brand.
       const isAustinFamily = req.tenant!.slug === "austin" || req.tenant!.slug === "stlouis";
       events = isAustinFamily ? fallback.events : [];
-      intro = customNotes ? `${fallback.intro}\n\n${customNotes}` : fallback.intro;
+      intro = customNotes ? `${stripGreeting(fallback.intro)}\n\n${customNotes}` : stripGreeting(fallback.intro);
       req.log.info(
         { weekOf: weekOf.toISOString().substring(0, 10), tenant: req.tenant!.slug, usedSample: isAustinFamily },
         isAustinFamily

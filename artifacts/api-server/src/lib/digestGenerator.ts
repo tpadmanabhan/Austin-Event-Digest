@@ -93,8 +93,8 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant
   ];
   
   const cityIntro = customNotes
-    ? `Hey ${cityFirst}! Here's your curated guide to the best events happening this week.\n\n${customNotes}\n\nGet out there and enjoy ${cityFirst}!`
-    : `Hey ${cityFirst}! Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Get out there and enjoy it!`;
+    ? `Here's your curated guide to the best events happening this week.\n\n${customNotes}\n\nGet out there and enjoy ${cityFirst}!`
+    : `Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Get out there and enjoy it!`;
   const intro = cityIntro;
 
   const subjectEmoji = slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
@@ -157,7 +157,7 @@ export function getStLouisSampleDigest(dateRange: string): { subject: string; in
 
   return {
     subject: `⚾ Phil's St. Louis Events — Week of ${dateRange}`,
-    intro: `Hey St. Louis! With the help of AI, I combed through various event newsletters and hand-picked some cool events happening around the city this week. Here's your curated digest — get out there and enjoy St. Louis! Let's Go Redbirds! 🔴`,
+    intro: `With the help of AI, I combed through various event newsletters and hand-picked some cool events happening around the city this week. Here's your curated digest — get out there and enjoy St. Louis! Let's Go Redbirds! 🔴`,
     events: STL_SAMPLE_EVENTS,
   };
 }
