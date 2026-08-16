@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { createHmac } from "node:crypto";
 import { db, digestsTable, subscribersTable, type EventItem, EventItemSchema } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import {
@@ -22,6 +23,28 @@ import { geocodeAndPatchDigest, geocodeEvents, geocodeVenue } from "../lib/geoco
 import { safeOutboundFetch } from "../lib/safeOutboundFetch";
 import { prewarmTranslationCache } from "../lib/translationPrewarm";
 import { signSubscriberToken } from "../lib/subscriberToken";
+
+// ---------------------------------------------------------------------------
+// Production tenant auth — email-based HMAC for managed (null-passwordHash) cities
+// ---------------------------------------------------------------------------
+const PROD_EMAIL_AUTH: Record<string, { tenantId: number; email: string }> = {
+  stlouis:     { tenantId: 7, email: "aiimplementationclubaustin@gmail.com" },
+  sacramento:  { tenantId: 4, email: "aiimplementationclubaustin@gmail.com" },
+  portland:    { tenantId: 5, email: "aiimplementationclubaustin@gmail.com" },
+  bulverde:    { tenantId: 6, email: "aiimplementationclubaustin@gmail.com" },
+  brushycreek: { tenantId: 3, email: "rohanvivier@gmail.com" },
+  tokyo:       { tenantId: 8, email: "aiimplementationclubaustin@gmail.com" },
+};
+
+function computeProdToken(slug: string): string | null {
+  const cfg = PROD_EMAIL_AUTH[slug];
+  if (!cfg) return null; // Austin / AustinCares use password-hash pattern — not supported here
+  const secret = process.env["RSVP_HMAC_SECRET"];
+  if (!secret) return null;
+  return createHmac("sha256", secret)
+    .update(`admin-email:${cfg.tenantId}:${cfg.email}`)
+    .digest("hex");
+}
 
 const router: IRouter = Router();
 
@@ -1439,6 +1462,163 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error sending digest");
     res.status(500).json({ error: "server_error", message: "Failed to send digest" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Production digest status check — used by admin send dialog
+// ---------------------------------------------------------------------------
+
+/**
+ * GET /api/events/digest/:id/prod-status
+ *
+ * Compares the specified local digest's weekOf against what the city's
+ * production subdomain currently has published. The admin UI calls this when
+ * the Send dialog opens so it can warn before sending if prod is empty or
+ * shows a different week than the digest being sent.
+ *
+ * Response shape:
+ *   { hasDigest, matched, localWeekOf, prodWeekOf, prodUrl, canPush, error? }
+ *
+ * matched === false covers both "prod has no digest" and "prod is on a
+ * different week" — both mean subscribers who click links see the wrong page.
+ */
+router.get("/digest/:id/prod-status", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+
+  // Load the local digest so we can compare its weekOf to production's
+  const [localDigest] = await db
+    .select({ weekOf: digestsTable.weekOf })
+    .from(digestsTable)
+    .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+    .limit(1);
+
+  if (!localDigest) {
+    res.status(404).json({ error: "not_found", message: "Digest not found" });
+    return;
+  }
+
+  // Normalize to YYYY-MM-DD for comparison (strip time component)
+  const toDateStr = (v: Date | string | null | undefined): string | null => {
+    if (!v) return null;
+    try { return new Date(v).toISOString().substring(0, 10); } catch { return null; }
+  };
+
+  const localWeekOf = toDateStr(localDigest.weekOf);
+  const slug = req.tenant!.slug;
+  const prodUrl = `https://${slug}.eventcarpooling.com`;
+  const canPush = slug in PROD_EMAIL_AUTH;
+
+  try {
+    const response = await safeOutboundFetch(`${prodUrl}/api/events/digest/latest`, {
+      timeoutMs: 8000,
+    });
+
+    if (response.status === 404) {
+      res.json({ hasDigest: false, matched: false, localWeekOf, prodWeekOf: null, prodUrl, canPush });
+      return;
+    }
+
+    if (!response.ok) {
+      // Unexpected error — report unknown so the UI doesn't block sends
+      res.json({ hasDigest: null, matched: null, localWeekOf, prodWeekOf: null, prodUrl, canPush, error: `HTTP ${response.status}` });
+      return;
+    }
+
+    const data = await response.json() as { digest?: { weekOf?: string; events?: unknown[] } };
+    const hasDigest = !!data?.digest;
+    const prodWeekOf = toDateStr(data?.digest?.weekOf ?? null);
+    const matched = hasDigest && localWeekOf !== null && prodWeekOf !== null && localWeekOf === prodWeekOf;
+    const prodEventCount = Array.isArray(data?.digest?.events) ? data.digest!.events!.length : 0;
+
+    res.json({ hasDigest, matched, localWeekOf, prodWeekOf, prodEventCount, prodUrl, canPush });
+  } catch (err) {
+    req.log.warn({ err, slug }, "prod-status check failed");
+    res.json({ hasDigest: null, matched: null, localWeekOf, prodWeekOf: null, prodUrl, canPush, error: String(err) });
+  }
+});
+
+/**
+ * POST /api/events/digest/:id/push-to-prod
+ *
+ * Pushes a dev digest to the city's production subdomain by calling the
+ * production /digest/import endpoint. Supported only for managed cities that
+ * use the email-based HMAC auth pattern (Sacramento, Portland, Bulverde,
+ * St. Louis, Brushy Creek, Tokyo). Austin / AustinCares use a password-hash
+ * token that rotates on every deploy and cannot be computed here at runtime.
+ */
+router.post("/digest/:id/push-to-prod", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+
+  const slug = req.tenant!.slug;
+  const prodUrl = `https://${slug}.eventcarpooling.com`;
+
+  // Compute production auth token
+  const token = computeProdToken(slug);
+  if (!token) {
+    res.status(400).json({
+      error: "not_supported",
+      message: `Push-to-prod is not supported for ${slug}. Use the Replit deploy or production dashboard instead.`,
+    });
+    return;
+  }
+
+  // Fetch the dev digest
+  const [digest] = await db
+    .select()
+    .from(digestsTable)
+    .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+    .limit(1);
+
+  if (!digest) {
+    res.status(404).json({ error: "not_found", message: "Digest not found" });
+    return;
+  }
+
+  try {
+    const payload = {
+      weekOf: digest.weekOf instanceof Date ? digest.weekOf.toISOString() : String(digest.weekOf),
+      subject: digest.subject,
+      intro: digest.intro,
+      events: digest.events,
+    };
+
+    // The production URL is a known, trusted endpoint (not user-supplied), so we
+    // call fetch directly. safeOutboundFetch is for user-supplied URLs only.
+    const rawRes = await fetch(`${prodUrl}/api/events/digest/import`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(30000),
+    });
+
+    if (!rawRes.ok) {
+      const errText = await rawRes.text().catch(() => "(no body)");
+      req.log.error({ slug, status: rawRes.status, body: errText }, "push-to-prod failed");
+      res.status(502).json({
+        error: "prod_error",
+        message: `Production returned ${rawRes.status}: ${errText.slice(0, 200)}`,
+      });
+      return;
+    }
+
+    const result = await rawRes.json();
+    req.log.info({ slug, digestId: id }, "Digest pushed to production successfully");
+    res.json({ success: true, prodUrl, result });
+  } catch (err) {
+    req.log.error({ err, slug }, "push-to-prod network error");
+    res.status(502).json({ error: "network_error", message: String(err) });
   }
 });
 

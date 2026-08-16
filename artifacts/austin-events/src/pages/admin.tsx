@@ -293,6 +293,21 @@ export default function AdminDashboard() {
   const [sendDialogGeocov, setSendDialogGeocov] = useState<GeocovData | null>(null);
   const [sendDialogGeocovLoading, setSendDialogGeocovLoading] = useState(false);
 
+  // Production digest status for the Send dialog (all cities)
+  interface ProdStatus {
+    hasDigest: boolean | null;
+    matched: boolean | null;
+    localWeekOf: string | null;
+    prodWeekOf: string | null;
+    prodEventCount?: number;
+    prodUrl: string;
+    canPush: boolean;
+    error?: string;
+  }
+  const [prodStatus, setProdStatus] = useState<ProdStatus | null>(null);
+  const [prodStatusLoading, setProdStatusLoading] = useState(false);
+  const [isPushingToProd, setIsPushingToProd] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     async function loadAdminEmail() {
@@ -761,6 +776,26 @@ export default function AdminDashboard() {
       .finally(() => { if (!cancelled) setSendDialogGeocovLoading(false); });
     return () => { cancelled = true; };
   }, [sendDialogTarget, tenant.slug]);
+
+  // Fetch production digest status when the Send dialog opens (all cities)
+  useEffect(() => {
+    if (sendDialogTarget === null) {
+      setProdStatus(null);
+      return;
+    }
+    let cancelled = false;
+    setProdStatusLoading(true);
+    setProdStatus(null);
+    const token = sessionStorage.getItem("admin_token");
+    fetch(`/api/events/digest/${sendDialogTarget}/prod-status`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (!cancelled && data) setProdStatus(data as any); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setProdStatusLoading(false); });
+    return () => { cancelled = true; };
+  }, [sendDialogTarget]);
 
   const onSend = (digestId: number, isTest: boolean) => {
     send(
@@ -2076,6 +2111,62 @@ export default function AdminDashboard() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-6 space-y-6">
+            {/* Production digest status warning — all cities */}
+            {sendDialogTarget !== null && !prodStatusLoading && prodStatus !== null && prodStatus.matched === false && (
+              <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-red-800 space-y-2">
+                <div className="flex items-start gap-3">
+                  <Globe className="w-4 h-4 mt-0.5 shrink-0 text-red-500" />
+                  <div className="text-sm leading-snug">
+                    {prodStatus.hasDigest === false ? (
+                      <>
+                        <span className="font-semibold">⚠️ {prodStatus.prodUrl.replace("https://", "")} has no published digest</span>
+                        {" "}— visitors who click email links will see an empty site. Push this digest to production first.
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-semibold">⚠️ {prodStatus.prodUrl.replace("https://", "")} is showing a different week</span>
+                        {" "}(prod: <code className="font-mono text-xs">{prodStatus.prodWeekOf ?? "unknown"}</code>, this digest: <code className="font-mono text-xs">{prodStatus.localWeekOf ?? "unknown"}</code>).
+                        {" "}Visitors who click links will land on last week's events. Push to production to sync.
+                      </>
+                    )}
+                  </div>
+                </div>
+                {prodStatus.canPush && (
+                  <div className="pl-7">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-lg gap-1.5 border-red-300 text-red-700 hover:bg-red-100 hover:border-red-400"
+                      disabled={isPushingToProd}
+                      onClick={async () => {
+                        if (!sendDialogTarget) return;
+                        setIsPushingToProd(true);
+                        try {
+                          const token = sessionStorage.getItem("admin_token");
+                          const res = await fetch(`/api/events/digest/${sendDialogTarget}/push-to-prod`, {
+                            method: "POST",
+                            headers: token ? { Authorization: `Bearer ${token}` } : {},
+                          });
+                          const data = await res.json() as { success?: boolean; message?: string };
+                          if (!res.ok) throw new Error(data.message || "Push failed");
+                          toast({ title: "Digest pushed to production! ✓" });
+                          // Mark as matched so the warning clears
+                          setProdStatus(prev => prev ? { ...prev, hasDigest: true, matched: true, prodWeekOf: prev.localWeekOf } : prev);
+                        } catch (err: unknown) {
+                          toast({ variant: "destructive", title: "Push failed", description: err instanceof Error ? err.message : String(err) });
+                        } finally {
+                          setIsPushingToProd(false);
+                        }
+                      }}
+                    >
+                      {isPushingToProd ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Rocket className="w-3.5 h-3.5" />}
+                      {isPushingToProd ? "Pushing…" : "Push to production"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Geocode coverage warning — Austin only */}
             {tenant.slug === "austin" && !sendDialogGeocovLoading && sendDialogGeocov && sendDialogGeocov.missing > 0 && (
               <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
