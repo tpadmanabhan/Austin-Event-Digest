@@ -21,3 +21,5 @@
 - [City branding bleed](city-branding-bleed.md) — "Happy Sunday Austin" / Gmail 🤠 intro leaked into all cities; fixed in generateSampleDigest + events.ts; always audit intros before first send
 - [Geocoding drift](geocoding-drift.md) — venue name–only strings geocode to same-named venues in other cities; re-geocode alone won't fix it; must use full street address + hardcode coords
 - [New city email map checklist](new-city-email-map.md) — new city slug must be in MAP_CENTERS + CITY_LABELS in buildStaticMapSection() or the map is silently dropped from emails
+- [Spotlight endpoint format](spotlight-endpoint.md) — POST /digest/:id/spotlight takes {url, type, title, description}; skill doc's {businessSpotlight,communitySpotlight} shape is wrong
+- [Managed city tenants](managed-city-tenants.md) — brushycreek/bulverde/portland/sacramento don't auto-seed in dev; must INSERT manually; includes dev IDs + Aug 16-22 digest IDs
