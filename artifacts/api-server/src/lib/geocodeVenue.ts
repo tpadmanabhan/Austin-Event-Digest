@@ -1,6 +1,7 @@
 import { db, digestsTable } from "@workspace/db";
 import { sql, eq } from "drizzle-orm";
 import { logger } from "./logger";
+import { isWithinCityBounds } from "./cityBounds";
 
 const NOMINATIM_UA = "EventCarpooling/1.0 (contact@eventcarpooling.com)";
 
@@ -232,8 +233,17 @@ export async function geocodeJapanese(venue: string): Promise<{ lat: number; lng
  * validates every result against the Tokyo regional bbox. Stale cache entries
  * (null — pre-Photon failures, or foreign coords — bad Nominatim matches) are
  * deleted and retried transparently.
+ *
+ * When `citySlug` is provided the returned coordinates are additionally
+ * validated against that city's bounding radius.  If the geocoder returns a
+ * location outside the radius (e.g. "Portland" resolving to Portland, TX
+ * instead of Portland, OR) the coordinates are rejected and null is returned
+ * so the bad pin is never stored.
  */
-export async function geocodeVenue(venueText: string): Promise<{ lat: number | null; lng: number | null }> {
+export async function geocodeVenue(
+  venueText: string,
+  citySlug?: string,
+): Promise<{ lat: number | null; lng: number | null }> {
   const clean = venueText.trim();
   if (!clean) return { lat: null, lng: null };
 
@@ -241,11 +251,22 @@ export async function geocodeVenue(venueText: string): Promise<{ lat: number | n
   if (cached.found) {
     if (containsCJK(clean)) {
       if (isCJKCacheValid(cached.lat, cached.lng)) {
-        return { lat: cached.lat, lng: cached.lng };
+        // CJK cache valid — still check city bounds before returning
+        if (cached.lat != null && cached.lng != null && citySlug && !isWithinCityBounds(citySlug, cached.lat, cached.lng)) {
+          logger.warn({ venue: clean, citySlug, lat: cached.lat, lng: cached.lng }, "Cached CJK geocode rejected — outside city bounds");
+          await cacheDelete(clean);
+        } else {
+          return { lat: cached.lat, lng: cached.lng };
+        }
+      } else {
+        // Stale or foreign — delete entry and fall through to fresh geocode
+        await cacheDelete(clean);
       }
-      // Stale or foreign — delete entry and fall through to fresh geocode
-      await cacheDelete(clean);
     } else {
+      if (cached.lat != null && cached.lng != null && citySlug && !isWithinCityBounds(citySlug, cached.lat, cached.lng)) {
+        logger.warn({ venue: clean, citySlug, lat: cached.lat, lng: cached.lng }, "Cached geocode rejected — outside city bounds");
+        return { lat: null, lng: null };
+      }
       return { lat: cached.lat, lng: cached.lng };
     }
   }
@@ -257,6 +278,11 @@ export async function geocodeVenue(venueText: string): Promise<{ lat: number | n
     coords = await nominatim(clean);
   }
 
+  if (coords && citySlug && !isWithinCityBounds(citySlug, coords.lat, coords.lng)) {
+    logger.warn({ venue: clean, citySlug, lat: coords.lat, lng: coords.lng }, "Geocode rejected — outside city bounds; storing null");
+    await cacheSet(clean, null, null);
+    return { lat: null, lng: null };
+  }
   await cacheSet(clean, coords?.lat ?? null, coords?.lng ?? null);
   return { lat: coords?.lat ?? null, lng: coords?.lng ?? null };
 }
@@ -269,9 +295,12 @@ export async function geocodeVenue(venueText: string): Promise<{ lat: number | n
  * - Events with no venue or already-set coordinates are passed through unchanged.
  * - For CJK venues, stale/foreign cache entries are invalidated and retried.
  * - Any per-event error leaves the event unmodified (never drops an event).
+ * - When `citySlug` is provided, coordinates outside the city's bounding radius
+ *   are nulled out so bad geocodes never reach the map.
  */
 export async function geocodeEvents(
   events: Array<Record<string, unknown>>,
+  citySlug?: string,
 ): Promise<Array<Record<string, unknown>>> {
   let needsDelay = false;
   const result: Array<Record<string, unknown>> = [];
@@ -279,8 +308,23 @@ export async function geocodeEvents(
   for (const event of events) {
     const venue = typeof event["venue"] === "string" ? event["venue"].trim() : "";
 
-    // Skip: no venue, or valid coordinates already present (not null)
-    if (!venue || (event["lat"] !== undefined && event["lat"] !== null)) {
+    // Skip events with no venue; but for events that already have coordinates,
+    // still validate them against city bounds when a slug is provided — this
+    // catches source-provided or previously stored out-of-bounds pins.
+    if (!venue) {
+      result.push(event);
+      continue;
+    }
+    if (event["lat"] !== undefined && event["lat"] !== null) {
+      if (citySlug) {
+        const eLat = event["lat"] as number;
+        const eLng = event["lng"] as number;
+        if (eLng != null && !isWithinCityBounds(citySlug, eLat, eLng)) {
+          logger.warn({ venue, citySlug, lat: eLat, lng: eLng }, "Existing event coords rejected — outside city bounds");
+          result.push({ ...event, lat: null, lng: null });
+          continue;
+        }
+      }
       result.push(event);
       continue;
     }
@@ -290,14 +334,31 @@ export async function geocodeEvents(
       if (cached.found) {
         if (containsCJK(venue)) {
           if (isCJKCacheValid(cached.lat, cached.lng)) {
-            // Valid cached Tokyo coords — use directly
-            result.push({ ...event, lat: cached.lat, lng: cached.lng });
+            // Valid cached CJK coords — check city bounds before using
+            let lat = cached.lat;
+            let lng = cached.lng;
+            if (lat != null && lng != null && citySlug && !isWithinCityBounds(citySlug, lat, lng)) {
+              logger.warn({ venue, citySlug, lat, lng }, "Cached CJK geocode rejected — outside city bounds");
+              await cacheDelete(venue);
+              lat = null;
+              lng = null;
+              result.push({ ...event, lat, lng });
+            } else {
+              result.push({ ...event, lat, lng });
+            }
             continue;
           }
           // Stale null or foreign coords — invalidate and re-geocode below
           await cacheDelete(venue);
         } else {
-          result.push({ ...event, lat: cached.lat, lng: cached.lng });
+          let lat = cached.lat;
+          let lng = cached.lng;
+          if (lat != null && lng != null && citySlug && !isWithinCityBounds(citySlug, lat, lng)) {
+            logger.warn({ venue, citySlug, lat, lng }, "Cached geocode rejected — outside city bounds");
+            lat = null;
+            lng = null;
+          }
+          result.push({ ...event, lat, lng });
           continue;
         }
       }
@@ -316,9 +377,16 @@ export async function geocodeEvents(
         coords = await nominatim(venue);
       }
 
-      await cacheSet(venue, coords?.lat ?? null, coords?.lng ?? null);
-      result.push({ ...event, lat: coords?.lat ?? null, lng: coords?.lng ?? null });
-      logger.debug({ venue, found: !!coords, cjk: containsCJK(venue) }, "Geocoded venue");
+      let lat = coords?.lat ?? null;
+      let lng = coords?.lng ?? null;
+      if (lat != null && lng != null && citySlug && !isWithinCityBounds(citySlug, lat, lng)) {
+        logger.warn({ venue, citySlug, lat, lng }, "Geocode rejected — outside city bounds; storing null");
+        lat = null;
+        lng = null;
+      }
+      await cacheSet(venue, lat, lng);
+      result.push({ ...event, lat, lng });
+      logger.debug({ venue, citySlug, found: !!coords, accepted: lat != null, cjk: containsCJK(venue) }, "Geocoded venue");
     } catch (err) {
       logger.warn({ venue, err }, "Geocoding error — event kept without coordinates");
       result.push(event);
@@ -332,15 +400,21 @@ export async function geocodeEvents(
  * Geocode all events in a stored digest and update the DB row in place.
  * Intended to be called fire-and-forget after a digest is inserted so the
  * generate/import endpoints are not blocked by Nominatim latency.
+ *
+ * Pass `citySlug` so that out-of-bounds geocodes are rejected before storage.
  */
-export async function geocodeAndPatchDigest(digestId: number, events: Array<Record<string, unknown>>): Promise<void> {
+export async function geocodeAndPatchDigest(
+  digestId: number,
+  events: Array<Record<string, unknown>>,
+  citySlug?: string,
+): Promise<void> {
   try {
-    const geocoded = await geocodeEvents(events);
+    const geocoded = await geocodeEvents(events, citySlug);
     await db
       .update(digestsTable)
       .set({ events: geocoded as any })
       .where(eq(digestsTable.id, digestId));
-    logger.info({ digestId, total: events.length }, "Geocode patch complete");
+    logger.info({ digestId, total: events.length, citySlug }, "Geocode patch complete");
   } catch (err) {
     logger.warn({ digestId, err }, "geocodeAndPatchDigest failed");
   }

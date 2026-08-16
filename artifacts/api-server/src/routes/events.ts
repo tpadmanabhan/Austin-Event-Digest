@@ -20,6 +20,7 @@ import { requireAdmin } from "../middleware/requireAdmin";
 import { awardXP } from "../lib/gamification";
 import { extractEventsFromSources } from "../lib/urlEventExtractor";
 import { geocodeAndPatchDigest, geocodeEvents, geocodeVenue } from "../lib/geocodeVenue";
+import { isWithinCityBounds } from "../lib/cityBounds";
 import { safeOutboundFetch } from "../lib/safeOutboundFetch";
 import { prewarmTranslationCache } from "../lib/translationPrewarm";
 import { signSubscriberToken } from "../lib/subscriberToken";
@@ -373,7 +374,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     res.json(response);
 
     // Geocode venue coordinates in the background (fire-and-forget)
-    geocodeAndPatchDigest(digest.id, taggedEvents as Array<Record<string, unknown>>).catch(() => {});
+    geocodeAndPatchDigest(digest.id, taggedEvents as Array<Record<string, unknown>>, req.tenant!.slug).catch(() => {});
 
     // Award XP for each event in the digest and update the weekly streak (fire-and-forget)
     const eventCount = events.length;
@@ -476,7 +477,7 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
     }
     res.json({ success: true, digest: digestToApi(updated) });
     // Geocode any events that are missing coordinates (fire-and-forget)
-    geocodeAndPatchDigest(id, taggedEvents as Array<Record<string, unknown>>).catch(() => {});
+    geocodeAndPatchDigest(id, taggedEvents as Array<Record<string, unknown>>, req.tenant!.slug).catch(() => {});
   } catch (err) {
     req.log.error({ err }, "Error updating digest events");
     res.status(500).json({ error: "server_error", message: "Failed to update digest events" });
@@ -789,7 +790,7 @@ router.post("/digest/:id/scrape-event", requireAdmin, async (req, res) => {
     let lat: number | null = null;
     let lng: number | null = null;
     if (venue) {
-      const coords = await geocodeVenue(venue);
+      const coords = await geocodeVenue(venue, req.tenant!.slug);
       lat = coords.lat;
       lng = coords.lng;
     }
@@ -897,7 +898,7 @@ router.post("/digest/:id/regeocoded", requireAdmin, async (req, res) => {
     }
     const events = (digest.events as Array<Record<string, unknown>>) || [];
     // Fire-and-forget — geocodeEvents skips events that already have lat set
-    geocodeAndPatchDigest(id, events).catch(() => {});
+    geocodeAndPatchDigest(id, events, req.tenant!.slug).catch(() => {});
     res.json({ success: true, message: "Geocoding started" });
   } catch (err) {
     req.log.error({ err }, "Error starting re-geocode");
@@ -946,7 +947,7 @@ router.patch("/digest/:id/events/:idx", requireAdmin, async (req, res) => {
       delete updatedEvent["lat"];
       delete updatedEvent["lng"];
       // Geocode the new venue synchronously so the response includes fresh coords
-      const geocoded = await geocodeEvents([updatedEvent]);
+      const geocoded = await geocodeEvents([updatedEvent], req.tenant!.slug);
       updatedEvent = geocoded[0] ?? updatedEvent;
     }
 
@@ -1016,13 +1017,19 @@ router.patch("/digest/:id/events/:idx/venue", requireAdmin, async (req, res) => 
     delete updatedEvent["lng"];
 
     // Geocode just this single event (synchronous so the response includes fresh coords)
-    const geocoded = await geocodeEvents([updatedEvent]);
+    const geocoded = await geocodeEvents([updatedEvent], req.tenant!.slug);
     const geocodedEvent = geocoded[0] ?? updatedEvent;
 
     // If geocoding returned null coords (e.g. Japanese venue names unresolvable by Nominatim),
-    // restore the original coordinates so hardcoded map pins are not lost
+    // restore the prior coordinates — but only when they are valid for this city.
+    // Out-of-bounds prior coords must NOT be reinstated; they are exactly the bad state this task eliminates.
+    const priorCoordsAreValid =
+      existingLat != null &&
+      typeof existingLat === "number" &&
+      typeof existingLng === "number" &&
+      isWithinCityBounds(req.tenant!.slug, existingLat, existingLng as number);
     const finalEvent: Record<string, unknown> =
-      (geocodedEvent["lat"] == null && geocodedEvent["lng"] == null && existingLat != null)
+      (geocodedEvent["lat"] == null && geocodedEvent["lng"] == null && priorCoordsAreValid)
         ? { ...geocodedEvent, lat: existingLat, lng: existingLng }
         : geocodedEvent;
 
@@ -1166,7 +1173,7 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
     }
 
     // Geocode venue coordinates in the background (fire-and-forget)
-    geocodeAndPatchDigest(digest.id, (digest.events as Array<Record<string, unknown>>)).catch(() => {});
+    geocodeAndPatchDigest(digest.id, (digest.events as Array<Record<string, unknown>>), req.tenant!.slug).catch(() => {});
 
     if (finalEvents.length > 0) {
       awardXP(req.tenant!.id, "digest_event", finalEvents.length * 5, { digestId: digest.id, eventCount: finalEvents.length }).catch(() => {});
@@ -1211,7 +1218,7 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
     res.json(response);
 
     // Geocode venue coordinates in the background (fire-and-forget)
-    geocodeAndPatchDigest(digest.id, taggedImportEvents as Array<Record<string, unknown>>).catch(() => {});
+    geocodeAndPatchDigest(digest.id, taggedImportEvents as Array<Record<string, unknown>>, req.tenant!.slug).catch(() => {});
 
     // Pre-translate event titles + descriptions for Tokyo so first page
     // load is instant instead of waiting on OpenAI (fire-and-forget)

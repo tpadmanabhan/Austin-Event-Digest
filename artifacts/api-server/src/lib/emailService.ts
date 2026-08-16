@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import OpenAI from "openai";
 import { logger } from "./logger";
 import { isAdultContent } from "./contentFilter";
+import { MAP_CENTERS, CITY_LABELS, haversineMiles } from "./cityBounds";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
@@ -386,40 +387,9 @@ function buildStaticMapSection(
   siteUrl: string | undefined,
   digestId: number | undefined
 ): string {
-  const MAP_CENTERS: Record<string, { lat: number; lng: number }> = {
-    austin:      { lat: 30.267, lng: -97.743 },
-    austincares: { lat: 30.267, lng: -97.743 },
-    brushycreek: { lat: 30.508, lng: -97.679 },
-    bulverde:    { lat: 29.747, lng: -98.446 },
-    portland:    { lat: 45.523, lng: -122.676 },
-    sacramento:  { lat: 38.575, lng: -121.479 },
-    stlouis:     { lat: 38.627, lng: -90.197 },
-    tokyo:       { lat: 35.676, lng: 139.650 },
-    dc:          { lat: 38.907, lng: -77.037 },
-  };
-  const CITY_LABELS: Record<string, string> = {
-    austin:      "Austin",
-    austincares: "Austin",
-    brushycreek: "Round Rock / Brushy Creek",
-    bulverde:    "Bulverde",
-    portland:    "Portland",
-    sacramento:  "Sacramento",
-    stlouis:     "St. Louis",
-    tokyo:       "Tokyo",
-    dc:          "Washington, DC",
-  };
   if (!slug || !(slug in MAP_CENTERS)) return "";
 
   const center = MAP_CENTERS[slug];
-
-  // Haversine distance in miles — used to discard geocoding drift
-  const haversineMiles = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 3958.8;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  };
   const MAX_MAP_RADIUS_MILES = 150;
 
   const geocoded = events.filter(

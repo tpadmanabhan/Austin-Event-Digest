@@ -254,7 +254,7 @@ describe("geocodeEvents — CJK cache invalidation", () => {
     expect(result[0]?.lng).toBeCloseTo(TOKYO.lng, 2);
   });
 
-  it("skips geocoding for an event that already has valid coords", async () => {
+  it("skips geocoding for an event that already has valid coords (no citySlug)", async () => {
     vi.stubGlobal("fetch", vi.fn());
 
     const events = [{ title: "Austin Show", venue: "Austin Venue", lat: 30.2672, lng: -97.7431 }];
@@ -270,5 +270,156 @@ describe("geocodeEvents — CJK cache invalidation", () => {
     const result = await geocodeEvents(events);
     expect(result[0]?.lat).toBeNull();
     expect(mockExecute).not.toHaveBeenCalled();
+  });
+});
+
+// Portland, TX coords (correct city name, wrong state — real geocoding drift scenario)
+const PORTLAND_TX = { lat: 27.8911, lng: -97.3244 };
+// Portland, OR coords (correct)
+const PORTLAND_OR = { lat: 45.5231, lng: -122.6765 };
+// Austin, TX coords
+const AUSTIN_TX = { lat: 30.2672, lng: -97.7431 };
+
+describe("geocodeVenue — city-bounds validation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("rejects a fresh Nominatim result outside the city bounds and stores null", async () => {
+    // Cache miss
+    mockExecute
+      .mockResolvedValueOnce({ rows: [] })  // cacheGet: miss
+      .mockResolvedValueOnce({});           // cacheSet(null)
+
+    // Nominatim returns Portland, TX instead of Portland, OR
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
+      nominatimResponse([{ lat: String(PORTLAND_TX.lat), lon: String(PORTLAND_TX.lng) }])
+    ));
+
+    const result = await geocodeVenue("Portland Venue", "portland");
+    expect(result.lat).toBeNull();
+    expect(result.lng).toBeNull();
+  });
+
+  it("accepts a fresh Nominatim result that is within city bounds", async () => {
+    mockExecute
+      .mockResolvedValueOnce({ rows: [] })  // cacheGet: miss
+      .mockResolvedValueOnce({});           // cacheSet
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
+      nominatimResponse([{ lat: String(PORTLAND_OR.lat), lon: String(PORTLAND_OR.lng) }])
+    ));
+
+    const result = await geocodeVenue("Revolution Hall", "portland");
+    expect(result.lat).toBeCloseTo(PORTLAND_OR.lat, 2);
+    expect(result.lng).toBeCloseTo(PORTLAND_OR.lng, 2);
+  });
+
+  it("rejects a cached result that is outside the city bounds (no HTTP call)", async () => {
+    // Cache hit with Portland, TX coords
+    mockExecute.mockResolvedValueOnce({ rows: [{ lat: PORTLAND_TX.lat, lng: PORTLAND_TX.lng }] });
+
+    vi.stubGlobal("fetch", vi.fn());
+
+    const result = await geocodeVenue("Some Venue", "portland");
+    expect(result.lat).toBeNull();
+    expect(result.lng).toBeNull();
+    // No HTTP call needed — rejected at cache-read time
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+
+  it("accepts a cached result within the city bounds", async () => {
+    mockExecute.mockResolvedValueOnce({ rows: [{ lat: AUSTIN_TX.lat, lng: AUSTIN_TX.lng }] });
+
+    vi.stubGlobal("fetch", vi.fn());
+
+    const result = await geocodeVenue("Austin Convention Center", "austin");
+    expect(result.lat).toBeCloseTo(AUSTIN_TX.lat, 2);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+
+  it("allows any coords when no citySlug is provided (backwards-compatible)", async () => {
+    mockExecute.mockResolvedValueOnce({ rows: [] });  // cache miss
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
+      nominatimResponse([{ lat: String(PORTLAND_TX.lat), lon: String(PORTLAND_TX.lng) }])
+    ));
+    // Second call for cacheSet
+    mockExecute.mockResolvedValueOnce({});
+
+    const result = await geocodeVenue("Anywhere Venue");
+    // Without a slug, no bounds check — coords are returned as-is
+    expect(result.lat).toBeCloseTo(PORTLAND_TX.lat, 2);
+  });
+});
+
+describe("geocodeEvents — city-bounds validation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("nulls existing non-null coords that are outside the city bounds", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+
+    // Event already has Portland, TX coords stored — should be rejected for Portland, OR city
+    const events = [{ title: "Anthony Green", venue: "Portland Venue", lat: PORTLAND_TX.lat, lng: PORTLAND_TX.lng }];
+    const result = await geocodeEvents(events, "portland");
+    expect(result[0]?.lat).toBeNull();
+    expect(result[0]?.lng).toBeNull();
+    // No HTTP call or DB call — rejected purely by bounds check
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+    expect(mockExecute).not.toHaveBeenCalled();
+  });
+
+  it("preserves existing coords that are within city bounds", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+
+    const events = [{ title: "Local Show", venue: "Portland Venue", lat: PORTLAND_OR.lat, lng: PORTLAND_OR.lng }];
+    const result = await geocodeEvents(events, "portland");
+    expect(result[0]?.lat).toBeCloseTo(PORTLAND_OR.lat, 2);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+
+  it("nulls out-of-bounds cached coords when geocoding a new venue", async () => {
+    // Cache returns Portland, TX for a Portland, OR city
+    mockExecute.mockResolvedValueOnce({ rows: [{ lat: PORTLAND_TX.lat, lng: PORTLAND_TX.lng }] });
+
+    vi.stubGlobal("fetch", vi.fn());
+
+    const events = [{ title: "Show", venue: "Weird Venue" }];
+    const result = await geocodeEvents(events, "portland");
+    expect(result[0]?.lat).toBeNull();
+    expect(result[0]?.lng).toBeNull();
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+
+  it("nulls out-of-bounds fresh Nominatim result when geocoding a new venue", async () => {
+    mockExecute
+      .mockResolvedValueOnce({ rows: [] })  // cache miss
+      .mockResolvedValueOnce({});           // cacheSet(null)
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
+      nominatimResponse([{ lat: String(PORTLAND_TX.lat), lon: String(PORTLAND_TX.lng) }])
+    ));
+
+    const events = [{ title: "Show", venue: "Some Portland Venue" }];
+    const result = await geocodeEvents(events, "portland");
+    expect(result[0]?.lat).toBeNull();
+    expect(result[0]?.lng).toBeNull();
+  });
+
+  it("accepts in-bounds fresh Nominatim result", async () => {
+    mockExecute
+      .mockResolvedValueOnce({ rows: [] })  // cache miss
+      .mockResolvedValueOnce({});           // cacheSet
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(
+      nominatimResponse([{ lat: String(PORTLAND_OR.lat), lon: String(PORTLAND_OR.lng) }])
+    ));
+
+    const events = [{ title: "Show", venue: "Revolution Hall Portland" }];
+    const result = await geocodeEvents(events, "portland");
+    expect(result[0]?.lat).toBeCloseTo(PORTLAND_OR.lat, 2);
+    expect(result[0]?.lng).toBeCloseTo(PORTLAND_OR.lng, 2);
   });
 });
