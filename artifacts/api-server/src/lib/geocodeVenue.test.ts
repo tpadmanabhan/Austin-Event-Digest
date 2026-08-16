@@ -43,7 +43,7 @@ import { isInTokyoRegion, containsCJK, geocodeJapanese, geocodeVenue, geocodeEve
 import { db } from "@workspace/db";
 
 // Convenience: typed reference to the db.execute mock
-const mockExecute = db.execute as MockInstance;
+const mockExecute = db.execute as unknown as MockInstance;
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

@@ -656,7 +656,7 @@ router.post("/send-test-welcome", requireAdmin, async (req, res) => {
     res.status(400).json({ error: "invalid_request", message: "email is required" });
     return;
   }
-  await sendWelcomeEmail(email, name ?? null);
+  await sendWelcomeEmail(email, name ?? null, req.tenant ?? null);
   res.json({ success: true, sentTo: email });
 });
 

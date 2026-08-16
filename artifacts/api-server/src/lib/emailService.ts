@@ -181,6 +181,16 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 </html>`;
   }
 
+  // Per-city header theme for the welcome email
+  const isAustin = !tenant?.slug || tenant.slug === "austin";
+  const welcomeHeaderGradient = isAustin
+    ? "linear-gradient(135deg,#1c1917 0%,#292524 60%,#3b1f0a 100%)"
+    : "linear-gradient(135deg,#1e293b 0%,#334155 55%,#475569 100%)";
+  const welcomeHeaderTitleColor = isAustin ? "#fbbf24" : "#f1f5f9";
+  const welcomeHeaderEmoji = isAustin ? "🤠" : "📅";
+  const welcomeCtaBg = isAustin ? "#fbbf24" : "#3b82f6";
+  const welcomeCtaColor = isAustin ? "#1c1917" : "#ffffff";
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -192,9 +202,9 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
   <div style="max-width:580px;margin:0 auto;padding:32px 16px;">
 
     <!-- Header -->
-    <div style="background:linear-gradient(135deg,#1c1917 0%,#292524 60%,#3b1f0a 100%);border-radius:20px;padding:40px 32px 32px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;">
-      <div style="font-size:44px;margin-bottom:8px;line-height:1;">🤠</div>
-      <h1 style="margin:0 0 6px;color:#fbbf24;font-size:28px;font-weight:800;letter-spacing:-0.5px;">${escapeHtml(digestName)}</h1>
+    <div style="background:${welcomeHeaderGradient};border-radius:20px;padding:40px 32px 32px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;">
+      <div style="font-size:44px;margin-bottom:8px;line-height:1;">${welcomeHeaderEmoji}</div>
+      <h1 style="margin:0 0 6px;color:${welcomeHeaderTitleColor};font-size:28px;font-weight:800;letter-spacing:-0.5px;">${escapeHtml(digestName)}</h1>
       <p style="margin:0;color:#a8a29e;font-size:14px;letter-spacing:0.5px;text-transform:uppercase;">Weekly Digest · ${escapeHtml(cityLabel)}</p>
     </div>
 
@@ -228,7 +238,7 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 
       <!-- CTA -->
       <div style="text-align:center;">
-        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#fbbf24;color:#1c1917;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">${tenant?.slug === "austincares" ? "Browse this week's deals →" : "Browse this week's events →"}</a>
+        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:${welcomeCtaBg};color:${welcomeCtaColor};font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">${tenant?.slug === "austincares" ? "Browse this week's deals →" : "Browse this week's events →"}</a>
       </div>
     </div>
 
@@ -247,13 +257,22 @@ export async function sendWelcomeEmail(to: string, name?: string | null, tenant?
   const html = buildWelcomeEmailHtml(name, tenant, to);
   const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
   const isTokyoTenant = tenant?.slug === "tokyo";
+  const isAustinTenant = !tenant?.slug || tenant.slug === "austin";
   const subject = isTokyoTenant
     ? `登録完了！🗼 ${tenant?.digestTitle || "東京イベント週刊ダイジェスト"}`
-    : `You're in! 🤠 Welcome to ${digestName}`;
+    : isAustinTenant
+      ? `You're in! 🤠 Welcome to ${digestName}`
+      : `You're in! Welcome to ${digestName}`;
+  // Use the tenant's digest name as the From display name so recipients see
+  // "Portland Events" not "Raj's Austin Events" in their inbox.
+  const fromName = isTokyoTenant
+    ? (tenant?.digestTitle || "東京イベント週刊ダイジェスト")
+    : digestName;
   const result = await sendEmail({
     to,
     subject,
     html,
+    fromName,
   });
   if (result.success) {
     logger.info({ to }, "Welcome email sent");
@@ -673,28 +692,51 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(52,211,153,0.2)",
     rideBtnBg: "#6ee7b7",
     rideBtnColor: "#064e3b",
-  } : {
-    headerGradient: "linear-gradient(135deg, #064e3b 0%, #065f46 55%, #047857 100%)",
-    primary: "#15803d",
-    primaryBtn: "#15803d",
-    primaryDark: "#064e3b",
-    primaryLight: "#d1fae5",
-    primaryMuted: "#a7f3d0",
-    textOnDark: "#ecfdf5",
-    textMutedOnDark: "#a7f3d0",
-    textStrong: "#ecfdf5",
-    linkColor: "#15803d",
+  } : slug === "austin" ? {
+    headerGradient: "linear-gradient(135deg, #1c1917 0%, #292524 60%, #3b1f0a 100%)",
+    primary: "#d97706",
+    primaryBtn: "#fbbf24",
+    primaryDark: "#1c1917",
+    primaryLight: "#fef9c3",
+    primaryMuted: "#fde68a",
+    textOnDark: "#fbbf24",
+    textMutedOnDark: "#a8a29e",
+    textStrong: "#fbbf24",
+    linkColor: "#d97706",
     curatorName: "Raj",
     curatorUrl: "https://customersuccessforgood.com/",
-    cityGuideText: `Your weekly guide to what's happening in ${tenant?.city?.split(",")[0] || "Austin"}`,
-    digestDisplayName: tenant?.digestTitle || tenant?.name || "Raj's Austin Events",
+    cityGuideText: "Your weekly guide to what's happening in Austin",
+    digestDisplayName: tenant?.digestTitle || "Raj's Austin Events",
     headerEmoji: "🤠",
-    eventBtnColor: "#22c55e",
-    eventBtnBorder: "#22c55e",
-    pillText: "rgba(167,243,208,0.9)",
-    pillBorder: "rgba(52,211,153,0.2)",
-    rideBtnBg: "#6ee7b7",
-    rideBtnColor: "#064e3b",
+    eventBtnColor: "#fbbf24",
+    eventBtnBorder: "#d97706",
+    pillText: "rgba(254,249,195,0.9)",
+    pillBorder: "rgba(251,191,36,0.35)",
+    rideBtnBg: "#fbbf24",
+    rideBtnColor: "#1c1917",
+  } : {
+    // Generic fallback — no city-specific branding
+    headerGradient: "linear-gradient(135deg, #1e293b 0%, #334155 55%, #475569 100%)",
+    primary: "#3b82f6",
+    primaryBtn: "#3b82f6",
+    primaryDark: "#1e293b",
+    primaryLight: "#eff6ff",
+    primaryMuted: "#bfdbfe",
+    textOnDark: "#f1f5f9",
+    textMutedOnDark: "#cbd5e1",
+    textStrong: "#ffffff",
+    linkColor: "#60a5fa",
+    curatorName: "",
+    curatorUrl: null as string | null,
+    cityGuideText: `Your weekly guide to what's happening in ${tenant?.city?.split(",")[0] || tenant?.name || "your city"}`,
+    digestDisplayName: tenant?.digestTitle || tenant?.name || "Weekly Events Digest",
+    headerEmoji: "📅",
+    eventBtnColor: "#3b82f6",
+    eventBtnBorder: "#3b82f6",
+    pillText: "rgba(239,246,255,0.9)",
+    pillBorder: "rgba(59,130,246,0.35)",
+    rideBtnBg: "#93c5fd",
+    rideBtnColor: "#1e293b",
   };
 
   const unsubscribeUrl = digest.siteUrl && subscriberEmail
@@ -882,10 +924,10 @@ export function buildDigestEmailHtml(digest: {
     
     <!-- Header -->
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
-      <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:#fbbf24; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:#fbbf24;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
+      <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:${theme.textOnDark}; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:${theme.textOnDark};">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
       <div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
-        <div style="display:inline-block; background:#fbbf24; border-radius:6px; padding:2px 8px;">
-          <span style="color:#1c1917; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase;">Beta</span>
+        <div style="display:inline-block; background:${theme.primaryBtn}; border-radius:6px; padding:2px 8px;">
+          <span style="color:${theme.primaryDark}; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase;">Beta</span>
         </div>
       </div>
       <p style="margin:0; color:${theme.textOnDark}; font-size:14px;">${theme.cityGuideText}</p>
@@ -901,8 +943,8 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Location CTA -->
     ${digest.preferencesUrl ? `
-    <div style="background:#fef9ec; border:1.5px solid #fbbf24; border-radius:14px; padding:18px 22px; margin-bottom:24px; text-align:center;">
-      <a href="${escapeHtml(digest.preferencesUrl)}" style="color:#1c1917; text-decoration:none; font-size:16px; font-weight:700; letter-spacing:-0.2px;">📍 See events near you →</a>
+    <div style="background:${theme.primaryLight}; border:1.5px solid ${theme.primaryBtn}; border-radius:14px; padding:18px 22px; margin-bottom:24px; text-align:center;">
+      <a href="${escapeHtml(digest.preferencesUrl)}" style="color:${theme.primaryDark}; text-decoration:none; font-size:16px; font-weight:700; letter-spacing:-0.2px;">📍 See events near you →</a>
       <p style="margin:6px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Set your neighborhood once — get distance-sorted events every week.</p>
     </div>` : ""}
 
