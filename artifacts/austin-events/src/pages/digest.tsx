@@ -51,21 +51,67 @@ const MONTH_MAP: Record<string, number> = {
   Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
 };
 
-function isEventTodayOrLater(dateStr: string, event?: any): boolean {
+// Sunday=0 … Saturday=6 — matches both abbreviations and full names
+const WEEKDAY_MAP: Record<string, number> = {
+  Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+  Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6,
+};
+
+/**
+ * Returns true if the event date is today or in the future.
+ *
+ * Year inference: pick the year (anchor−1, anchor, anchor+1) that places the
+ * event date closest to the digest's weekOf anchor. This handles all
+ * cross-year boundaries without hard-coded month thresholds — e.g. a Dec 21
+ * digest with a Jan 10 featured event picks 2026, not 2025.
+ *
+ * Weekday-only labels ("Sunday at 6:30 AM") are resolved against weekOf so
+ * that recurring events stored without a full date are filtered correctly.
+ */
+function isEventTodayOrLater(dateStr: string, event?: any, weekOf?: string): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
   if (event?.dailyUntil) {
     const until = new Date(event.dailyUntil + "T00:00:00");
     return until >= today;
   }
-  const match = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
-  if (!match) return true;
-  const key = match[1].substring(0, 3);
-  const month = MONTH_MAP[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()];
-  if (month === undefined) return true;
-  const day = parseInt(match[2], 10);
-  const eventDate = new Date(today.getFullYear(), month, day);
-  return eventDate >= today;
+
+  const anchor = weekOf ? new Date(weekOf.substring(0, 10) + "T00:00:00") : today;
+
+  // ── Month-based dates ("Aug 14", "Sunday, Aug 14 at 7pm", etc.) ──────────
+  const monthMatch = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
+  if (monthMatch) {
+    const key = monthMatch[1].substring(0, 3);
+    const month = MONTH_MAP[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()];
+    if (month === undefined) return true;
+    const day = parseInt(monthMatch[2], 10);
+    const anchorYear = anchor.getFullYear();
+    const candidates = [-1, 0, 1].map(offset => new Date(anchorYear + offset, month, day));
+    const eventDate = candidates.reduce((best, d) =>
+      Math.abs(d.getTime() - anchor.getTime()) < Math.abs(best.getTime() - anchor.getTime()) ? d : best
+    );
+    return eventDate >= today;
+  }
+
+  // ── Weekday-only labels ("Sunday at 6:30 AM", "Monday") ─────────────────
+  if (weekOf) {
+    const wdMatch = dateStr.match(/\b(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sun|Mon|Tue|Wed|Thu|Fri|Sat)\b/i);
+    if (wdMatch) {
+      const raw = wdMatch[1];
+      const normalized = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      const weekday = WEEKDAY_MAP[normalized] ?? WEEKDAY_MAP[normalized.substring(0, 3)];
+      if (weekday !== undefined) {
+        const weekStart = new Date(weekOf.substring(0, 10) + "T00:00:00");
+        const eventDate = new Date(weekStart);
+        eventDate.setDate(weekStart.getDate() + weekday);
+        return eventDate >= today;
+      }
+    }
+  }
+
+  // No recognisable date → keep
+  return true;
 }
 
 function getEventDateRange(events: any[]): string {
@@ -519,11 +565,17 @@ export default function DigestView() {
           const isAdult = (e: any) => { const t = `${e.title ?? ""} ${e.description ?? ""}`.toLowerCase(); return adultBlocklist.some(p => t.includes(p.toLowerCase())); };
           const communityPosts = digest.events.filter((e: any) => e.isPost === true && !isAdult(e));
           const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true && !isAdult(e));
+          const staleCount = digest.events.filter((e: any) =>
+            !e.isPost &&
+            !e.isBusinessSpotlight &&
+            !isAdult(e) &&
+            !isEventTodayOrLater(e.date, e, digest.weekOf)
+          ).length;
           const upcomingEvents = digest.events.filter((e: any) =>
             !e.isPost &&
             !e.isBusinessSpotlight &&
             !isAdult(e) &&
-            isEventTodayOrLater(e.date, e)
+            isEventTodayOrLater(e.date, e, digest.weekOf)
           );
           const catFiltered = categoryFilter === "All"
             ? upcomingEvents
@@ -568,7 +620,7 @@ export default function DigestView() {
                     🗺️ This week on the map
                   </h2>
                   <EventMap
-                    events={(digest.events as any[]).filter((e: any) => !isAdult(e))}
+                    events={upcomingEvents}
                     center={mapCenter}
                     radiusMiles={30}
                     height={400}
@@ -736,11 +788,18 @@ export default function DigestView() {
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
                     {geoActive ? jt("Events — Nearest First", JA.eventsNearestFirst) : jt("This Week's Curated Events", JA.thisWeeksCuratedEvents)}
                   </h2>
-                  {dimmedByRadius > 0 && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
-                      📍 {dimmedByRadius} event{dimmedByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {staleCount > 0 && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
+                        🕐 {staleCount} past event{staleCount !== 1 ? "s" : ""} hidden
+                      </span>
+                    )}
+                    {dimmedByRadius > 0 && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
+                        📍 {dimmedByRadius} event{dimmedByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
