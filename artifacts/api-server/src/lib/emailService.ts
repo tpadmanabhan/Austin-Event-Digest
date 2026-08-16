@@ -318,11 +318,26 @@ function safeHref(url: string | null | undefined): string | null {
   return null;
 }
 
-export function buildRsvpUrl(siteUrl: string, digestId: number, eventTitle: string, subscriberEmail: string, subscriberName?: string | null): string {
-  const { signRsvpParams } = require("./rsvpToken") as typeof import("./rsvpToken");
+export function buildRsvpUrl(siteUrl: string, digestId: number, eventTitle: string, subscriberEmail: string, subscriberName?: string | null, weekOf?: Date | string | null): string {
+  const { signRsvpParams, signRsvpParamsByWeek } = require("./rsvpToken") as typeof import("./rsvpToken");
   const e = Buffer.from(eventTitle).toString("base64url");
   const em = Buffer.from(subscriberEmail).toString("base64url");
   const n = subscriberName ? `&n=${Buffer.from(subscriberName).toString("base64url")}` : "";
+
+  // When weekOf is available, use it as the stable digest identifier so that
+  // RSVP links work regardless of which environment (dev vs prod) sent the email.
+  // Dev and prod have different numeric digest IDs for the same week, but share
+  // the same weekOf date. The production RSVP route resolves the week to its own ID.
+  if (weekOf) {
+    const weekStr = weekOf instanceof Date
+      ? weekOf.toISOString().substring(0, 10)
+      : String(weekOf).substring(0, 10);
+    const sig = signRsvpParamsByWeek(weekStr, eventTitle, subscriberEmail);
+    const s = sig ? `&s=${sig}` : "";
+    return `${siteUrl}/rsvp?w=${encodeURIComponent(weekStr)}&e=${e}&em=${em}${n}${s}`;
+  }
+
+  // Legacy: numeric digest ID (used when weekOf is unavailable)
   const sig = signRsvpParams(digestId, eventTitle, subscriberEmail, subscriberName);
   const s = sig ? `&s=${sig}` : "";
   return `${siteUrl}/rsvp?d=${digestId}&e=${e}&em=${em}${n}${s}`;
@@ -748,7 +763,7 @@ export function buildDigestEmailHtml(digest: {
 
   const buildEventCard = (event: (typeof digest.events)[number], featured = false) => {
     const rsvpLink = digest.digestId && digest.siteUrl && subscriberEmail
-      ? buildRsvpUrl(digest.siteUrl, digest.digestId, event.title, subscriberEmail, subscriberName)
+      ? buildRsvpUrl(digest.siteUrl, digest.digestId, event.title, subscriberEmail, subscriberName, digest.weekOf)
       : null;
 
     const safeLink = safeHref(event.link);

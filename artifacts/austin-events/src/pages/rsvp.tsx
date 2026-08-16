@@ -17,7 +17,10 @@ function decodeParam(val: string | null): string {
 
 export default function RsvpPage() {
   const params = new URLSearchParams(window.location.search);
-  const digestId = parseInt(params.get("d") || "");
+  // New-style links use w= (weekOf date, stable across dev/prod)
+  // Legacy links use d= (numeric digest ID, dev-only)
+  const weekOf = params.get("w") || undefined;
+  const digestId = !weekOf ? parseInt(params.get("d") || "") : NaN;
   const eventTitle = decodeParam(params.get("e"));
   const email = decodeParam(params.get("em"));
   const name = decodeParam(params.get("n"));
@@ -29,7 +32,7 @@ export default function RsvpPage() {
   const [count, setCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const hasValidParams = !!(digestId && eventTitle && (email || !sig));
+  const hasValidParams = !!((weekOf || digestId) && eventTitle && (email || !sig));
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +43,8 @@ export default function RsvpPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        digestId,
+        // Send weekOf for new-style links; digestId for legacy links
+        ...(weekOf ? { weekOf } : { digestId }),
         eventTitle,
         email: emailInput.trim(),
         name: nameInput.trim() || undefined,

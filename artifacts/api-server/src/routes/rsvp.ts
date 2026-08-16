@@ -1,17 +1,20 @@
 import { Router, type IRouter } from "express";
 import { db, rsvpsTable, subscribersTable, digestsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { sendRsvpNotification, sendRsvpGroupNotification, sendCarpoolAdminNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
-import { verifyRsvpSignature } from "../lib/rsvpToken";
+import { verifyRsvpSignature, verifyRsvpSignatureByWeek } from "../lib/rsvpToken";
 import { awardXP } from "../lib/gamification";
 
 const router: IRouter = Router();
 
 router.post("/", async (req, res) => {
-  const { digestId, eventTitle, email, name, captchaToken, sig } = req.body ?? {};
+  const { digestId, weekOf: weekOfParam, eventTitle, email, name, captchaToken, sig } = req.body ?? {};
 
-  if (!digestId || typeof digestId !== "number" || !eventTitle || !email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+  const hasDigestId = typeof digestId === "number" && digestId > 0;
+  const hasWeekOf = typeof weekOfParam === "string" && /^\d{4}-\d{2}-\d{2}/.test(weekOfParam);
+
+  if ((!hasDigestId && !hasWeekOf) || !eventTitle || !email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
     res.status(400).json({ error: "invalid_request", message: "Invalid RSVP data" });
     return;
   }
@@ -32,10 +35,19 @@ router.post("/", async (req, res) => {
   let verifiedBySignature = false;
 
   if (hasSig) {
-    // HMAC path: signature covers digestId, eventTitle, email, and name — so name is integrity-protected.
-    if (!verifyRsvpSignature(digestId, eventTitle, normalizedEmail, name, sig)) {
-      res.status(403).json({ error: "invalid_signature", message: "Invalid RSVP link. Please use the link from your email." });
-      return;
+    if (hasWeekOf) {
+      // weekOf-based signature: stable across dev/prod environments
+      const weekStr = (weekOfParam as string).substring(0, 10);
+      if (!verifyRsvpSignatureByWeek(weekStr, eventTitle, normalizedEmail, sig)) {
+        res.status(403).json({ error: "invalid_signature", message: "Invalid RSVP link. Please use the link from your email." });
+        return;
+      }
+    } else {
+      // Legacy: numeric digestId-based HMAC signature
+      if (!verifyRsvpSignature(digestId, eventTitle, normalizedEmail, name, sig)) {
+        res.status(403).json({ error: "invalid_signature", message: "Invalid RSVP link. Please use the link from your email." });
+        return;
+      }
     }
     verifiedBySignature = true;
   } else {
@@ -50,11 +62,28 @@ router.post("/", async (req, res) => {
   const tenantId = req.tenant!.id;
 
   try {
-    const [digest] = await db
-      .select()
-      .from(digestsTable)
-      .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, tenantId)))
-      .limit(1);
+    // Resolve digest: weekOf-based lookup (stable across environments) or legacy numeric ID
+    let digest;
+    if (hasWeekOf) {
+      const weekStr = (weekOfParam as string).substring(0, 10);
+      [digest] = await db
+        .select()
+        .from(digestsTable)
+        .where(and(
+          eq(digestsTable.tenantId, tenantId),
+          sql`DATE(${digestsTable.weekOf}) = ${weekStr}::date`,
+        ))
+        .limit(1);
+    } else {
+      [digest] = await db
+        .select()
+        .from(digestsTable)
+        .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, tenantId)))
+        .limit(1);
+    }
+    // Resolved numeric ID used for all subsequent DB operations
+    const resolvedDigestId: number = digest?.id ?? digestId;
+
     if (!digest) {
       res.status(404).json({ error: "not_found", message: "Digest not found" });
       return;
@@ -78,7 +107,7 @@ router.post("/", async (req, res) => {
       .from(rsvpsTable)
       .where(and(
         eq(rsvpsTable.tenantId, tenantId),
-        eq(rsvpsTable.digestId, digestId),
+        eq(rsvpsTable.digestId, resolvedDigestId),
         eq(rsvpsTable.eventTitle, eventTitle),
         eq(rsvpsTable.email, normalizedEmail),
       ))
@@ -98,13 +127,13 @@ router.post("/", async (req, res) => {
         .from(rsvpsTable)
         .where(and(
           eq(rsvpsTable.tenantId, tenantId),
-          eq(rsvpsTable.digestId, digestId),
+          eq(rsvpsTable.digestId, resolvedDigestId),
           eq(rsvpsTable.eventTitle, eventTitle),
         ));
 
       await db.insert(rsvpsTable).values({
         tenantId,
-        digestId,
+        digestId: resolvedDigestId,
         eventTitle,
         email: normalizedEmail,
         name: resolvedName,
@@ -165,11 +194,11 @@ router.post("/", async (req, res) => {
         newsletterName: req.tenant!.name,
       }).catch(() => {});
 
-      req.log.info({ email: normalizedEmail, eventTitle, digestId, carpoolMatches: priorRsvps.length, verifiedBySignature }, "RSVP recorded");
+      req.log.info({ email: normalizedEmail, eventTitle, digestId: resolvedDigestId, carpoolMatches: priorRsvps.length, verifiedBySignature }, "RSVP recorded");
       // Award +10 XP per carpool RSVP. All events are eligible — no featured flag exists.
       // updateStreak is called inside awardXP for "rsvp" before badge check so that
       // streak-based badges (on_a_roll, streak_master) see the fresh streak count.
-      awardXP(tenantId, "rsvp", 10, { eventTitle, digestId }).catch(() => {});
+      awardXP(tenantId, "rsvp", 10, { eventTitle, digestId: resolvedDigestId }).catch(() => {});
     }
 
     const totalRsvps = await db
@@ -177,7 +206,7 @@ router.post("/", async (req, res) => {
       .from(rsvpsTable)
       .where(and(
         eq(rsvpsTable.tenantId, tenantId),
-        eq(rsvpsTable.digestId, digestId),
+        eq(rsvpsTable.digestId, resolvedDigestId),
         eq(rsvpsTable.eventTitle, eventTitle),
       ));
 
