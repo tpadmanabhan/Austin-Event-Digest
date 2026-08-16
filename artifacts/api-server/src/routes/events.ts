@@ -722,6 +722,78 @@ router.post("/digest/:id/regeocoded", requireAdmin, async (req, res) => {
   }
 });
 
+// PATCH /digest/:id/events/:idx — update individual fields on a single event (title, date, venue, category, description)
+router.patch("/digest/:id/events/:idx", requireAdmin, async (req, res) => {
+  const id = parseInt(req.params["id"] as string, 10);
+  const idx = parseInt(req.params["idx"] as string, 10);
+  if (isNaN(id) || isNaN(idx)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id or event index" });
+    return;
+  }
+  const body = (req.body || {}) as Record<string, unknown>;
+  const allowedFields = ["title", "date", "venue", "category", "description"];
+  const updates: Record<string, unknown> = {};
+  for (const f of allowedFields) {
+    if (typeof body[f] === "string") updates[f] = (body[f] as string).trim();
+  }
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: "invalid_request", message: "At least one of title, date, venue, category, description is required" });
+    return;
+  }
+  try {
+    const [digest] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .limit(1);
+    if (!digest) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+    const events = (digest.events as Array<Record<string, unknown>>) || [];
+    if (idx < 0 || idx >= events.length) {
+      res.status(400).json({ error: "invalid_request", message: "Event index out of range" });
+      return;
+    }
+
+    let updatedEvent: Record<string, unknown> = { ...events[idx], ...updates };
+
+    // If venue changed, clear stale geocoords so they get refreshed
+    if (updates["venue"] !== undefined && updates["venue"] !== events[idx]?.["venue"]) {
+      delete updatedEvent["lat"];
+      delete updatedEvent["lng"];
+      // Geocode the new venue synchronously so the response includes fresh coords
+      const geocoded = await geocodeEvents([updatedEvent]);
+      updatedEvent = geocoded[0] ?? updatedEvent;
+    }
+
+    const finalEvents = [
+      ...events.slice(0, idx),
+      updatedEvent,
+      ...events.slice(idx + 1),
+    ];
+
+    const taggedEvents = autoTagFutureEvents(finalEvents as EventItem[], new Date(digest.weekOf));
+
+    const [updated] = await db
+      .update(digestsTable)
+      .set({ events: taggedEvents as any })
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "not_found", message: "Digest not found after update" });
+      return;
+    }
+
+    req.log.info({ digestId: id, idx, fields: Object.keys(updates) }, "Event fields patched");
+    res.json({ success: true, event: updatedEvent, digest: digestToApi(updated) });
+  } catch (err) {
+    req.log.error({ err }, "Error patching event fields");
+    res.status(500).json({ error: "server_error", message: "Failed to update event" });
+  }
+});
+
 // PATCH /digest/:id/events/:idx/venue — update a single event's venue and re-geocode it synchronously
 router.patch("/digest/:id/events/:idx/venue", requireAdmin, async (req, res) => {
   const id = parseInt(req.params["id"] as string, 10);

@@ -545,27 +545,26 @@ export default function AdminDashboard() {
   };
 
   const onSaveEventFields = async (digestId: number, eventIdx: number) => {
-    const digest = (digestsData as any)?.digests?.find((d: any) => d.id === digestId);
-    if (!digest) return;
     setIsSavingEvent(true);
     try {
-      const events = (digest.events as any[]).map((ev: any, idx: number) =>
-        idx === eventIdx
-          ? {
-              ...ev,
-              title: eventEditFields.title.trim() || ev.title,
-              date: eventEditFields.date.trim() || ev.date,
-              venue: eventEditFields.venue.trim() !== "" ? eventEditFields.venue.trim() : ev.venue,
-              category: eventEditFields.category || ev.category,
-              description: eventEditFields.description.trim() !== "" ? eventEditFields.description.trim() : ev.description,
-            }
-          : ev
-      );
+      // Build only the fields that were actually changed
+      const body: Record<string, string> = {};
+      if (eventEditFields.title.trim()) body.title = eventEditFields.title.trim();
+      if (eventEditFields.date.trim()) body.date = eventEditFields.date.trim();
+      if (eventEditFields.venue.trim() !== "") body.venue = eventEditFields.venue.trim();
+      if (eventEditFields.category) body.category = eventEditFields.category;
+      if (eventEditFields.description.trim() !== "") body.description = eventEditFields.description.trim();
+
+      if (Object.keys(body).length === 0) {
+        setEditingEvent(null);
+        return;
+      }
+
       const token = sessionStorage.getItem("admin_token");
-      const res = await fetch(`/api/events/digest/${digestId}/events`, {
+      const res = await fetch(`/api/events/digest/${digestId}/events/${eventIdx}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ events }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error("Failed");
       queryClient.invalidateQueries({ queryKey: ["digests"] });
@@ -1473,15 +1472,9 @@ export default function AdminDashboard() {
                                                 className="w-full h-7 text-xs rounded-md border border-input bg-background px-2 focus:outline-none focus:ring-1 focus:ring-ring"
                                               >
                                                 <option value="">— keep current —</option>
-                                                <option value="Arts">Arts</option>
-                                                <option value="Sports">Sports</option>
-                                                <option value="Tech">Tech</option>
-                                                <option value="Tech & Business">Tech & Business</option>
-                                                <option value="Wellness">Wellness</option>
-                                                <option value="Civics">Civics</option>
-                                                <option value="Community">Community</option>
-                                                <option value="Entertainment">Entertainment</option>
-                                                <option value="Food & Drink">Food & Drink</option>
+                                                {tenant.categories.map(cat => (
+                                                  <option key={cat} value={cat}>{cat}</option>
+                                                ))}
                                               </select>
                                             </div>
                                           </div>
