@@ -94,26 +94,27 @@ for i, e in enumerate(events):
 ```
 
 Watch for:
-- **Duplicate spotlights** — same `link` appearing twice with different titles (e.g. one real title + one generic "Global AI startup based in Tokyo"). Keep the first, remove the second via index in the patched events array.
+- **Duplicate spotlights by link** — same `link` appearing twice with different titles (e.g. one real title + one generic "Global AI startup based in Tokyo"). Keep the first, remove the second.
+- **Duplicate spotlights by title** — same title appearing twice even with different/null links (e.g. "Second Harvest Japan" appearing in both the first import and a carry-forward). Deduplicate by title for `isPost` entries too.
 - **Placeholder/template descriptions** — WordPress/Avada demo copy like *"Create a cutting-edge website for cryptocurrency services with Avada…"* indicates the description was never properly filled in. Replace with accurate copy.
 - **HTML entities in titles** — data from WordPress-based sites often contains `&#8211;` (en-dash), `&#8217;` (right quote), etc. Decode with `html.unescape()` before storing.
 
-**Fix:** Fetch all events, filter/edit in Python, write to temp file, PATCH back:
-```python
-import html as html_lib
-for e in events:
-    if e.get('isBusinessSpotlight'):
-        e['title'] = html_lib.unescape(e['title'])  # decode &#8211; → –
-# Remove duplicates: filter out any isBusinessSpotlight with same link as a previous one
-seen_links = set()
-fixed = []
-for e in events:
-    key = e.get('link') if (e.get('isBusinessSpotlight') or e.get('isPost')) else None
-    if key and key in seen_links:
-        continue  # drop duplicate spotlight
-    if key:
-        seen_links.add(key)
-    fixed.append(e)
+**Fix:** Fetch all events, filter/edit in JS, PATCH back:
+```js
+// Deduplicate spotlights by title (for isPost) and by link (for isBusinessSpotlight)
+const seenTitles = new Set();
+const seenLinks = new Set();
+const fixed = events.filter(e => {
+  if (e.isPost) {
+    if (seenTitles.has(e.title)) return false;
+    seenTitles.add(e.title);
+  }
+  if (e.isBusinessSpotlight && e.link) {
+    if (seenLinks.has(e.link)) return false;
+    seenLinks.add(e.link);
+  }
+  return true;
+});
 ```
 
 ## Step 5: Geocode Events (Do Before Sending)
@@ -138,14 +139,15 @@ Venue name–only strings like `"Atomic Lounge, St. Louis"` can silently geocode
 ```python
 # Approximate bounding boxes (lat_min, lat_max, lng_min, lng_max)
 CITY_BOUNDS = {
-  "austin":     (29.8, 30.6, -98.1, -97.4),
-  "stlouis":    (37.0, 40.0, -96.0, -88.0),
-  "sacramento": (38.3, 38.8, -121.7, -121.2),
-  "portland":   (45.2, 45.8, -122.9, -122.3),
-  "bulverde":   (29.5, 30.1, -98.6, -98.0),
-  "brushycreek":(30.4, 30.7, -97.9, -97.5),
-  "tokyo":      (35.5, 35.9, 139.5, 140.0),
-  "dc":         (38.5, 39.2, -77.5, -76.7),
+  "austin":      (29.8, 30.7, -98.2, -97.4),
+  "austincares": (29.8, 30.7, -98.2, -97.4),
+  "stlouis":     (38.4, 38.9, -90.6, -90.0),
+  "sacramento":  (38.4, 38.7, -121.6, -121.2),
+  "portland":    (45.3, 45.7, -122.9, -122.3),
+  "bulverde":    (29.3, 30.4, -98.8, -98.0),  # expanded — includes San Antonio metro
+  "brushycreek": (30.3, 30.8, -98.0, -97.4),
+  "tokyo":       (35.4, 35.9, 139.4, 139.9),
+  "dc":          (38.7, 39.1, -77.5, -76.8),  # expanded west — includes Reston/N. Virginia
 }
 # Flag any event whose lat/lng falls outside the city box
 ```
@@ -154,7 +156,43 @@ CITY_BOUNDS = {
 1. Update the event's `venue` to include a full street address (e.g. `"4140 Manchester Ave, St. Louis, MO 63110"` not just `"Atomic Cowboy, St. Louis"`)
 2. Null out `lat`/`lng` on the bad events and PATCH the digest
 3. Trigger `POST /api/events/digest/:id/regeocoded`
-4. **If the geocoder still drifts** (same venue name exists in multiple cities — e.g. "Atomic Cowboy" in both St. Louis and Denver), hardcode the correct coordinates directly via PATCH instead of relying on re-geocoding
+4. **If the geocoder still drifts** (same venue name exists in multiple cities — e.g. "Crest Theater" exists in both Sacramento and LA), hardcode the correct coordinates directly via PATCH instead of relying on re-geocoding
+
+### Name-Only Venue Hardcoding
+
+Nominatim frequently fails on name-only venue strings like `"Dante's, Portland"` or `"Golden 1 Center, Sacramento"`. The geocoder either returns nothing or picks a same-named venue in the wrong city. When a venue can't be geocoded by address enrichment, hardcode coordinates directly:
+
+```js
+// In a PATCH loop — match by venue string fragment, set known coords
+const VENUE_COORDS = {
+  // Portland
+  "Dante's":                      [45.5231, -122.6784],
+  "McMenamins Crystal Ballroom":  [45.5230, -122.6869],
+  "Providence Park":              [45.5215, -122.6921],
+  // Sacramento
+  "Golden 1 Center":              [38.5805, -121.4994],
+  "Crest Theater, Sacramento":    [38.5806, -121.4961],
+  // St. Louis
+  "Atomic Garage":                [38.6301, -90.2510],
+  "The Golden Record":            [38.6270, -90.2160],
+  // DC
+  "STATION DC":                   [38.9037, -77.0013],
+  "Lakewood Country Club":        [39.0590, -77.1540],
+  // Austin
+  "Q2 Stadium":                   [30.3877, -97.7195],
+  "Stubb's Indoors":              [30.2669, -97.7363],
+  // Add as needed — store in the PATCH loop, not in DB
+};
+
+events = events.map(e => {
+  for (const [key, [lat, lng]] of Object.entries(VENUE_COORDS)) {
+    if ((e.venue || "").includes(key)) return { ...e, lat, lng };
+  }
+  return e;
+});
+```
+
+For city-level-only addresses (e.g. `"Sacramento, CA"`, `"Midtown Sacramento, CA"`) that can never be geocoded to a point, apply a city-center fallback pin so the event appears on the map rather than being invisible.
 
 ```python
 # Hardcode correct coords when geocoder can't disambiguate
@@ -280,6 +318,24 @@ Look for "Austin" or "🤠" in non-Austin city intros. If found, PATCH with a ci
 - `artifacts/api-server/src/lib/digestGenerator.ts` → `generateSampleDigest(weekOf, customNotes, tenant)` — city-aware fallback intro/subject
 - `artifacts/api-server/src/routes/events.ts` → generate endpoint, line `introBase` — Gmail intro gated to Austin
 - `artifacts/api-server/src/lib/emailService.ts` → AustinCares promo block, subject emoji map
+
+## ⚠️ Carry-Forward Leak: Austin Sample Events in Non-Austin Digests
+
+`generateSampleDigest()` fallback events (Barton Springs Sunday Swim, South Congress Farmers Market, Alamo Drafthouse, Austin City Limits Live) can end up as `featured: true` in any city's digest — the carry-forward mechanism then propagates them into the next week's digest for that same city. This has been observed in Tokyo and Brushy Creek.
+
+**After generating any non-Austin digest, always check for Austin venue bleed:**
+
+```js
+const AUSTIN_LEAKS = ['Barton Springs', 'South Congress Farmers Market', 'Alamo Drafthouse', 'Austin City Limits Live'];
+const leaked = events.filter(e => AUSTIN_LEAKS.some(t => (e.title || '').includes(t)));
+if (leaked.length) {
+  console.log('REMOVE THESE:', leaked.map(e => e.title));
+  events = events.filter(e => !AUSTIN_LEAKS.some(t => (e.title || '').includes(t)));
+  // PATCH back without these events
+}
+```
+
+Also check for events with "Various East Austin Locations" or "East Austin Studio Tour" in non-Austin digests — these are Austin-area multi-venue events that may carry forward incorrectly.
 
 ## Carry-Forward of Manually-Curated Featured Events
 

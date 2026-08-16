@@ -52,6 +52,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **Special features:** Uses BCRR-specific layout (variable named `isAustinCares` in `layout.tsx`/`home.tsx` checks `slug === "brushycreek"` — intentional naming, not a bug; renders BCRR Weekly Digest header and custom hero)
 - **Layout:** Generic `home.tsx` but BCRR-styled via `isAustinCares` flag
 - **Community events:** None defined — uses Austin metro Ticketmaster (Sports focus)
+- **⚠️ Carry-forward leak:** Austin sample events (Barton Springs, Alamo Drafthouse, ACL Live, South Congress Farmers Market, East Austin Studio Tour) have been found as carry-forward entries in Brushy Creek digests. Always filter these out after generating — they don't belong in a Round Rock/Cedar Park digest.
 
 ### 🌄 Bulverde (`bulverde.eventcarpooling.com`)
 - **Auth:** Email-based HMAC (null passwordHash)
@@ -60,6 +61,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **Special features:** None beyond standard platform; custom logo/layout ordering
 - **Layout:** Generic `home.tsx`
 - **Community events:** River Walk, Pearl Farmers Market, Bulverde Community Market, San Antonio Museum of Art, Comal County Civic Forum, Geekdom SA Tech Meetup, La Villita Night Market
+- **⚠️ Geocoding bounds:** Bulverde serves the San Antonio metro — geocoding bounds extend to include SA (lat 29.3–30.4, lng -98.8 to -98.0). Name-only SA venues (Laugh Out Loud Comedy Club, Nelson Wolff Stadium, La Villita, Geekdom) require hardcoded coords — Nominatim can't find them from name alone.
 
 ### 🗼 Tokyo (`tokyo.eventcarpooling.com`) — See `tokyo-digest` skill
 - **Auth:** Email-based HMAC (null passwordHash in both dev and prod) — prod ID 8, dev ID 4
@@ -67,6 +69,8 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **Language:** English + Japanese (toggle available; Japanese strings in `i18n/ja.ts`)
 - **Special features:** AI translation of event titles/descriptions on digest import (prewarm via slug check, not hardcoded ID); language toggle persists globally as `ec-lang`
 - **Layout:** Generic `home.tsx` with Japanese-specific hero/category styling
+- **Japanese translation coverage:** `translateEvent()` is called on all card types — regular events, featured/amber-framed events, Business Spotlight, Community Spotlight. Section headers ("Business Spotlight" → "ビジネススポットライト"), button labels ("Visit Website" → "ウェブサイトを見る", "Apply Now" → "今すぐ申し込む") are also translated via `jt()` + `JA.*`.
+- **⚠️ Carry-forward leak:** Austin sample events (Barton Springs, Alamo Drafthouse, ACL Live) have been found as carry-forward `featured: true` entries in Tokyo digests. Always check for and remove Austin-venue events after generating or importing a Tokyo digest.
 
 ### 🏛️ DC (`dc.eventcarpooling.com`)
 - **Auth:** Email-based HMAC (null passwordHash)

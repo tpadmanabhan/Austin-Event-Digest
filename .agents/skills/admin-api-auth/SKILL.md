@@ -27,7 +27,9 @@ const token = crypto.createHmac("sha256", passwordHash).update("admin-session").
 
 ## ⚠️ Dev vs Production Tokens Are Different
 
-The dev database and the production (Neon) database have **different passwordHash values** for the same tenant. Always fetch the hash from the database you are targeting. **Never reuse a token across sessions** — password hashes can be updated.
+The dev database and the production (Neon) database have **different passwordHash values** for the same tenant. Always fetch the hash from the database you are targeting. **Never reuse a token across sessions** — password hashes are updated on every deploy.
+
+> **Deploy-rotation gotcha (Austin/AustinCares):** The password_hash for Austin and AustinCares changes on every Replit deploy because the server re-hashes the admin password at startup. A stale token returns 401 on PATCH/POST endpoints but will silently succeed on public GET endpoints (which don't require auth) — so a successful GET doesn't mean your token is valid. **Always re-query the prod DB and recompute the token before any write operation in a new session.**
 
 **For dev API calls** (`http://localhost:$PORT/...`):
 ```sql
@@ -89,8 +91,8 @@ Authorization: Bearer <token>
 
 | City | Slug | Pattern | Notes |
 |------|------|---------|-------|
-| Austin | `austin` | Password-hash | **Always query prod DB for fresh hash** — hash changes when password is updated |
-| AustinCares | `austincares` | Password-hash | **Always query prod DB for fresh hash** |
+| Austin | `austin` | Password-hash | **Always query prod DB for fresh hash — rotates on every deploy** |
+| AustinCares | `austincares` | Password-hash | **Always query prod DB for fresh hash — rotates on every deploy** |
 | Tokyo | `tokyo` | Email-based (null passwordHash in both dev and prod) | Prod ID 8; dev ID 4 |
 | Sacramento | `sacramento` | Email-based | null passwordHash |
 | Portland | `portland` | Email-based | null passwordHash |

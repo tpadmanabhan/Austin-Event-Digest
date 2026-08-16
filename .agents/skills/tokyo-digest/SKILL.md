@@ -84,15 +84,59 @@ Watch for:
 - **Placeholder descriptions** — WordPress/Avada demo copy ("Create a cutting-edge website for cryptocurrency services with Avada…") means the description was never updated; replace with accurate copy
 - **HTML entities in titles** — WordPress-sourced data often contains `&#8211;` (en-dash), `&#8217;` (apostrophe), etc. Decode with Python's `html.unescape()` before storing
 
+## Japanese Translation Coverage (home.tsx)
+
+As of the current code, Japanese translation applies to:
+
+| Element | How |
+|---------|-----|
+| Event titles + descriptions (regular events) | `translateEvent()` called on each `EventCard` |
+| Event titles + descriptions (featured/amber-framed events) | `translateEvent()` called before `EventCard` |
+| Business Spotlight title + description | `translateEvent(bizRaw)` — fixed; was missing before |
+| Community Spotlight title + description | `translateEvent(postRaw)` — fixed; was missing before |
+| Section headers ("Business Spotlight", "Community Spotlight") | `jt("Business Spotlight", JA.businessSpotlight)` |
+| Badge labels inside card header bars | Same `jt()` call |
+| "Visit Website" button | `jt("Visit Website", JA.visitWebsite)` |
+| "Apply Now" button | `jt("Apply Now", JA.applyNow)` |
+| "Apply by [date]" | `jt("Apply by X", JA.applyBy(date))` |
+| "Special Event" badge | `jt("Special Event", JA.specialEvent)` |
+| Category filter labels | `catLabel()` using `JA_CAT` map |
+| Hero copy + curator quote | `jt()` + `JA.*` throughout |
+
+**JA strings in `ja.ts`** (full list as of current code):
+- `businessSpotlight`, `communitySpotlight`, `visitWebsite`, `applyNow`, `applyBy(date)`
+- `specialEvent`, `bestOf`, `stopScrolling`, `startExperiencing`, `heroSubtext`, `curatorQuote`
+- `subscribe`, `catAll/Tech/Arts/Sports/Civics/Wellness`
+- `noEvents(cat)`, `checkBack(cat)`, `viewAllEvents`
+- `subscribeHeading`, `subscribeSubtext`
+
+The translation cache (`homeTranslatedMap`) batches ALL events including spotlights and posts — so translations are already available when `translateEvent()` is called on spotlight cards. No cache changes needed.
+
+## Duplicate Spotlight / Post Dedup
+
+Tokyo's digest has had "Second Harvest Japan" appear twice as a community post (isPost: true) — once from a direct PATCH and once carried forward. Always check by **title** (not just link) before sending:
+
+```js
+const seenTitles = new Set();
+const deduped = events.filter(e => {
+  if (!e.isPost) return true;
+  if (seenTitles.has(e.title)) return false;
+  seenTitles.add(e.title);
+  return true;
+});
+```
+
 ## Known Issues / Watch Points
 
 - **Language persistence is global** — if a user toggles to Japanese on Tokyo and then visits Austin, Austin may show partial Japanese UI if any key happens to have a Japanese variant. Only Tokyo has full Japanese translation coverage.
 - **Translation cache** — `ANY(${array})` syntax is broken in Drizzle's `sql` template for this use case; the translation cache uses a workaround (single batched frontend call). Do not change the cache query pattern without verifying the fix still works.
 - **Generating Tokyo digests falls back to Austin sample events** — Ticketmaster returns 0 results for Tokyo, Japan with the current adapter. `generateSampleDigest()` now generates a city-specific *intro* ("Hey Tokyo!") but the fallback *event list* still contains Austin venues (Barton Springs, ACL Live, etc.). Do NOT push these to production. Use the import endpoint with curated Tokyo events instead (Task #117 tracks the underlying fix).
+- **Carry-forward leak** — Austin sample events (Barton Springs, Alamo Drafthouse, ACL Live) have appeared as `featured: true` carry-forwards in Tokyo digests. After generating or importing a Tokyo digest, always check for and remove any events with Austin venue names. See the "Carry-Forward Leak" section in the `digest-workflow` skill.
 
 ## Relevant Files
 
-- `artifacts/austin-events/src/i18n/ja.ts` — static Japanese UI strings
+- `artifacts/austin-events/src/i18n/ja.ts` — static Japanese UI strings (includes spotlight labels)
+- `artifacts/austin-events/src/pages/home.tsx` — `translateEvent()` calls for all card types
 - `artifacts/austin-events/src/contexts/lang-context.tsx` — language context
 - `artifacts/austin-events/src/contexts/language-context.tsx` — secondary language context
 - `artifacts/api-server/src/routes/events.ts` — translation prewarm on import (search `slug === "tokyo"`)

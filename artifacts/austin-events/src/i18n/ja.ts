@@ -25,6 +25,13 @@ export const JA = {
   // Event badges
   specialEvent:       "注目イベント",
 
+  // Spotlight section headers & labels
+  businessSpotlight:  "ビジネススポットライト",
+  communitySpotlight: "コミュニティスポットライト",
+  visitWebsite:       "ウェブサイトを見る",
+  applyNow:           "今すぐ申し込む",
+  applyBy:            (date: string) => `申込締切: ${date}`,
+
   // Empty state
   noEvents:           (cat: string) => `今週の${cat}イベントはありません`,
   checkBack:          (cat: string) => `次号で${cat}のイベントをお楽しみに`,
