@@ -480,24 +480,29 @@ export default function AustinCaresDeals() {
               I run a business →
             </button>
           </div>
-          {/* Day strip */}
+          {/* Day strip — today's pill is highlighted automatically */}
           <div style={{ display: "flex", gap: 8, marginTop: 40, flexWrap: "wrap" as const }}>
-            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => (
-              <div
-                key={day}
-                style={{
-                  background: i === 0 ? C.char : C.paper,
-                  border: `1px solid ${i === 0 ? C.char : C.line}`,
-                  borderRadius: 11,
-                  padding: "9px 15px",
-                  fontSize: 13.5,
-                  fontWeight: 600,
-                  color: i === 0 ? C.paper : C.muted,
-                }}
-              >
-                {day}
-              </div>
-            ))}
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => {
+              // getDay(): 0=Sun…6=Sat → shift so Mon=0…Sun=6
+              const todayIdx = (new Date().getDay() + 6) % 7;
+              const active = i === todayIdx;
+              return (
+                <div
+                  key={day}
+                  style={{
+                    background: active ? C.char : C.paper,
+                    border: `1px solid ${active ? C.char : C.line}`,
+                    borderRadius: 11,
+                    padding: "9px 15px",
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                    color: active ? C.paper : C.muted,
+                  }}
+                >
+                  {day}
+                </div>
+              );
+            })}
           </div>
         </div>
       </header>
