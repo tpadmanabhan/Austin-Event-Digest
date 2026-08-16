@@ -9,7 +9,7 @@
  *  - geocodeEvents skips valid coords; invalidates null/foreign CJK cache entries
  */
 
-import { describe, it, expect, vi, beforeEach, type MockInstance } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ── Mocks must be hoisted before the module under test is imported ──────────
 
@@ -43,7 +43,7 @@ import { isInTokyoRegion, containsCJK, geocodeJapanese, geocodeVenue, geocodeEve
 import { db } from "@workspace/db";
 
 // Convenience: typed reference to the db.execute mock
-const mockExecute = db.execute as unknown as MockInstance;
+const mockExecute = vi.mocked(db.execute);
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -168,9 +168,9 @@ describe("geocodeVenue — stale cache invalidation", () => {
   it("invalidates a stale foreign (Seoul) cache entry and re-geocodes via Photon", async () => {
     // cacheGet returns Seoul coords (stale bad Nominatim match)
     mockExecute
-      .mockResolvedValueOnce({ rows: [{ lat: 37.5665, lng: 126.9780 }] }) // cacheGet: Seoul ← stale
-      .mockResolvedValueOnce({})                                            // cacheDelete
-      .mockResolvedValueOnce({});                                           // cacheSet
+      .mockResolvedValueOnce({ rows: [{ lat: 37.5665, lng: 126.9780 }] } as any) // cacheGet: Seoul ← stale
+      .mockResolvedValueOnce({} as any)                                            // cacheDelete
+      .mockResolvedValueOnce({} as any);                                           // cacheSet
 
     const fetchMock = vi
       .fn()
@@ -191,9 +191,9 @@ describe("geocodeVenue — stale cache invalidation", () => {
   it("invalidates a null cache entry (pre-Photon failure) and re-geocodes", async () => {
     // cacheGet returns null (Nominatim previously found nothing; Photon wasn't tried)
     mockExecute
-      .mockResolvedValueOnce({ rows: [{ lat: null, lng: null }] }) // cacheGet: null ← stale
-      .mockResolvedValueOnce({})                                    // cacheDelete
-      .mockResolvedValueOnce({});                                   // cacheSet
+      .mockResolvedValueOnce({ rows: [{ lat: null, lng: null }] } as any) // cacheGet: null ← stale
+      .mockResolvedValueOnce({} as any)                                    // cacheDelete
+      .mockResolvedValueOnce({} as any);                                   // cacheSet
 
     const fetchMock = vi
       .fn()
@@ -209,7 +209,7 @@ describe("geocodeVenue — stale cache invalidation", () => {
   });
 
   it("returns valid cached Tokyo coords without any HTTP call", async () => {
-    mockExecute.mockResolvedValueOnce({ rows: [{ lat: TOKYO.lat, lng: TOKYO.lng }] });
+    mockExecute.mockResolvedValueOnce({ rows: [{ lat: TOKYO.lat, lng: TOKYO.lng }] } as any);
 
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
@@ -221,7 +221,7 @@ describe("geocodeVenue — stale cache invalidation", () => {
 
   it("returns cached coords for non-CJK venues without geographic validation", async () => {
     // Non-CJK venues bypass the Tokyo bbox check entirely
-    mockExecute.mockResolvedValueOnce({ rows: [{ lat: 30.2672, lng: -97.7431 }] }); // Austin
+    mockExecute.mockResolvedValueOnce({ rows: [{ lat: 30.2672, lng: -97.7431 }] } as any); // Austin
 
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
@@ -239,9 +239,9 @@ describe("geocodeEvents — CJK cache invalidation", () => {
 
   it("invalidates null CJK cache for an event with lat=null and resolves via Photon", async () => {
     mockExecute
-      .mockResolvedValueOnce({ rows: [{ lat: null, lng: null }] }) // cacheGet: null
-      .mockResolvedValueOnce({})                                    // cacheDelete
-      .mockResolvedValueOnce({});                                   // cacheSet
+      .mockResolvedValueOnce({ rows: [{ lat: null, lng: null }] } as any) // cacheGet: null
+      .mockResolvedValueOnce({} as any)                                    // cacheDelete
+      .mockResolvedValueOnce({} as any);                                   // cacheSet
 
     vi.stubGlobal("fetch", vi.fn()
       .mockResolvedValueOnce(NOMINATIM_EMPTY)

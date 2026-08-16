@@ -121,7 +121,7 @@ export default function Home() {
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
   const isToky = tenant.slug === "tokyo";
-  const { lang, translate } = useLanguage();
+  const { lang, translate, translationFailed } = useLanguage();
   const [homeTranslatedMap, setHomeTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
   const [homeTranslating, setHomeTranslating] = useState(false);
 
@@ -389,6 +389,14 @@ export default function Home() {
               </Link>
             )}
           </div>
+
+          {/* Translation unavailable banner — shown when Japanese mode fails */}
+          {isToky && lang === "ja" && translationFailed && (
+            <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
+              <span>⚠️</span>
+              <span>Translation unavailable — showing English</span>
+            </div>
+          )}
 
           {/* Category Filter Bar */}
           {latestDigest?.events && (

@@ -204,7 +204,7 @@ export default function DigestView() {
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
   const isToky = tenant.slug === "tokyo";
-  const { lang, translate } = useLanguage();
+  const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
   const [translating, setTranslating] = useState(false);
@@ -404,6 +404,14 @@ export default function DigestView() {
             )}
           </div>
         </header>
+
+        {/* Translation unavailable banner — shown when Japanese mode fails */}
+        {isToky && lang === "ja" && translationFailed && (
+          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
+            <span>⚠️</span>
+            <span>Translation unavailable — showing English</span>
+          </div>
+        )}
 
         {/* Category Filter Bar */}
         <div className="mb-10">
