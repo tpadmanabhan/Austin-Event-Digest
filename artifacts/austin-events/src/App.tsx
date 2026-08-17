@@ -16,6 +16,10 @@ import UnsubscribePage from "./pages/unsubscribe";
 import PreferencesPage from "./pages/preferences";
 import NotFound from "@/pages/not-found";
 import PlatformHome from "./pages/platform-home";
+import MaintenancePage from "./pages/maintenance";
+
+// MAINTENANCE MODE — set to false to restore the platform home
+const MAINTENANCE_MODE = true;
 import { TenantProvider } from "./contexts/tenant-context";
 import { LanguageProvider } from "./contexts/language-context";
 import { useDomain } from "./hooks/use-domain";
@@ -69,7 +73,7 @@ function Router() {
       <>
         <ScrollToTop />
         <Switch>
-          <Route path="/" component={PlatformHome} />
+          <Route path="/" component={MAINTENANCE_MODE ? MaintenancePage : PlatformHome} />
           <Route path="/digest/:id">
             {(params) => {
               window.location.replace(`https://austin.eventcarpooling.com/digest/${params.id}`);
