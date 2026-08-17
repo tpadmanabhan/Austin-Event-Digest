@@ -11,6 +11,53 @@ export default function MaintenancePage() {
         position: "relative",
       }}
     >
+      <style>{`
+        @keyframes robotBounce {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-12px); }
+        }
+        @keyframes leftArmSwing {
+          0%, 100% { transform: rotate(-20deg); }
+          50% { transform: rotate(40deg); }
+        }
+        @keyframes rightArmSwing {
+          0%, 100% { transform: rotate(20deg); }
+          50% { transform: rotate(-40deg); }
+        }
+        @keyframes leftLegSwing {
+          0%, 100% { transform: rotate(15deg); }
+          50% { transform: rotate(-15deg); }
+        }
+        @keyframes rightLegSwing {
+          0%, 100% { transform: rotate(-15deg); }
+          50% { transform: rotate(15deg); }
+        }
+        @keyframes eyeBlink {
+          0%, 90%, 100% { transform: scaleY(1); }
+          95% { transform: scaleY(0.1); }
+        }
+        @keyframes antennaWiggle {
+          0%, 100% { transform: rotate(-8deg); }
+          50% { transform: rotate(8deg); }
+        }
+        @keyframes robotSway {
+          0%, 100% { transform: rotate(-3deg) translateY(0px); }
+          50% { transform: rotate(3deg) translateY(-12px); }
+        }
+        @keyframes headBob {
+          0%, 100% { transform: rotate(-5deg); }
+          50% { transform: rotate(5deg); }
+        }
+        @keyframes shadowPulse {
+          0%, 100% { transform: scaleX(1); opacity: 0.2; }
+          50% { transform: scaleX(0.7); opacity: 0.1; }
+        }
+        @keyframes eyeGlow {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
+
       {/* Orange accent stripe */}
       <div style={{ position: "absolute", bottom: "40%", left: 0, right: 0, height: "6px", background: "#e8651a", zIndex: 2 }} />
 
@@ -41,43 +88,186 @@ export default function MaintenancePage() {
             </h1>
           </div>
 
-          {/* Illustration: disconnected plug */}
-          <div style={{ paddingBottom: "40px", paddingRight: "24px", display: "flex", alignItems: "flex-end" }}>
-            <svg width="260" height="220" viewBox="0 0 260 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Car body silhouette (teal, like Atlassian mascot) */}
-              <ellipse cx="130" cy="170" rx="70" ry="28" fill="#2196a0" opacity="0.18" />
-              <rect x="70" y="120" width="120" height="50" rx="14" fill="#2196a0" />
-              <path d="M85 120 C90 95 100 85 130 85 C160 85 170 95 175 120 Z" fill="#2196a0" />
+          {/* Dancing Robot */}
+          <div style={{ paddingBottom: "50px", paddingRight: "48px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            {/* Robot container with overall sway */}
+            <div style={{
+              position: "relative",
+              width: "140px",
+              height: "220px",
+              animation: "robotBounce 0.8s ease-in-out infinite",
+            }}>
 
-              {/* Windshield */}
-              <path d="M100 119 C103 100 110 93 130 93 C150 93 157 100 160 119 Z" fill="#b8d9f0" opacity="0.7" />
+              {/* Antenna */}
+              <div style={{
+                position: "absolute",
+                top: "-28px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                transformOrigin: "bottom center",
+                animation: "antennaWiggle 0.8s ease-in-out infinite",
+              }}>
+                <div style={{ width: "4px", height: "22px", background: "#1a3a5c", margin: "0 auto" }} />
+                <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#e8651a", margin: "0 auto", boxShadow: "0 0 8px #e8651a" }} />
+              </div>
 
-              {/* Wheels */}
-              <circle cx="95" cy="172" r="16" fill="#1a3a5c" />
-              <circle cx="95" cy="172" r="8" fill="#4a90c4" />
-              <circle cx="165" cy="172" r="16" fill="#1a3a5c" />
-              <circle cx="165" cy="172" r="8" fill="#4a90c4" />
+              {/* Head */}
+              <div style={{
+                position: "absolute",
+                top: "0",
+                left: "50%",
+                transform: "translateX(-50%)",
+                transformOrigin: "center bottom",
+                animation: "headBob 0.8s ease-in-out infinite",
+              }}>
+                <div style={{
+                  width: "80px",
+                  height: "64px",
+                  background: "#2196a0",
+                  borderRadius: "12px",
+                  border: "3px solid #1a3a5c",
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                }}>
+                  {/* Eyes */}
+                  <div style={{
+                    width: "16px", height: "16px", borderRadius: "50%",
+                    background: "#fff",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    animation: "eyeBlink 3s ease-in-out infinite",
+                    transformOrigin: "center",
+                  }}>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#e8651a", animation: "eyeGlow 1.6s ease-in-out infinite" }} />
+                  </div>
+                  <div style={{
+                    width: "16px", height: "16px", borderRadius: "50%",
+                    background: "#fff",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    animation: "eyeBlink 3s ease-in-out infinite 0.1s",
+                    transformOrigin: "center",
+                  }}>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#e8651a", animation: "eyeGlow 1.6s ease-in-out infinite 0.2s" }} />
+                  </div>
+                  {/* Mouth */}
+                  <div style={{
+                    position: "absolute",
+                    bottom: "12px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "32px",
+                    height: "6px",
+                    background: "#1a3a5c",
+                    borderRadius: "3px",
+                  }} />
+                </div>
+              </div>
 
-              {/* Left plug (going left, disconnected) */}
-              <path d="M40 105 Q30 130 55 145" stroke="#e8651a" strokeWidth="6" strokeLinecap="round" fill="none" />
-              <rect x="50" y="140" width="22" height="14" rx="4" fill="#e8651a" />
-              <rect x="55" y="130" width="4" height="12" rx="2" fill="#e8651a" />
-              <rect x="63" y="130" width="4" height="12" rx="2" fill="#e8651a" />
+              {/* Body */}
+              <div style={{
+                position: "absolute",
+                top: "70px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "90px",
+                height: "80px",
+                background: "#1a3a5c",
+                borderRadius: "10px",
+                border: "3px solid #0d2540",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                {/* Chest panel */}
+                <div style={{
+                  width: "50px", height: "40px",
+                  background: "#4a90c4",
+                  borderRadius: "6px",
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", gap: "5px",
+                }}>
+                  <div style={{ width: "24px", height: "6px", background: "#e8651a", borderRadius: "3px" }} />
+                  <div style={{ display: "flex", gap: "5px" }}>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#2196a0", animation: "eyeGlow 1s ease-in-out infinite" }} />
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#2196a0", animation: "eyeGlow 1s ease-in-out infinite 0.3s" }} />
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#2196a0", animation: "eyeGlow 1s ease-in-out infinite 0.6s" }} />
+                  </div>
+                </div>
+              </div>
 
-              {/* Right plug (going right, disconnected) */}
-              <path d="M220 95 Q230 120 205 140" stroke="#e8651a" strokeWidth="6" strokeLinecap="round" fill="none" />
-              <rect x="188" y="136" width="22" height="14" rx="4" fill="#e8651a" />
-              <rect x="193" y="126" width="4" height="12" rx="2" fill="#e8651a" />
-              <rect x="201" y="126" width="4" height="12" rx="2" fill="#e8651a" />
+              {/* Left Arm */}
+              <div style={{
+                position: "absolute",
+                top: "76px",
+                left: "2px",
+                width: "20px",
+                height: "60px",
+                background: "#2196a0",
+                borderRadius: "10px",
+                border: "2px solid #1a3a5c",
+                transformOrigin: "top center",
+                animation: "leftArmSwing 0.8s ease-in-out infinite",
+              }} />
 
-              {/* Gap between plugs (spark effect) */}
-              <line x1="72" y1="147" x2="188" y2="140" stroke="#e8651a" strokeWidth="2" strokeDasharray="6 6" opacity="0.4" />
-              <text x="124" y="144" fontSize="18" textAnchor="middle" fill="#e8651a" opacity="0.7">✦</text>
+              {/* Right Arm */}
+              <div style={{
+                position: "absolute",
+                top: "76px",
+                right: "2px",
+                width: "20px",
+                height: "60px",
+                background: "#2196a0",
+                borderRadius: "10px",
+                border: "2px solid #1a3a5c",
+                transformOrigin: "top center",
+                animation: "rightArmSwing 0.8s ease-in-out infinite",
+              }} />
 
-              {/* People in car */}
-              <circle cx="115" cy="108" r="8" fill="#1a3a5c" opacity="0.6" />
-              <circle cx="145" cy="108" r="8" fill="#1a3a5c" opacity="0.6" />
-            </svg>
+              {/* Left Leg */}
+              <div style={{
+                position: "absolute",
+                top: "153px",
+                left: "22px",
+                width: "22px",
+                height: "58px",
+                background: "#1a3a5c",
+                borderRadius: "0 0 8px 8px",
+                transformOrigin: "top center",
+                animation: "leftLegSwing 0.8s ease-in-out infinite",
+              }}>
+                {/* Left foot */}
+                <div style={{ position: "absolute", bottom: 0, left: "-4px", width: "30px", height: "12px", background: "#e8651a", borderRadius: "6px" }} />
+              </div>
+
+              {/* Right Leg */}
+              <div style={{
+                position: "absolute",
+                top: "153px",
+                right: "22px",
+                width: "22px",
+                height: "58px",
+                background: "#1a3a5c",
+                borderRadius: "0 0 8px 8px",
+                transformOrigin: "top center",
+                animation: "rightLegSwing 0.8s ease-in-out infinite",
+              }}>
+                {/* Right foot */}
+                <div style={{ position: "absolute", bottom: 0, left: "-4px", width: "30px", height: "12px", background: "#e8651a", borderRadius: "6px" }} />
+              </div>
+            </div>
+
+            {/* Shadow */}
+            <div style={{
+              width: "80px",
+              height: "12px",
+              background: "#1a3a5c",
+              borderRadius: "50%",
+              opacity: 0.2,
+              marginTop: "4px",
+              animation: "shadowPulse 0.8s ease-in-out infinite",
+            }} />
           </div>
         </div>
       </div>
