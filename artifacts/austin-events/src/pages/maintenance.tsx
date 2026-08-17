@@ -32,9 +32,12 @@ export default function MaintenancePage() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flex: 1 }}>
           {/* Text */}
           <div style={{ maxWidth: "420px", paddingBottom: "60px" }}>
+            <p style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#e8651a" }}>
+              🔧 Site Under Maintenance
+            </p>
             <h1 style={{ fontSize: "clamp(22px, 3vw, 32px)", fontWeight: "400", color: "#1a3a5c", lineHeight: 1.4, margin: 0 }}>
               We're down for maintenance.<br />
-              Be right back!
+              We'll be back soon!
             </h1>
           </div>
 
