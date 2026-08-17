@@ -447,6 +447,23 @@ The client-side filter in `digest.tsx` (`upcomingEvents`) also applies `isEventT
 
 A separate nightly `scheduleDailyCleanup()` job (2 AM) also removes stale events from **unsent** digests at the DB level. Both layers work together — the API-layer filter is the safety net for sent digests.
 
+## Fixing Individual Event Dates
+
+To correct a day-of-week / numerical date mismatch on a live production event:
+
+```
+PATCH /api/events/digest/:digestId/events/:idx
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{ "date": "Wednesday, Aug 19 at 5:30 PM" }
+```
+
+- `:idx` is the **0-based index** of the event in the digest's events array
+- Find the index with: `digest.events.findIndex(e => e.title?.includes("..."))`
+- Only the fields you include in the body are updated — omitting a field leaves it unchanged
+- To check all cities for mismatches at once: fetch `/api/events/digest/list` for each city (public endpoint, no auth needed), parse each event's date string, and compare the stated day name against `new Date(2026, month-1, dayNum).getDay()`
+
 ## City-Scoped Digest Queries (Task #214)
 
 All digest queries (`/api/events/digest/latest`, `/api/events/digest/list`) are scoped to the **requesting tenant** via `req.tenant!.id`. This means every city's subdomain returns that city's own digest — no city ever falls back to Austin's.
