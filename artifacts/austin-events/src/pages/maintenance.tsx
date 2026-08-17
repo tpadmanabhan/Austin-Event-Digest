@@ -36,9 +36,6 @@ export default function MaintenancePage() {
               We're down for maintenance.<br />
               Be right back!
             </h1>
-            <p style={{ marginTop: "16px", fontSize: "15px", color: "#3a5a7c", lineHeight: 1.6 }}>
-              We're making some improvements to your carpooling experience. Thanks for your patience!
-            </p>
           </div>
 
           {/* Illustration: disconnected plug */}
