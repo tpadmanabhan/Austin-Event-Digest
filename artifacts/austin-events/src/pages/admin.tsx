@@ -1051,12 +1051,21 @@ export default function AdminDashboard() {
             </h1>
             <p className="text-muted-foreground mt-2">Manage your {tenant.name} newsletter</p>
           </div>
-          <Button 
-            onClick={() => setIsGenerateOpen(true)}
-            className="rounded-xl shadow-md gap-2"
-          >
-            <Plus className="w-4 h-4" /> Generate New Digest
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="rounded-xl gap-2 text-muted-foreground"
+              onClick={() => { sessionStorage.removeItem("admin_token"); window.location.reload(); }}
+            >
+              Log Out
+            </Button>
+            <Button 
+              onClick={() => setIsGenerateOpen(true)}
+              className="rounded-xl shadow-md gap-2"
+            >
+              <Plus className="w-4 h-4" /> Generate New Digest
+            </Button>
+          </div>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
