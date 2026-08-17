@@ -64,13 +64,13 @@ export default function MaintenancePage() {
       {/* Sky / content area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "40px 48px 0", position: "relative", zIndex: 3 }}>
         {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "48px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "18px", marginBottom: "56px" }}>
           <img
             src="/eventcarpooling-logo.png"
             alt="EventCarpooling"
-            style={{ width: "64px", height: "64px", borderRadius: "50%", objectFit: "cover", boxShadow: "0 2px 8px rgba(0,0,0,0.18)" }}
+            style={{ width: "96px", height: "96px", borderRadius: "50%", objectFit: "cover", boxShadow: "0 4px 16px rgba(0,0,0,0.22)" }}
           />
-          <span style={{ fontSize: "22px", fontWeight: "700", color: "#1a3a5c", letterSpacing: "-0.3px" }}>
+          <span style={{ fontSize: "32px", fontWeight: "700", color: "#1a3a5c", letterSpacing: "-0.5px" }}>
             EventCarpooling
           </span>
         </div>
@@ -79,10 +79,10 @@ export default function MaintenancePage() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flex: 1 }}>
           {/* Text */}
           <div style={{ maxWidth: "420px", paddingBottom: "60px" }}>
-            <p style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#e8651a" }}>
+            <p style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#e8651a" }}>
               🔧 Site Under Maintenance
             </p>
-            <h1 style={{ fontSize: "clamp(22px, 3vw, 32px)", fontWeight: "400", color: "#1a3a5c", lineHeight: 1.4, margin: 0 }}>
+            <h1 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: "400", color: "#1a3a5c", lineHeight: 1.3, margin: 0 }}>
               We're down for maintenance.<br />
               We'll be back soon!
             </h1>
