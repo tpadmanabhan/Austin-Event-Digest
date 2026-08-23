@@ -19,7 +19,7 @@ import PlatformHome from "./pages/platform-home";
 import MaintenancePage from "./pages/maintenance";
 
 // MAINTENANCE MODE — set to false to restore the platform home
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 import { TenantProvider } from "./contexts/tenant-context";
 import { LanguageProvider } from "./contexts/language-context";
 import { useDomain } from "./hooks/use-domain";
