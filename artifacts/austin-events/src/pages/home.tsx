@@ -346,6 +346,24 @@ export default function Home() {
                 )}
               </div>
 
+              {tenant.curatorName === "Raj" && (
+                <div className="mb-8 max-w-xl overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] via-card to-secondary/[0.10] px-6 py-7 shadow-lg shadow-primary/5 sm:px-8 sm:py-8">
+                  <h2 className="text-balance text-3xl font-black leading-[1.02] tracking-[-0.035em] text-foreground sm:text-4xl">
+                    <span className="block font-serif">Your Events.</span>
+                    <span className="block font-serif italic text-primary">Their Interests.</span>
+                    <span className="mt-1 block font-serif tracking-[-0.045em]">One Personalized Channel.</span>
+                  </h2>
+                  <div className="my-5 flex items-center gap-3" aria-hidden="true">
+                    <span className="h-px w-10 bg-primary" />
+                    <span className="font-serif text-xl italic text-secondary">discover · curate · connect</span>
+                    <span className="h-px flex-1 bg-secondary/35" />
+                  </div>
+                  <p className="text-base leading-relaxed text-muted-foreground sm:text-[17px]">
+                    We build custom event discovery websites and newsletters that help your audience find the right events at the right time. Combine location-based discovery, interest-based curation, and an automated email digest to turn your event calendar into a personalized marketing channel.
+                  </p>
+                </div>
+              )}
+
               <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60 scroll-mt-24">
                 <SubscribeForm />
               </div>
