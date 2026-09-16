@@ -1302,7 +1302,7 @@ router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
     weekOf: digest.weekOf instanceof Date ? digest.weekOf.toISOString() : String(digest.weekOf),
     digestId: digest.id,
     siteUrl,
-  }, undefined, undefined, tenant);
+  }, undefined, tenant.adminEmail, tenant);
   res.setHeader("Content-Type", "text/html");
   res.send(html);
 });
