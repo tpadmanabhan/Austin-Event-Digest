@@ -1022,20 +1022,6 @@ export function buildDigestEmailHtml(digest: {
     <!-- Featured Events -->
     ${featuredCards}
 
-    <!-- Austin Event Discovery Positioning -->
-    ${slug === "austin" ? `
-    <div style="background:linear-gradient(135deg,#f0fdf4 0%,#ffffff 58%,#eff6ff 100%); border:1.5px solid #bbf7d0; border-radius:16px; padding:24px 22px; margin-bottom:24px;">
-      <p style="margin:0; color:#1c1917; font-family:Georgia,'Times New Roman',serif; font-size:24px; font-weight:800; line-height:1.08; letter-spacing:-0.7px;">
-        Your Events.<br>
-        <em style="color:#16a34a; font-family:Georgia,'Times New Roman',serif; font-weight:800;">Their Interests.</em><br>
-        One Personalized Channel.
-      </p>
-      <div style="width:48px; height:2px; background:#16a34a; margin:16px 0;"></div>
-      <p style="margin:0; color:#57534e; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.7;">
-        We build custom event discovery websites and newsletters that help your audience find the right events at the right time. Combine location-based discovery, interest-based curation, and an automated email digest to turn your event calendar into a personalized marketing channel.
-      </p>
-    </div>` : ""}
-
     <!-- Events -->
     ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">${slug === "austincares" ? "This Week's Deals 🏷️" : "Upcoming Events 🎯"}</h2>${eventCards}` : ""}
 
@@ -1045,6 +1031,20 @@ export function buildDigestEmailHtml(digest: {
       <h2 style="margin:0 0 4px; color:#1c1917; font-size:18px; font-weight:700;">📍 Also Nearby</h2>
       <p style="margin:0 0 16px; color:#78716c; font-size:13px;">${slug === "austincares" ? "These deals are a bit further out — but still worth the trip." : "These events are a bit further out — but still in Austin."}</p>
       ${alsoNearbyCards}
+    </div>` : ""}
+
+    <!-- Austin Event Discovery Positioning -->
+    ${slug === "austin" ? `
+    <div style="background:linear-gradient(135deg,#f0fdf4 0%,#ffffff 58%,#f6fbf7 100%); border:1.5px solid #cfe8d6; border-radius:16px; padding:24px 22px; margin:28px 0 24px;">
+      <p style="margin:0; color:#17241d; font-family:Georgia,'Times New Roman',serif; font-size:24px; font-weight:800; line-height:1.08; letter-spacing:-0.7px;">
+        Your Events.<br>
+        <em style="color:#2fa85f; font-family:Georgia,'Times New Roman',serif; font-weight:800;">Their Interests.</em><br>
+        One Personalized Channel.
+      </p>
+      <div style="width:48px; height:2px; background:#2fa85f; margin:16px 0;"></div>
+      <p style="margin:0; color:#66766c; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.7;">
+        We build custom event discovery websites and newsletters that help your audience find the right events at the right time. Combine location-based discovery, interest-based curation, and an automated email digest to turn your event calendar into a personalized marketing channel.
+      </p>
     </div>` : ""}
 
     <!-- Footer -->
