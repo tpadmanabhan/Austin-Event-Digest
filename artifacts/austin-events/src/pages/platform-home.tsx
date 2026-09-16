@@ -644,6 +644,35 @@ function PlatformHomeInner() {
                 </span>
               ))}
             </div>
+
+            <div
+              className="mx-auto mt-10 max-w-2xl rounded-3xl px-6 py-7 text-left sm:px-9 sm:py-9"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,255,255,0.12), rgba(96,165,250,0.08))",
+                border: "1px solid rgba(147,197,253,0.28)",
+                boxShadow: "0 24px 60px rgba(2,8,23,0.24)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3
+                className="font-serif text-3xl font-black leading-[1.04] sm:text-4xl"
+                style={{ color: "#fff", letterSpacing: "-0.035em" }}
+              >
+                <span className="block">Your Events.</span>
+                <span className="block italic" style={{ color: "#60a5fa" }}>Their Interests.</span>
+                <span className="mt-1 block">One Personalized Channel.</span>
+              </h3>
+              <div className="my-5 flex items-center gap-3" aria-hidden="true">
+                <span className="h-px w-10" style={{ background: "#60a5fa" }} />
+                <span className="font-serif text-lg italic" style={{ color: "#a7f3d0" }}>
+                  discover · curate · connect
+                </span>
+                <span className="h-px flex-1" style={{ background: "rgba(167,243,208,0.28)" }} />
+              </div>
+              <p className="text-base leading-relaxed sm:text-lg" style={{ color: "rgba(255,255,255,0.72)" }}>
+                We build custom event discovery websites and newsletters that help your audience find the right events at the right time. Combine location-based discovery, interest-based curation, and an automated email digest to turn your event calendar into a personalized marketing channel.
+              </p>
+            </div>
           </motion.div>
         </div>
       </section>
