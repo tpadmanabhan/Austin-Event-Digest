@@ -1023,7 +1023,7 @@ export function buildDigestEmailHtml(digest: {
     ${featuredCards}
 
     <!-- Events -->
-    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">${slug === "austincares" ? "This Week's Deals 🏷️" : "This Week's Picks 🎯"}</h2>${eventCards}` : ""}
+    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">${slug === "austincares" ? "This Week's Deals 🏷️" : "Upcoming Events 🎯"}</h2>${eventCards}` : ""}
 
     <!-- Also Nearby -->
     ${alsoNearbyCards ? `

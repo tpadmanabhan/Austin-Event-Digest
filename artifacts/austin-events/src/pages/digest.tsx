@@ -784,7 +784,7 @@ export default function DigestView() {
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
                   <h2 className="font-serif text-3xl font-bold flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {geoActive ? jt("Events — Nearest First", JA.eventsNearestFirst) : jt("This Week's Curated Events", JA.thisWeeksCuratedEvents)}
+                    {geoActive ? jt("Events — Nearest First", JA.eventsNearestFirst) : jt("Upcoming Events", JA.thisWeeksCuratedEvents)}
                   </h2>
                   <div className="flex items-center gap-2 flex-wrap">
                     {staleCount > 0 && (

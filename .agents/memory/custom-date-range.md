@@ -28,3 +28,10 @@ if (atIdx !== -1) {
 ```
 
 **Why:** Production and dev DBs are separate; dev is used for test generation; only push via import when the result is verified clean. Doing cleanup in a node script before the import call is faster than regenerating multiple times.
+
+## Required post-generation audit
+Custom-range generation can include events from the previous local calendar day because source timestamps cross UTC boundaries. Broad Ticketmaster results can also collapse unrelated categories into Arts, leaving Tech or Civics unrepresented.
+
+**Why:** A custom Austin generation included events from the day before its requested start and produced an overwhelmingly Arts-heavy list despite all five tenant categories being configured.
+
+**How to apply:** Before keeping a custom-range digest, remove out-of-range events, validate stated weekdays against numerical dates, deduplicate titles, and confirm intentional representation of every configured category.
