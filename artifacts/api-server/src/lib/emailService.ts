@@ -667,27 +667,27 @@ export function buildDigestEmailHtml(digest: {
     rideBtnBg: "#6ee7b7",
     rideBtnColor: "#064e3b",
   } : slug === "austin" ? {
-    headerGradient: "linear-gradient(135deg, #1c1917 0%, #292524 60%, #3b1f0a 100%)",
-    primary: "#d97706",
+    headerGradient: "linear-gradient(135deg, #f1faf4 0%, #e4f3e9 58%, #d4eadb 100%)",
+    primary: "#2f855a",
     primaryBtn: "#fbbf24",
-    primaryDark: "#1c1917",
-    primaryLight: "#fef9c3",
-    primaryMuted: "#fde68a",
-    textOnDark: "#fbbf24",
-    textMutedOnDark: "#a8a29e",
-    textStrong: "#fbbf24",
-    linkColor: "#d97706",
+    primaryDark: "#214e36",
+    primaryLight: "#effaf2",
+    primaryMuted: "#d6eddd",
+    textOnDark: "#285c3f",
+    textMutedOnDark: "#65766d",
+    textStrong: "#173c2a",
+    linkColor: "#2f855a",
     curatorName: "Raj",
     curatorUrl: "https://customersuccessforgood.com/",
     cityGuideText: "Your weekly guide to what's happening in Austin",
     digestDisplayName: tenant?.digestTitle || "Raj's Austin Events",
     headerEmoji: "🤠",
-    eventBtnColor: "#fbbf24",
-    eventBtnBorder: "#d97706",
-    pillText: "rgba(254,249,195,0.9)",
-    pillBorder: "rgba(251,191,36,0.35)",
-    rideBtnBg: "#fbbf24",
-    rideBtnColor: "#1c1917",
+    eventBtnColor: "#2f855a",
+    eventBtnBorder: "#2f855a",
+    pillText: "#285c3f",
+    pillBorder: "rgba(47,133,90,0.28)",
+    rideBtnBg: "#2f855a",
+    rideBtnColor: "#ffffff",
   } : {
     // Generic fallback — no city-specific branding
     headerGradient: "linear-gradient(135deg, #1e293b 0%, #334155 55%, #475569 100%)",
@@ -949,12 +949,12 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- AustinCares Launch Promo (all cities except austincares) -->
     ${slug !== "austincares" ? `
-    <div style="background:linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%); border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
-      <p style="margin:0 0 6px; color:#fbbf24; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ New · Austin Cares</p>
-      <p style="margin:0 0 10px; color:#ffffff; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
-      <p style="margin:0 0 6px; color:#fde68a; font-size:13px; line-height:1.6;">A weekly digest of real, time-boxed discounts — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.</p>
-      <p style="margin:0 0 18px; color:#fca5a5; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">Coming to a city near you 🌍</p>
-      <a href="https://austincares.eventcarpooling.com" style="display:inline-block; background:#C4502B; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">Get Weekly Deals →</a>
+    <div style="background:${slug === "austin" ? "linear-gradient(135deg,#fff8ed 0%,#f8f2e8 54%,#edf7f0 100%)" : "linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%)"}; border:${slug === "austin" ? "1.5px solid #ead7ba" : "none"}; border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
+      <p style="margin:0 0 6px; color:${slug === "austin" ? "#a45b22" : "#fbbf24"}; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ New · Austin Cares</p>
+      <p style="margin:0 0 10px; color:${slug === "austin" ? "#3f392f" : "#ffffff"}; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
+      <p style="margin:0 0 6px; color:${slug === "austin" ? "#746959" : "#fde68a"}; font-size:13px; line-height:1.6;">A weekly digest of real, time-boxed discounts — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.</p>
+      <p style="margin:0 0 18px; color:${slug === "austin" ? "#8b735d" : "#fca5a5"}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">Coming to a city near you 🌍</p>
+      <a href="https://austincares.eventcarpooling.com" style="display:inline-block; background:${slug === "austin" ? "#2f855a" : "#C4502B"}; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">Get Weekly Deals →</a>
     </div>` : ""}
 
     <!-- Tokyo Launch Highlight (Tokyo only) -->
@@ -971,22 +971,22 @@ export function buildDigestEmailHtml(digest: {
     <!-- Coming Soon: New Features -->
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <!-- Badge -->
-      <div style="display:inline-block; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:100px; padding:5px 14px; margin-bottom:16px;">
-        <span style="color:#e2e8f0; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">🚀 Coming Soon</span>
+      <div style="display:inline-block; background:${slug === "austin" ? "rgba(47,133,90,0.10)" : "rgba(255,255,255,0.12)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.22)" : "rgba(255,255,255,0.2)"}; border-radius:100px; padding:5px 14px; margin-bottom:16px;">
+        <span style="color:${slug === "austin" ? "#285c3f" : "#e2e8f0"}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">🚀 Coming Soon</span>
       </div>
 
       <!-- Heading -->
       <p style="margin:0 0 20px; color:${theme.textStrong}; font-size:22px; font-weight:800; letter-spacing:-0.4px; line-height:1.25;">Two new features <em style="color:#60a5fa; font-style:italic;">rolling out soon</em></p>
 
       <!-- Feature 1: Tell a Friend -->
-      <div style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px 20px; margin-bottom:12px;">
+      <div style="background:${slug === "austin" ? "rgba(255,255,255,0.62)" : "rgba(255,255,255,0.07)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.16)" : "rgba(255,255,255,0.1)"}; border-radius:12px; padding:18px 20px; margin-bottom:12px;">
         <p style="margin:0 0 6px; font-size:22px; line-height:1;">📨</p>
         <p style="margin:0 0 6px; color:${theme.textStrong}; font-size:16px; font-weight:700;">Tell a Friend</p>
         <p style="margin:0; color:${theme.textOnDark}; font-size:13px; line-height:1.65;">Text any event directly to a friend's phone — one tap, no app download required. Just enter their number and they get the full event details instantly.</p>
       </div>
 
       <!-- Feature 2: SMS for Local Businesses -->
-      <div style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px 20px; margin-bottom:20px;">
+      <div style="background:${slug === "austin" ? "rgba(255,255,255,0.62)" : "rgba(255,255,255,0.07)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.16)" : "rgba(255,255,255,0.1)"}; border-radius:12px; padding:18px 20px; margin-bottom:20px;">
         <p style="margin:0 0 6px; font-size:22px; line-height:1;">💬</p>
         <p style="margin:0 0 6px; color:${theme.textStrong}; font-size:16px; font-weight:700;">SMS for Local Businesses</p>
         <p style="margin:0; color:${theme.textOnDark}; font-size:13px; line-height:1.65;">An SMS-powered tool built for ${escapeHtml(cityName)}'s local service businesses — connecting them with nearby customers in real time. No app download required.</p>
@@ -996,18 +996,18 @@ export function buildDigestEmailHtml(digest: {
       <table style="border-collapse:collapse;">
         <tr>
           <td style="padding:4px 8px 4px 0;">
-            <span style="display:inline-block; background:rgba(255,255,255,0.08); color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">⚡ Real-Time Reach</span>
+            <span style="display:inline-block; background:${slug === "austin" ? "rgba(255,255,255,0.68)" : "rgba(255,255,255,0.08)"}; color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">⚡ Real-Time Reach</span>
           </td>
           <td style="padding:4px 0 4px 0;">
-            <span style="display:inline-block; background:rgba(255,255,255,0.08); color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">💬 SMS-First</span>
+            <span style="display:inline-block; background:${slug === "austin" ? "rgba(255,255,255,0.68)" : "rgba(255,255,255,0.08)"}; color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">💬 SMS-First</span>
           </td>
         </tr>
         <tr>
           <td style="padding:4px 8px 4px 0;">
-            <span style="display:inline-block; background:rgba(255,255,255,0.08); color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">📍 Hyper-Local</span>
+            <span style="display:inline-block; background:${slug === "austin" ? "rgba(255,255,255,0.68)" : "rgba(255,255,255,0.08)"}; color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">📍 Hyper-Local</span>
           </td>
           <td style="padding:4px 0 4px 0;">
-            <span style="display:inline-block; background:rgba(255,255,255,0.08); color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">🚀 No App Needed</span>
+            <span style="display:inline-block; background:${slug === "austin" ? "rgba(255,255,255,0.68)" : "rgba(255,255,255,0.08)"}; color:${theme.pillText}; border:1px solid ${theme.pillBorder}; border-radius:100px; padding:6px 14px; font-size:12px; font-weight:600; white-space:nowrap;">🚀 No App Needed</span>
           </td>
         </tr>
       </table>
