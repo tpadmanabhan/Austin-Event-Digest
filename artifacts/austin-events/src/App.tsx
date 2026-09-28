@@ -8,6 +8,7 @@ import { AudioProvider } from "@/components/audio-provider";
 import Home from "./pages/home";
 import AustinCaresDeals from "./pages/austin-cares-deals";
 import AustinCaresFullEdition from "./pages/austin-cares-full";
+import { CityPageMetadata } from "./components/city-page-metadata";
 import DigestView from "./pages/digest";
 import AdminDashboard from "./pages/admin";
 import { AdminLoginGate } from "@/components/admin-login-gate";
@@ -46,6 +47,7 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
     <LanguageProvider>
     <TenantProvider slug={citySlug}>
       <ScrollToTop />
+      <CityPageMetadata citySlug={citySlug} />
       <Switch>
         <Route path="/" component={citySlug === "austincares" ? AustinCaresDeals : Home} />
         <Route path="/full" component={citySlug === "austincares" ? AustinCaresFullEdition : NotFound} />
