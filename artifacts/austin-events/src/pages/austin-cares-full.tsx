@@ -84,6 +84,18 @@ const STATIC_DEALS: Deal[] = [
     lat: 30.2671,
     lng: -97.7404,
   },
+  {
+    day: "MON",
+    business: "Lamberts",
+    deal: "Monday Whiskey & Ribs Night (5 PM–close) — half off featured whiskeys and specials on ribs",
+    savings: "50% off featured whiskeys",
+    source: "Direct",
+    location: "401 W 2nd St, Austin",
+    url: "https://lambertsaustin.com/",
+    lat: 30.265199,
+    lng: -97.747852,
+    verifiedAt: "2026-09-28",
+  },
   // ── Tuesday ──────────────────────────────────────────────────────────────
   {
     day: "TUE",
@@ -100,14 +112,15 @@ const STATIC_DEALS: Deal[] = [
   {
     day: "TUE",
     business: "Sangam Chettinad",
-    deal: "Authentic Chettinad cuisine — weekly specials",
-    savings: "See location",
+    deal: "Unlimited Dosa Night every Tuesday, 5:30–10 PM — Round Rock location only",
+    savings: "All-you-can-eat dosa",
     source: "Community",
     location: "2800 E Palm Valley Blvd, Ste 180, Round Rock",
-    imageUrl: "/api/storage/objects/uploads/b64e3d00-cac3-40fa-a9a5-f176bffdec92",
+    imageUrl: `${import.meta.env.BASE_URL}images/sangam-tuesday-dosa.webp`,
     lat: 30.527349,
     lng: -97.6267319,
     isSubmitted: true,
+    verifiedAt: "2026-09-28",
   },
   {
     day: "TUE",
@@ -180,6 +193,42 @@ const STATIC_DEALS: Deal[] = [
     lat: 30.2461,
     lng: -97.7566,
   },
+  {
+    day: "WEEKLY",
+    business: "Jack Allen's Kitchen",
+    deal: "Happy hour — half off starters and $1 off drinks (Mon 3 PM–close; Tue–Fri 3–6:30 PM)",
+    savings: "50% off starters",
+    source: "Direct",
+    location: "7720 Highway 71 W, Austin",
+    url: "https://jackallenskitchen.com/",
+    lat: 30.2435734,
+    lng: -97.8825773,
+    verifiedAt: "2026-09-28",
+  },
+  {
+    day: "WEEKLY",
+    business: "TLC Austin",
+    deal: "Happy hour Mon–Fri, 2–6 PM — $1 Gulf oysters, $7 bites and sips, $1 off drafts",
+    savings: "$1 oysters",
+    source: "Direct",
+    location: "1100 S Lamar Blvd Ste 1150, Austin",
+    url: "https://tlcaustin.com/happy-hour",
+    lat: 30.2558239,
+    lng: -97.7631014,
+    verifiedAt: "2026-09-28",
+  },
+  {
+    day: "WEEKLY",
+    business: "The Peached Tortilla",
+    deal: "Social Hour Tue–Sun, 5–6:30 PM — $4.50 tacos, $5 beer, $6 wine and $7 cocktails",
+    savings: "Tacos from $4.50",
+    source: "Direct",
+    location: "5520 Burnet Rd Ste 100, Austin",
+    url: "https://www.thepeachedtortilla.com/burnet-road",
+    lat: 30.330751,
+    lng: -97.740217,
+    verifiedAt: "2026-09-28",
+  },
   // ── Friday ───────────────────────────────────────────────────────────────
   {
     day: "FRI",
@@ -226,18 +275,6 @@ const STATIC_DEALS: Deal[] = [
     location: "Multiple Austin locations",
     url: "https://foundcom.org/financial-wellness/",
     lat: 30.2850,
-    lng: -97.7350,
-    verifiedAt: "2026-08-16",
-  },
-  {
-    day: "ANY DAY",
-    business: "BMHC — HealthyCuts™",
-    deal: "Get $25 off your next haircut every time you complete a health appointment at the Black Men's Health Clinic",
-    savings: "$25 off haircut",
-    source: "Direct",
-    location: "Austin, TX",
-    url: "https://blackmenshealthclinic.org/healthycuts/",
-    lat: 30.2680,
     lng: -97.7350,
     verifiedAt: "2026-08-16",
   },
@@ -332,13 +369,13 @@ function DealCard({ deal }: { deal: Deal }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Photo (community submissions only) — full image, no cropping */}
+      {/* Show the source photo above the deal details. */}
       {deal.imageUrl && (
         <div style={{ width: "100%", background: C.line, lineHeight: 0 }}>
           <img
             src={deal.imageUrl}
-            alt={deal.business}
-            style={{ width: "100%", display: "block" }}
+            alt={deal.business === "Sangam Chettinad" ? "Sangam Chettinad Unlimited Dosa Night poster" : deal.business}
+            style={{ width: "100%", maxHeight: 320, objectFit: "contain", display: "block" }}
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
         </div>
