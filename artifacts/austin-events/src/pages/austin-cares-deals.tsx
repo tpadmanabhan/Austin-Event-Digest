@@ -20,15 +20,17 @@ const serif: React.CSSProperties = { fontFamily: "'Fraunces', Georgia, serif" };
 
 const DEAL_LOCATIONS = [
   { name: "Spokesman Coffee",           deal: "Mon: Free drip coffee with any pastry",              lat: 30.3330, lng: -97.7388 },
-  { name: "Lou's Barton Springs",       deal: "Mon–Wed: Half-off chicken, $10 shots, half-off burgers", lat: 30.2638, lng: -97.7529 },
+  { name: "Lou's Barton Springs",       deal: "Mon: Half-off chicken · Wed: Half-off burgers",       lat: 30.2638, lng: -97.7529 },
   { name: "Siena Austin",              deal: "Mon: $26 pasta dinner · Tue: $45 three-course",      lat: 30.3640, lng: -97.7700 },
-  { name: "Eureka! Restaurant",         deal: "Mon: $10 martinis all day",                          lat: 30.2671, lng: -97.7404 },
-  { name: "Nômadé Cocina",             deal: "Wed: 50% off wine · Weekdays: $10 marg + 2 tacos",   lat: 30.2461, lng: -97.7566 },
+  { name: "Sangam Chettinad",           deal: "Tue: Unlimited Dosa Night, 5:30–10 PM",              lat: 30.527349, lng: -97.6267319 },
+  { name: "TLC Austin",                 deal: "Mon–Fri: $1 Gulf oysters, 2–6 PM",                    lat: 30.2558239, lng: -97.7631014 },
   { name: "Masala Wok",                deal: "Tue: Tikka Masala + Naan + Drink — $11.95",          lat: 30.4161, lng: -97.7354 },
-  { name: "Rasoi Indian Restaurant",    deal: "Any day: $25 toward food & drinks",                  lat: 30.4350, lng: -97.7900 },
+  { name: "Rasoi Indian Restaurant",    deal: "Any day: $25 toward a restaurant order",             lat: 30.4350, lng: -97.7900 },
   { name: "Flow Yoga Austin",          deal: "Sat 9 AM: Free outdoor yoga in the park",            lat: 30.2588, lng: -97.7683 },
   { name: "Austin Public Health",       deal: "Any day: Free vaccines & health screenings",         lat: 30.2513, lng: -97.6951 },
   { name: "Austin Habitat Counseling",  deal: "Any day: Free homeownership & financial counseling", lat: 30.2280, lng: -97.7757 },
+  { name: "Rosewood-Zaragosa Center",   deal: "Weekdays: Free food pantry and food help",            lat: 30.2656958, lng: -97.710023 },
+  { name: "Dove Springs Center",        deal: "Weekdays: Free health screenings; call ahead",        lat: 30.1963082, lng: -97.7489352 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -98,7 +100,7 @@ function SubscribeSection() {
               Get this week's deals in your inbox.
             </h2>
             <p style={{ color: "#C9BFAE", fontSize: 16.5, marginBottom: 32 }}>
-              Every Sunday — real, time-boxed discounts near you. No coupons, no expired offers.
+              Every Sunday — local food specials and free community services, with hours and links to check availability.
             </p>
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "stretch" }}>
               <input
@@ -460,7 +462,7 @@ export default function AustinCaresDeals() {
             The best deal in Austin — <em style={{ fontStyle: "italic", color: C.rust }}>every day of the week.</em>
           </h1>
           <p style={{ marginTop: 18, fontSize: 19, color: C.brown, maxWidth: "46ch" }}>
-            A weekly digest of real, time-boxed discounts near you — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.
+            A weekly guide to local food specials, free services and other useful offers near you — organized by day and location. No hunting through Instagram.
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" as const, marginTop: 32 }}>
             <button
@@ -523,9 +525,9 @@ export default function AustinCaresDeals() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
             {[
-              { n: "1", title: "Sorted by day",       body: "Monday oyster nights. Tuesday tikka. Thursday happy hours. See what's on, the day it's on — not a stale list from three weeks ago." },
+              { n: "1", title: "Sorted by day",       body: "Monday food specials. Tuesday dosa. Weekday food and community services. See what's available when you need it." },
               { n: "2", title: "Sorted by distance",  body: "Set your spot, get deals within 1, 3, or 5 miles. Not a citywide list you'll never make it across town for." },
-              { n: "3", title: "Verified and current", body: "Every deal is pulled and checked weekly. If it's expired, it's gone — not left up to rot like an old coupon site." },
+              { n: "3", title: "Details you can use", body: "See where to go, when offers run, and who to contact. Call ahead for services that may have limited availability." },
             ].map(({ n, title, body }) => (
               <div key={n} style={{ background: C.cream, borderRadius: 16, padding: "26px 22px" }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: C.rust, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", ...serif, fontWeight: 600, fontSize: 17, marginBottom: 14 }}>
@@ -571,7 +573,7 @@ export default function AustinCaresDeals() {
               {[
                 { day: "MON", biz: "Spokesman Coffee",           off: "Free drip coffee with any pastry purchase",          meta: "Mondays only · dine-in",     dist: "0.8 mi" },
                 { day: "TUE", biz: "Masala Wok — Tikka Tuesday", off: "Tikka Masala + Rice + Naan + Drink — $11.95",        meta: "All-day · dine-in or to-go", dist: "2.1 mi" },
-                { day: "ANY", biz: "Rasoi Indian Restaurant",    off: "$25 Toward Food & Drinks — up to 22% off",           meta: "Any day · via Groupon",       dist: "3.4 mi" },
+                { day: "ANY", biz: "Rasoi Indian Restaurant",    off: "$25 toward a restaurant order — up to 22% off",     meta: "Any day · via Groupon",       dist: "3.4 mi" },
               ].map(({ day, biz, off, meta, dist }, i, arr) => (
                 <div key={day} style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 0", borderBottom: i < arr.length - 1 ? `1px solid ${C.line}` : "none" }}>
                   <div style={{ flexShrink: 0, width: 52, textAlign: "center", background: C.oliveSoft, color: C.olive, fontWeight: 700, fontSize: 12.5, padding: "7px 0", borderRadius: 9 }}>
@@ -658,7 +660,7 @@ export default function AustinCaresDeals() {
       <section style={{ background: C.oliveSoft, padding: "70px 0" }}>
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
           <p style={{ ...serif, fontStyle: "italic", fontSize: "clamp(21px, 3vw, 27px)", lineHeight: 1.42, color: C.char }}>
-            "I used to post our happy hour on Instagram and hope the algorithm cared. Now it just shows up in front of people a few blocks away, on the exact day it matters."
+            "I used to post our weekly specials on Instagram and hope the algorithm cared. Now they show up for nearby people when they matter."
           </p>
           <div style={{ marginTop: 20, fontSize: 14.5, color: C.muted, fontWeight: 600 }}>— Local Austin business owner</div>
           <div style={{ display: "inline-block", marginTop: 14, fontSize: 11.5, letterSpacing: "0.06em", textTransform: "uppercase", color: C.olive, background: "#fff", border: `1px solid #D3DCC7`, padding: "4px 12px", borderRadius: 100 }}>

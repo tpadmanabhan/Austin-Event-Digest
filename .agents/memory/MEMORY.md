@@ -24,3 +24,4 @@
 - [Spotlight endpoint format](spotlight-endpoint.md) — POST /digest/:id/spotlight takes {url, type, title, description}; skill doc's {businessSpotlight,communitySpotlight} shape is wrong
 - [Managed city tenants](managed-city-tenants.md) — brushycreek/bulverde/portland/sacramento don't auto-seed in dev; must INSERT manually; includes dev IDs + Aug 16-22 digest IDs
 - [Tenant-specific dev previews](tenant-dev-previews.md) — default app preview host shows Austin; use a hostname-mapped browser to visually check AustinCares locally
+- [Recurring AustinCares digest offers](recurring-austincares-digest.md) — use an undated weekly label for ongoing offers; weekday-only dates are filtered after that day
