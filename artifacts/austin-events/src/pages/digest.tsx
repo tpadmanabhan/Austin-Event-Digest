@@ -145,6 +145,33 @@ function getWeekMFDateRange(weekOfStr: string): string {
   return `${format(sunday, "MMMM d")} – ${format(saturday, "MMMM d")}, ${year}`;
 }
 
+function getEditionDateRange(weekOf: string, subject: string, isAustin: boolean): { label: string; extended: boolean } {
+  const weekly = { label: getWeekMFDateRange(weekOf), extended: false };
+  if (!isAustin) return weekly;
+
+  // Austin's extended editions name their actual end date in the subject.
+  const match = subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s+to\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})\s*$/i);
+  if (!match) return weekly;
+  const startMonth = MONTH_MAP[match[1].slice(0, 3).replace(/^./, c => c.toUpperCase())];
+  const endMonth = MONTH_MAP[match[3].slice(0, 3).replace(/^./, c => c.toUpperCase())];
+  if (startMonth === undefined || endMonth === undefined) return weekly;
+
+  const start = parseISO(weekOf.substring(0, 10));
+  const end = new Date(Number(match[5]), endMonth, Number(match[4]));
+  const weeklyEnd = new Date(start);
+  weeklyEnd.setDate(start.getDate() + 6);
+  if (
+    start.getMonth() !== startMonth ||
+    start.getDate() !== Number(match[2]) ||
+    end.getFullYear() !== Number(match[5]) ||
+    end.getMonth() !== endMonth ||
+    end.getDate() !== Number(match[4]) ||
+    end <= weeklyEnd
+  ) return weekly;
+
+  return { label: `${format(start, "MMMM d")} – ${format(end, "MMMM d, yyyy")}`, extended: true };
+}
+
 type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";
 
 const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
@@ -352,6 +379,9 @@ export default function DigestView() {
     return null;
   }
 
+  const { label: editionDateRange, extended: isExtendedAustinEdition } =
+    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin");
+
   return (
     <Layout>
       {/* ANNOUNCEMENT BANNER */}
@@ -371,16 +401,15 @@ export default function DigestView() {
         <header className="mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             <Calendar className="w-4 h-4" />
-            <span>{`Events: ${getWeekMFDateRange(digest.weekOf)}`}</span>
+            <span>{`Events: ${editionDateRange}`}</span>
           </div>
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
             {(() => {
-              const range = getWeekMFDateRange(digest.weekOf);
               const emojiMatch = digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
               const emoji = emojiMatch ? emojiMatch[1] : "";
               const titleBase = tenant.digestTitle || `${cityShortName} Events`;
-              return `${emoji}${titleBase}: ${range}`;
+              return `${emoji}${titleBase}: ${editionDateRange}`;
             })()}
           </h1>
           
@@ -615,7 +644,7 @@ export default function DigestView() {
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-6 flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    🗺️ This week on the map
+                    {isExtendedAustinEdition ? "🗺️ Upcoming events on the map" : "🗺️ This week on the map"}
                   </h2>
                   <EventMap
                     events={upcomingEvents}
@@ -784,7 +813,7 @@ export default function DigestView() {
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
                   <h2 className="font-serif text-3xl font-bold flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {geoActive ? jt("Events — Nearest First", JA.eventsNearestFirst) : jt("Upcoming Events", JA.thisWeeksCuratedEvents)}
+                    {isExtendedAustinEdition ? "Upcoming Events" : geoActive ? jt("Events — Nearest First", JA.eventsNearestFirst) : jt("Upcoming Events", JA.thisWeeksCuratedEvents)}
                   </h2>
                   <div className="flex items-center gap-2 flex-wrap">
                     {staleCount > 0 && (
@@ -802,7 +831,7 @@ export default function DigestView() {
                 {visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
                     <p className="text-4xl mb-4">{CAT_CONFIG[categoryFilter].emoji}</p>
-                    <p className="text-xl font-serif font-bold text-foreground mb-2">{jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                    <p className="text-xl font-serif font-bold text-foreground mb-2">{isExtendedAustinEdition ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events` : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                     <p className="text-muted-foreground text-sm mb-6">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     <button
                       onClick={() => setCategoryFilter("All")}
@@ -844,10 +873,12 @@ export default function DigestView() {
                   style={{ color: "#fff" }}
                 >
                   The best deal in Austin —{" "}
-                  <em style={{ color: "#fbbf24", fontStyle: "italic" }}>every day of the week.</em>
+                  <em style={{ color: "#fbbf24", fontStyle: "italic" }}>{isExtendedAustinEdition ? "every day." : "every day of the week."}</em>
                 </h3>
                 <p className="text-sm leading-relaxed mb-2" style={{ color: "#fde68a" }}>
-                  AustinCares is a weekly digest of real, time-boxed discounts near you — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.
+                  {isExtendedAustinEdition
+                    ? "AustinCares shares real, time-boxed discounts near you — happy hours and day-specific deals — filtered by day and distance. No hunting through Instagram. No expired coupons."
+                    : "AustinCares is a weekly digest of real, time-boxed discounts near you — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons."}
                 </p>
                 <p
                   className="text-xs font-bold uppercase tracking-widest mb-7"
@@ -862,7 +893,7 @@ export default function DigestView() {
                   className="inline-block text-sm font-bold no-underline px-7 py-3 rounded-full transition-opacity hover:opacity-90"
                   style={{ background: "#C4502B", color: "#fff" }}
                 >
-                  See this week's Austin deals →
+                  {isExtendedAustinEdition ? "See Austin deals →" : "See this week's Austin deals →"}
                 </a>
               </div>
             </div>
@@ -874,7 +905,9 @@ export default function DigestView() {
           <div className="relative z-10">
             <h3 className="font-serif text-3xl font-bold mb-2 text-center">{jt("Don't miss the next one", JA.subscribeHeading)}</h3>
             <p className="text-secondary-foreground/80 mb-8 max-w-lg mx-auto text-lg text-center">
-              {jt(`Get next week's best ${cityShortName} events delivered straight to your inbox.`, JA.subscribeSubtext(cityShortName))}
+              {isExtendedAustinEdition
+                ? `Get upcoming ${cityShortName} events delivered straight to your inbox.`
+                : jt(`Get next week's best ${cityShortName} events delivered straight to your inbox.`, JA.subscribeSubtext(cityShortName))}
             </p>
             <div className="max-w-xl mx-auto bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60">
               <SubscribeForm />
