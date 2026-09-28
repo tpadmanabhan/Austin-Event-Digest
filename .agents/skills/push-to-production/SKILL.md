@@ -7,107 +7,57 @@ description: Push event digest data or other changes from the dev environment to
 
 ## Key Facts
 
-- **Dev and production are completely separate databases.** The dev Replit PostgreSQL and the production Neon database have independent data — including different admin tokens (passwordHash values differ per environment).
+- **Dev and production are separate environments.** Their tenant rows, digests, and admin credentials may differ; always target and authenticate to the intended city subdomain.
 - **Production URL:** `https://eventcarpooling.com` / `https://<city>.eventcarpooling.com`
-- **Code changes** → Publish via Replit deploy button
-- **Data changes** → API calls directly to the production endpoint with a production admin token
+- **Code changes** → Publish via Replit deploy button.
+- **Production data writes** → Use the authenticated production API. Production `executeSql` is for read-only inspection; do not try to write production rows directly with it.
+- Public GET endpoints such as `/api/events/digest/latest` do not validate admin credentials.
 
-## Step-by-Step: Patch a Production Digest
+## Safely edit or publish digest data
 
-### 1. Get the production admin token
+### 1. Identify the target digest and tenant
 
-```js
-// In CodeExecution:
-const result = await executeSql({
-  sqlQuery: "SELECT password_hash FROM tenants WHERE slug = 'austin'",
-  environment: "production"
-});
-// Extract passwordHash from result.output, then:
-import crypto from "crypto";
-const token = crypto.createHmac("sha256", passwordHash).update("admin-session").digest("hex");
-```
+Use the correct city subdomain and list digests with `GET /api/events/digest/list`; confirm its ID, `weekOf`, subject, and tenant against the intended publication. A digest may span beyond its nominal week. Do not hard-code a digest ID or assume that “latest” means the digest being edited. For authentication procedures see `admin-api-auth`.
 
-### 2. Fetch the current production digest events
+### 2. Prefer a scoped event edit
 
-```bash
-curl -s "https://austin.eventcarpooling.com/api/events/digest/latest" \
-  -H "Authorization: Bearer $PROD_TOKEN" > /tmp/prod_digest.json
-```
+For a title/date/venue/category/description change on one event, use `PATCH /api/events/digest/:id/events/:idx` with only the intended fields. The index is in the **raw stored array**, not the filtered public list. This route merges those fields into the stored event and preserves its other properties; it cannot edit link, image, coordinates, source, or spotlight flags.
 
-### 3. Build the patch payload
+**Do not use `PATCH /api/events/digest/:id/events` as a one-event edit.** It replaces the entire event array and runs every supplied object through `EventItemSchema`; fields outside that schema are dropped. It rejects an empty array, so it is not a clear-all/delete-all operation.
 
-```python
-import json
+### 3. Do not build a replacement array from a public digest response
 
-with open("/tmp/prod_digest.json") as f:
-    d = json.load(f)
+`GET /api/events/digest/latest` and `/digest/list` return `digestToApi()` projections, not raw stored events. That projection filters past events and adult content. Replacing the stored array with one of these responses can erase filtered historical events; the replace-all PATCH also normalizes objects and strips fields not in the schema. **Never reconstruct a full replacement payload from those GET responses.**
 
-events = d.get("digest", d).get("events", [])
+If a complete replacement is explicitly required, first obtain and review the full raw event array for the exact tenant and digest using an authorized read-only source, preserve every stored property, compare the intended result against the original, and understand that the replace-all route still strips properties not represented by `EventItemSchema`. If preserving such fields is required, do not use that route; use a supported scoped operation or change the API implementation first.
 
-new_event = { ... }  # your new event object
-events.append(new_event)
+After a write, check the HTTP status and response, then re-read the target digest and verify its week, intended fields, and event count. A response from `digestToApi()` may omit stale/adult events and is not proof that the raw stored array is unchanged.
 
-with open("/tmp/patch_payload.json", "w") as f:
-    json.dump({"events": events}, f)
-```
+### 4. Copy a dev digest to production (where supported)
 
-> **Always write to a file then use `-d @file`.** Piping JSON directly (`... | curl ... -d @-`) can silently drop data and return an empty success.
+The admin UI's production-status check compares digest weeks. Its push action uses `POST /api/events/digest/:id/push-to-prod`, supported only for Sacramento, Portland, Bulverde, St. Louis, Brushy Creek, and Tokyo. It authenticates with production email-HMAC configuration and imports a **new** digest; it is not an update-in-place operation. Check for an existing matching week first and verify production afterward.
 
-### 4. PATCH the production digest
-
-```bash
-curl -s -X PATCH "https://austin.eventcarpooling.com/api/events/digest/{digestId}/events" \
-  -H "Authorization: Bearer $PROD_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d @/tmp/patch_payload.json
-```
-
-Check `"success": true` **and** that `digest.events` has a non-zero length in the response. A PATCH can return `success: true` with 0 events if the category restriction silently stripped everything — this is not an error at the HTTP level but is a silent data loss. Always log the event count and verify it matches what you sent.
-
-> ⚠️ **AustinCares production category restriction:** Until the next deploy, production enforces `Civics + Wellness` for AustinCares. If you PATCH deals with `category: "Food & Markets"` they will be silently stripped. Use `category: "Wellness"` as a workaround.
-
-## How to Find the Production Digest ID
-
-```bash
-curl -s "https://austin.eventcarpooling.com/api/events/digest/list" \
-  -H "Authorization: Bearer $PROD_TOKEN"
-```
-
-Look for the digest whose `weekOf` matches the target week.
+For Austin, AustinCares, or another unsupported tenant, do not assume the push action works or copy an email-based token pattern. Use the authenticated production admin workflow/API available for that tenant.
 
 ## Neon Production Database
 
-Production runs on **Neon PostgreSQL** (console.neon.tech). The compute endpoint auto-suspends when idle. If production API calls fail with 500 or hang, go to console.neon.tech and re-enable the endpoint.
+Production runs on Neon PostgreSQL. If production API calls fail, investigate availability through authorized operational tooling; do not treat a public GET or a successful database read as evidence that an authenticated write succeeded.
 
-> ⚠️ **`executeSql` with `environment: "production"` is read-only** — SELECT queries work but INSERT / UPDATE / DELETE return `cannot execute ... in a read-only transaction`. To write production data, use the API (PATCH/POST to the production endpoint with a valid admin token). The only way to create new tenants in production is by updating `startupMigration.ts` and deploying.
+`executeSql` with `environment: "production"` is read-only: use it for SELECT/inspection, not INSERT/UPDATE/DELETE. Writes to existing production data go through authenticated tenant-scoped API routes. Tenant provisioning is code-driven through `startupMigration.ts` and a deploy; do not attempt to create a production tenant with a direct SQL write.
 
 ## Email-Based HMAC Cities
 
-For cities with null passwordHash (Sacramento, Portland, Bulverde, St. Louis, Brushy Creek, Tokyo, DC), compute the token as:
-
-```js
-// In a shell script:
-node -e "
-const crypto = require('crypto');
-const tok = crypto.createHmac('sha256', process.env.RSVP_HMAC_SECRET)
-  .update('admin-email:<prodTenantId>:<adminEmail@example.com>')
-  .digest('hex');
-console.log(tok);
-"
-```
-
-Pre-computed tokens and all production tenant IDs are in the `admin-api-auth` skill.
+For email-HMAC tenants, use the exact tenant ID and admin email from the target environment and compute the token at runtime as described in `admin-api-auth`. Do not rely on fixed tenant IDs. Keep the secret and derived token in memory only; never print, log, or persist them.
 
 ## New City Onboarding (Production)
 
-1. Add `INSERT ... ON CONFLICT (slug) DO NOTHING` to `startupMigration.ts` and deploy → tenant is created in production
-2. Optionally INSERT directly via `executeSql` environment:"production" — **this does NOT work** (read-only). Deploy is the only path.
-3. After deploy, run `POST /api/events/digest/generate` on the production API to seed the first digest
-4. PATCH the production digest with events (from dev or curated), add spotlights, patch intro, geocode
+1. Add the idempotent tenant seed to `startupMigration.ts` and deploy; startup migration creates/configures the tenant.
+2. Register its domain and complete the tenant-specific routing, branding, and source configuration.
+3. Use the authenticated tenant API to generate/import the first digest and verify it on that tenant's host.
 
 ## Health Check
 
-`GET /api/healthz` and `GET /api` return `{ status: "ok" }` without querying the database. These are registered **before** `app.use(resolveTenant)` in `app.ts` — do not remove them or move them after resolveTenant.
+`GET /api/healthz` and `GET /api` return `{ status: "ok" }` without querying the database. They are registered before `app.use(resolveTenant)` in `app.ts`.
 
 ## Event Object Shape
 
@@ -117,12 +67,17 @@ Pre-computed tokens and all production tenant IDs are in the `admin-api-auth` sk
   date: string,          // e.g. "Saturday, Aug 8 at 5:00 PM" — use local city time, not UTC
   venue: string,         // "Venue Name, Street Address, City, State ZIP"
   description: string,
-  link: string,
-  category: string,      // "Tech" | "Music" | "Sports" | "Arts" | "Food" | etc.
-  imageUrl: string | null,
-  source: string,        // "Partiful" | "Eventbrite" | "Direct" | etc.
-  featured: boolean
+  category: string,
+  link?: string | null,
+  imageUrl?: string | null,
+  source?: string | null,
+  featured?: boolean,
+  isPost?: boolean,
+  isBusinessSpotlight?: boolean,
+  deadline?: string | null,
+  lat?: number | null,
+  lng?: number | null
 }
 ```
 
-> **Time zone gotcha:** `parse-event-url` returns times in UTC. Austin events should use CDT (UTC−5). If the parsed time shows e.g. "10:00 PM", the actual Austin time is "5:00 PM" — correct it manually before patching.
+> **Time zone gotcha:** `parse-event-url` constructs display dates from source timestamps using the server's local time zone; these may differ from the event city's local time. Verify the source timestamp/time zone and daylight-saving offset before storing a display date, rather than applying a fixed UTC−5 shift.

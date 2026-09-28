@@ -11,16 +11,16 @@ Tokyo is the only city on the platform with a second language (Japanese). It has
 
 - **Toggle:** Visitors can switch between English and Japanese via a language toggle in the header
 - **Persistence:** Language selection is stored in `localStorage` as `ec-lang` (`"en"` | `"ja"`)
-- **Scope:** The `ec-lang` key is global — a user who switches to Japanese on Tokyo will see Japanese if they visit another city that supports it. Only Tokyo renders Japanese-specific UI translations.
+- **Scope:** Browser `localStorage` is origin-scoped, so this preference is not shared automatically between Tokyo and other city subdomains. The toggle and Tokyo-specific translations are gated by the tenant slug.
 - **Strings:** Static Japanese UI strings live in `artifacts/austin-events/src/i18n/ja.ts`
-- **Context:** `artifacts/austin-events/src/contexts/lang-context.tsx` and `language-context.tsx` both use `Lang = "en" | "ja"`
+- **Contexts:** `language-context.tsx` is the tenant-site language/translation context; it persists `ec-lang` and calls `/api/translate`. `lang-context.tsx` is a separate platform-home context; it only toggles local in-memory UI state and does not read or persist `ec-lang`. Do not treat these providers as interchangeable.
 
 ## Translation of Event Content
 
 Event titles and descriptions are AI-translated (OpenAI) for Tokyo digests. Two mechanisms:
 
 ### 1. Translation Cache (DB-backed)
-Translations are stored in the DB to avoid re-translating on every page load. The cache uses a `translations` table keyed by source text + language.
+Translations are stored in the `translation_cache` table, keyed by source text + target language, to avoid re-translating cached strings.
 
 ### 2. Pre-warm on Digest Import
 When a digest is imported for Tokyo (`POST /api/events/digest/import`), event titles and descriptions are pre-translated in the background:
@@ -32,106 +32,45 @@ if (req.tenant!.slug === "tokyo") {   // ← slug-based check (not hardcoded ID)
 }
 ```
 
-This fires-and-forgets so the import response is instant; translations are ready by first page load.
+This runs fire-and-forget after the import response, so it is best-effort and is not guaranteed to finish before the first page load. The frontend can still request uncached translations on demand.
 
 ### 3. Frontend Translation
-The digest page fetches translations for all visible events in a single batched call on load. Events not yet in the cache trigger an on-demand translation.
+The Tokyo home page batches event titles and descriptions into one `/api/translate` request while Japanese is selected. The route checks the DB cache, translates cache misses, and returns original text if translation is unavailable or incomplete. The SQL cache lookup uses individual parameterized queries in parallel; do not replace it with an unverified array-parameter query pattern.
 
 ## Admin Auth for Tokyo
 
-Tokyo's `password_hash` is **null in both dev and production**. Use the **email-based HMAC** pattern — NOT the password-hash pattern.
-
-```js
-// Production (tenant ID 8):
-const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET)
-  .update("admin-email:8:aiimplementationclubaustin@gmail.com")
-  .digest("hex");
-// Use against https://tokyo.eventcarpooling.com/api/...
-
-// Dev (tenant ID 4):
-const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET)
-  .update("admin-email:4:aiimplementationclubaustin@gmail.com")
-  .digest("hex");
-```
-
-> ⚠️ The `admin-api-auth` skill originally listed Tokyo as "Password-hash" — this is wrong. Tokyo was never assigned a password. Always use email-based auth.
+Tokyo uses the email-based admin HMAC path in the shared `requireAdmin` middleware (the middleware can also validate password-hash tokens for tenants that use them). Use `admin-api-auth` to obtain a tenant- and environment-correct token. Do not hardcode tenant IDs/admin emails from an example, copy tokens between environments, or print `RSVP_HMAC_SECRET` or derived tokens.
 
 ## Generating a Tokyo Digest
 
-Same flow as other cities, but run against `tokyo.eventcarpooling.com`:
+Use the normal authenticated digest generate/import flow against the Tokyo tenant, with the exact request fields documented by the API/admin UI. `POST /api/events/digest/import` requires `weekOf`, `subject`, `intro`, and a non-empty `events` array. It applies tenant/content filtering, inserts a new digest, then starts geocoding and Japanese translation pre-warming in the background.
 
-```bash
-curl -X POST "https://tokyo.eventcarpooling.com/api/events/digest/generate" \
-  -H "Authorization: Bearer $TOKYO_TOKEN" \
-  -d '{"weekStart":"2026-08-10"}'
-```
-
-After importing events, the translation pre-warm runs automatically. Allow 30–60 seconds before the first page load for translations to finish.
+If event discovery returns no usable Tokyo events, the current generate route creates an empty draft for non-Austin tenants rather than inserting Austin sample events. Do not send an empty or unverified draft as a finished Tokyo edition; import or curate real Tokyo listings and confirm dates, venue, links, and event count. Generation may carry forward future featured events from the previous digest for the same tenant, so audit those for continued validity and location before sending.
 
 ## Spotlight / Community Post Audit (Tokyo-specific)
 
 Business spotlights (`isBusinessSpotlight: true`) and community posts (`isPost: true`) in the Tokyo digest can accumulate duplicates if `POST /api/events/digest/:id/spotlight` is called more than once, or if events are patched in manually alongside an existing spotlight.
 
-**Check for duplicates before sending:**
-```python
-for i, e in enumerate(events):
-    if e.get('isBusinessSpotlight') or e.get('isPost'):
-        print(f"[{i}] {e.get('title')} | {e.get('link')}")
-```
+Before adding or sending, inspect all entries marked `isBusinessSpotlight` or `isPost` and compare normalized titles and links. The spotlight route appends a new item; it does not upsert or deduplicate existing entries. Treat its use as a mutation, and preserve unrelated events when correcting a duplicate. Do not assume a single-item delete route exists; inspect the current admin API/UI before attempting removal.
 
 Watch for:
-- Same `link` appearing twice with different titles (remove the duplicate by index)
+- Same `link` appearing twice with different titles; resolve through a reviewed full-list update rather than assuming an index-delete API exists
 - **Placeholder descriptions** — WordPress/Avada demo copy ("Create a cutting-edge website for cryptocurrency services with Avada…") means the description was never updated; replace with accurate copy
-- **HTML entities in titles** — WordPress-sourced data often contains `&#8211;` (en-dash), `&#8217;` (apostrophe), etc. Decode with Python's `html.unescape()` before storing
+- **HTML entities in titles** — WordPress-sourced data may contain encoded punctuation such as `&#8211;` or `&#8217;`; normalize to readable text before storing and avoid double-encoding
 
-## Japanese Translation Coverage (home.tsx)
+## Japanese Translation Coverage
 
-As of the current code, Japanese translation applies to:
-
-| Element | How |
-|---------|-----|
-| Event titles + descriptions (regular events) | `translateEvent()` called on each `EventCard` |
-| Event titles + descriptions (featured/amber-framed events) | `translateEvent()` called before `EventCard` |
-| Business Spotlight title + description | `translateEvent(bizRaw)` — fixed; was missing before |
-| Community Spotlight title + description | `translateEvent(postRaw)` — fixed; was missing before |
-| Section headers ("Business Spotlight", "Community Spotlight") | `jt("Business Spotlight", JA.businessSpotlight)` |
-| Badge labels inside card header bars | Same `jt()` call |
-| "Visit Website" button | `jt("Visit Website", JA.visitWebsite)` |
-| "Apply Now" button | `jt("Apply Now", JA.applyNow)` |
-| "Apply by [date]" | `jt("Apply by X", JA.applyBy(date))` |
-| "Special Event" badge | `jt("Special Event", JA.specialEvent)` |
-| Category filter labels | `catLabel()` using `JA_CAT` map |
-| Hero copy + curator quote | `jt()` + `JA.*` throughout |
-
-**JA strings in `ja.ts`** (full list as of current code):
-- `businessSpotlight`, `communitySpotlight`, `visitWebsite`, `applyNow`, `applyBy(date)`
-- `specialEvent`, `bestOf`, `stopScrolling`, `startExperiencing`, `heroSubtext`, `curatorQuote`
-- `subscribe`, `catAll/Tech/Arts/Sports/Civics/Wellness`
-- `noEvents(cat)`, `checkBack(cat)`, `viewAllEvents`
-- `subscribeHeading`, `subscribeSubtext`
-
-The translation cache (`homeTranslatedMap`) batches ALL events including spotlights and posts — so translations are already available when `translateEvent()` is called on spotlight cards. No cache changes needed.
+On the Tokyo home page, dynamic event titles and descriptions are batched for regular events, featured events, business spotlights, and community posts. Static UI translations (hero, section labels, category filters, event actions and empty states) live in `ja.ts`. When changing the page, verify both paths: dynamic copy through `translateEvent()`/`/api/translate`, and fixed labels through `JA`/`jt()`. Translation is Tokyo-gated even though the shared tenant page and language context are used by other cities.
 
 ## Duplicate Spotlight / Post Dedup
 
-Tokyo's digest has had "Second Harvest Japan" appear twice as a community post (isPost: true) — once from a direct PATCH and once carried forward. Always check by **title** (not just link) before sending:
-
-```js
-const seenTitles = new Set();
-const deduped = events.filter(e => {
-  if (!e.isPost) return true;
-  if (seenTitles.has(e.title)) return false;
-  seenTitles.add(e.title);
-  return true;
-});
-```
+Do not apply an in-memory deduplication snippet and assume it updates the stored digest. Audit by title and link, then make a reviewed admin update that preserves all other entries; `PATCH /api/events/digest/:id/events` replaces the whole non-empty event array.
 
 ## Known Issues / Watch Points
 
-- **Language persistence is global** — if a user toggles to Japanese on Tokyo and then visits Austin, Austin may show partial Japanese UI if any key happens to have a Japanese variant. Only Tokyo has full Japanese translation coverage.
-- **Translation cache** — `ANY(${array})` syntax is broken in Drizzle's `sql` template for this use case; the translation cache uses a workaround (single batched frontend call). Do not change the cache query pattern without verifying the fix still works.
-- **Generating Tokyo digests falls back to Austin sample events** — Ticketmaster returns 0 results for Tokyo, Japan with the current adapter. `generateSampleDigest()` now generates a city-specific *intro* ("Hey Tokyo!") but the fallback *event list* still contains Austin venues (Barton Springs, ACL Live, etc.). Do NOT push these to production. Use the import endpoint with curated Tokyo events instead (Task #117 tracks the underlying fix).
-- **Carry-forward leak** — Austin sample events (Barton Springs, Alamo Drafthouse, ACL Live) have appeared as `featured: true` carry-forwards in Tokyo digests. After generating or importing a Tokyo digest, always check for and remove any events with Austin venue names. See the "Carry-Forward Leak" section in the `digest-workflow` skill.
+- **No-result generation is an empty draft for Tokyo** — the current generate route intentionally uses Austin sample fallback only for Austin/St. Louis. Curate/import real Tokyo listings if discovery yields none.
+- **Carry-forward is tenant-scoped, but still audit content** — generation reads featured events from the latest digest for that tenant. Remove or correct expired, mislocated, or otherwise stale carry-forwards through a reviewed whole-array update.
+- **Translation pre-warm is asynchronous** — do not rely on a fixed wait time. The frontend on-demand translation path remains available for uncached text.
 
 ## Relevant Files
 
@@ -139,5 +78,6 @@ const deduped = events.filter(e => {
 - `artifacts/austin-events/src/pages/home.tsx` — `translateEvent()` calls for all card types
 - `artifacts/austin-events/src/contexts/lang-context.tsx` — language context
 - `artifacts/austin-events/src/contexts/language-context.tsx` — secondary language context
-- `artifacts/api-server/src/routes/events.ts` — translation prewarm on import (search `slug === "tokyo"`)
-- `artifacts/api-server/src/lib/translationCache.ts` — translation cache logic
+- `artifacts/api-server/src/routes/events.ts` — Tokyo digest import and email translation flow
+- `artifacts/api-server/src/routes/translate.ts` — translation API and DB-cache reads/writes
+- `artifacts/api-server/src/lib/translationPrewarm.ts` — background cache pre-warm after import

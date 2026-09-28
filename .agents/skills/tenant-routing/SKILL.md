@@ -7,12 +7,19 @@ description: Understand how the multi-tenant routing system works for eventcarpo
 
 ## How It Works
 
-Every city runs on the same codebase but gets its own branded experience via subdomain. The **Host header** on every API request is used to look up the tenant in the `tenants` table via `artifacts/api-server/src/middleware/resolveTenant.ts`.
+Every city runs on the same codebase but gets its own branded experience via subdomain. `app.ts` trusts the proxy, then `resolveTenant.ts` derives a slug from the request host and looks up an active tenant row. In production, a city subdomain such as `austin.eventcarpooling.com` selects that tenant; the root domain and the reserved `www`/`api` hosts have no tenant context. City routes are mounted behind `requireTenant`; admin routes additionally use `requireAdmin`.
 
-## City Reference (6 Standard Cities + Tokyo + AustinCares)
+## Host and environment routing
+
+- In non-production only, `X-Tenant-Slug` can override the tenant for dev/testing.
+- On `localhost`, `127.0.0.1`, `*.replit.dev`, and `*.repl.co`, subdomain parsing is skipped; `DEFAULT_TENANT_SLUG` selects the dev tenant.
+- In production, the dev header and `DEFAULT_TENANT_SLUG` are ignored. The leading subdomain is used; a missing or unknown/inactive tenant does not silently fall back to another city.
+- `/api/healthz` and `/api` are registered before tenant resolution. The router also has platform-level routes that do not require a tenant; not every `/api` route is city-scoped.
+
+## City Reference
 
 ### 🤠 Austin (`austin.eventcarpooling.com`)
-- **Auth:** Password-hash HMAC — **always fetch fresh hash from prod DB** before computing token; hash changes when password is updated; never reuse cached tokens
+- **Auth:** Password-hash HMAC is accepted by `requireAdmin`. Austin's startup migration re-hashes `ADMIN_PASSWORD` at server startup when configured, so obtain a fresh target-environment hash before deriving a token. Do not assume AustinCares has the same startup rotation; see `admin-api-auth`.
 - **Curator:** Raj (customersuccessforgood.com)
 - **Language:** English
 - **Special features:** Subscriber radius/distance personalization, walkable-only filter, signed preferences token in emails, Nearest First sort
@@ -20,7 +27,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **Community events:** None defined — relies entirely on adapters
 
 ### 🌲 Sacramento (`sacramento.eventcarpooling.com`)
-- **Auth:** Email-based HMAC (null passwordHash) — use `RSVP_HMAC_SECRET` + admin email
+- **Auth:** Email-based HMAC — see `admin-api-auth`; resolve the tenant ID and admin email in the environment being targeted.
 - **Curator:** Bob
 - **Language:** English
 - **Special features:** None beyond standard platform
@@ -28,7 +35,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **Community events:** Public Library, Old Sac Waterfront Concert, Midtown Farmers Market, Urban Bee Festival, Sac Tech Meetup, Land Park Farmers Market
 
 ### 🌹 Portland (`portland.eventcarpooling.com`)
-- **Auth:** Email-based HMAC (null passwordHash)
+- **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** *(blank — footer attribution won't render)*
 - **Language:** English
 - **Special features:** None beyond standard platform
@@ -37,7 +44,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **⚠️ Ticketmaster geographic bleed:** TM city search for "Portland, OR" sometimes returns events for Portland, **Maine** (e.g. Portland Sea Dogs baseball). Always filter these before sending — look for venues clearly outside Oregon.
 
 ### ⚾ St. Louis (`stlouis.eventcarpooling.com`)
-- **Auth:** Email-based HMAC (null passwordHash)
+- **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** Phil
 - **Language:** English
 - **Special features:** None beyond standard platform
@@ -46,7 +53,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **⚠️ Geocoding drift:** Vague venue strings like "Atomic Lounge, St. Louis" geocoded to Las Vegas; "Atomic Garage, St. Louis" geocoded to Des Moines. Always audit coords against the St. Louis bounding box (lat 37–40, lng -96 to -88) before sending. See "Geocoding Drift Audit" in the digest-workflow skill for the fix pattern.
 
 ### 🏞️ Brushy Creek (`brushycreek.eventcarpooling.com`)
-- **Auth:** Email-based HMAC (null passwordHash) — see `brushycreek-admin-auth.md` in memory
+- **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** Rohan Vivier
 - **Language:** English
 - **Special features:** Uses BCRR-specific layout (variable named `isAustinCares` in `layout.tsx`/`home.tsx` checks `slug === "brushycreek"` — intentional naming, not a bug; renders BCRR Weekly Digest header and custom hero)
@@ -55,7 +62,7 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **⚠️ Carry-forward leak:** Austin sample events (Barton Springs, Alamo Drafthouse, ACL Live, South Congress Farmers Market, East Austin Studio Tour) have been found as carry-forward entries in Brushy Creek digests. Always filter these out after generating — they don't belong in a Round Rock/Cedar Park digest.
 
 ### 🌄 Bulverde (`bulverde.eventcarpooling.com`)
-- **Auth:** Email-based HMAC (null passwordHash)
+- **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** *(blank)*
 - **Language:** English
 - **Special features:** None beyond standard platform; custom logo/layout ordering
@@ -64,16 +71,16 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **⚠️ Geocoding bounds:** Bulverde serves the San Antonio metro — geocoding bounds extend to include SA (lat 29.3–30.4, lng -98.8 to -98.0). Name-only SA venues (Laugh Out Loud Comedy Club, Nelson Wolff Stadium, La Villita, Geekdom) require hardcoded coords — Nominatim can't find them from name alone.
 
 ### 🗼 Tokyo (`tokyo.eventcarpooling.com`) — See `tokyo-digest` skill
-- **Auth:** Email-based HMAC (null passwordHash in both dev and prod) — prod ID 8, dev ID 4
+- **Auth:** Email-based HMAC — see `admin-api-auth`; resolve the environment-specific tenant ID rather than assuming it.
 - **Curator:** *(blank)*
 - **Language:** English + Japanese (toggle available; Japanese strings in `i18n/ja.ts`)
-- **Special features:** AI translation of event titles/descriptions on digest import (prewarm via slug check, not hardcoded ID); language toggle persists globally as `ec-lang`
+- **Special features:** AI translation of event titles/descriptions on digest import (prewarm via slug check, not hardcoded ID); the language toggle persists as `ec-lang` on the Tokyo browser origin
 - **Layout:** Generic `home.tsx` with Japanese-specific hero/category styling
 - **Japanese translation coverage:** `translateEvent()` is called on all card types — regular events, featured/amber-framed events, Business Spotlight, Community Spotlight. Section headers ("Business Spotlight" → "ビジネススポットライト"), button labels ("Visit Website" → "ウェブサイトを見る", "Apply Now" → "今すぐ申し込む") are also translated via `jt()` + `JA.*`.
 - **⚠️ Carry-forward leak:** Austin sample events (Barton Springs, Alamo Drafthouse, ACL Live) have been found as carry-forward `featured: true` entries in Tokyo digests. Always check for and remove Austin-venue events after generating or importing a Tokyo digest.
 
 ### 🏛️ DC (`dc.eventcarpooling.com`)
-- **Auth:** Email-based HMAC (null passwordHash)
+- **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** *(blank)*
 - **Language:** English
 - **Special features:** None beyond standard platform
@@ -82,32 +89,28 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - **⚠️ Geocoding drift:** "Washington" alone geocodes to Washington State — always use "Washington, DC" in venue strings. The Sage venue geocoded to WA state; The National Theatre geocoded to Africa on first pass. Always audit coords against DC metro bounds (lat 38.5–39.2, lng -77.5 to -76.7) before sending.
 
 ### 🌿 AustinCares (`austincares.eventcarpooling.com`)
-- **Auth:** Password-hash HMAC — **always query prod DB for fresh hash**
+- **Auth:** Password-hash HMAC is accepted by `requireAdmin`; verify the target-environment hash when needed. Do not assume Austin's startup hash rotation applies.
 - **Curator:** *(blank)*
 - **Language:** English
 - **Positioning:** **Weekly deals site**, not an events site. Primary value = the deals directory, not the digest.
-- **Special features:** Dedicated pages — `/` → deals landing, `/full` → live deals map + directory + community submission form; digest email has a prominent "See this week's deals →" button to `/full`; category restriction removed in dev code (`applyTenantCategoryRestriction` RESTRICTIONS map is empty); until next deploy use `category: "Wellness"` on deal objects to pass prod validation
+- **Special features:** Dedicated pages — `/` → deals landing, `/full` → live deals map + directory + community submission form; digest email links readers to `/full`. The current `applyTenantCategoryRestriction` map is empty, so the events-array route applies no tenant-specific category filter.
 - **Layout:** `austin-cares-deals.tsx` and `austin-cares-full.tsx` (not generic `home.tsx`)
 
 ## Auth Quick Reference
 
 | City | Auth Pattern | Notes |
 |------|-------------|-------|
-| Austin | Password-hash HMAC | Fetch fresh from prod DB every session |
-| AustinCares | Password-hash HMAC | Fetch fresh from prod DB every session |
-| Tokyo | Email-based HMAC | Null passwordHash; prod ID 8, dev ID 4 |
-| Sacramento | Email-based HMAC | Null passwordHash |
-| Portland | Email-based HMAC | Null passwordHash |
-| St. Louis | Email-based HMAC | Null passwordHash |
-| Brushy Creek | Email-based HMAC | Null passwordHash |
-| Bulverde | Email-based HMAC | Null passwordHash |
-| DC | Email-based HMAC | Null passwordHash; prod ID 217 |
+| Austin | Password-hash HMAC | Startup migration refreshes hash when `ADMIN_PASSWORD` is configured |
+| AustinCares | Password-hash HMAC | Do not assume Austin's startup hash rotation |
+| Tokyo | Email-based HMAC | Look up target-environment tenant ID and email |
+| Sacramento | Email-based HMAC | Look up target-environment tenant ID and email |
+| Portland | Email-based HMAC | Look up target-environment tenant ID and email |
+| St. Louis | Email-based HMAC | Look up target-environment tenant ID and email |
+| Brushy Creek | Email-based HMAC | Look up target-environment tenant ID and email |
+| Bulverde | Email-based HMAC | Look up target-environment tenant ID and email |
+| DC | Email-based HMAC | Look up target-environment tenant ID and email |
 
-See `admin-api-auth` skill for token computation details and pre-computed production tokens.
-
-## Health Check Bypass
-
-`GET /api/healthz` and `GET /api` are registered **before** `app.use(resolveTenant)` in `app.ts` — health probes never trigger DB lookups.
+See `admin-api-auth` for token computation and the login/verification caveat. Prefer Bearer auth; never persist or print a token or secret.
 
 ## Per-City Email Intro
 
@@ -120,20 +123,6 @@ FROM tenants t JOIN digests d ON d.tenant_id = t.id
 WHERE t.slug NOT IN ('austin') AND d.week_of = 'YYYY-MM-DD';
 ```
 If any intro contains "Austin" → PATCH with `PATCH /api/events/digest/:id/intro`.
-
-## Production Tenant IDs (confirmed)
-
-| Slug | Prod ID | Admin Email |
-|------|---------|-------------|
-| austin | 1 | aiimplementationclubaustin@gmail.com |
-| austincares | 2 | rohanvivier@gmail.com |
-| brushycreek | 3 | rohanvivier@gmail.com |
-| sacramento | 4 | aiimplementationclubaustin@gmail.com |
-| portland | 5 | aiimplementationclubaustin@gmail.com |
-| bulverde | 6 | aiimplementationclubaustin@gmail.com |
-| stlouis | 7 | aiimplementationclubaustin@gmail.com |
-| tokyo | 8 | aiimplementationclubaustin@gmail.com |
-| dc | 217 | aiimplementationclubaustin@gmail.com |
 
 ## Adding a New City
 

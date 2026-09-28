@@ -15,29 +15,27 @@ description: Generate, review, patch, and send a city's weekly event digest. Use
 ## Finding the Right Digest
 
 ```bash
-# Dev
-curl -s "http://localhost:$PORT/api/events/digest/list" -H "Host: austin.eventcarpooling.com" \
-  -H "Authorization: Bearer $DEV_TOKEN"
+# Dev through the workspace proxy
+curl -s "http://localhost:80/api/events/digest/list" -H "Host: austin.eventcarpooling.com"
 
 # Production
-curl -s "https://austin.eventcarpooling.com/api/events/digest/list" \
-  -H "Authorization: Bearer $PROD_TOKEN"
+curl -s "https://austin.eventcarpooling.com/api/events/digest/list"
 ```
 
-Find the digest whose `weekOf` covers the target date.
+These GETs are public and filter past events; they are useful for finding the digest ID, not for backing up its stored events. Identify the target by tenant, ID, subject, and `weekOf`; an edition can contain events beyond its nominal week. When changing a live edition, inspect its current metadata and raw event array before writing. Read production data with the read-only database tool, then write via the city admin API. Never log a password hash or bearer token.
 
 ## Step 1: Generate a Digest
 
 ```
 POST /api/events/digest/generate
-{ "weekStart": "2026-08-10" }   // Monday of target week (YYYY-MM-DD)
+{ "weekStart": "YYYY-MM-DD" }
 ```
 
-Optional: `"weekEnd": "2026-08-16"` for multi-day ranges (bypasses Zod — intentional).
+Optional: `"weekEnd": "YYYY-MM-DD"` for an extended range (read directly from the request rather than the generated Zod body). Check the current handler before relying on this extension in production; deployment code can lag behind the workspace.
 
 ## Step 2: Add an Event from a URL
 
-Use `parse-event-url` to extract structured data, then manually append to the events list and PATCH:
+Use `parse-event-url` or inspect the source page to extract structured data. Verify its year, local time zone, weekday, venue, RSVP link, and image URL. `parse-event-url` can return an incorrect local time for a UTC timestamp; check it against the source.
 
 ```bash
 # 1. Parse the URL (returns title, date, venue, description, imageUrl)
@@ -45,13 +43,14 @@ curl -s -X POST "/api/events/digest/{id}/parse-event-url" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"url":"https://partiful.com/e/..."}'
 
-# 2. Fetch current events, append new one, write to file
-# 3. PATCH /api/events/digest/{id}/events with full updated array
+# 2. Read the complete stored events array (NOT the filtered /digest/latest or /digest/list response).
+# 3. Append or chronologically insert the new event; preserve all existing entries.
+# 4. PATCH /api/events/digest/{id}/events with the full updated array.
 ```
 
-> ⚠️ **PATCH replaces all events** — always fetch the existing list first and append; never send only the new event.
+> ⚠️ **PATCH replaces all events and rejects an empty array.** Public digest responses omit past events, even with admin authorization. Building a full replacement from those responses silently deletes retained historical events. Before patching, re-read the stored array and stop if it changed; after patching, confirm every original entry remains (unless removal was requested), new entries are ordered correctly, and both public pages and the email render them.
 
-> ⚠️ **Time zone:** `parse-event-url` returns times in UTC. Manually convert to local city time (Austin = CDT = UTC−5).
+> ⚠️ Full-array PATCH validates/normalizes every entry through `EventItemSchema` and auto-tags events beyond the nominal week as featured. Keep spotlight/community-post flags and required string fields intact.
 
 > ⚠️ **Use `-d @file` not piped stdin** — piping JSON into curl can silently drop data. Always write to a temp file first. Even `-d @file` can return FAIL with 0 events if the token is wrong — always verify `success: true` and a non-zero event count before assuming the PATCH worked.
 
@@ -64,7 +63,7 @@ PATCH /api/events/digest/<digestId>/events/:idx/venue
 { "venue": "Corrected Venue Name, Address" }
 ```
 
-Or use `PATCH /digest/:id/events` with the full array to edit any field.
+For title/date/venue/category/description, `PATCH /api/events/digest/:id/events/:idx` updates one **raw stored-array index**; a filtered public-array index may be different. The per-index route does **not** accept coordinates, link, image, source, or spotlight flags. For those use the full-array PATCH, preserving the stored entries. Changing a venue triggers geocoding.
 
 ## Step 4: Set Spotlight
 
@@ -78,9 +77,7 @@ POST /api/events/digest/<digestId>/spotlight
 
 Call the endpoint **once per spotlight** — one call for `type: "business"` and a separate call for `type: "community"`. Do NOT use the old `{ businessSpotlight, communitySpotlight }` shape — that is the wrong endpoint.
 
-> ⚠️ **Common mistake:** The skill documentation used to show a single call with `{ businessSpotlight: {...}, communitySpotlight: {...} }`. That shape does not work. The real endpoint takes one spotlight per POST, keyed by `type`.
-
-Verify each response returns `success: true` and an increasing `events` count (+1 per spotlight call).
+This endpoint **appends**; it does not replace an existing spotlight. To replace one, read the raw stored array, update the single `isBusinessSpotlight` or `isPost` object in place (including title/link/description/source), and full-array PATCH it. Verify there is exactly one intended spotlight of that type and all other entries remain. The response's `digest.events` is filtered and is not a safe source for a subsequent replacement.
 
 ### Spotlight Audit (run before sending)
 
@@ -99,7 +96,7 @@ Watch for:
 - **Placeholder/template descriptions** — WordPress/Avada demo copy like *"Create a cutting-edge website for cryptocurrency services with Avada…"* indicates the description was never properly filled in. Replace with accurate copy.
 - **HTML entities in titles** — data from WordPress-based sites often contains `&#8211;` (en-dash), `&#8217;` (right quote), etc. Decode with `html.unescape()` before storing.
 
-**Fix:** Fetch all events, filter/edit in JS, PATCH back:
+**Fix:** Work from the complete stored array (not a public filtered GET), filter/edit in JS, and PATCH back:
 ```js
 // Deduplicate spotlights by title (for isPost) and by link (for isBusinessSpotlight)
 const seenTitles = new Set();
@@ -119,7 +116,7 @@ const fixed = events.filter(e => {
 
 ## Step 5: Geocode Events (Do Before Sending)
 
-After generating or patching events, trigger re-geocoding so all events get lat/lng for the map:
+Event-list PATCH triggers background geocoding for missing coordinates. Check coverage; if entries remain unlocated, trigger a retry and verify the result:
 
 ```bash
 # Check coverage first
@@ -130,7 +127,7 @@ GET /api/events/digest/<digestId>/geocode-coverage
 POST /api/events/digest/<digestId>/regeocoded
 ```
 
-Community events added via PATCH will not be geocoded automatically — always trigger re-geocode after patching. Aim for 100% coverage before sending. Events without lat/lng won't appear on the digest map.
+Geocoding is asynchronous, so check again after it finishes. Aim for 100% coverage before sending. Events without lat/lng won't appear on the digest map. If a full address still cannot be resolved, confirm coordinates from a trustworthy map source, re-read the raw array, and full-array PATCH that single entry's `lat`/`lng`; the per-index event route rejects those fields.
 
 ### Geocoding Drift Audit (run before sending)
 
@@ -226,131 +223,42 @@ curl -s -X PATCH "https://CITY.eventcarpooling.com/api/events/digest/ID/intro" \
 - St. Louis: "Hey St. Louis! With the help of AI..." (from `getStLouisSampleDigest`)
 - Others: "Hey [City]!" + city-appropriate copy (now generated by `generateSampleDigest` with tenant info)
 
+To change the subject or `weekOf` without rebuilding the events, use `PATCH /api/events/digest/:id/meta` with a nonempty `subject` and/or ISO `weekOf`. The email subject comes from `subject`; template date labels may come from `weekOf`. Keep the two consistent, then inspect the authenticated `GET /api/events/digest/:id/preview-email`. A change to the email *template code* does not affect production until published.
+
 ## Step 6: Send (Always Test First)
 
-```bash
-# Test send to one address
+```text
+# Draft to exactly one address; never omit testEmail for a draft
 POST /api/events/digest/send
-{ "digestId": 123, "testEmail": "raj@example.com" }
+{ "digestId": <verified-digest-id>, "testEmail": "<intended-address>" }
 
-# Send to all subscribers (omit testEmail)
+# Full subscriber send: only with the user's explicit authorization
 POST /api/events/digest/send
-{ "digestId": 123 }
+{ "digestId": <verified-digest-id>, "confirm": true }
 ```
 
-Use `testEmail` — NOT `draftEmail` or `isDraft` (wrong field names cause a full subscriber send).
+Use `testEmail` — NOT `draftEmail` or `isDraft`. Confirm the city, digest ID, subject, intro, spotlight, upcoming events and intended address before calling send. Check HTTP status **and** `success: true`, and send only once. A test send does not update subscriber-wide `sentAt`/`sentCount`.
 
-`digestId` is **required** in the body — omitting it returns `invalid_request`.
+The current handler requires `confirm: true` when `testEmail` is absent; check the currently deployed behavior before a subscriber-wide send. Never infer permission for a full blast from “update the newsletter” or “send a draft.” Sending uses the stored digest but filters past dated events; community posts and spotlights are retained. The preview-email endpoint currently renders the raw event array, including historical events, so its event count may differ from what gets sent. Preview still helps verify the template, title, and spotlights.
 
 ## Deduplication Check Before Sending
 
-Ticketmaster returns the same show with multiple performance dates as separate events — all with the same title. Always check for duplicates before sending and deduplicate by title (keep the first occurrence):
+Ticketmaster can return the same show with multiple performance dates. Review apparent duplicates by **title, date, venue and link**; do not delete a genuinely separate performance merely because its title matches. When removing a true duplicate, work from the complete stored list, not `/digest/latest`.
 
 ```js
-// Fetch digest events, dedup by title, PATCH back
-const allEvts = dig.events;
-const seen = new Set();
-const deduped = allEvts.filter(e => {
-  if (e.isPost || e.isBusinessSpotlight) return true; // keep spotlights always
-  const key = e.title?.toLowerCase().trim();
-  if (seen.has(key)) return false;
-  seen.add(key);
-  return true;
-});
-// Write deduped to file, PATCH /api/events/digest/:id/events
+// Work from the raw stored events, inspect same-title entries,
+// remove only confirmed duplicates, then PATCH the full retained array.
 ```
 
 Also watch for **generic vs specific title duplicates** — e.g. "Summer Stock Austin" and "Summer Stock Austin 2026: Newsies" from the same venue. Keep the specific titles, drop the generic catch-all.
 
 ## Removing Events From a Digest
 
-Fetch the full event list, filter out unwanted events, write to a temp file, then PATCH:
-
-```bash
-node -e "
-async function run() {
-  const lr = await fetch('https://CITY.eventcarpooling.com/api/events/digest/list', {
-    headers: { Authorization: 'Bearer TOKEN' }
-  });
-  const dig = (await lr.json()).digests[0];
-  const filtered = dig.events.filter(e => !e.title?.match(/Unwanted Event Title/i));
-  const fs = require('fs');
-  fs.writeFileSync('/tmp/patch.json', JSON.stringify({ events: filtered }));
-  console.log('Keeping', filtered.length, 'of', dig.events.length);
-}
-run();
-"
-curl -s -X PATCH "https://CITY.eventcarpooling.com/api/events/digest/ID/events" \
-  -H "Authorization: Bearer TOKEN" -H "Content-Type: application/json" \
-  -d @/tmp/patch.json
-```
+Read the **raw stored event array** for the exact city and digest ID through the appropriate read-only database access. Remove only the requested entry, verify the remaining objects and count, then submit the **complete nonempty** replacement through authenticated `PATCH /api/events/digest/:id/events`. The public list filters historical entries and must never be used as the source of a replacement. Do not place bearer tokens in saved scripts or logs.
 
 ## City Branding Audit (Run Before First Send for Any City)
 
-A recurring audit step — run before sending a city's digest for the first time or after regeneration:
-
-**1. Check intro text for Austin bleed:**
-```sql
--- Production
-SELECT slug, d.id, LEFT(d.intro, 80) FROM tenants t
-JOIN digests d ON d.tenant_id = t.id AND d.week_of = '2026-08-09'
-WHERE t.slug IN ('sacramento','bulverde','portland','brushycreek','stlouis','tokyo');
-```
-Look for "Austin" or "🤠" in non-Austin city intros. If found, PATCH with a city-specific intro (see Step 5b).
-
-**2. Confirmed root causes (now fixed in code):**
-- `generateSampleDigest()` used to always produce "Happy Sunday, Austin!" — now accepts tenant param and generates city-specific intro/subject/emoji
-- Gmail reader intro ("Hey Austin! I combed through X newsletters 🤠") used to leak into ALL city digests when Gmail returned events — now gated to `slug === "austin"` only in the generate endpoint
-- AustinCares promo block in email body said "🏷️ Now Live **in Austin**" for all cities — now reads "🏷️ New · Austin Cares / The best local deals, curated every week."
-
-**3. Per-city subject emoji (now correct in code):**
-| City | Emoji |
-|------|-------|
-| Austin / Brushy Creek | 🤠 |
-| St. Louis | ⚾ |
-| Sacramento | 👑 |
-| Portland | 🌲 |
-| Bulverde | 🌿 |
-| Tokyo | 🗼 |
-| AustinCares | 🏷️ |
-
-**4. Relevant files:**
-- `artifacts/api-server/src/lib/digestGenerator.ts` → `generateSampleDigest(weekOf, customNotes, tenant)` — city-aware fallback intro/subject
-- `artifacts/api-server/src/routes/events.ts` → generate endpoint, line `introBase` — Gmail intro gated to Austin
-- `artifacts/api-server/src/lib/emailService.ts` → AustinCares promo block, subject emoji map, email body structure
-
-## Email Template — Current Structure (all cities)
-
-Changes applied in `artifacts/api-server/src/lib/emailService.ts` as of Aug 2026:
-
-**Removed blocks (no longer in any city email):**
-- ~~Superconnector feature block~~ — was ~40 lines promoting the Superconnector feature; removed
-- ~~Ride / carpool feature block~~ — was ~40 lines promoting carpool/ride feature; removed
-
-**Added block (all cities, after map section):**
-- **"Two new features rolling out soon"** Coming Soon block — appears immediately after `buildStaticMapSection(...)`, before events list. Contains:
-  - 📨 Tell a Friend — share link to bring a friend
-  - 💬 SMS for Local Businesses — city-name dynamic (e.g. "SMS for Austin Businesses")
-  - Pills: ⚡ Real-Time Reach, 💬 SMS-First, 📍 Hyper-Local, 🚀 No App Needed
-  - Teal background, styled inline for email clients
-
-If you don't see this block in a test email, check that the production server has been published with these changes.
-
-## ⚠️ Carry-Forward Leak: Austin Sample Events in Non-Austin Digests (FIXED)
-
-This bug is **fixed in deployed code**. Previously, the no-events fallback path unconditionally used `generateSampleDigest()` which always embedded Austin venues (Barton Springs, South Congress, Alamo Drafthouse, ACL Live). The fix gates sample-event fallback by tenant:
-
-```js
-// events.ts ~line 333
-const isAustinFamily = slug === "austin" || slug === "stlouis";
-events = isAustinFamily ? fallback.events : [];
-```
-
-- **Austin + St. Louis** retain the curated fallback event list when adapters return nothing
-- **All other cities** (Sacramento, Portland, Bulverde, Brushy Creek, Tokyo, DC) get an empty draft — no Austin venues bleed in
-- Intro/subject fallback still generates city-specifically; only the event objects are blocked
-
-**If you still see Austin events in a non-Austin digest**, those are old carry-forward artifacts from before this fix. Remove them manually: fetch events, filter out any with "Barton Springs", "South Congress Farmers Market", "Alamo Drafthouse", "Austin City Limits Live", "East Austin Studio Tour", then PATCH back.
+Before a city's first send and after regeneration, inspect its subject, intro, spotlight copy, city names, map, and email header in the authenticated preview. Austin-specific greetings and sample events have previously appeared in other tenants' drafts. The workspace's generate route currently limits sample-event fallback to Austin/St. Louis, but older production records or unpublished code can differ; check the actual edition rather than assuming the fix applies. Never send an empty draft or Austin-venue sample events for another city. `digestGenerator.ts` supplies city-aware fallback copy; `events.ts` controls generation; `emailService.ts` renders the tenant email theme. If a stored intro is wrong, patch only the intro using Step 5b.
 
 ## Carry-Forward of Manually-Curated Featured Events
 
@@ -371,44 +279,11 @@ When `POST /api/events/digest/generate` runs, it automatically carries forward a
 - Conferences spanning multiple days beyond the current week
 - Any event manually PATCHed into a previous digest with `featured: true`
 
-**Key implementation file:** `artifacts/api-server/src/routes/events.ts` → `carryForwardFeaturedEvents(tenantId, weekOf)` (~line 93)
+**Key implementation file:** `artifacts/api-server/src/routes/events.ts` → `carryForwardFeaturedEvents(tenantId, weekOf)`.
 
 ## AustinCares Digest Notes
 
-AustinCares is a **weekly deals site**, not an events site. Its digest is populated manually each week with real local Austin deals, not auto-generated from event adapters.
-
-**Current week (Aug 16–22, 2026):** dev digest ID 62, production digest ID 122. 7 real deals:
-- Revelry Kitchen + Bar — daily happy hour 4-7 PM ($5 apps, $1 off drafts, $2 off wine) · 1410 East 6th St
-- Nômadé Cocina — Tres Amigos: 1 margarita + 2 tacos for $10 (Mon–Thu 4:30–6 PM) · 2330 E Cesar Chavez
-- Nômadé Cocina — Tequila Tuesday: 50% off tequila pours · same address
-- Nômadé Cocina — Wine Wednesday: 50% off wine bottles · same address
-- Siena Austin — $26 Monday pasta dinner (2 courses, anniversary special) · 6203 N Capital of Texas Hwy
-- DoorDash Austin Flavor Fest — 30% off select Austin restaurants through August
-- Lou's Barton Springs — weeknight specials · 2109 Barton Springs Rd
-
-**Category restriction — production workaround:** The old restriction (`Civics + Wellness only`) has been removed in dev code (`applyTenantCategoryRestriction` RESTRICTIONS map is now empty). Until the next deploy, production still enforces it. When PATCHing deals to production, use `category: "Wellness"` on all deal objects so they pass through. After deploy, use `category: "Food & Markets"`.
-
-**Deals as events format:** Each deal is an event-like object with:
-- `date`: Saturday of the current week (e.g. "Saturday, Aug 15") so all deals stay visible all week
-- `venue`: full street address of the business
-- `category`: `"Wellness"` (prod workaround) or `"Food & Markets"` (post-deploy)
-- `source`: `"Direct"` | `"Groupon"` | `"Community"`
-- `lat`/`lng`: coordinates for map pins (required — missing pins are excluded from map)
-- `imageUrl`: **must be an absolute URL** (`https://austincares.eventcarpooling.com/api/storage/objects/uploads/<uuid>`). Relative paths silently fail in email clients. Dev code now auto-resolves relative URLs using `digest.siteUrl`, but always store absolute URLs in deal data to be safe on both old and new prod code.
-
-**Email:** AustinCares digest email renders "This Week's Deals 🏷️" (not "This Week's Picks"), "Deal locations in Austin" on the map, and a prominent teal CTA block linking to `https://austincares.eventcarpooling.com/full`.
-
-## Dev vs Production Generate Quality Gap
-
-The production server runs the last deployed build. Until a new deploy ships, `POST /digest/generate` on production still uses the old `TM_CLASSIFICATION` mapping, which sends `"Arts & Theatre"` and `"Miscellaneous"` to Ticketmaster — those return 0 events for most cities (the fix is in dev code only).
-
-**Workaround (before deploy):**
-1. Generate on the dev server: `POST http://localhost:$PORT/api/events/digest/generate` with the correct `Host:` header
-2. Save the events from the dev digest to a file
-3. Generate a blank digest on production (it may fall back to sample data — that's OK)
-4. PATCH the production digest with the dev events using the push-to-production skill
-
-Austin comparison: production got **4 events** with old code; dev got **21 events** with TM fix. Same week, same city.
+AustinCares is a **deals site**, not a standard events digest. Read `add-austincares-deal` for how deals are curated, stored, and displayed; do not reuse an old week's deals or disguise them under a different category. Use absolute `https://` image URLs for email clients. Production runs the last published code, which can differ from the workspace; verify behavior rather than assuming a specific old/new version is deployed.
 
 ## Ticketmaster Classification Behaviour
 
@@ -416,10 +291,7 @@ When `POST /digest/generate` calls the Ticketmaster adapter, it passes a `classi
 
 **The fix (applied in `ticketmaster.ts`):** `TM_CLASSIFICATION` now only maps `Music → "Music"` and `Sports → "Sports"`. All other categories (Arts, Tech, Wellness, Civics) query Ticketmaster **without** a classification filter, returning a broader result set that `filterByTenantCategories()` then narrows locally via `guessCategory()`.
 
-**If a city gets only sample/fallback events after generating:**
-1. Check whether the tenant has `Music` or `Sports` in its categories.
-2. Without them, older deployed code (before the fix) would send `Arts & Theatre` or `Miscellaneous` and get 0 events, triggering the sample fallback.
-3. Workaround (before a new deploy): generate on dev (which has the fix), fetch the events, then PATCH to the production digest using the push-to-production skill.
+If a city gets only fallback events, check current adapter results, category filtering, and the deployed code before attempting a dev-to-production transfer. Never replace an existing digest from a filtered GET.
 
 ## Ticketmaster Geographic Accuracy Issues
 
@@ -439,7 +311,7 @@ Rules:
 - `featured: true` ("Special Events") are **NOT** exempt — they have a real date and are removed once that date passes
 - Events whose date string can't be parsed are kept (safe default)
 
-**Year-rollover fix (Task #217):** `filterStaleEvents` previously inferred the event year as the current calendar year, which caused Dec→Jan and cross-year events to be incorrectly marked stale. The fix uses the same robust year-inference as `autoTagFutureEvents`: if the parsed month/day falls before `weekOf`, the year is bumped by 1. This ensures events tagged as "next week's" by `autoTagFutureEvents` survive the stale filter and appear on the map.
+**Year boundary caution:** The current API filter infers the event year from today's calendar year and special-cases November/December when today is in January/February; it does **not** derive year from digest `weekOf`. Audit December→January events on both the public API and email before sending. The email send path has its own date filter, so do not assume preview, public pages, and outgoing email always show identical sets.
 
 > ⚠️ Do not add `ev.featured` back to the "always keep" list. `autoTagFutureEvents` marks events beyond the digest week's Saturday as `featured: true`, but they still have a date. Exempting featured events caused sent digests to accumulate stale "Special Events" indefinitely (e.g. Sacramento showing Aug 2–7 events weeks later).
 
@@ -460,15 +332,14 @@ Content-Type: application/json
 ```
 
 - `:idx` is the **0-based index** of the event in the digest's events array
-- Find the index with: `digest.events.findIndex(e => e.title?.includes("..."))`
-- Only the fields you include in the body are updated — omitting a field leaves it unchanged
-- To check all cities for mismatches at once: fetch `/api/events/digest/list` for each city (public endpoint, no auth needed), parse each event's date string, and compare the stated day name against `new Date(2026, month-1, dayNum).getDay()`
+- Find the index in the complete **stored** array, not the filtered API response.
+- Only title/date/venue/category/description string fields are accepted; omitting a field leaves it unchanged.
+- To check all cities for mismatches, fetch `/api/events/digest/list` for each city, parse each date string, and compare the stated weekday against the event's actual year/month/day. The public list may omit past records; audit raw records when needed.
 
-## City-Scoped Digest Queries (Task #214)
+## City-Scoped Digest Queries
 
 All digest queries (`/api/events/digest/latest`, `/api/events/digest/list`) are scoped to the **requesting tenant** via `req.tenant!.id`. This means every city's subdomain returns that city's own digest — no city ever falls back to Austin's.
 
-- The fix replaced hardcoded `tenantId: 1` in `events.ts` with `where(eq(digestsTable.tenantId, req.tenant!.id))`
 - Tenant is resolved from the request host in `resolveTenant.ts` (subdomain → slug → DB lookup)
 - The frontend (`home.tsx`, `digest.tsx`) calls the same `/api/events/digest/latest` URL without any city param — city identity comes entirely from the request host/tenant context
 - In dev, the tenant is set via the `Host:` header or a dev default (slug `austin`)
@@ -477,44 +348,14 @@ All digest queries (`/api/events/digest/latest`, `/api/events/digest/list`) are 
 
 The generate endpoint always calls `buildCommunityEvents()` after adapter results and merges community events via `deduplicateEvents()`. Community events are curated recurring local events defined in `weeklyRefresh.ts` (COMMUNITY_EVENTS map, keyed by tenant slug).
 
-Cities with defined community events: **austin, austincares, sacramento, portland, bulverde, stlouis**.
+Cities with defined community events in the current code: **austin, austincares, sacramento, portland, bulverde, stlouis, dc**.
 Cities with NO community events defined: **brushycreek** (relies entirely on adapters).
 
-**Austin community events (9 entries, added Task #175):**
-
-| Title | Day | Venue |
-|-------|-----|-------|
-| Barton Springs Pool — Morning Swim | Sunday | Barton Springs Pool, 2201 Barton Springs Rd |
-| SFC Farmers Market — Downtown Austin | Saturday | Republic Square Park, 422 W 4th St |
-| Barton Creek Greenbelt — Trail Hike | Monday | Barton Creek Greenbelt, Barton Springs Rd Entrance |
-| Blanton Museum of Art — Free First Thursday | Thursday | Blanton Museum of Art, 200 E MLK Jr Blvd |
-| Lady Bird Lake — Hike and Bike Trail | Friday | Hike-and-Bike Trailhead, Barton Springs Rd & S Lamar Blvd |
-| Austin Animal Center — Community Dog Walk | Tuesday | Austin Animal Center, 7201 Levander Loop |
-| Keep Austin Beautiful — Trail Cleanup | following Sunday | Barton Creek Greenbelt, Barton Springs Rd Entrance |
-| Mount Bonnell — Sunrise Scenic Walk | following Sunday | Mount Bonnell, 3800 Mount Bonnell Rd |
-| Austin Central Library — Free Programs & Maker Studio | following Tuesday | Austin Central Library, 710 W Cesar Chavez St |
-
-Austin was also added to `TENANT_CONFIGS` in `weeklyRefresh.ts` (slug `austin`, tz `America/Chicago`) enabling its weekly refresh scheduler.
-
-Community events are NOT geocoded automatically at merge time — always fire `POST /digest/:id/regeocoded` after building a digest that includes them.
+Inspect the current `COMMUNITY_EVENTS` and `TENANT_CONFIGS` in `weeklyRefresh.ts` rather than relying on a copied list. Verify merged entries and their locations after generation; trigger `POST /digest/:id/regeocoded` if coverage remains incomplete.
 
 ## Event Source Adapter Status
 
-Only **Ticketmaster** is operational with the current credentials. All other adapters are either blocked or need additional API keys:
-
-| Adapter | Status | Notes |
-|---------|--------|-------|
-| Ticketmaster | ✅ Active | `TICKETMASTER_API_KEY` set; Music + Sports classifications work reliably |
-| Luma | ⚠️ Needs key | Requires `LUMA_API_KEY`; adapter code complete and correct; geo-radius search by lat/lng |
-| EventbriteWeb | ❌ Blocked | HTTP 405 — Eventbrite blocks scraping as of 2026-08 |
-| Meetup | ❌ Broken | GraphQL endpoint returns 404; API requires auth now |
-| Bandsintown | ❌ Blocked | HTTP 403 — `app_id=1` default no longer accepted |
-| Eventbrite API | ❌ No key | Requires `EVENTBRITE_TOKEN` |
-| Songkick | ❌ No key | Requires `SONGKICK_API_KEY`; metro IDs set for all active cities |
-
-Registry (`registry.ts`) wires adapters to categories — e.g. Tech runs StationAustin → EventbriteWeb → Luma → Meetup → Eventbrite → Ticketmaster in order. When only Ticketmaster responds, cities without Music or Sports may get few results.
-
-When only Ticketmaster is available, cities without Music or Sports events that week may get few results. See the "Dev vs Production Generate Quality Gap" section for the workaround.
+Adapter availability and credentials change. Check `registry.ts`, the current tenant config, and the generation response's source results for each run. Do not assume an adapter is working or broken based on an old digest. The Ticketmaster adapter uses Music/Sports classifications and queries more broadly for other categories.
 
 ## Relevant Files
 

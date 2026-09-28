@@ -5,17 +5,17 @@ description: Authenticate with city admin APIs. Use when making admin API calls 
 
 # Admin API Auth
 
-There are **two different admin token patterns** depending on the city (tenant). Getting this wrong returns 401.
+Protected city admin routes use one of two token patterns, depending on the tenant. Always send the token to the matching city subdomain; tenant resolution and token verification are both scoped to that request's tenant.
 
 ## Pattern 1: Password-Hash HMAC (Austin, AustinCares)
 
-For cities where the admin set a password:
+For a tenant with a non-null `passwordHash`, `requireAdmin` accepts:
 
 ```
 token = HMAC-SHA256(tenant.passwordHash, "admin-session")
 ```
 
-- `tenant.passwordHash` comes from the `tenants` table in the **target** database
+- `tenant.passwordHash` comes from the `tenants` row in the **target** environment
 - The key is the literal string `"admin-session"`
 - **Do NOT** use `HMAC(SESSION_SECRET, ADMIN_PASSWORD)` — that's wrong
 
@@ -25,13 +25,13 @@ import crypto from "crypto";
 const token = crypto.createHmac("sha256", passwordHash).update("admin-session").digest("hex");
 ```
 
-## ⚠️ Dev vs Production Tokens Are Different
+## Dev vs Production Tokens
 
-The dev database and the production (Neon) database have **different passwordHash values** for the same tenant. Always fetch the hash from the database you are targeting. **Never reuse a token across sessions** — password hashes are updated on every deploy.
+Dev and production have separate tenant rows and may have different password hashes. For Austin, `startupMigration.ts` re-hashes `ADMIN_PASSWORD` at server startup when that variable is set, so the accepted password-hash token can change on restart/deploy. Do not assume AustinCares has that same startup rotation: re-check its target-environment row before deriving this token rather than relying on a cached value.
 
-> **Deploy-rotation gotcha (Austin/AustinCares):** The password_hash for Austin and AustinCares changes on every Replit deploy because the server re-hashes the admin password at startup. A stale token returns 401 on PATCH/POST endpoints but will silently succeed on public GET endpoints (which don't require auth) — so a successful GET doesn't mean your token is valid. **Always re-query the prod DB and recompute the token before any write operation in a new session.**
+Public digest GETs do not prove that a supplied token is valid. Verify authentication only with a protected endpoint, and never include passwords, password hashes, HMAC secrets, or derived tokens in source files, logs, or chat.
 
-**For dev API calls** (`http://localhost:$PORT/...`):
+**For dev API calls** (through the workspace proxy at `http://localhost:80/...`, with the city `Host` header):
 ```sql
 -- Run against dev DB (psql $DATABASE_URL or executeSql without environment param)
 SELECT password_hash FROM tenants WHERE slug = 'austin';
@@ -48,9 +48,9 @@ const result = await executeSql({
 
 Then compute `HMAC(passwordHash, "admin-session")` using the hash from the matching environment.
 
-## Pattern 2: Email-Based HMAC (Managed Cities)
+## Pattern 2: Email-Based HMAC
 
-For cities with `null` passwordHash: **Sacramento, Portland, Bulverde, St. Louis, Brushy Creek, Tokyo**
+For tenants authenticated by admin email (normally those with `null` passwordHash):
 
 ```
 token = HMAC-SHA256(RSVP_HMAC_SECRET, "admin-email:{tenantId}:{email}")
@@ -58,7 +58,7 @@ token = HMAC-SHA256(RSVP_HMAC_SECRET, "admin-email:{tenantId}:{email}")
 
 - `RSVP_HMAC_SECRET` is a Replit Secret (env var)
 - `email` must be lowercase (`aiimplementationclubaustin@gmail.com`)
-- `tenantId` is the integer from the `tenants` table (differs between dev and prod for each city)
+- `tenantId` is the integer from the tenant row in the environment being targeted (it can differ between dev and production)
 
 ```js
 import crypto from "crypto";
@@ -66,21 +66,11 @@ const message = `admin-email:${tenantId}:${adminEmail.toLowerCase()}`;
 const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET).update(message).digest("hex");
 ```
 
-**Production tenant IDs for email-based cities:**
+Get the correct tenant ID and email from the target tenant configuration/database; do not rely on a hard-coded ID table. Compute the token at runtime. `RSVP_HMAC_SECRET` is a Replit Secret—use the secret-access mechanism for runtime computation without printing or persisting the secret or token. Recompute after secret rotation or tenant email/ID changes.
 
-| City | Prod Tenant ID | Admin Email |
-|------|---------------|-------------|
-| Brushy Creek | 3 | rohanvivier@gmail.com |
-| Sacramento | 4 | aiimplementationclubaustin@gmail.com |
-| Portland | 5 | aiimplementationclubaustin@gmail.com |
-| Bulverde | 6 | aiimplementationclubaustin@gmail.com |
-| St. Louis | 7 | aiimplementationclubaustin@gmail.com |
-| Tokyo | 8 | aiimplementationclubaustin@gmail.com |
-| DC | 217 | aiimplementationclubaustin@gmail.com |
+## Login route caveat
 
-Compute the token at runtime using the formula above — never store pre-computed values here.
-
-> ⚠️ Always compute tokens fresh in CodeExecution — never store precomputed token values in files or documentation. Tokens depend on `RSVP_HMAC_SECRET` (a Replit Secret) and are valid as long as the secret doesn't rotate. Re-compute if you get 401.
+The protected-route middleware accepts the password-hash token for password tenants and the email-HMAC token when `RSVP_HMAC_SECRET` is configured. In the current `routes/admin.ts`, `/admin/login` returns the email-HMAC token even after validating a password, and `/admin/verify` checks the email-HMAC token in both branches. Therefore, for API automation use the token returned by the actual login flow or compute a token that `requireAdmin` accepts for the target tenant; do not assume the token returned by `/admin/login` is the password-hash HMAC. Keep this behavior in mind if changing auth code or its tests.
 ## Using the Token
 
 Pass as a Bearer header:
@@ -92,14 +82,15 @@ Authorization: Bearer <token>
 
 | City | Slug | Pattern | Notes |
 |------|------|---------|-------|
-| Austin | `austin` | Password-hash | **Always query prod DB for fresh hash — rotates on every deploy** |
-| AustinCares | `austincares` | Password-hash | **Always query prod DB for fresh hash — rotates on every deploy** |
-| Tokyo | `tokyo` | Email-based (null passwordHash in both dev and prod) | Prod ID 8; dev ID 4 |
+| Austin | `austin` | Password-hash | Re-query the target environment; startup re-hashes when `ADMIN_PASSWORD` is configured |
+| AustinCares | `austincares` | Password-hash | Query the target environment; do not assume Austin's startup hash rotation applies |
+| Tokyo | `tokyo` | Email-based | Look up target-environment tenant ID and email |
 | Sacramento | `sacramento` | Email-based | null passwordHash |
 | Portland | `portland` | Email-based | null passwordHash |
 | St. Louis | `stlouis` | Email-based | null passwordHash |
 | Bulverde | `bulverde` | Email-based | null passwordHash |
 | Brushy Creek | `brushycreek` | Email-based | null passwordHash |
+| DC | `dc` | Email-based | Look up target-environment tenant ID and email |
 
 ## Updating Tenant Branding (name, digestTitle, etc.)
 
@@ -112,7 +103,7 @@ curl -s -X PATCH "https://CITY.eventcarpooling.com/api/admin/settings" \
   -d '{"name":"Austin Cares","digestTitle":"Austin Cares Weekly Deals"}'
 ```
 
-**Accepted fields:** `name`, `digestTitle`, `accentColor`, `categories`, `adminEmail`, `heroImageUrl`, `brandIconUrl`
+**Accepted fields:** `name`, `digestTitle`, `accentColor`, `categories`, `adminEmail`, `curatorName`, `heroImageUrl`, `brandIconUrl`
 
 **Impact on emails:**
 - `name` → controls the Gmail **FROM name** (`fromName: req.tenant?.name`) 

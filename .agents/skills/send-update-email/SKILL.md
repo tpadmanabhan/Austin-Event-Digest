@@ -1,53 +1,44 @@
 ---
 name: send-update-email
-description: Send ad-hoc update or recap emails to specific addresses using the project's Gmail credentials. Use when the user asks to email an update, recap, announcement, or notification to one or more recipients outside of the normal weekly digest flow.
+description: Send ad-hoc update or recap emails to specific addresses through the project's server-side email service. Use when the user asks to email an update, recap, announcement, or notification to one or more recipients outside of the normal weekly digest flow.
 ---
 
 # Send Update Email
 
-## Credentials
+## Sending Safely
 
-The project sends email via Gmail using these env vars (already set as Replit Secrets):
-- `GMAIL_USER` = `aiimplementationclubaustin@gmail.com` (the sending account)
-- `GMAIL_APP_PASSWORD` = app password for that account
+Use the server-side `sendEmail` helper in `artifacts/api-server/src/lib/emailService.ts` from an already-authorized backend execution path:
 
-The sender display name should be `"Raj @ Event Carpooling"`.
-
-## How to Send
-
-Use `nodemailer` from the `artifacts/api-server` package (already installed). Run via `node --input-type=module` from inside `artifacts/api-server/` so the package is resolved:
-
-```bash
-cd artifacts/api-server && node --input-type=module << 'EOF'
-import nodemailer from "nodemailer";
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+```ts
+const result = await sendEmail({
+  to: recipient,
+  subject,
+  html,
+  text,
+  fromName, // optional; otherwise the configured project default is used
 });
-
-await transporter.sendMail({
-  from: `"Raj @ Event Carpooling" <${process.env.GMAIL_USER}>`,
-  to: "recipient@example.com",        // or array for multiple
-  subject: "Your subject here",
-  html: `<p>Your HTML body here</p>`,
-  text: `Plain text fallback`,
-});
-console.log("Sent!");
-EOF
+if (!result.success) throw new Error(result.error || "Email send failed");
 ```
 
-## Sending to Multiple Recipients Individually
+`sendEmail` prefers Resend when configured and falls back to Gmail SMTP; it owns provider selection and sender configuration. Do not bypass it with a raw Nodemailer script or hardcode a sender address/name. Never inspect, print, copy into chat, or log environment credential values.
 
-Loop over the list — do **not** put all addresses in the `to` field (that exposes recipients to each other):
+There is no generic public ad-hoc email endpoint. Do not add an unauthenticated endpoint or repurpose the weekly digest sender for a one-off email. If there is no approved way to invoke `sendEmail` in a trusted server-side context, ask the project owner for the approved send path instead of extracting credentials or improvising a route.
+
+Before sending, confirm the recipient(s), subject, and final body with the user when any of these are unspecified. A request to draft or prepare email is not authorization to send. After sending, report provider acceptance only after `sendEmail` returns `{ success: true }`; this does not guarantee inbox delivery. Surface failures rather than claiming success.
+
+## Multiple Recipients
+
+Send separately to each recipient unless the user explicitly requests a shared group message. This avoids exposing addresses and allows reporting per-recipient failures:
 
 ```js
 const recipients = ["a@example.com", "b@example.com"];
 for (const to of recipients) {
-  await transporter.sendMail({ from, to, subject, html, text });
-  console.log(`✓ ${to}`);
+  const result = await sendEmail({ to, subject, html, text });
+  if (!result.success) throw new Error(`Email send failed: ${result.error || "unknown error"}`);
 }
 ```
+
+Keep recipient addresses out of unnecessary logs and generated artifacts.
 
 ## Email Format Conventions
 
@@ -56,8 +47,5 @@ for (const to of recipients) {
 - Text color: #1a1a1a on white background
 - Line-height: 1.7
 - Use `<strong>` + emoji for section headers (e.g. `<strong>🎟️ Feature name:</strong>`)
-- Sign off: `— Raj`
-
-## Common Pitfall
-
-Do NOT use `raj@eventcarpooling.com` as the SMTP user — the app password is tied to `GMAIL_USER` (the aiimplementationclubaustin account). Using the wrong user causes a `535 BadCredentials` error.
+- Sign off and sender display name should match the requested project/tenant; do not assume a single fixed brand name.
+- Digest newsletters are a separate workflow: use the digest admin UI/API and its explicit test-vs-subscriber-send safeguards, not this ad-hoc template process.
