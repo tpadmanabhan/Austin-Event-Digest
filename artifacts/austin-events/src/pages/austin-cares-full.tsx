@@ -32,7 +32,7 @@ interface Deal {
   lng?: number;
   imageUrl?: string;
   isSubmitted?: boolean;
-  verifiedAt?: string; // ISO date — shown as freshness badge; amber "check this deal" warning when >60 days old
+  verifiedAt?: string; // ISO date for freshness warning; not displayed on cards
 }
 
 const STATIC_DEALS: Deal[] = [
@@ -353,17 +353,6 @@ const STATIC_DEALS: Deal[] = [
 
 const DAY_ORDER = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN", "ANY DAY", "WEEKLY"];
 
-function weekLabel() {
-  const today = new Date();
-  const day = today.getDay();
-  const sun = new Date(today);
-  sun.setDate(today.getDate() - day);
-  const sat = new Date(sun);
-  sat.setDate(sun.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
-  return `${fmt(sun)} – ${fmt(sat)}, ${sat.getFullYear()}`;
-}
-
 // ── Deal Card ─────────────────────────────────────────────────────────────────
 function DealCard({ deal }: { deal: Deal }) {
   const [hovered, setHovered] = useState(false);
@@ -432,9 +421,7 @@ function DealCard({ deal }: { deal: Deal }) {
             {deal.verifiedAt && (() => {
               const daysSince = Math.floor((Date.now() - new Date(deal.verifiedAt!).getTime()) / 86_400_000);
               const stale = daysSince > 60;
-              const label = stale
-                ? "⚠️ Check this deal"
-                : `✓ Verified ${new Date(deal.verifiedAt!).toLocaleDateString("en-US", { month: "short", year: "2-digit" })}`;
+              const label = stale ? "⚠️ Check this deal" : "✓ Verified";
               return (
                 <span style={{
                   fontSize: 11, fontWeight: stale ? 700 : 500,
