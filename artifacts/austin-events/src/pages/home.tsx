@@ -114,6 +114,12 @@ export default function Home() {
   }
 
   const latestDigest = latestDigestRes?.digest;
+  const latestIssueRangeMatch = tenant.slug === "austin"
+    ? latestDigest?.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s+to\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
+    : null;
+  const latestIssueRange = latestIssueRangeMatch
+    ? `${latestIssueRangeMatch[1]} – ${latestIssueRangeMatch[2]}`
+    : null;
   const cityShortName = tenant.city.split(",")[0];
   const isAustinCares = tenant.slug === "brushycreek";
   const isPortland = tenant.slug === "portland";
@@ -378,6 +384,9 @@ export default function Home() {
               <p className="text-muted-foreground text-lg">
                 {jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
               </p>
+              {latestIssueRange && (
+                <p className="mt-3 text-sm font-semibold text-primary">Events: {latestIssueRange}</p>
+              )}
             </div>
             {latestDigest && (
               <Link 
