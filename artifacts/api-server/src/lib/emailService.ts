@@ -679,7 +679,7 @@ export function buildDigestEmailHtml(digest: {
     linkColor: "#2f855a",
     curatorName: "Raj",
     curatorUrl: "https://customersuccessforgood.com/",
-    cityGuideText: "Your weekly guide to what's happening in Austin",
+    cityGuideText: "Upcoming events",
     digestDisplayName: tenant?.digestTitle || "Raj's Austin Events",
     headerEmoji: "🤠",
     eventBtnColor: "#2f855a",
@@ -914,7 +914,7 @@ export function buildDigestEmailHtml(digest: {
         </div>
       </div>
       <p style="margin:0; color:${theme.textOnDark}; font-size:14px;">${theme.cityGuideText}</p>
-      <p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">Week of ${weekDate}</p>
+      ${slug !== "austin" ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">Week of ${weekDate}</p>` : ""}
       ${theme.curatorName ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:12px; font-style:italic;">Curated by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.textMutedOnDark}; text-decoration:underline;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
     </div>
 

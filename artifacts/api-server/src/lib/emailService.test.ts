@@ -60,14 +60,26 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).toContain("Raj");           // Austin curator
   });
 
-  it("Austin digest header gradient uses the dark-stone Austin palette", () => {
+  it("Austin digest header says Upcoming events without a Week of date", () => {
     const html = buildDigestEmailHtml(
       baseDigest,
       null,
       null,
       { slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null }
     );
-    expect(html).toContain("#1c1917");       // dark-stone gradient start
+    expect(html).toContain(">Upcoming events</p>");
+    expect(html).not.toContain("Your weekly guide");
+    expect(html).not.toContain("Week of ");
+  });
+
+  it("Austin digest header gradient uses the light-green Austin palette", () => {
+    const html = buildDigestEmailHtml(
+      baseDigest,
+      null,
+      null,
+      { slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null }
+    );
+    expect(html).toContain("#f1faf4");       // light-green gradient start
   });
 
   it("Unknown / new-city digest does NOT contain 🤠 or Austin curator text", () => {
@@ -120,6 +132,7 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).toContain("🌲");
     expect(html).not.toContain("🤠");
     expect(html).toContain("#CE1141");
+    expect(html).toContain("Week of ");
   });
 
   it("AustinCares digest uses the teal palette, not 🤠", () => {
