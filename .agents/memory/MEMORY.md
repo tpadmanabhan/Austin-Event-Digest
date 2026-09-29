@@ -1,5 +1,4 @@
 - [Email source detection](email-source-detection.md) — forwarded emails need "Fwd:" stripped from subject before pattern matching
-- [Prod vs dev databases](prod-dev-db.md) — production and dev are separate DBs; must POST to eventcarpooling.com API to push data to prod
 - [Capital Factory newsletter](capital-factory-parse.md) — Station Austin newsletter is HTML-only with zero-width spacers; parser yields 0 events
 - [Zod schema stripping on deploy](zod-deployed-schema.md) — deployed server strips fields not in its schema; adding a field requires redeploy to flow through API responses
 - [Newsletter parser formats](newsletter-parsers.md) — each newsletter has a unique format; TIME_LINE must extract only time (not " @ Venue" trailing content); DATE_COLON_LINE needs [a-z]* for full month names
@@ -25,3 +24,4 @@
 - [Managed city tenants](managed-city-tenants.md) — brushycreek/bulverde/portland/sacramento don't auto-seed in dev; must INSERT manually; includes dev IDs + Aug 16-22 digest IDs
 - [Tenant-specific dev previews](tenant-dev-previews.md) — default app preview host shows Austin; use a hostname-mapped browser to visually check AustinCares locally
 - [Recurring AustinCares digest offers](recurring-austincares-digest.md) — use an undated weekly label for ongoing offers; weekday-only dates are filtered after that day
+- [Austin Sierra Club event dates](austin-sierra-club-events.md) — official Austin group points to Meetup; read Meetup's Event JSON-LD for exact local start times
