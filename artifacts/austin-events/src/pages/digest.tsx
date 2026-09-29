@@ -149,7 +149,9 @@ function getEditionDateRange(weekOf: string, subject: string, isAustin: boolean)
   const weekly = { label: getWeekMFDateRange(weekOf), extended: false };
   if (!isAustin) return weekly;
 
-  // Austin's extended editions name their actual end date in the subject.
+  // Austin's extended editions name their actual range in the subject.
+  // The internal weekOf can predate the visible start by a day; keep it stable
+  // because previously sent RSVP links use it to identify this digest.
   const match = subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s+to\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})\s*$/i);
   if (!match) return weekly;
   const startMonth = MONTH_MAP[match[1].slice(0, 3).replace(/^./, c => c.toUpperCase())];
@@ -157,19 +159,26 @@ function getEditionDateRange(weekOf: string, subject: string, isAustin: boolean)
   if (startMonth === undefined || endMonth === undefined) return weekly;
 
   const start = parseISO(weekOf.substring(0, 10));
+  const subjectStart = new Date(
+    start.getFullYear() + (startMonth < start.getMonth() ? 1 : 0),
+    startMonth,
+    Number(match[2]),
+  );
   const end = new Date(Number(match[5]), endMonth, Number(match[4]));
   const weeklyEnd = new Date(start);
   weeklyEnd.setDate(start.getDate() + 6);
   if (
-    start.getMonth() !== startMonth ||
-    start.getDate() !== Number(match[2]) ||
+    subjectStart.getMonth() !== startMonth ||
+    subjectStart.getDate() !== Number(match[2]) ||
+    subjectStart < start ||
+    subjectStart > weeklyEnd ||
     end.getFullYear() !== Number(match[5]) ||
     end.getMonth() !== endMonth ||
     end.getDate() !== Number(match[4]) ||
     end <= weeklyEnd
   ) return weekly;
 
-  return { label: `${format(start, "MMMM d")} – ${format(end, "MMMM d, yyyy")}`, extended: true };
+  return { label: `${format(subjectStart, "MMMM d")} – ${format(end, "MMMM d, yyyy")}`, extended: true };
 }
 
 type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";
