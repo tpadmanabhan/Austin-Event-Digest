@@ -239,6 +239,7 @@ export default function DigestView() {
   const isPortland = tenant.slug === "portland";
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
+  const isAtlanta = tenant.slug === "atlanta";
   const isToky = tenant.slug === "tokyo";
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
@@ -251,6 +252,7 @@ export default function DigestView() {
   const isLoading = isLatest ? loadingLatest : loadingAll;
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
   const MAP_CENTERS: Record<string, [number, number]> = {
+    atlanta:     [33.749, -84.388],
     austin:      [30.267, -97.743],
     austincares: [30.267, -97.743],
     brushycreek: [30.508, -97.679],
@@ -394,13 +396,13 @@ export default function DigestView() {
   return (
     <Layout>
       {/* ANNOUNCEMENT BANNER */}
-      <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
+      {!isAtlanta && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
         <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
         <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
           eventcarpooling.com
         </a>
-      </div>
+      </div>}
 
       <article className="max-w-4xl mx-auto px-4 sm:px-6 py-12 lg:py-20">
         <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-10 text-sm font-medium">
@@ -468,7 +470,7 @@ export default function DigestView() {
                       : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   }`}
                 >
-                  <span>{cfg.emoji}</span>
+                  <span>{isAtlanta ? "·" : cfg.emoji}</span>
                   <span>{catLabel(cat)}</span>
                 </button>
               );
@@ -497,9 +499,9 @@ export default function DigestView() {
                   {geoStatus === "loading" ? (
                     <><Loader2 className="w-3.5 h-3.5 animate-spin" />Getting location…</>
                   ) : geoStatus === "active" ? (
-                    <>📍 Sorted by distance ✕</>
+                    <>{isAtlanta ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
                   ) : (
-                    <>📍 Nearest first</>
+                    <>{isAtlanta ? "Nearest first" : "📍 Nearest first"}</>
                   )}
                 </button>
                 {geoStatus === "denied" && (
@@ -654,7 +656,7 @@ export default function DigestView() {
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-6 flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {isExtendedAustinEdition ? "🗺️ Upcoming events on the map" : "🗺️ This week on the map"}
+                    {isAtlanta ? "Around Atlanta this week" : isExtendedAustinEdition ? "🗺️ Upcoming events on the map" : "🗺️ This week on the map"}
                   </h2>
                   <EventMap
                     events={upcomingEvents}
@@ -833,14 +835,14 @@ export default function DigestView() {
                     )}
                     {dimmedByRadius > 0 && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
-                        📍 {dimmedByRadius} event{dimmedByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi
+                        {isAtlanta ? "" : "📍 "}{dimmedByRadius} event{dimmedByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi
                       </span>
                     )}
                   </div>
                 </div>
                 {visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
-                    <p className="text-4xl mb-4">{CAT_CONFIG[categoryFilter].emoji}</p>
+                    <p className="text-4xl mb-4">{isAtlanta ? "✦" : CAT_CONFIG[categoryFilter].emoji}</p>
                     <p className="text-xl font-serif font-bold text-foreground mb-2">{isExtendedAustinEdition ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events` : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                     <p className="text-muted-foreground text-sm mb-6">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     <button

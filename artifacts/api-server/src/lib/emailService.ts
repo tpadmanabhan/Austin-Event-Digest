@@ -672,6 +672,28 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(52,211,153,0.2)",
     rideBtnBg: "#6ee7b7",
     rideBtnColor: "#064e3b",
+  } : slug === "atlanta" ? {
+    headerGradient: "linear-gradient(135deg, #152238 0%, #253b5a 55%, #3a526f 100%)",
+    primary: "#C8102E",
+    primaryBtn: "#C8102E",
+    primaryDark: "#152238",
+    primaryLight: "#fff1f2",
+    primaryMuted: "#fecdd3",
+    textOnDark: "#fff1f2",
+    textMutedOnDark: "#dbeafe",
+    textStrong: "#ffffff",
+    linkColor: "#C8102E",
+    curatorName: "",
+    curatorUrl: null as string | null,
+    cityGuideText: "Your weekly guide to what's happening in Atlanta",
+    digestDisplayName: tenant?.digestTitle || "Atlanta Events",
+    headerEmoji: "🍑",
+    eventBtnColor: "#C8102E",
+    eventBtnBorder: "#C8102E",
+    pillText: "rgba(255,241,242,0.95)",
+    pillBorder: "rgba(200,16,46,0.35)",
+    rideBtnBg: "#fecdd3",
+    rideBtnColor: "#152238",
   } : slug === "austin" ? {
     headerGradient: "linear-gradient(135deg, #f1faf4 0%, #e4f3e9 58%, #d4eadb 100%)",
     primary: "#2f855a",
@@ -734,6 +756,9 @@ export function buildDigestEmailHtml(digest: {
 
   const SOURCE_URLS: Record<string, string> = {
     "Luma": "https://lu.ma",
+    "ATLTech.events": "https://www.atltech.events",
+    "Eventbrite": "https://www.eventbrite.com",
+    "EventbriteWeb": "https://www.eventbrite.com",
     "The Austin Business Review": "https://austinbusinessreview.com",
     "Salesforce Trailblazer Community": "https://trailblazercommunitygroups.com",
     "What's Weird ATX": "https://whatsweirdatx.substack.com",
@@ -747,6 +772,8 @@ export function buildDigestEmailHtml(digest: {
     Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
     Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
   };
+
+  const eventTimezone = slug === "atlanta" ? "America/New_York" : "America/Chicago";
 
   function parseSortKey(dateStr: string): number {
     const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
@@ -775,14 +802,14 @@ export function buildDigestEmailHtml(digest: {
       if (isNaN(d.getTime())) return dateStr;
       const datePart = d.toLocaleDateString("en-US", {
         weekday: "short", month: "short", day: "numeric", year: "numeric",
-        timeZone: "America/Chicago",
+        timeZone: eventTimezone,
       });
       const [, timePart] = dateStr.split("T");
       const isMidnight = !timePart || timePart.startsWith("00:00");
       if (!isMidnight) {
         const t = d.toLocaleTimeString("en-US", {
           hour: "numeric", minute: "2-digit",
-          timeZone: "America/Chicago",
+          timeZone: eventTimezone,
         });
         return `${datePart} · ${t}`;
       }
@@ -954,8 +981,8 @@ export function buildDigestEmailHtml(digest: {
       <a href="https://austincares.eventcarpooling.com/full" style="display:inline-block; background:#C4502B; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">See this week's deals →</a>
     </div>` : ""}
 
-    <!-- AustinCares Launch Promo (all cities except austincares) -->
-    ${slug !== "austincares" ? `
+    <!-- AustinCares Launch Promo (other established city newsletters) -->
+    ${slug !== "austincares" && slug !== "atlanta" ? `
     <div style="background:${slug === "austin" ? "linear-gradient(135deg,#fff8ed 0%,#f8f2e8 54%,#edf7f0 100%)" : "linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%)"}; border:${slug === "austin" ? "1.5px solid #ead7ba" : "none"}; border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
       <p style="margin:0 0 6px; color:${slug === "austin" ? "#a45b22" : "#fbbf24"}; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ New · Austin Cares</p>
       <p style="margin:0 0 10px; color:${slug === "austin" ? "#3f392f" : "#ffffff"}; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
@@ -976,6 +1003,7 @@ export function buildDigestEmailHtml(digest: {
     ${buildStaticMapSection(cleanDigestEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
 
     <!-- Coming Soon: New Features -->
+    ${slug !== "atlanta" ? `
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <!-- Badge -->
       <div style="display:inline-block; background:${slug === "austin" ? "rgba(47,133,90,0.10)" : "rgba(255,255,255,0.12)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.22)" : "rgba(255,255,255,0.2)"}; border-radius:100px; padding:5px 14px; margin-bottom:16px;">
@@ -1018,7 +1046,7 @@ export function buildDigestEmailHtml(digest: {
           </td>
         </tr>
       </table>
-    </div>
+    </div>` : ""}
 
     <!-- Business Spotlights -->
     ${bizSpotlightCards}
@@ -1036,7 +1064,7 @@ export function buildDigestEmailHtml(digest: {
     ${alsoNearbyCards ? `
     <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:14px; padding:20px; margin-bottom:24px;">
       <h2 style="margin:0 0 4px; color:#1c1917; font-size:18px; font-weight:700;">📍 Also Nearby</h2>
-      <p style="margin:0 0 16px; color:#78716c; font-size:13px;">${slug === "austincares" ? "These deals are a bit further out — but still worth the trip." : "These events are a bit further out — but still in Austin."}</p>
+      <p style="margin:0 0 16px; color:#78716c; font-size:13px;">${slug === "austincares" ? "These deals are a bit further out — but still worth the trip." : `These events are a bit further out — but still near ${escapeHtml(cityName)}.`}</p>
       ${alsoNearbyCards}
     </div>` : ""}
 

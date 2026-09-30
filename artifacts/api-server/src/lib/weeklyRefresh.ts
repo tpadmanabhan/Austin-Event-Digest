@@ -12,6 +12,7 @@ import { db, digestsTable, tenantsTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { logger } from "./logger";
 import { isAdultContent } from "./contentFilter";
+import { atlTechEventsAdapter } from "./eventSources/atlTechEvents";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -556,6 +557,7 @@ const TENANT_CONFIGS: TenantConfig[] = [
   { slug: "stlouis",     tz: "America/Chicago" },
   { slug: "tokyo",       tz: "Asia/Tokyo", tmCity: "Tokyo" },
   { slug: "dc",          tz: "America/New_York", tmCity: "Washington, DC" },
+  { slug: "atlanta",     tz: "America/New_York", tmCity: "Atlanta, GA" },
 ];
 
 // ── Ticketmaster fetch (server-side, direct env access) ───────────────────────
@@ -732,20 +734,42 @@ async function refreshTenant(
 
   // Fetch TM events + build community events in parallel
   const searchCity = tmCity || tenant.city;
-  const [tmEvents, communityEvents] = await Promise.all([
+  const [tmEvents, communityEvents, atlTechEvents] = await Promise.all([
     fetchTicketmaster(searchCity, tz, rangeStart, rangeEnd, nextWeekIso),
     Promise.resolve(buildCommunityEvents(slug, weekStart, nextWeekStart)),
+    slug === "atlanta"
+      ? atlTechEventsAdapter.fetchEvents({
+          city: tenant.city,
+          category: "Tech",
+          weekOf: weekStart,
+          weekEnd: new Date(new Date(rangeEnd).getTime() + 1000),
+        })
+      : Promise.resolve([]),
   ]);
 
   // Deduplicate: existing wins; community wins over TM for same title
   const seen = new Set(
     existing.map(e => e.title.toLowerCase().replace(/\s+/g, "").substring(0, 40)),
   );
+  const atlTechKey = (event: Pick<EventItem, "title" | "date" | "venue">) => [
+    event.title.toLowerCase().replace(/\s+/g, " ").trim(),
+    event.date.toLowerCase().replace(/\s+/g, " ").trim(),
+    event.venue.toLowerCase().replace(/\s+/g, " ").trim(),
+  ].join("|");
+  const seenAtlTech = new Set(existing.map(atlTechKey));
 
   const toAddCommunity = communityEvents.filter(e => {
     const key = e.title.toLowerCase().replace(/\s+/g, "").substring(0, 40);
     if (seen.has(key)) return false;
     seen.add(key);
+    return true;
+  });
+
+  const toAddAtlTech = atlTechEvents.filter(e => {
+    const key = atlTechKey(e);
+    if (seenAtlTech.has(key)) return false;
+    seenAtlTech.add(key);
+    seen.add(e.title.toLowerCase().replace(/\s+/g, "").substring(0, 40));
     return true;
   });
 
@@ -764,12 +788,12 @@ async function refreshTenant(
   });
 
   // Final adult-content pass before DB write
-  const merged = [...updatedExisting, ...toAddCommunity, ...toAddTm]
+  const merged = [...updatedExisting, ...toAddCommunity, ...toAddAtlTech, ...toAddTm]
     .filter(e => !isAdultContent(e.title, e.description));
 
   if (!safetyCheck(slug, rawExisting.length, merged.length)) return;
 
-  const changed = toAddCommunity.length > 0 || toAddTm.length > 0 || dropped > 0
+  const changed = toAddCommunity.length > 0 || toAddAtlTech.length > 0 || toAddTm.length > 0 || dropped > 0
     || JSON.stringify(existing) !== JSON.stringify(updatedExisting);
 
   if (!changed) {
@@ -783,7 +807,7 @@ async function refreshTenant(
     .where(eq(digestsTable.id, digest.id));
 
   logger.info(
-    { slug, digestId: digest.id, total: merged.length, addedCommunity: toAddCommunity.length, addedTm: toAddTm.length, dropped },
+    { slug, digestId: digest.id, total: merged.length, addedCommunity: toAddCommunity.length, addedAtlTech: toAddAtlTech.length, addedTm: toAddTm.length, dropped },
     "Weekly refresh: digest updated",
   );
 }

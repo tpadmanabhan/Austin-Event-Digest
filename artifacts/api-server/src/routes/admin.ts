@@ -51,7 +51,11 @@ router.post("/login", async (req, res) => {
     return;
   }
 
-    const token = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
+  // New city tenants can have a password before an admin email is configured.
+  // Issue a password-based token in that case; keep existing email sessions intact.
+  const token = req.tenant.adminEmail
+    ? adminTokenForEmail(req.tenant.adminEmail, req.tenant.id) ?? adminTokenForHash(req.tenant.passwordHash)
+    : adminTokenForHash(req.tenant.passwordHash);
   res.json({ token });
 });
 
@@ -63,10 +67,11 @@ router.post("/verify", (req, res) => {
     return;
   }
 
-  // Check password-based token
+  // Check password-based token (also supports cities without an admin email).
   if (req.tenant?.passwordHash) {
-    const expected = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
-    if (token === expected) { res.json({ valid: true }); return; }
+    if (token === adminTokenForHash(req.tenant.passwordHash)) {
+      res.json({ valid: true }); return;
+    }
   }
 
   // Check email-based token (managed cities without a password hash)

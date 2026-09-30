@@ -989,6 +989,44 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Category migration failed (non-fatal)");
   }
 
+  // Seed Atlanta after the legacy category normalization above so its requested
+  // category ordering remains stable. Never invent an admin email; only reuse a
+  // configured, sufficiently long shared password after hashing it for storage.
+  try {
+    const [existingAtlanta] = await db
+      .select({ id: tenantsTable.id })
+      .from(tenantsTable)
+      .where(eq(tenantsTable.slug, "atlanta"))
+      .limit(1);
+    if (!existingAtlanta) {
+      const configuredPassword = process.env.ADMIN_PASSWORD;
+      const passwordHash = configuredPassword && configuredPassword.trim().length >= 12
+        ? await hashPassword(configuredPassword)
+        : null;
+      await db.execute(sql`
+        INSERT INTO tenants (
+          slug, name, city, accent_color, categories, digest_title,
+          is_active, email_verified, password_hash
+        )
+        VALUES (
+          'atlanta',
+          'Atlanta Events',
+          'Atlanta, GA',
+          '#C8102E',
+          '["Tech","Arts","Sports","Civics","Wellness"]'::jsonb,
+          'Atlanta Events',
+          true,
+          false,
+          ${passwordHash}
+        )
+        ON CONFLICT (slug) DO NOTHING
+      `);
+    }
+    logger.info("Atlanta tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "Atlanta tenant seed failed (non-fatal)");
+  }
+
   // Migrate austincares subscribers → brushycreek (idempotent)
   try {
     await db.execute(sql`

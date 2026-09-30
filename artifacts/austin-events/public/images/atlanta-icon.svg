@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Atlanta city crossing icon</title>
+  <rect width="128" height="128" rx="26" fill="#203b43"/>
+  <circle cx="86" cy="39" r="18" fill="#efb47d"/>
+  <path d="M0 82c18-16 34-15 48-4 20 15 39 14 80-10v60H0z" fill="#35555a"/>
+  <path d="M16 128 63 57l49 71" fill="none" stroke="#f2d4a7" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M27 110h72" stroke="#db7c55" stroke-width="11" stroke-linecap="round"/>
+  <path d="M51 110h26" stroke="#f6d7a4" stroke-width="3" stroke-linecap="round"/>
+</svg>

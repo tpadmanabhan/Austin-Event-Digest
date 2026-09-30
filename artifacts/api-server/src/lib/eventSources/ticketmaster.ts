@@ -53,6 +53,7 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
 
   const weekEnd = query.weekEnd || new Date(query.weekOf.getTime() + 7 * 24 * 60 * 60 * 1000);
   const classification = TM_CLASSIFICATION[query.category];
+  const isAtlanta = cityName === "Atlanta";
 
   const params = new URLSearchParams({
     apikey: apiKey,
@@ -60,7 +61,9 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
     size: "50",
     sort: "date,asc",
     startDateTime: query.weekOf.toISOString().replace(/\.\d{3}Z$/, "Z"),
-    endDateTime: weekEnd.toISOString().replace(/\.\d{3}Z$/, "Z"),
+    // Include Saturday evening in Eastern Time; the calendar-day check below
+    // discards any Sunday results admitted by this wider API window.
+    endDateTime: new Date(weekEnd.getTime() + (isAtlanta ? 5 * 60 * 60 * 1000 : 0)).toISOString().replace(/\.\d{3}Z$/, "Z"),
   });
 
   // Only set stateCode for US two-letter state abbreviations — never for country names like "Japan"
@@ -103,7 +106,10 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
   for (const ev of tmEvents) {
     const startIso = ev.dates?.start?.dateTime || (ev.dates?.start?.localDate ? `${ev.dates.start.localDate}T${ev.dates.start.localTime || "19:00:00"}` : null);
     if (!startIso) continue;
-    if (!isWithinDateRange(startIso, query.weekOf, query.weekEnd)) continue;
+    const localDate = ev.dates?.start?.localDate;
+    if (isAtlanta && localDate) {
+      if (localDate < query.weekOf.toISOString().slice(0, 10) || localDate >= weekEnd.toISOString().slice(0, 10)) continue;
+    } else if (!isWithinDateRange(startIso, query.weekOf, query.weekEnd)) continue;
     if (isAdultContent(ev.name, ev.description || ev.info || "")) continue;
 
     const venue = ev._embedded?.venues?.[0];

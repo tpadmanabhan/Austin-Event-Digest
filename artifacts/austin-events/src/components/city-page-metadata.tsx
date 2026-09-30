@@ -8,19 +8,36 @@ function setMeta(selector: string, content: string) {
   document.querySelector<HTMLMetaElement>(selector)?.setAttribute("content", content);
 }
 
+function ensureMeta(attribute: "name" | "property", key: string, content: string) {
+  let meta = document.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`);
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute(attribute, key);
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute("content", content);
+}
+
 export function CityPageMetadata({ citySlug }: { citySlug: string }) {
   const [path] = useLocation();
 
   useEffect(() => {
     const isCares = citySlug === "austincares";
     const isAustin = citySlug === "austin";
+    const isAtlanta = citySlug === "atlanta";
+    const isAtlantaDigest = isAtlanta && path.startsWith("/digest/");
     const title = isCares
       ? path === "/full" ? "Weekly Deals & Free Services | AustinCares" : "AustinCares — Food Deals & Free Services"
-      : isAustin ? "Raj's Austin Events — Weekly Local Events" : DEFAULT_TITLE;
+      : isAustin ? "Raj's Austin Events — Weekly Local Events"
+      : isAtlantaDigest ? "Atlanta Events — Full Weekly Edition | EventCarpooling"
+      : isAtlanta ? "Atlanta Events — A Local Guide for the Curious | EventCarpooling"
+      : DEFAULT_TITLE;
     const description = isCares
       ? "Find Austin-area food specials, free neighborhood services, health screenings and community resources, organized by day and location."
       : isAustin
         ? "Discover Austin's weekly picks for live music, food, tech, sports and community events."
+        : isAtlanta
+        ? "Explore real gatherings across Atlanta: tech, arts, sports, civic life and wellness. Browse the weekly local events edition and find your people."
         : DEFAULT_DESCRIPTION;
 
     document.title = title;
@@ -30,9 +47,19 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     setMeta('meta[name="twitter:title"]', title);
     setMeta('meta[name="twitter:description"]', description);
     setMeta('meta[property="og:url"]', new URL(path, window.location.origin).href);
+    if (isAtlanta) {
+      const image = new URL(`${import.meta.env.BASE_URL}images/atlanta-hero.svg`, window.location.origin).href;
+      ensureMeta("property", "og:image", image);
+      ensureMeta("name", "twitter:image", image);
+      setMeta('meta[name="twitter:card"]', "summary_large_image");
+    } else {
+      document.querySelector('meta[property="og:image"]')?.remove();
+      document.querySelector('meta[name="twitter:image"]')?.remove();
+      setMeta('meta[name="twitter:card"]', "summary");
+    }
 
     const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-    if (icon) icon.href = `${import.meta.env.BASE_URL}${isCares ? "austincares-favicon.svg" : "favicon.svg"}`;
+    if (icon) icon.href = `${import.meta.env.BASE_URL}${isAtlanta ? "images/atlanta-icon.svg" : isCares ? "austincares-favicon.svg" : "favicon.svg"}`;
   }, [citySlug, path]);
 
   return null;

@@ -264,7 +264,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     let gmailIntro = "";
 
     // Gmail reader is a supplemental adapter (Austin-specific newsletter inbox)
-    if (isEmailReaderConfigured()) {
+    if (req.tenant!.slug === "austin" && isEmailReaderConfigured()) {
       req.log.info("Gmail configured — supplementing with inbox newsletters");
       const since = new Date(weekOf);
       since.setDate(since.getDate() - 14);
@@ -303,7 +303,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
       const label = `${weekOf.toLocaleDateString("en-US", opts)}–${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
       const _s = req.tenant!.slug;
-      const subjectEmoji = _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
+      const subjectEmoji = _s === "atlanta" ? "🍑" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
       subject = `${subjectEmoji} ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
     } else {
       subject = fallback.subject;

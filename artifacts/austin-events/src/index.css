@@ -138,6 +138,41 @@
 }
 
 /* ── St. Louis Cardinals: red (#C41E3A) ────────────────────────────────── */
+[data-tenant="atlanta"] {
+  --background: 39 43% 96%;
+  --foreground: 205 35% 16%;
+  --border: 35 24% 82%;
+  --input: 35 24% 82%;
+  --ring: 13 65% 44%;
+  --card: 42 43% 99%;
+  --card-foreground: 205 35% 16%;
+  --card-border: 35 24% 82%;
+  --popover: 42 43% 99%;
+  --popover-foreground: 205 35% 16%;
+  --popover-border: 35 24% 82%;
+  --primary: 13 65% 44%;
+  --primary-foreground: 39 43% 98%;
+  --secondary: 203 39% 25%;
+  --secondary-foreground: 39 43% 98%;
+  --muted: 37 38% 91%;
+  --muted-foreground: 203 19% 38%;
+  --accent: 38 75% 60%;
+  --accent-foreground: 205 35% 16%;
+  --sidebar: 39 43% 96%;
+  --sidebar-foreground: 205 35% 16%;
+  --sidebar-border: 35 24% 82%;
+  --sidebar-primary: 13 65% 44%;
+  --sidebar-primary-foreground: 39 43% 98%;
+  --sidebar-accent: 37 38% 91%;
+  --sidebar-accent-foreground: 205 35% 16%;
+  --sidebar-ring: 13 65% 44%;
+}
+
+[data-tenant="atlanta"] .atlanta-hero-image {
+  object-position: center 52%;
+}
+
+/* ── St. Louis Cardinals: red (#C41E3A) ────────────────────────────────── */
 [data-tenant="stlouis"] {
   --background: 350 100% 97%;
   --foreground: 350 30% 10%;

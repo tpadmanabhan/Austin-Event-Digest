@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Atlanta after hours</title>
+  <desc id="desc">Illustrated Atlanta skyline, winding streets and warm evening light</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#172e3b"/>
+      <stop offset=".66" stop-color="#41545a"/>
+      <stop offset="1" stop-color="#d89170"/>
+    </linearGradient>
+    <linearGradient id="street" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#e0a779"/>
+      <stop offset="1" stop-color="#f1d3a0"/>
+    </linearGradient>
+    <pattern id="windows" width="28" height="36" patternUnits="userSpaceOnUse">
+      <path d="M7 7h5v11H7zM19 9h4v8h-4z" fill="#e7b581" opacity=".57"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="900" fill="url(#sky)"/>
+  <circle cx="863" cy="198" r="111" fill="#edb27e"/>
+  <circle cx="863" cy="198" r="149" fill="none" stroke="#e8b98e" opacity=".27"/>
+  <path d="M0 422c127-44 235-45 344 5 123 58 246 43 370-14 176-81 300-76 486-6v210H0z" fill="#4d6460" opacity=".5"/>
+  <path d="M0 503c148-53 244-48 348-8 119 46 222 18 329-28 200-86 345-36 523 15v214H0z" fill="#203b42"/>
+  <!-- Towers: all architectural, no team insignia -->
+  <g fill="#20363e" stroke="#668079" stroke-width="2">
+    <path d="M68 330h75v249H68z"/>
+    <path d="M172 381h98v221h-98z"/>
+    <path d="M305 234h111v376H305z"/>
+    <path d="M322 210h77v24h-77z"/>
+    <path d="M345 172h32v38h-32z"/>
+    <path d="M359 145h5v27h-5z"/>
+    <path d="M449 348h107v246H449z"/>
+    <path d="M572 268h86v332h-86z"/>
+    <path d="M593 235h44v33h-44z"/>
+    <path d="M686 351h126v254H686z"/>
+    <path d="M910 327h101v283H910z"/>
+    <path d="M1034 363h90v260h-90z"/>
+  </g>
+  <g fill="url(#windows)" opacity=".82">
+    <path d="M68 330h75v249H68zM172 381h98v221h-98zM305 234h111v376H305zM449 348h107v246H449zM572 268h86v332h-86zM686 351h126v254H686zM910 327h101v283H910zM1034 363h90v260h-90z"/>
+  </g>
+  <path d="M0 603c112-19 258-14 365 20 159 51 296 53 420-5 163-77 290-55 415-9v291H0z" fill="#132e36"/>
+  <path d="M0 688c176-42 307-20 414 30 117 55 229 53 362-11 129-62 267-69 424-18v211H0z" fill="#274249"/>
+  <!-- Streets form the subtle crossing motif of the city -->
+  <path d="M-55 900c257-206 442-264 630-275 183-11 355 53 680 275z" fill="url(#street)"/>
+  <path d="M-60 900c268-191 449-249 635-254 191-4 353 53 678 254" fill="none" stroke="#f9e8c7" stroke-width="3" opacity=".56"/>
+  <path d="M315 900c98-118 178-191 260-254 87 62 166 138 277 254" fill="none" stroke="#ad604c" stroke-width="4" opacity=".56"/>
+  <path d="M572 649v251" stroke="#f8dfae" stroke-width="3" stroke-dasharray="25 26" opacity=".85"/>
+  <!-- A small transit canopy and illuminated gathering spot -->
+  <path d="M60 752l116-53 113 53v13H60z" fill="#dc825d"/>
+  <path d="M81 764v108m187-108v108" stroke="#f1c395" stroke-width="8"/>
+  <path d="M74 789h201" stroke="#f1c395" stroke-width="3"/>
+  <circle cx="180" cy="759" r="7" fill="#fce2ae"/>
+  <path d="M995 733v135m-42-101 42-30 43 30" fill="none" stroke="#e6ab77" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="995" cy="724" r="13" fill="#f8d29b"/>
+  <g fill="#1c343c">
+    <circle cx="431" cy="750" r="9"/><path d="M424 758h14l8 50h-30z"/>
+    <circle cx="757" cy="770" r="9"/><path d="M750 777h14l11 51h-35z"/>
+  </g>
+  <g stroke="#e4b187" stroke-width="2" opacity=".65">
+    <path d="M35 100h74m-37-37v74M1077 143h61m-30-30v60"/>
+    <path d="M105 210h26m-13-13v26"/>
+  </g>
+  <rect x="24" y="24" width="1152" height="852" rx="16" fill="none" stroke="#f2d3ab" opacity=".25" stroke-width="2"/>
+</svg>

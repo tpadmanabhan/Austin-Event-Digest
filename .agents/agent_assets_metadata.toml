@@ -101,39 +101,74 @@ id = "b7kqdKX42Y2RLl4dmFCK1"
 uri = "file://project-plan.md"
 type = "text"
 title = "Raj's Austin Events — Project Plan"
+logical_id = "1c8168d6-b20e-496d-b19c-628f36c7594d"
 
 [[outputs]]
 id = "N2FHh4YMBCcGEJjabJN3D"
 uri = "file://attached_assets/generated_audio/spanish_guitar_bg.mp3"
 type = "audio"
 title = "spanish_guitar_bg"
+logical_id = "6877f0a8-9fdd-4423-bd58-866afd86ea38"
 
 [[outputs]]
 id = "952TU4qM7UJ5qgWTBW2x8"
 uri = "file://artifacts/austin-events/public/background-music.mp3"
 type = "audio"
 title = "upbeat texas country"
+logical_id = "37138d7e-f890-4bf8-b708-d60142903899"
 
 [[outputs]]
 id = "FpASacZKqWjsRqpzsdUkH"
 uri = "file://screenshots/platform-landing-skyline.jpg"
 type = "image"
 title = "Landing page with city skyline backdrop"
+logical_id = "7a19331f-6dab-437f-a596-80fc21ad7147"
 
 [[outputs]]
 id = "TWXnDibZuxozYl_A7h-OC"
 uri = "file://screenshots/headline-v2.jpg"
 type = "image"
 title = "Updated headline"
+logical_id = "37714400-f436-4824-b029-4670e53a1b57"
 
 [[outputs]]
 id = "XvgKaFEBI636MCQh5kEM3"
 uri = "file://attached_assets/screenshots/logo_less_uber.png"
 type = "image"
 title = "Event Carpooling — Less Uber · More Neighbor logo"
+logical_id = "12c2f98e-2dd4-4148-9d66-2dce691844d3"
 
 [[outputs]]
 id = "A_vxr_VzYswOrEMahMtDL"
 uri = "file://maptest.png"
 type = "image"
 title = "Email map image — Austin (580×260)"
+logical_id = "eb0a3f47-aa58-452d-baee-282ed4384b9a"
+
+[[outputs]]
+id = "1l9CbFoxxC95Bs_xL7h_Z"
+uri = "file://attached_assets/atlanta-landing-preview.png"
+type = "image"
+title = "Atlanta landing page preview"
+description = "Desktop preview of the Atlanta home page in development."
+logical_id = "dc75b2eb-c643-4a48-bd36-d2b924eba886"
+content_hash = "sha256:616772829a80d6797df8e4abccbc7eb011e165f7bb8ce12db347e879aacdac23"
+size = 236702
+mtime_ms = 1790796918725
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/dc75b2eb-c643-4a48-bd36-d2b924eba886/cd336c44-44d7-42a3-969c-1bc039ca3cd4"
+storage_version_token = "1790796932741590"
+content_type = "image/png"
+
+[[outputs]]
+id = "u8nGXote6vyDeQ-gomILj"
+uri = "file://attached_assets/atlanta-edition-preview.png"
+type = "image"
+title = "Atlanta weekly edition preview"
+description = "Desktop preview of the October 4–10 Atlanta edition in development."
+logical_id = "b3f9885b-610f-4db1-b95f-76624b15edaf"
+content_hash = "sha256:f363d85ad589a7a1736c7bdabc09ed01c97b05450fd2e210240bab9641466577"
+size = 229015
+mtime_ms = 1790796923205
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/b3f9885b-610f-4db1-b95f-76624b15edaf/5344073a-f8d2-41f2-90b7-b64fec84501a"
+storage_version_token = "1790796933327272"
+content_type = "image/png"

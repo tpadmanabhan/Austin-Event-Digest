@@ -122,6 +122,34 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).toContain("#1B5EA8");       // Tokyo blue
   });
 
+  it("Atlanta digest uses Atlanta branding and Eastern event times", () => {
+    const html = buildDigestEmailHtml(
+      {
+        ...baseDigest,
+        events: [{
+          title: "Atlanta Tech Gathering",
+          date: "2026-10-13T22:30:00.000Z",
+          venue: "Atlanta Tech Village",
+          description: "A local tech event",
+          category: "Tech",
+          link: "https://www.atltech.events/event/1",
+          imageUrl: null,
+          source: "ATLTech.events",
+        }],
+      },
+      null,
+      null,
+      { slug: "atlanta", name: "Atlanta Events", city: "Atlanta, GA", digestTitle: "Atlanta Events" }
+    );
+    expect(html).toContain("🍑");
+    expect(html).toContain("Atlanta Events");
+    expect(html).toContain("#C8102E");
+    expect(html).toContain("6:30 PM");
+    expect(html).toContain("ATLTech.events");
+    expect(html).not.toContain("🤠");
+    expect(html).not.toContain("Raj");
+  });
+
   it("Portland digest contains 🌲 and Portland red, not 🤠", () => {
     const html = buildDigestEmailHtml(
       baseDigest,

@@ -126,6 +126,7 @@ export default function Home() {
   const isSacramento = tenant.slug === "sacramento";
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
+  const isAtlanta = tenant.slug === "atlanta";
   const isToky = tenant.slug === "tokyo";
   const { lang, translate, translationFailed } = useLanguage();
   const [homeTranslatedMap, setHomeTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
@@ -166,6 +167,7 @@ export default function Home() {
   const catLabel = (cat: string) => (isToky && lang === "ja") ? (JA_CAT[cat] ?? cat) : (CAT_CONFIG[cat as keyof typeof CAT_CONFIG]?.label ?? cat);
 
   const MAP_CENTERS: Record<string, [number, number]> = {
+    atlanta:     [33.749, -84.388],
     austin:      [30.267, -97.743],
     austincares: [30.267, -97.743],
     brushycreek: [30.508, -97.679],
@@ -178,7 +180,9 @@ export default function Home() {
   };
   const showMap = tenant.slug in MAP_CENTERS;
   const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
-  const heroImage = isAustinCares
+  const heroImage = isAtlanta
+    ? "atlanta-hero.svg"
+    : isAustinCares
     ? "brushycreek-hero.jpg"
     : tenant.slug === "austincares"
       ? "austincares-hero.svg"
@@ -195,10 +199,12 @@ export default function Home() {
                 : "austin-hero.png";
   const heroSrc = isToky
     ? "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1400&auto=format&fit=crop&q=80"
-    : tenant.hasHeroImage
+    : tenant.hasHeroImage && !isAtlanta
       ? `/api/tenant/image/hero?slug=${encodeURIComponent(tenant.slug)}`
       : `${import.meta.env.BASE_URL}images/${heroImage}`;
-  const heroAlt = isAustinCares
+  const heroAlt = isAtlanta
+    ? "Illustrated Atlanta skyline and neighborhood streets at dusk"
+    : isAustinCares
     ? "High school student leaders taking charge"
     : tenant.slug === "austincares"
       ? "Austin Icons — Keep Austin Kind"
@@ -271,7 +277,7 @@ export default function Home() {
       </Dialog>
 
       {/* ANNOUNCEMENT BANNER */}
-      <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm flex items-center justify-center gap-3 flex-wrap">
+      {!isAtlanta && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm flex items-center justify-center gap-3 flex-wrap">
         <span>
           <span className="font-semibold text-primary">Coming Soon:</span>{" "}
           <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
@@ -286,7 +292,7 @@ export default function Home() {
           <Bell className="w-3 h-3" />
           Want to be notified about feature updates?
         </button>
-      </div>
+      </div>}
 
       {/* HERO SECTION */}
       <section className="relative overflow-hidden bg-background py-6 sm:py-10">
@@ -303,13 +309,15 @@ export default function Home() {
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4 border border-secondary/20">
                 <Sparkles className="w-4 h-4" />
-                <span>{jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
+                <span>{isAtlanta ? "Citywide, one good plan at a time." : jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
               </div>
               
               <h1 className="text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1]">
-                {jt("Stop scrolling.", JA.stopScrolling)} <br/>
+                {isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} <br/>
                 {isAustinCares ? (
                   <>Start <span className="text-primary italic">helping</span>.</>
+                ) : isAtlanta ? (
+                  <>Go see <span className="text-primary italic">what's happening.</span></>
                 ) : isToky && lang === "ja" ? (
                   <span className="text-primary italic">{JA.startExperiencing(cityShortName)}</span>
                 ) : (
@@ -320,6 +328,8 @@ export default function Home() {
               <p className="text-base text-muted-foreground mb-5 leading-relaxed max-w-xl">
                 {isAustinCares
                   ? "Every Sunday, a curated list of volunteering opportunities, school events, networking activities, and high school club stuff will be published for the week ahead."
+                  : isAtlanta
+                  ? "The gatherings worth leaving the house for: tech, arts, sports, civic life and wellness across Atlanta. Explore the weekly edition, find your people, and make a plan."
                   : tenant.slug === "austincares"
                   ? `Check out a curated list of volunteer activities, school contests, movie nights, and fun activities for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!`
                   : isToky && lang === "ja"
@@ -331,6 +341,8 @@ export default function Home() {
                 <p className="text-foreground/90 leading-relaxed text-base italic">
                   {isAustinCares
                     ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek 😎"`
+                    : isAtlanta
+                    ? "From neighborhood conversations to big ideas, Atlanta is better when you show up. Here's your guide to getting out and getting connected."
                     : isStLouis
                     ? `"Hey St. Louis! Every week I comb through event newsletters and hand-pick the best things happening around the city — from Forest Park to Soulard to the Arch. Here's your curated digest. Let's Go Redbirds! ⚾"`
                     : isToky && lang === "ja"
@@ -367,7 +379,7 @@ export default function Home() {
               <img 
                 src={heroSrc}
                 alt={heroAlt}
-                className={`relative rounded-3xl shadow-2xl border border-border w-full ${tenant.slug === "austincares" ? "object-contain aspect-[3/4]" : isAustinCares ? "object-contain aspect-[16/9] bg-stone-900" : "object-cover aspect-[4/3]"}`}
+                className={`relative rounded-3xl shadow-2xl border border-border w-full ${isAtlanta ? "atlanta-hero-image" : ""} ${tenant.slug === "austincares" ? "object-contain aspect-[3/4]" : isAustinCares ? "object-contain aspect-[16/9] bg-stone-900" : "object-cover aspect-[4/3]"}`}
               />
             </motion.div>
 
@@ -424,7 +436,7 @@ export default function Home() {
                           : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                       }`}
                     >
-                      <span>{cfg.emoji}</span>
+                      <span>{isAtlanta ? "·" : cfg.emoji}</span>
                       <span>{catLabel(cat)}</span>
                     </button>
                   );
@@ -437,7 +449,7 @@ export default function Home() {
           {showMap && latestDigest?.events && (
             <div className="mb-10">
               <h3 className="font-serif text-xl font-bold mb-4 flex items-center gap-2">
-                🗺️ Where this week's events are happening
+                {isAtlanta ? "Find your way around Atlanta" : "🗺️ Where this week's events are happening"}
               </h3>
               <EventMap
                 events={latestDigest.events as any[]}
@@ -685,7 +697,7 @@ export default function Home() {
                     </div>
                   ) : businessSpotlights.length === 0 && communityPosts.length === 0 ? (
                     <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-border">
-                      <p className="text-4xl mb-3">{CAT_CONFIG[categoryFilter].emoji}</p>
+                      <p className="text-4xl mb-3">{isAtlanta ? "✦" : CAT_CONFIG[categoryFilter].emoji}</p>
                       <p className="text-lg font-serif font-bold text-foreground mb-2">{jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                       <p className="text-muted-foreground text-sm">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     </div>
