@@ -301,9 +301,10 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     if (weekEnd) {
       const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
       const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
-      const label = `${weekOf.toLocaleDateString("en-US", opts)}–${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
       const _s = req.tenant!.slug;
-      const subjectEmoji = _s === "atlanta" ? "🍑" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
+      const separator = _s === "houston" ? " to " : "–";
+      const label = `${weekOf.toLocaleDateString("en-US", opts)}${separator}${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
+      const subjectEmoji = _s === "atlanta" ? "🍑" : _s === "houston" ? "⭐" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
       subject = `${subjectEmoji} ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
     } else {
       subject = fallback.subject;

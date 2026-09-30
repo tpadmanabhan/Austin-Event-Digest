@@ -1,6 +1,6 @@
 ---
 name: Custom date range digests
-description: How to generate a digest covering more or fewer than 7 days, and push to production
+description: How to generate a digest covering more or fewer than 7 days, audit coverage, and push to production
 ---
 
 ## Generate endpoint: weekEnd parameter
@@ -35,3 +35,9 @@ Custom-range generation can include events from the previous local calendar day 
 **Why:** A custom Austin generation included events from the day before its requested start and produced an overwhelmingly Arts-heavy list despite all five tenant categories being configured.
 
 **How to apply:** Before keeping a custom-range digest, remove out-of-range events, validate stated weekdays against numerical dates, deduplicate titles, and confirm intentional representation of every configured category.
+
+Longer editions can also fill the generation cap on the first few busy days, leaving later requested dates empty even though matching events exist.
+
+**Why:** A ten-day city edition initially returned only events from the first few days despite live events later in the requested range.
+
+**How to apply:** Audit every date in the requested span, not just the total count; curate verified later events rather than assuming generation covers the entire range.

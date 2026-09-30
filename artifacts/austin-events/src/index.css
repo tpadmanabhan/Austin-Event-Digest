@@ -137,6 +137,82 @@
   --destructive-foreground: 0 0% 100%;
 }
 
+/* Houston: bayou blue, copper hour, and warm gallery paper. Tenant scoped. */
+[data-tenant="houston"] {
+  --background: 38 44% 96%;
+  --foreground: 211 54% 15%;
+  --border: 35 28% 82%;
+  --input: 35 28% 82%;
+  --ring: 18 78% 43%;
+  --card: 39 53% 99%;
+  --card-foreground: 211 54% 15%;
+  --card-border: 35 28% 82%;
+  --popover: 39 53% 99%;
+  --popover-foreground: 211 54% 15%;
+  --popover-border: 35 28% 82%;
+  --primary: 18 78% 43%;
+  --primary-foreground: 39 53% 99%;
+  --secondary: 210 89% 24%;
+  --secondary-foreground: 39 53% 99%;
+  --muted: 38 34% 90%;
+  --muted-foreground: 210 22% 38%;
+  --accent: 36 85% 60%;
+  --accent-foreground: 211 54% 15%;
+  --sidebar: 38 44% 96%;
+  --sidebar-foreground: 211 54% 15%;
+  --sidebar-border: 35 28% 82%;
+  --sidebar-primary: 18 78% 43%;
+  --sidebar-primary-foreground: 39 53% 99%;
+  --sidebar-accent: 38 34% 90%;
+  --sidebar-accent-foreground: 211 54% 15%;
+  --sidebar-ring: 18 78% 43%;
+}
+
+[data-tenant="houston"] .houston-home-hero {
+  background:
+    radial-gradient(ellipse at 90% 8%, hsla(34, 87%, 70%, .23), transparent 46%),
+    linear-gradient(160deg, hsl(38 44% 96%), hsl(35 47% 92%));
+}
+[data-tenant="houston"] .houston-home-hero h1 {
+  font-family: 'DM Serif Display', serif;
+  letter-spacing: -.045em;
+}
+[data-tenant="houston"] .houston-hero-frame {
+  position: relative;
+  padding: 10px;
+  background: hsl(210 89% 24%);
+  border-radius: 1.5rem;
+  box-shadow: 22px 25px 0 -10px hsl(18 78% 43% / .25), 0 24px 70px hsl(210 54% 15% / .16);
+}
+[data-tenant="houston"] .houston-hero-frame img {
+  border-radius: 1rem;
+  border: 0;
+  box-shadow: none;
+  object-position: center 55%;
+}
+[data-tenant="houston"] .houston-edition-tag {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  right: 25px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: hsl(38 44% 96%);
+  padding: 12px 15px;
+  background: hsl(211 54% 15% / .88);
+  border: 1px solid hsl(39 53% 99% / .28);
+  border-radius: 9px;
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+@media (max-width: 640px) {
+  [data-tenant="houston"] .houston-edition-tag { font-size: 9px; letter-spacing: .07em; }
+}
+
 /* ── St. Louis Cardinals: red (#C41E3A) ────────────────────────────────── */
 [data-tenant="atlanta"] {
   --background: 39 43% 96%;

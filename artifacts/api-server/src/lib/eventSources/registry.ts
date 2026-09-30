@@ -23,13 +23,19 @@ export const CATEGORY_SOURCES: Record<string, SourceAdapter[]> = {
   "Sports":         [lumaAdapter, meetupAdapter, eventbriteAdapter, ticketmasterAdapter],
 };
 
-export function getAdaptersForCategories(categories: string[]): Array<{ adapter: SourceAdapter; category: string }> {
+export function getAdaptersForCategories(categories: string[], tenantSlug?: string): Array<{ adapter: SourceAdapter; category: string }> {
   const tasks: Array<{ adapter: SourceAdapter; category: string }> = [];
   const seen = new Set<string>();
 
   for (const rawCategory of categories) {
     const category = canonicalizeCategory(rawCategory);
-    const adapters = CATEGORY_SOURCES[category] || [];
+    const adapters = (CATEGORY_SOURCES[category] || []).filter(
+      adapter => {
+        if (adapter.name === "ATLTech.events") return tenantSlug === undefined || tenantSlug === "atlanta";
+        if (adapter.name === "StationAustin") return tenantSlug === undefined || tenantSlug === "austin";
+        return true;
+      },
+    );
     for (const adapter of adapters) {
       const key = `${adapter.name}:${category}`;
       if (!seen.has(key)) {

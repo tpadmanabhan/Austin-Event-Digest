@@ -33,6 +33,11 @@ describe("buildCommunityEvents — austin", () => {
     expect(events.length).toBe(0);
   });
 
+  it("does not add Austin community fixtures to Houston", () => {
+    const events = buildCommunityEvents("houston", WEEK_START, NEXT_WEEK);
+    expect(events).toEqual([]);
+  });
+
   it("all events have required fields: title, date, venue, description, category", () => {
     const events = buildCommunityEvents("austin", WEEK_START, NEXT_WEEK);
     for (const ev of events) {

@@ -2,7 +2,7 @@
 - [Capital Factory newsletter](capital-factory-parse.md) — Station Austin newsletter is HTML-only with zero-width spacers; parser yields 0 events
 - [Zod schema stripping on deploy](zod-deployed-schema.md) — deployed server strips fields not in its schema; adding a field requires redeploy to flow through API responses
 - [Newsletter parser formats](newsletter-parsers.md) — each newsletter has a unique format; TIME_LINE must extract only time (not " @ Venue" trailing content); DATE_COLON_LINE needs [a-z]* for full month names
-- [Custom date range digests](custom-date-range.md) — generate endpoint supports optional weekEnd param (bypasses Zod schema) for multi-day ranges; use /api/events/digest/import to push cleaned data to production
+- [Custom date range digests](custom-date-range.md) — optional weekEnd supports multi-day editions; audit every date because early busy days can exhaust the event cap
 - [Production admin token](prod-admin-token.md) — token = HMAC(tenant.passwordHash, "admin-session"); send as `Authorization: Bearer <token>` (NOT x-admin-token); per-tenant from tenants table
 - [Digest 61 spotlights](digest-61-spotlights.md) — RacFit (Business) + Food & Climate Grants (Community) must be PATCHed into digest 61 (7/12) when generated
 - [Tailwind @theme inline runtime overrides](tailwind-theme-inline-runtime-vars.md) — @theme inline bakes utilities to raw vars; override --primary/--secondary etc directly, not --color-*

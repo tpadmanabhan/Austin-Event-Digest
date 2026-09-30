@@ -17,6 +17,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
   const isAtlanta = tenant.slug === "atlanta";
+  const isHouston = tenant.slug === "houston";
   const isToky = tenant.slug === "tokyo";
   const { lang, setLang } = useLanguage();
 
@@ -27,10 +28,12 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className={`flex items-center justify-between ${(isAustinCares || isBulverde) ? "h-20" : "h-14"}`}>
             <Link href="/" className="flex items-center gap-2 group">
               <div
-                className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : isAtlanta ? "h-11 w-11" : isStLouis || isToky ? "h-10 w-10" : "h-8 w-8"}`}
-                style={isAtlanta || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : isToky ? { background: "linear-gradient(135deg, #0A2548, #1B5EA8)", boxShadow: "0 4px 12px rgba(27,94,168,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)", boxShadow: "0 4px 12px rgba(29,78,216,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
+                 className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : isAtlanta || isHouston ? "h-11 w-11" : isStLouis || isToky ? "h-10 w-10" : "h-8 w-8"}`}
+                 style={isAtlanta || isHouston || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : isToky ? { background: "linear-gradient(135deg, #0A2548, #1B5EA8)", boxShadow: "0 4px 12px rgba(27,94,168,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)", boxShadow: "0 4px 12px rgba(29,78,216,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
-                {isAtlanta ? (
+                 {isHouston ? (
+                   <img src={`${import.meta.env.BASE_URL}images/houston-astros.svg`} alt="Houston Astros logo" className="h-full w-full object-contain p-0.5" />
+                 ) : isAtlanta ? (
                   <img src={`${import.meta.env.BASE_URL}images/atlanta-braves.svg`} alt="Atlanta Braves logo" className="h-full w-full object-contain p-0.5" />
                 ) : tenant.hasBrandIcon ? (
                   <img
@@ -97,7 +100,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
-                  {isAtlanta ? "Citywide, one good plan at a time." : isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : isToky ? "Tokyo Never Sleeps • 東京のイベント" : tenant.slug === "dc" ? "District of Possibilities" : "Make Austin Weird Again"}
+                   {isHouston ? "The whole city. Your next plan." : isAtlanta ? "Citywide, one good plan at a time." : isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : isToky ? "Tokyo Never Sleeps • 東京のイベント" : tenant.slug === "dc" ? "District of Possibilities" : "Make Austin Weird Again"}
                 </span>
               </div>
             </Link>
@@ -163,9 +166,11 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-3 opacity-80">
               <div
                 className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-40 h-20" : isBulverde ? "w-28 h-16" : isStLouis ? "w-16 h-16" : "w-10 h-10"}`}
-                style={isAtlanta || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
+                 style={isAtlanta || isHouston || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
-                {isAtlanta ? (
+                 {isHouston ? (
+                   <img src={`${import.meta.env.BASE_URL}images/houston-astros.svg`} alt="Houston Astros logo" className="h-full w-full object-contain" />
+                 ) : isAtlanta ? (
                   <img src={`${import.meta.env.BASE_URL}images/atlanta-braves.svg`} alt="Atlanta Braves logo" className="h-full w-full object-contain p-0.5" />
                 ) : tenant.hasBrandIcon ? (
                   <img

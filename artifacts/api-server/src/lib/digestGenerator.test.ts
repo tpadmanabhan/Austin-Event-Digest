@@ -15,3 +15,19 @@ describe("generateSampleDigest — Atlanta onboarding", () => {
     expect(JSON.stringify(digest)).not.toMatch(/Austin|Barton Springs|South Congress|Alamo Drafthouse/);
   });
 });
+
+describe("generateSampleDigest — Houston onboarding", () => {
+  it("uses Houston-specific subject and intro with no Austin sample events", () => {
+    const digest = generateSampleDigest(
+      new Date("2026-10-01T00:00:00.000Z"),
+      undefined,
+      { slug: "houston", city: "Houston, TX", digestTitle: "Houston Events" },
+    );
+
+    expect(digest.subject).toContain("⭐ Houston Events");
+    expect(digest.subject).not.toContain("Houston Events Events");
+    expect(digest.intro).toContain("Houston events across Tech, Arts, Sports, Civics, and Wellness");
+    expect(digest.events).toEqual([]);
+    expect(JSON.stringify(digest)).not.toMatch(/Austin|Barton Springs|South Congress|Alamo Drafthouse|Austin City Limits/);
+  });
+});

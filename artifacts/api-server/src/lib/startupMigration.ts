@@ -1027,6 +1027,44 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Atlanta tenant seed failed (non-fatal)");
   }
 
+  // Seed Houston after the legacy category normalization so the requested
+  // category ordering remains stable. Reuse only a configured shared password;
+  // Houston intentionally starts without an invented admin email.
+  try {
+    const [existingHouston] = await db
+      .select({ id: tenantsTable.id })
+      .from(tenantsTable)
+      .where(eq(tenantsTable.slug, "houston"))
+      .limit(1);
+    if (!existingHouston) {
+      const configuredPassword = process.env.ADMIN_PASSWORD;
+      const passwordHash = configuredPassword && configuredPassword.trim().length >= 12
+        ? await hashPassword(configuredPassword)
+        : null;
+      await db.execute(sql`
+        INSERT INTO tenants (
+          slug, name, city, accent_color, categories, digest_title,
+          is_active, email_verified, password_hash
+        )
+        VALUES (
+          'houston',
+          'Houston Events',
+          'Houston, TX',
+          '#EB6E1F',
+          '["Tech","Arts","Sports","Civics","Wellness"]'::jsonb,
+          'Houston Events',
+          true,
+          false,
+          ${passwordHash}
+        )
+        ON CONFLICT (slug) DO NOTHING
+      `);
+    }
+    logger.info("Houston tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "Houston tenant seed failed (non-fatal)");
+  }
+
   // Migrate austincares subscribers → brushycreek (idempotent)
   try {
     await db.execute(sql`

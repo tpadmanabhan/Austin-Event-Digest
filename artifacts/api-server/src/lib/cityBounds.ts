@@ -27,6 +27,7 @@ export const MAP_CENTERS: Record<string, CityCenter> = {
   tokyo:       { lat: 35.676, lng: 139.650 },
   dc:          { lat: 38.907, lng: -77.037 },
   atlanta:     { lat: 33.749, lng: -84.388 },
+  houston:     { lat: 29.760, lng: -95.370 },
 };
 
 export const CITY_LABELS: Record<string, string> = {
@@ -40,6 +41,7 @@ export const CITY_LABELS: Record<string, string> = {
   tokyo:       "Tokyo",
   dc:          "Washington, DC",
   atlanta:     "Atlanta",
+  houston:     "Houston",
 };
 
 /**
@@ -60,6 +62,7 @@ export const CITY_MAX_RADIUS_MILES: Record<string, number> = {
   tokyo:       60,
   dc:          60,
   atlanta:     50,
+  houston:     75,
 };
 
 /** Haversine distance in miles between two lat/lng pairs. */

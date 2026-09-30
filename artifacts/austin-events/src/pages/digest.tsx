@@ -145,28 +145,40 @@ function getWeekMFDateRange(weekOfStr: string): string {
   return `${format(sunday, "MMMM d")} – ${format(saturday, "MMMM d")}, ${year}`;
 }
 
-function getEditionDateRange(weekOf: string, subject: string, allowExtendedRange: boolean): { label: string; extended: boolean } {
+function getEditionDateRange(weekOf: string, subject: string, allowExtendedRange: boolean, trustSubjectRange = false): { label: string; extended: boolean } {
   const weekly = { label: getWeekMFDateRange(weekOf), extended: false };
   if (!allowExtendedRange) return weekly;
 
   // Extended editions name their actual range in the subject.
   // The internal weekOf can predate the visible start by a day; keep it stable
   // because previously sent RSVP links use it to identify this digest.
-  const match = subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s+to\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})\s*$/i);
+  const match = trustSubjectRange
+    ? subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s*(?:to|[-–—])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),\s*(\d{4})\s*$/i)
+    : subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s+to\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})\s*$/i);
   if (!match) return weekly;
   const startMonth = MONTH_MAP[match[1].slice(0, 3).replace(/^./, c => c.toUpperCase())];
-  const endMonth = MONTH_MAP[match[3].slice(0, 3).replace(/^./, c => c.toUpperCase())];
+  const endMonth = MONTH_MAP[(match[3] || match[1]).slice(0, 3).replace(/^./, c => c.toUpperCase())];
   if (startMonth === undefined || endMonth === undefined) return weekly;
 
   const start = parseISO(weekOf.substring(0, 10));
   const subjectStart = new Date(
-    start.getFullYear() + (startMonth < start.getMonth() ? 1 : 0),
+    trustSubjectRange ? Number(match[5]) - (startMonth > endMonth ? 1 : 0) : start.getFullYear() + (startMonth < start.getMonth() ? 1 : 0),
     startMonth,
     Number(match[2]),
   );
   const end = new Date(Number(match[5]), endMonth, Number(match[4]));
   const weeklyEnd = new Date(start);
   weeklyEnd.setDate(start.getDate() + 6);
+  if (trustSubjectRange) {
+    if (
+      subjectStart.getMonth() !== startMonth ||
+      subjectStart.getDate() !== Number(match[2]) ||
+      end.getMonth() !== endMonth ||
+      end.getDate() !== Number(match[4]) ||
+      end <= subjectStart
+    ) return weekly;
+    return { label: `${format(subjectStart, "MMMM d")} – ${format(end, "MMMM d, yyyy")}`, extended: true };
+  }
   if (
     subjectStart.getMonth() !== startMonth ||
     subjectStart.getDate() !== Number(match[2]) ||
@@ -240,6 +252,7 @@ export default function DigestView() {
   const isBulverde = tenant.slug === "bulverde";
   const isStLouis = tenant.slug === "stlouis";
   const isAtlanta = tenant.slug === "atlanta";
+  const isHouston = tenant.slug === "houston";
   const isToky = tenant.slug === "tokyo";
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
@@ -253,6 +266,7 @@ export default function DigestView() {
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
   const MAP_CENTERS: Record<string, [number, number]> = {
     atlanta:     [33.749, -84.388],
+    houston:     [29.7604, -95.3698],
     austin:      [30.267, -97.743],
     austincares: [30.267, -97.743],
     brushycreek: [30.508, -97.679],
@@ -391,13 +405,13 @@ export default function DigestView() {
   }
 
   const { label: editionDateRange, extended: hasExtendedRange } =
-    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta);
+    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston, isHouston);
   const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
     <Layout>
       {/* ANNOUNCEMENT BANNER */}
-      {!isAtlanta && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
+      {!isAtlanta && !isHouston && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
         <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
         <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
@@ -411,6 +425,7 @@ export default function DigestView() {
         </Link>
         
         <header className="mb-16">
+          {isHouston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Houston / The citywide edition</div>}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             {!isAustinCares && <Calendar className="w-4 h-4" />}
             <span>{isAustinCares ? "Weekly Deals" : `Events: ${editionDateRange}`}</span>
@@ -418,8 +433,8 @@ export default function DigestView() {
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
             {(() => {
-              const emojiMatch = digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
-              const emoji = emojiMatch ? emojiMatch[1] : "";
+               const emojiMatch = isHouston ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
+               const emoji = emojiMatch ? emojiMatch[1] : "";
               if (isAustinCares) return `${emoji}Austin Cares Weekly Deals`;
               const titleBase = tenant.digestTitle || `${cityShortName} Events`;
               return `${emoji}${titleBase}: ${editionDateRange}`;
@@ -471,7 +486,7 @@ export default function DigestView() {
                       : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   }`}
                 >
-                  <span>{isAtlanta ? "·" : cfg.emoji}</span>
+                   <span>{isAtlanta || isHouston ? "·" : cfg.emoji}</span>
                   <span>{catLabel(cat)}</span>
                 </button>
               );
@@ -500,9 +515,9 @@ export default function DigestView() {
                   {geoStatus === "loading" ? (
                     <><Loader2 className="w-3.5 h-3.5 animate-spin" />Getting location…</>
                   ) : geoStatus === "active" ? (
-                    <>{isAtlanta ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
+                     <>{isAtlanta || isHouston ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
                   ) : (
-                    <>{isAtlanta ? "Nearest first" : "📍 Nearest first"}</>
+                     <>{isAtlanta || isHouston ? "Nearest first" : "📍 Nearest first"}</>
                   )}
                 </button>
                 {geoStatus === "denied" && (
@@ -546,7 +561,7 @@ export default function DigestView() {
                       autoFocus
                       value={manualAddress}
                       onChange={(e) => setManualAddress(e.target.value)}
-                      placeholder="e.g. Rainey Street, Austin TX"
+                       placeholder={isHouston ? "e.g. Montrose, Houston TX" : "e.g. Rainey Street, Austin TX"}
                       className="px-3 py-1.5 rounded-full text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
                     />
                     <button
@@ -657,7 +672,7 @@ export default function DigestView() {
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-6 flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {isAtlanta ? "Around Atlanta this week" : isExtendedAustinEdition ? "🗺️ Upcoming events on the map" : "🗺️ This week on the map"}
+                    {isHouston ? "Across Houston, on the map" : isAtlanta ? "Around Atlanta this week" : isExtendedAustinEdition ? "🗺️ Upcoming events on the map" : "🗺️ This week on the map"}
                   </h2>
                   <EventMap
                     events={upcomingEvents}
@@ -669,7 +684,7 @@ export default function DigestView() {
               )}
 
               {/* ── Coming Soon: New Features ───────────────────────────────── */}
-              <div className="mb-12">
+              {!isHouston && <div className="mb-12">
                 <div
                   className="rounded-3xl p-8 sm:p-10 overflow-hidden relative"
                   style={{ background: "linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#0f3460 100%)" }}
@@ -710,7 +725,7 @@ export default function DigestView() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>}
 
               {categoryFilter === "All" && businessSpotlights.length > 0 && (
                 <section className="mb-12">
@@ -831,20 +846,20 @@ export default function DigestView() {
                   <div className="flex items-center gap-2 flex-wrap">
                     {staleCount > 0 && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
-                        🕐 {staleCount} past event{staleCount !== 1 ? "s" : ""} hidden
+                        {isHouston ? "" : "🕐 "}{staleCount} past event{staleCount !== 1 ? "s" : ""} hidden
                       </span>
                     )}
                     {dimmedByRadius > 0 && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
-                        {isAtlanta ? "" : "📍 "}{dimmedByRadius} event{dimmedByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi
+                        {isAtlanta || isHouston ? "" : "📍 "}{dimmedByRadius} event{dimmedByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi
                       </span>
                     )}
                   </div>
                 </div>
                 {visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
-                    <p className="text-4xl mb-4">{isAtlanta ? "✦" : CAT_CONFIG[categoryFilter].emoji}</p>
-                    <p className="text-xl font-serif font-bold text-foreground mb-2">{isExtendedAustinEdition ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events` : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                    <p className="text-4xl mb-4">{isAtlanta || isHouston ? "✦" : CAT_CONFIG[categoryFilter].emoji}</p>
+                    <p className="text-xl font-serif font-bold text-foreground mb-2">{isExtendedAustinEdition || (isHouston && hasExtendedRange) ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events` : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                     <p className="text-muted-foreground text-sm mb-6">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     <button
                       onClick={() => setCategoryFilter("All")}
@@ -868,7 +883,7 @@ export default function DigestView() {
         })()}
 
         {/* AustinCares launch promo — shown on every city digest except AustinCares itself */}
-        {tenant.slug !== "austincares" && (
+        {tenant.slug !== "austincares" && !isHouston && (
           <section className="mt-16 px-4 sm:px-0">
             <div
               className="rounded-3xl p-8 sm:p-10 overflow-hidden relative"
@@ -918,7 +933,7 @@ export default function DigestView() {
           <div className="relative z-10">
             <h3 className="font-serif text-3xl font-bold mb-2 text-center">{jt("Don't miss the next one", JA.subscribeHeading)}</h3>
             <p className="text-secondary-foreground/80 mb-8 max-w-lg mx-auto text-lg text-center">
-              {isExtendedAustinEdition
+              {isExtendedAustinEdition || isHouston
                 ? `Get upcoming ${cityShortName} events delivered straight to your inbox.`
                 : jt(`Get next week's best ${cityShortName} events delivered straight to your inbox.`, JA.subscribeSubtext(cityShortName))}
             </p>

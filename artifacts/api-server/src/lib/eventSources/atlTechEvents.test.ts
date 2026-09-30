@@ -119,6 +119,18 @@ describe("ATLTech.events adapter", () => {
     expect(getAdaptersForCategories(["Arts"]).some(({ adapter }) => adapter.name === "ATLTech.events")).toBe(false);
   });
 
+  it("keeps city-specific adapters isolated while Houston retains generic Tech sources", () => {
+    const houstonAdapters = getAdaptersForCategories(["Tech"], "houston").map(({ adapter }) => adapter.name);
+    const atlantaAdapters = getAdaptersForCategories(["Tech"], "atlanta").map(({ adapter }) => adapter.name);
+
+    expect(houstonAdapters).not.toContain("ATLTech.events");
+    expect(houstonAdapters).not.toContain("StationAustin");
+    expect(houstonAdapters).toContain("Luma");
+    expect(houstonAdapters).toContain("Eventbrite");
+    expect(houstonAdapters).toContain("Ticketmaster");
+    expect(atlantaAdapters).toContain("ATLTech.events");
+  });
+
   it("returns no events when the feed is unavailable or malformed", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(response([], false)).mockResolvedValueOnce(response({ events: [] }));
     const events = await fetchAtlTechEvents({

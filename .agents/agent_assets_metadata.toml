@@ -172,3 +172,31 @@ mtime_ms = 1790797222884
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/b3f9885b-610f-4db1-b95f-76624b15edaf/deb58bea-4058-448e-9488-6a5034fa947d"
 storage_version_token = "1790797268568894"
 content_type = "image/png"
+
+[[outputs]]
+id = "PPmGChdKqYfO41VO0Sxwy"
+uri = "file://attached_assets/houston-landing-preview.png"
+type = "image"
+title = "Houston landing page"
+description = "Desktop preview with the Astros logo and October 1–10 edition."
+logical_id = "afe8e88d-8e3b-4311-9327-1fea8cfc7442"
+content_hash = "sha256:ff8e5869275948b2440a5e48c2ed337d78bc4b603146bd8c3717786b081f36f3"
+size = 811374
+mtime_ms = 1790797854804
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/afe8e88d-8e3b-4311-9327-1fea8cfc7442/e4ea27af-3845-41d6-975a-e55511ede8d5"
+storage_version_token = "1790798217238897"
+content_type = "image/png"
+
+[[outputs]]
+id = "kYL34K1pm-aDXiFY-YR4n"
+uri = "file://attached_assets/houston-edition-preview.png"
+type = "image"
+title = "Houston full edition"
+description = "Desktop preview of the date range, category filters and Houston map."
+logical_id = "2b1992a5-9903-40fc-b5f5-9a1b3695b4d8"
+content_hash = "sha256:b6c77ffd798e26dd86fa8fb387bbdec66d5f39c2bf8ddf932ac659ff6648a117"
+size = 211227
+mtime_ms = 1790797851320
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/2b1992a5-9903-40fc-b5f5-9a1b3695b4d8/9d0384b3-22a9-4fb9-baa0-1c1e00a98d9d"
+storage_version_token = "1790798217894368"
+content_type = "image/png"

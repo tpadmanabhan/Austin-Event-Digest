@@ -165,6 +165,43 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).not.toContain("Week of Thursday, October 1, 2026");
   });
 
+  it("renders Houston's October 1–10 extended range with Houston branding and Central time", () => {
+    const html = buildDigestEmailHtml(
+      {
+        ...baseDigest,
+        subject: "⭐ Houston Events: October 1 to October 10, 2026",
+        weekOf: "2026-10-01T00:00:00.000Z",
+        events: [{
+          title: "Houston Evening Event",
+          date: "2026-10-13T22:30:00.000Z",
+          venue: "Downtown Houston",
+          description: "A local event.",
+          category: "Arts",
+          link: null,
+          imageUrl: null,
+          source: "Ticketmaster",
+        }],
+      },
+      null,
+      null,
+      { slug: "houston", name: "Houston Events", city: "Houston, TX", digestTitle: "Houston Events" }
+    );
+
+    expect(html).toContain("⭐");
+    expect(html).toContain("Houston Events");
+    expect(html).toContain("Houston Astros logo");
+    expect(html).toContain("/images/houston-astros.png");
+    expect(html).toContain("#EB6E1F");
+    expect(html).toContain("#002d62");
+    expect(html).toContain("October 1 – October 10, 2026");
+    expect(html).not.toContain("Week of Thursday, October 1, 2026");
+    expect(html).toContain("5:30 PM");
+    expect(html).not.toContain("6:30 PM");
+    expect(html).not.toContain("Austin Cares");
+    expect(html).not.toContain("Two new features");
+    expect(html).not.toContain("🚀 Coming Soon");
+  });
+
   it("Portland digest contains 🌲 and Portland red, not 🤠", () => {
     const html = buildDigestEmailHtml(
       baseDigest,

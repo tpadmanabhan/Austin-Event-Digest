@@ -490,8 +490,8 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const slug = tenant?.slug;
-  const editionRangeMatch = slug === "austin" || slug === "atlanta"
-    ? digest.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s+to\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
+  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston"
+    ? digest.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s*(?:to|[-–—])\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
     : null;
   const editionRange = editionRangeMatch
     ? `${editionRangeMatch[1]} – ${editionRangeMatch[2]}`
@@ -672,6 +672,28 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(52,211,153,0.2)",
     rideBtnBg: "#6ee7b7",
     rideBtnColor: "#064e3b",
+  } : slug === "houston" ? {
+    headerGradient: "linear-gradient(135deg, #001b3d 0%, #002d62 58%, #124b7a 100%)",
+    primary: "#EB6E1F",
+    primaryBtn: "#EB6E1F",
+    primaryDark: "#002d62",
+    primaryLight: "#fff1e8",
+    primaryMuted: "#ffd1b3",
+    textOnDark: "#ffffff",
+    textMutedOnDark: "#dbeafe",
+    textStrong: "#ffffff",
+    linkColor: "#EB6E1F",
+    curatorName: "",
+    curatorUrl: null as string | null,
+    cityGuideText: "Your weekly guide to what's happening in Houston",
+    digestDisplayName: tenant?.digestTitle || "Houston Events",
+    headerEmoji: "⭐",
+    eventBtnColor: "#EB6E1F",
+    eventBtnBorder: "#EB6E1F",
+    pillText: "rgba(255,241,232,0.95)",
+    pillBorder: "rgba(235,110,31,0.4)",
+    rideBtnBg: "#EB6E1F",
+    rideBtnColor: "#002d62",
   } : slug === "atlanta" ? {
     headerGradient: "linear-gradient(135deg, #152238 0%, #253b5a 55%, #3a526f 100%)",
     primary: "#C8102E",
@@ -940,6 +962,7 @@ export function buildDigestEmailHtml(digest: {
     
     <!-- Header -->
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
+      ${slug === "houston" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/houston-astros.png", digest.siteUrl).toString() : "https://www.mlbstatic.com/team-logos/117.svg")}" alt="Houston Astros logo" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:${theme.textOnDark}; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:${theme.textOnDark};">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
       <div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
         <div style="display:inline-block; background:${theme.primaryBtn}; border-radius:6px; padding:2px 8px;">
@@ -982,7 +1005,7 @@ export function buildDigestEmailHtml(digest: {
     </div>` : ""}
 
     <!-- AustinCares Launch Promo (other established city newsletters) -->
-    ${slug !== "austincares" && slug !== "atlanta" ? `
+    ${slug !== "austincares" && slug !== "atlanta" && slug !== "houston" ? `
     <div style="background:${slug === "austin" ? "linear-gradient(135deg,#fff8ed 0%,#f8f2e8 54%,#edf7f0 100%)" : "linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%)"}; border:${slug === "austin" ? "1.5px solid #ead7ba" : "none"}; border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
       <p style="margin:0 0 6px; color:${slug === "austin" ? "#a45b22" : "#fbbf24"}; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ New · Austin Cares</p>
       <p style="margin:0 0 10px; color:${slug === "austin" ? "#3f392f" : "#ffffff"}; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
@@ -1003,7 +1026,7 @@ export function buildDigestEmailHtml(digest: {
     ${buildStaticMapSection(cleanDigestEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
 
     <!-- Coming Soon: New Features -->
-    ${slug !== "atlanta" ? `
+    ${slug !== "atlanta" && slug !== "houston" ? `
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <!-- Badge -->
       <div style="display:inline-block; background:${slug === "austin" ? "rgba(47,133,90,0.10)" : "rgba(255,255,255,0.12)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.22)" : "rgba(255,255,255,0.2)"}; border-radius:100px; padding:5px 14px; margin-bottom:16px;">

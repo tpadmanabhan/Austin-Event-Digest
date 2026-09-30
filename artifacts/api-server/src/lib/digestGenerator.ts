@@ -96,17 +96,19 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant
     ? `Here's your curated guide to the best events happening this week.\n\n${customNotes}\n\nGet out there and enjoy ${cityFirst}!`
     : slug === "atlanta"
       ? `Here's your weekly roundup of Atlanta events across Tech, Arts, Sports, Civics, and Wellness. Get out there and enjoy Atlanta!`
+      : slug === "houston"
+        ? `Here's your weekly roundup of Houston events across Tech, Arts, Sports, Civics, and Wellness. Get out there and enjoy Houston!`
       : `Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Get out there and enjoy it!`;
   const intro = cityIntro;
 
-  const subjectEmoji = slug === "atlanta" ? "🍑" : slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
+  const subjectEmoji = slug === "atlanta" ? "🍑" : slug === "houston" ? "⭐" : slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
 
   return {
-    subject: `${subjectEmoji} ${digestName}${slug === "atlanta" ? "" : " Events"} — Week of ${dateRange}`,
+    subject: `${subjectEmoji} ${digestName}${slug === "atlanta" || slug === "houston" ? "" : " Events"} — Week of ${dateRange}`,
     intro,
-    // The generic sample fixture is Austin-specific. Atlanta starts empty until
-    // real city events arrive from source adapters; never seed it with Austin data.
-    events: slug === "atlanta" ? [] : SAMPLE_EVENTS,
+    // The generic sample fixture is Austin-specific. Atlanta and Houston start
+    // empty until real city events arrive from source adapters.
+    events: slug === "atlanta" || slug === "houston" ? [] : SAMPLE_EVENTS,
   };
 }
 

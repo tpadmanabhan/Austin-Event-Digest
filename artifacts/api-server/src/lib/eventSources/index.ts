@@ -29,7 +29,7 @@ export async function fetchEventsForTenant(opts: FetchEventsForTenantOptions): P
     return { events: [], sources: [], attempted: 0, succeeded: 0 };
   }
 
-  const tasks = getAdaptersForCategories(categories);
+  const tasks = getAdaptersForCategories(categories, tenant.slug);
 
   const results = await Promise.allSettled(
     tasks.map(({ adapter, category }) =>
