@@ -242,6 +242,20 @@ function PlatformHomeInner() {
                   iconShadow: "0 3px 10px rgba(29,78,216,0.5)",
                   label: "DC Events",
                 },
+                {
+                  href: "https://atlanta.eventcarpooling.com",
+                  icon: <img src={`${import.meta.env.BASE_URL}images/atlanta-braves.svg`} alt="" className="h-7 w-7 object-contain" />,
+                  iconBg: "linear-gradient(135deg, #102b50, #1d3d67)",
+                  iconShadow: "0 3px 10px rgba(16,43,80,0.5)",
+                  label: "Atlanta Events",
+                },
+                {
+                  href: "https://houston.eventcarpooling.com",
+                  icon: <img src={`${import.meta.env.BASE_URL}images/houston-astros.svg`} alt="" className="h-7 w-7 object-contain" />,
+                  iconBg: "linear-gradient(135deg, #002d62, #174579)",
+                  iconShadow: "0 3px 10px rgba(0,45,98,0.5)",
+                  label: "Houston Events",
+                },
               ].map(city => (
                 <a
                   key={city.href}
@@ -304,7 +318,7 @@ function PlatformHomeInner() {
               style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 40 }}
             >
               {[
-                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "7", label: t.statCities },
+                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "9", label: t.statCities },
                 { icon: <Star className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "5", label: t.statCategories },
                 { icon: <Users className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "10+", label: t.statSources },
               ].map((stat, i) => (
@@ -761,10 +775,10 @@ function PlatformHomeInner() {
                 <div key={i} className="h-36 rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
-          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc"].includes(t.slug)).length > 0 ? (
+          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc", "atlanta", "houston"].includes(t.slug)).length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc"].includes(t.slug))
-                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc"].indexOf(b.slug))
+              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc", "atlanta", "houston"].includes(t.slug))
+                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc", "atlanta", "houston"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc", "atlanta", "houston"].indexOf(b.slug))
                 .map((tenant, i) => {
                 const CardEl = motion.a;
                 const cardProps = { href: `https://${tenant.slug}.eventcarpooling.com` };
@@ -800,6 +814,12 @@ function PlatformHomeInner() {
                 } else if (tenant.slug === "dc") {
                   iconContent = "🦅";
                   iconStyle = { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)", boxShadow: "0 6px 20px rgba(29,78,216,0.45)" };
+                } else if (tenant.slug === "atlanta") {
+                  iconContent = <img src={`${import.meta.env.BASE_URL}images/atlanta-braves.svg`} alt="" className="h-16 w-16 object-contain" />;
+                  iconStyle = { background: "linear-gradient(135deg, #102b50, #1d3d67)", boxShadow: "0 6px 20px rgba(16,43,80,0.45)" };
+                } else if (tenant.slug === "houston") {
+                  iconContent = <img src={`${import.meta.env.BASE_URL}images/houston-astros.svg`} alt="" className="h-16 w-16 object-contain" />;
+                  iconStyle = { background: "linear-gradient(135deg, #002d62, #174579)", boxShadow: "0 6px 20px rgba(0,45,98,0.45)" };
                 } else {
                   iconContent = tenant.name.charAt(0);
                   iconStyle = { background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)`, color: "#fff", fontSize: "1.5rem", fontWeight: 700, fontFamily: "Georgia, serif" };
