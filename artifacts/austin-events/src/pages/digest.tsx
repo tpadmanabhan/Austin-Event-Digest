@@ -405,7 +405,7 @@ export default function DigestView() {
   }
 
   const { label: editionDateRange, extended: hasExtendedRange } =
-    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston, isHouston);
+    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky, isHouston || isToky);
   const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
@@ -672,7 +672,7 @@ export default function DigestView() {
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-6 flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {isHouston ? "Across Houston, on the map" : isAtlanta ? "Around Atlanta this week" : isExtendedAustinEdition ? "🗺️ Upcoming events on the map" : "🗺️ This week on the map"}
+                    {isHouston ? "Across Houston, on the map" : isAtlanta ? "Around Atlanta this week" : isExtendedAustinEdition || (isToky && hasExtendedRange) ? "🗺️ Upcoming events on the map" : "🗺️ This week on the map"}
                   </h2>
                   <EventMap
                     events={upcomingEvents}
@@ -859,7 +859,7 @@ export default function DigestView() {
                 {visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
                     <p className="text-4xl mb-4">{isAtlanta || isHouston ? "✦" : CAT_CONFIG[categoryFilter].emoji}</p>
-                    <p className="text-xl font-serif font-bold text-foreground mb-2">{isExtendedAustinEdition || (isHouston && hasExtendedRange) ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events` : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                    <p className="text-xl font-serif font-bold text-foreground mb-2">{isExtendedAustinEdition || ((isHouston || isToky) && hasExtendedRange) ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events` : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                     <p className="text-muted-foreground text-sm mb-6">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     <button
                       onClick={() => setCategoryFilter("All")}
