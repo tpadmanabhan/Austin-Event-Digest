@@ -25,6 +25,6 @@
 - [Tenant-specific dev previews](tenant-dev-previews.md) — default app preview host shows Austin; use a hostname-mapped browser to visually check AustinCares locally
 - [Recurring AustinCares digest offers](recurring-austincares-digest.md) — use an undated weekly label for ongoing offers; weekday-only dates are filtered after that day
 - [Austin Sierra Club event dates](austin-sierra-club-events.md) — official Austin group points to Meetup; read Meetup's Event JSON-LD for exact local start times
-- [Sandbox fetch timeout](sandbox-fetch-timeout.md) — CodeExecution impure fetch supports fetch but not AbortSignal; avoid passing signal there
+- [Sandbox web globals](sandbox-fetch-timeout.md) — parse URLs in impure scope; fetch works there, but AbortSignal may be unavailable
 - [Tokyo development admin auth](tokyo-dev-auth.md) — a shell-derived email token may work in production yet fail development verification; check both before choosing an import path
 - [Drizzle push prompts](drizzle-push-prompts.md) — a closed-stdin push can exit 0 at an unanswered truncation prompt without applying the schema; detect prompts explicitly
