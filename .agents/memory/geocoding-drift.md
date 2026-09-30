@@ -41,3 +41,5 @@ dc:         lat 38.5–39.2, lng -77.5 to -76.7
 Run the bounding-box audit after every generate + re-geocode, before sending. If any event falls outside the box, fix the venue string and hardcode coords.
 
 **Why:** Re-geocoding alone won't fix drift when the venue name exists in multiple cities. The venue string must be unambiguous (full address) AND coords may need to be set directly.
+
+**Update (Aug 2026):** ingest-time defenses now exist: `knownVenues.ts` hand-verified venue→coord table (checked before cache/geocoders; add recurring failures there), a second Nominatim pass with a city/state hint when pass 1 is out of bounds, and Ticketmaster venue strings now include street address line1.

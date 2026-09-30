@@ -2,6 +2,7 @@ import { db, digestsTable } from "@workspace/db";
 import { sql, eq } from "drizzle-orm";
 import { logger } from "./logger";
 import { isWithinCityBounds } from "./cityBounds";
+import { lookupKnownVenue, CITY_GEOCODE_HINTS } from "./knownVenues";
 
 const NOMINATIM_UA = "EventCarpooling/1.0 (contact@eventcarpooling.com)";
 
@@ -148,6 +149,43 @@ async function nominatim(query: string): Promise<{ lat: number; lng: number } | 
   return null;
 }
 
+/**
+ * Geocode a non-CJK venue string with city-aware disambiguation.
+ *
+ * Pass 1: plain Nominatim lookup (with comma-part fallbacks). Accepted only
+ *         when it lands within the city bounds (name-only strings like
+ *         "Dante's, Portland" frequently resolve to a same-named venue in
+ *         another state).
+ * Pass 2: venue name + explicit city/state hint appended (e.g.
+ *         "Dante's, Portland, Oregon"), again validated against city bounds.
+ *
+ * Returns null when neither pass yields an in-bounds result.
+ */
+async function geocodeWithCityHint(
+  venue: string,
+  citySlug?: string,
+): Promise<{ lat: number; lng: number } | null> {
+  const first = await nominatim(venue);
+  if (first && (!citySlug || isWithinCityBounds(citySlug, first.lat, first.lng))) {
+    return first;
+  }
+
+  const hint = citySlug ? CITY_GEOCODE_HINTS[citySlug] : undefined;
+  if (!hint) return first; // no hint available — let caller's bounds check decide
+
+  // Pass 2 — venue name (first comma segment) + city/state hint
+  const base = (venue.split(",")[0] ?? venue).trim();
+  await sleep(1100);
+  const second = await nominatimQuery(`${base}, ${hint}`);
+  if (second && isWithinCityBounds(citySlug!, second.lat, second.lng)) {
+    if (first && !isWithinCityBounds(citySlug!, first.lat, first.lng)) {
+      logger.info({ venue, citySlug, hint }, "City-hint geocode pass recovered an out-of-bounds venue");
+    }
+    return second;
+  }
+  return first;
+}
+
 // ---------------------------------------------------------------------------
 // Photon (Komoot) geocoder — free, no API key, better Japanese coverage
 // ---------------------------------------------------------------------------
@@ -247,6 +285,11 @@ export async function geocodeVenue(
   const clean = venueText.trim();
   if (!clean) return { lat: null, lng: null };
 
+  // Known-venue lookup table wins over cache and geocoders — these are
+  // hand-verified coordinates for the venues that most often geocode wrong.
+  const known = lookupKnownVenue(clean, citySlug);
+  if (known) return { lat: known.lat, lng: known.lng };
+
   const cached = await cacheGet(clean);
   if (cached.found) {
     if (containsCJK(clean)) {
@@ -275,7 +318,7 @@ export async function geocodeVenue(
   if (containsCJK(clean)) {
     coords = await geocodeJapanese(clean);
   } else {
-    coords = await nominatim(clean);
+    coords = await geocodeWithCityHint(clean, citySlug);
   }
 
   if (coords && citySlug && !isWithinCityBounds(citySlug, coords.lat, coords.lng)) {
@@ -330,6 +373,13 @@ export async function geocodeEvents(
     }
 
     try {
+      // Known-venue lookup wins over cache and geocoders
+      const known = lookupKnownVenue(venue, citySlug);
+      if (known) {
+        result.push({ ...event, lat: known.lat, lng: known.lng });
+        continue;
+      }
+
       const cached = await cacheGet(venue);
       if (cached.found) {
         if (containsCJK(venue)) {
@@ -374,7 +424,7 @@ export async function geocodeEvents(
         coords = await geocodeJapanese(venue);
         needsDelay = true;
       } else {
-        coords = await nominatim(venue);
+        coords = await geocodeWithCityHint(venue, citySlug);
       }
 
       let lat = coords?.lat ?? null;

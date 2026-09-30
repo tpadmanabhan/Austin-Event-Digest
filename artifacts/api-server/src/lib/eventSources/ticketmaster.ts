@@ -112,9 +112,12 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
     } else if (!isWithinDateRange(startIso, query.weekOf, query.weekEnd)) continue;
     if (isAdultContent(ev.name, ev.description || ev.info || "")) continue;
 
+    // Include the street address when Ticketmaster provides one — a name-only
+    // string ("Dante's, Portland") frequently geocodes to a same-named venue
+    // in another city, while "Dante's, 350 W Burnside St, Portland" is reliable.
     const venue = ev._embedded?.venues?.[0];
     const venueName = venue
-      ? [venue.name, venue.city?.name || cityName].filter(Boolean).join(", ")
+      ? [venue.name, venue.address?.line1, venue.city?.name || cityName].filter(Boolean).join(", ")
       : cityName;
 
     // Prefer 16:9 wide images

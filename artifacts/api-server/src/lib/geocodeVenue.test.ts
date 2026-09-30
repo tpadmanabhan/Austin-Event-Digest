@@ -310,7 +310,8 @@ describe("geocodeVenue — city-bounds validation", () => {
       nominatimResponse([{ lat: String(PORTLAND_OR.lat), lon: String(PORTLAND_OR.lng) }])
     ));
 
-    const result = await geocodeVenue("Revolution Hall", "portland");
+    // NOTE: use a venue NOT in the known-venue table so the geocode path runs
+    const result = await geocodeVenue("Some Unknown Hall", "portland");
     expect(result.lat).toBeCloseTo(PORTLAND_OR.lat, 2);
     expect(result.lng).toBeCloseTo(PORTLAND_OR.lng, 2);
   });
@@ -351,6 +352,89 @@ describe("geocodeVenue — city-bounds validation", () => {
     // Without a slug, no bounds check — coords are returned as-is
     expect(result.lat).toBeCloseTo(PORTLAND_TX.lat, 2);
   });
+});
+
+describe("known-venue lookup table", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("resolves a known venue without any DB or HTTP call (geocodeVenue)", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+
+    const result = await geocodeVenue("Dante's, Portland", "portland");
+    expect(result.lat).toBeCloseTo(45.5231, 3);
+    expect(result.lng).toBeCloseTo(-122.6731, 3);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+    expect(mockExecute).not.toHaveBeenCalled();
+  });
+
+  it("resolves a known venue in geocodeEvents without DB or HTTP", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+
+    const events = [{ title: "Kings Game", venue: "Golden 1 Center, Sacramento" }];
+    const result = await geocodeEvents(events, "sacramento");
+    expect(result[0]?.lat).toBeCloseTo(38.5802, 3);
+    expect(result[0]?.lng).toBeCloseTo(-121.4997, 3);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+    expect(mockExecute).not.toHaveBeenCalled();
+  });
+
+  it("normalizes 'The', apostrophes, and case when matching", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+
+    const result = await geocodeVenue("The Pageant, St. Louis", "stlouis");
+    expect(result.lat).toBeCloseTo(38.6560, 3);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+
+  it("ignores the table when citySlug is missing", async () => {
+    mockExecute.mockResolvedValueOnce({ rows: [{ lat: 1, lng: 2 }] } as any); // cache hit
+    vi.stubGlobal("fetch", vi.fn());
+
+    const result = await geocodeVenue("Dante's, Portland");
+    expect(result.lat).toBe(1); // came from cache, not the table
+  });
+});
+
+describe("geocodeWithCityHint — second-pass city disambiguation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("recovers an out-of-bounds first result via the city-hint pass", async () => {
+    mockExecute
+      .mockResolvedValueOnce({ rows: [] } as any)  // cacheGet: miss
+      .mockResolvedValueOnce({} as any);           // cacheSet
+
+    const fetchMock = vi.fn()
+      // Pass 1: name-only query drifts to Portland, TX
+      .mockResolvedValueOnce(nominatimResponse([{ lat: String(PORTLAND_TX.lat), lon: String(PORTLAND_TX.lng) }]))
+      // Pass 2: "+ Portland, Oregon" hint resolves correctly
+      .mockResolvedValueOnce(nominatimResponse([{ lat: String(PORTLAND_OR.lat), lon: String(PORTLAND_OR.lng) }]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await geocodeVenue("Obscure Bar", "portland");
+    expect(result.lat).toBeCloseTo(PORTLAND_OR.lat, 2);
+    expect(result.lng).toBeCloseTo(PORTLAND_OR.lng, 2);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // Second call must include the city hint
+    const secondUrl = String(fetchMock.mock.calls[1]?.[0]);
+    expect(decodeURIComponent(secondUrl)).toContain("Portland, Oregon");
+  }, 15000);
+
+  it("stores null when both passes stay out of bounds", async () => {
+    mockExecute
+      .mockResolvedValueOnce({ rows: [] } as any)  // cacheGet: miss
+      .mockResolvedValueOnce({} as any);           // cacheSet(null)
+
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValue(nominatimResponse([{ lat: String(PORTLAND_TX.lat), lon: String(PORTLAND_TX.lng) }])));
+
+    const result = await geocodeVenue("Another Obscure Bar", "portland");
+    expect(result.lat).toBeNull();
+    expect(result.lng).toBeNull();
+  }, 15000);
 });
 
 describe("geocodeEvents — city-bounds validation", () => {
