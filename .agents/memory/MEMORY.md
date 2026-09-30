@@ -27,3 +27,4 @@
 - [Austin Sierra Club event dates](austin-sierra-club-events.md) — official Austin group points to Meetup; read Meetup's Event JSON-LD for exact local start times
 - [Sandbox fetch timeout](sandbox-fetch-timeout.md) — CodeExecution impure fetch supports fetch but not AbortSignal; avoid passing signal there
 - [Tokyo development admin auth](tokyo-dev-auth.md) — a shell-derived email token may work in production yet fail development verification; check both before choosing an import path
+- [Drizzle push prompts](drizzle-push-prompts.md) — a closed-stdin push can exit 0 at an unanswered truncation prompt without applying the schema; detect prompts explicitly
