@@ -114,7 +114,7 @@ export default function Home() {
   }
 
   const latestDigest = latestDigestRes?.digest;
-  const latestIssueRangeMatch = tenant.slug === "austin"
+  const latestIssueRangeMatch = tenant.slug === "austin" || tenant.slug === "atlanta"
     ? latestDigest?.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s+to\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
     : null;
   const latestIssueRange = latestIssueRangeMatch

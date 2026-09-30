@@ -150,6 +150,21 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).not.toContain("Raj");
   });
 
+  it("shows Atlanta's extended October edition range instead of a seven-day week label", () => {
+    const html = buildDigestEmailHtml(
+      {
+        ...baseDigest,
+        subject: "🍑 Atlanta Events — October 1 to October 10, 2026",
+        weekOf: "2026-10-01T00:00:00.000Z",
+      },
+      null,
+      null,
+      { slug: "atlanta", name: "Atlanta Events", city: "Atlanta, GA", digestTitle: "Atlanta Events" }
+    );
+    expect(html).toContain("October 1 – October 10, 2026");
+    expect(html).not.toContain("Week of Thursday, October 1, 2026");
+  });
+
   it("Portland digest contains 🌲 and Portland red, not 🤠", () => {
     const html = buildDigestEmailHtml(
       baseDigest,

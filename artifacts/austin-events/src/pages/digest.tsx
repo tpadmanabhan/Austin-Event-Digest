@@ -145,11 +145,11 @@ function getWeekMFDateRange(weekOfStr: string): string {
   return `${format(sunday, "MMMM d")} – ${format(saturday, "MMMM d")}, ${year}`;
 }
 
-function getEditionDateRange(weekOf: string, subject: string, isAustin: boolean): { label: string; extended: boolean } {
+function getEditionDateRange(weekOf: string, subject: string, allowExtendedRange: boolean): { label: string; extended: boolean } {
   const weekly = { label: getWeekMFDateRange(weekOf), extended: false };
-  if (!isAustin) return weekly;
+  if (!allowExtendedRange) return weekly;
 
-  // Austin's extended editions name their actual range in the subject.
+  // Extended editions name their actual range in the subject.
   // The internal weekOf can predate the visible start by a day; keep it stable
   // because previously sent RSVP links use it to identify this digest.
   const match = subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s+to\s+([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})\s*$/i);
@@ -390,8 +390,9 @@ export default function DigestView() {
     return null;
   }
 
-  const { label: editionDateRange, extended: isExtendedAustinEdition } =
-    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin");
+  const { label: editionDateRange, extended: hasExtendedRange } =
+    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta);
+  const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
     <Layout>

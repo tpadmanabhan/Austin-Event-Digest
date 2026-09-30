@@ -490,7 +490,7 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const slug = tenant?.slug;
-  const editionRangeMatch = slug === "austin"
+  const editionRangeMatch = slug === "austin" || slug === "atlanta"
     ? digest.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s+to\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
     : null;
   const editionRange = editionRangeMatch
@@ -948,7 +948,7 @@ export function buildDigestEmailHtml(digest: {
       </div>
       <p style="margin:0; color:${theme.textOnDark}; font-size:14px;">${theme.cityGuideText}</p>
       ${editionRange ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">${escapeHtml(editionRange)}</p>` : ""}
-      ${slug !== "austin" ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">Week of ${weekDate}</p>` : ""}
+      ${slug !== "austin" && !editionRange ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">Week of ${weekDate}</p>` : ""}
       ${theme.curatorName ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:12px; font-style:italic;">Curated by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.textMutedOnDark}; text-decoration:underline;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
     </div>
 
