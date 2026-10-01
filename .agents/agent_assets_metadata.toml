@@ -242,3 +242,17 @@ mtime_ms = 1790844972438
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/012f0541-abbe-4390-b15e-ca425bb902fe/a6081fd8-969b-4920-bfc9-5d7dee1f5a9f"
 storage_version_token = "1790844990202164"
 content_type = "image/jpeg"
+
+[[outputs]]
+id = "p7-BsejWLaA5KtsE8gUX3"
+uri = "file://.local/outputs/eventcarpooling-project-one-pager.pdf"
+type = "pdf"
+title = "EventCarpooling.com — PDF Summary"
+description = "One-page, print-ready PDF with selectable text, all summary metrics and counting notes, and the AustinCares website highlight."
+logical_id = "cd9f87af-9371-484d-a1bf-ffec0cc667a4"
+content_hash = "sha256:7030b7e838513c48ed9f129470a45ef224d16383b55931f9d96e83ec331bd427"
+size = 55890
+mtime_ms = 1790845221354
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/cd9f87af-9371-484d-a1bf-ffec0cc667a4/027f6caf-ebe6-4899-a947-e8998e2513e1"
+storage_version_token = "1790845269162971"
+content_type = "application/pdf"

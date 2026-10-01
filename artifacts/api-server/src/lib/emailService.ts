@@ -18,6 +18,11 @@ interface SendEmailOptions {
   replyTo?: string;
   fromName?: string;
   headers?: Record<string, string>;
+  attachments?: Array<{
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+  }>;
 }
 
 interface SendEmailResult {
@@ -44,6 +49,12 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
           text: options.text,
           reply_to: options.replyTo,
           headers: options.headers,
+          ...(options.attachments?.length ? {
+            attachments: options.attachments.map(attachment => ({
+              filename: attachment.filename,
+              content: attachment.content.toString("base64"),
+            })),
+          } : {}),
         }),
       });
 
@@ -83,6 +94,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
       text: options.text,
       replyTo: options.replyTo,
       headers: options.headers,
+      ...(options.attachments?.length ? { attachments: options.attachments } : {}),
     });
 
     logger.info({ to: options.to }, "Email sent via Gmail SMTP");
