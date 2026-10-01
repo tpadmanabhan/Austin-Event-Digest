@@ -256,3 +256,17 @@ mtime_ms = 1790846072649
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/cd9f87af-9371-484d-a1bf-ffec0cc667a4/6edac83a-518b-4033-afd3-541756aa1b06"
 storage_version_token = "1790846093631888"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "fO7LGnDliG1JyAuy2CzIa"
+uri = "file://.local/outputs/eventcarpooling-project-summary-top-metrics.jpg"
+type = "image"
+title = "EventCarpooling.com — Top Summary (JPG)"
+description = "A separate 2550 × 975 px, 300 DPI crop showing the title and complete metrics row, including 34,314 core code lines. The original JPG remains unchanged."
+logical_id = "6811dd27-254b-4524-89f4-02e2cd6fb518"
+content_hash = "sha256:61651e7d3ffa92b8f6f8ed2fecf3b32a9ff5889e45cf6919cb8b9407fcd3c489"
+size = 314020
+mtime_ms = 1790847815532
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/6811dd27-254b-4524-89f4-02e2cd6fb518/0f0eebe7-5bec-4e86-bce8-cb331e65b11b"
+storage_version_token = "1790847820452353"
+content_type = "image/jpeg"
