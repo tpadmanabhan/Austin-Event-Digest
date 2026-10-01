@@ -200,3 +200,17 @@ mtime_ms = 1790797851320
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/2b1992a5-9903-40fc-b5f5-9a1b3695b4d8/9d0384b3-22a9-4fb9-baa0-1c1e00a98d9d"
 storage_version_token = "1790798217894368"
 content_type = "image/png"
+
+[[outputs]]
+id = "RUHfEMrjUg8Hv2i3m64wG"
+uri = "file://.local/outputs/eventcarpooling-project-one-pager.html"
+type = "html"
+title = "EventCarpooling.com — Project One-Pager"
+description = "A self-contained, printable one-page summary of built capabilities, code size, integrations, publishing checkpoints, and sent newsletter editions. Verified to print on one US Letter page."
+logical_id = "a68b28b9-ce85-4b8a-8583-95b55908e3e8"
+content_hash = "sha256:676158ab47562fe8fdc71df6cc1c6079899bbe05d76b271bc2026ad5f4de8b7c"
+size = 10175
+mtime_ms = 1790844536262
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/a68b28b9-ce85-4b8a-8583-95b55908e3e8/790aadff-84fc-4808-981e-87c2fc604b67"
+storage_version_token = "1790844571981306"
+content_type = "text/html"
