@@ -32,4 +32,10 @@ for value in (
     "not verified successful", "not a strict count",
 ):
     assert value.lower() in text.lower(), f"Missing content: {value}"
+for removed in (
+    "Recorded subscriber-sent newsletter editions",
+    "Production sent-edition records span",
+    "Counts are editions, not recipient emails.",
+):
+    assert removed.lower() not in text.lower(), f"Removed section still present: {removed}"
 print(f"Verified one-page US Letter PDF with selectable text: {pdf_path.stat().st_size:,} bytes")
