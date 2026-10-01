@@ -214,3 +214,17 @@ mtime_ms = 1790844536262
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/a68b28b9-ce85-4b8a-8583-95b55908e3e8/790aadff-84fc-4808-981e-87c2fc604b67"
 storage_version_token = "1790844571981306"
 content_type = "text/html"
+
+[[outputs]]
+id = "8ZTXhq1fzGlFkc0Hxmp3b"
+uri = "file://.local/outputs/eventcarpooling-project-one-pager.png"
+type = "image"
+title = "EventCarpooling.com — Summary Image"
+description = "High-resolution portrait PNG (2550 × 3300 pixels, 300 DPI), including the AustinCares website highlight. The original HTML report remains unchanged."
+logical_id = "18e29104-9b52-4c25-9621-3063ed57f61b"
+content_hash = "sha256:978e7c879e5e85a301261f445e865ec37c314590bca3adeaa74f09c1c659dcbb"
+size = 701770
+mtime_ms = 1790844786789
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/18e29104-9b52-4c25-9621-3063ed57f61b/968559a3-919a-4483-ad8c-6081ecfe0ba2"
+storage_version_token = "1790844804454071"
+content_type = "image/png"
