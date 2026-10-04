@@ -5,15 +5,7 @@ import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-function decodeParam(val: string | null): string {
-  if (!val) return "";
-  try {
-    return atob(val.replace(/-/g, "+").replace(/_/g, "/"));
-  } catch {
-    return val;
-  }
-}
+import { decodeRsvpParam } from "@/lib/rsvp-params";
 
 export default function RsvpPage() {
   const params = new URLSearchParams(window.location.search);
@@ -21,9 +13,9 @@ export default function RsvpPage() {
   // Legacy links use d= (numeric digest ID, dev-only)
   const weekOf = params.get("w") || undefined;
   const digestId = !weekOf ? parseInt(params.get("d") || "") : NaN;
-  const eventTitle = decodeParam(params.get("e"));
-  const email = decodeParam(params.get("em"));
-  const name = decodeParam(params.get("n"));
+  const eventTitle = decodeRsvpParam(params.get("e"));
+  const email = decodeRsvpParam(params.get("em"));
+  const name = decodeRsvpParam(params.get("n"));
   const sig = params.get("s") || undefined;
 
   const [nameInput, setNameInput] = useState(name || "");
