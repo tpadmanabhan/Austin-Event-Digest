@@ -28,3 +28,4 @@
 - [Sandbox web globals](sandbox-fetch-timeout.md) — parse URLs in impure scope; fetch works there, but AbortSignal may be unavailable
 - [Tokyo development admin auth](tokyo-dev-auth.md) — a shell-derived email token may work in production yet fail development verification; check both before choosing an import path
 - [Drizzle push prompts](drizzle-push-prompts.md) — a closed-stdin push can exit 0 at an unanswered truncation prompt without applying the schema; detect prompts explicitly
+- [Austin curator attendance](austin-curator-attendance.md) — "most Special events" is qualified factual copy, not a guarantee of attendance at every Special event.

@@ -354,7 +354,7 @@ export default function Home() {
               </p>
 
               <div className="mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl">
-                <p className="text-foreground/90 leading-relaxed text-base italic">
+                <p className="text-foreground/90 leading-relaxed text-base italic whitespace-pre-line">
                   {isAustinCares
                     ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek 😎"`
                     : isAtlanta
@@ -367,6 +367,10 @@ export default function Home() {
                     ? JA.curatorQuote
                     : tenant.slug === "austincares"
                     ? `"Hey Austin! I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy Austin 🤠"`
+                    : tenant.slug === "austin" && latestDigest?.intro
+                    ? `"${latestDigest.intro}"`
+                    : tenant.slug === "austin"
+                    ? `"Hey Austin! I hand-pick events happening around the city. I personally attend most of the events marked Special. Join me by clicking the “Interested?” button. Here's your curated digest — get out there and enjoy Austin 🤠"`
                     : `"Hey ${cityShortName}! I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`
                   }
                 </p>
@@ -430,7 +434,7 @@ export default function Home() {
             <div className="max-w-2xl">
               <h2 className="font-serif text-4xl font-bold mb-4">{isHouston ? "The city, on your calendar." : jt("Inside the Latest Issue", JA.insideLatestIssue)}</h2>
               <p className="text-muted-foreground text-lg">
-                {isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
+                {isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : tenant.slug === "austin" ? "A look at the upcoming events in this edition." : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
               </p>
               {latestIssueRange && (
                 <p className="mt-3 text-sm font-semibold text-primary">Events: {latestIssueRange}</p>
@@ -485,7 +489,7 @@ export default function Home() {
           {showMap && latestDigest?.events && (
             <div className="mb-10">
               <h3 className="font-serif text-xl font-bold mb-4 flex items-center gap-2">
-                 {isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : isToky && latestIssueRange ? "🗺️ Where this edition's events are happening" : "🗺️ Where this week's events are happening"}
+                 {isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : (isToky || tenant.slug === "austin") && latestIssueRange ? "🗺️ Where this edition's events are happening" : "🗺️ Where this week's events are happening"}
               </h3>
               <EventMap
                 events={latestDigest.events as any[]}
@@ -734,7 +738,7 @@ export default function Home() {
                   ) : businessSpotlights.length === 0 && communityPosts.length === 0 ? (
                     <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-border">
                       <p className="text-4xl mb-3">{isAtlanta || isHouston ? "✦" : CAT_CONFIG[categoryFilter].emoji}</p>
-                      <p className="text-lg font-serif font-bold text-foreground mb-2">{isHouston ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events in this edition` : jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                      <p className="text-lg font-serif font-bold text-foreground mb-2">{isHouston || tenant.slug === "austin" ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events in this edition` : jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                       <p className="text-muted-foreground text-sm">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     </div>
                   ) : null}
@@ -743,7 +747,7 @@ export default function Home() {
             })()
           ) : (
             <div className="text-center py-20 bg-muted/30 rounded-3xl border border-dashed border-border">
-              <p className="text-muted-foreground">{isHouston ? "The next Houston edition is on its way. Check back soon." : "No events found for this week yet."}</p>
+              <p className="text-muted-foreground">{isHouston ? "The next Houston edition is on its way. Check back soon." : tenant.slug === "austin" ? "No upcoming events found for this edition yet." : "No events found for this week yet."}</p>
             </div>
           )}
         </div>
