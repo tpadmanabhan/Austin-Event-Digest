@@ -45,6 +45,33 @@ const baseDigest = {
   siteUrl: "https://test.eventcarpooling.com",
 };
 
+describe("AI Ethics reading section", () => {
+  it("appears below Austin's introductory quote with all three reading links", () => {
+    const html = buildDigestEmailHtml(baseDigest, null, null, {
+      slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
+    });
+    expect(html).toContain("AI Ethics");
+    expect(html).toContain("Nick Bostrom");
+    expect(html).toContain("must-subscribe media");
+    expect(html).toContain("https://customersuccessforgood.com/2026/09/30/are-we-trading-our-soul-for-convenience/");
+    expect(html).toContain('href="https://www.404media.co/"');
+    expect(html).toContain('href="https://note.com/akih/n/n1253589b1ffb?hl=en"');
+    expect(html.indexOf("AI Ethics")).toBeGreaterThan(html.indexOf("<!-- Intro -->"));
+    expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf("<!-- Location CTA -->"));
+  });
+
+  it.each(["tokyo", "austincares", "brushycreek", "sacramento", "portland", "bulverde", "stlouis", "dc", "atlanta", "houston"])(
+    "does not leak Austin's editorial section into %s",
+    slug => {
+      const html = buildDigestEmailHtml(baseDigest, null, null, {
+        slug, name: "City Events", city: "City", digestTitle: null,
+      });
+      expect(html).not.toContain("AI Ethics");
+      expect(html).not.toContain("Nick Bostrom");
+    },
+  );
+});
+
 // ── buildDigestEmailHtml ────────────────────────────────────────────────────
 
 describe("buildDigestEmailHtml — city branding isolation", () => {

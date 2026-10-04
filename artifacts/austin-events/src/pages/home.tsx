@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EventMap } from "@/components/event-map";
+import { AiEthicsSection } from "@/components/ai-ethics-section";
 
 const SHOW_AUSTIN_CARES = true;
 
@@ -380,6 +381,8 @@ export default function Home() {
                   </p>
                 )}
               </div>
+
+              {tenant.slug === "austin" && <AiEthicsSection className="mb-8 max-w-xl" />}
 
               <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60 scroll-mt-24">
                 <SubscribeForm />

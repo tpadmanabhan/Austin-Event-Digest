@@ -11,6 +11,7 @@ import { useTenant } from "@/contexts/tenant-context";
 import { useLanguage } from "@/contexts/language-context";
 import { JA } from "@/i18n/ja";
 import { EventMap } from "@/components/event-map";
+import { AiEthicsSection } from "@/components/ai-ethics-section";
 
 // Fallback blocklist used before the API responds or if the fetch fails
 const ADULT_BLOCKED_FALLBACK = [
@@ -436,7 +437,9 @@ export default function DigestView() {
                const emojiMatch = isHouston ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
                const emoji = emojiMatch ? emojiMatch[1] : "";
               if (isAustinCares) return `${emoji}Austin Cares Weekly Deals`;
-              const titleBase = tenant.digestTitle || `${cityShortName} Events`;
+               const titleBase = tenant.slug === "austin" && /upcoming events/i.test(digest.subject)
+                 ? "Upcoming Events"
+                 : tenant.digestTitle || `${cityShortName} Events`;
               return `${emoji}${titleBase}: ${editionDateRange}`;
             })()}
           </h1>
@@ -460,6 +463,7 @@ export default function DigestView() {
               </p>
             )}
           </div>
+          {tenant.slug === "austin" && <AiEthicsSection className="mt-6" />}
         </header>
 
         {/* Translation unavailable banner — shown when Japanese mode fails */}

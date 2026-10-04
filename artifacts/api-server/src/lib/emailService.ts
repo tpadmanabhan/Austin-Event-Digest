@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { logger } from "./logger";
 import { isAdultContent } from "./contentFilter";
 import { MAP_CENTERS, CITY_LABELS, haversineMiles } from "./cityBounds";
+import { buildAustinAiEthicsSection } from "./austinAiEthics";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
@@ -992,6 +993,8 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
       ${theme.curatorName ? `<p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
     </div>
+
+    ${slug === "austin" ? buildAustinAiEthicsSection() : ""}
 
     <!-- Location CTA -->
     ${digest.preferencesUrl ? `
