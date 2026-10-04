@@ -7,6 +7,19 @@ import { useLang } from "@/contexts/lang-context";
 import { LaunchCityModal } from "@/components/launch-city-modal";
 import { EventMap } from "@/components/event-map";
 
+const NEW_CITY_SLUGS = ["austin", "atlanta", "houston", "tokyo"];
+const LIVE_CITY_ORDER = [...NEW_CITY_SLUGS, "stlouis", "sacramento", "portland", "bulverde", "dc"];
+const citySlugFromHref = (href: string) => new URL(href).hostname.split(".")[0];
+
+function NewCityBadge() {
+  return (
+    <span className="inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-bold"
+      style={{ background: "#dcfce7", color: "#166534" }}>
+      New
+    </span>
+  );
+}
+
 const PLATFORM_MAP_EVENTS = [
   { title: "Tech Meetup @ The Domain",      lat: 30.401, lng: -97.723, category: "Tech",    featured: false },
   { title: "Live Music on 6th Street",       lat: 30.268, lng: -97.740, category: "Arts",    featured: true  },
@@ -256,7 +269,13 @@ function PlatformHomeInner() {
                   iconShadow: "0 3px 10px rgba(0,45,98,0.5)",
                   label: "Houston Events",
                 },
-              ].map(city => (
+              ].sort((a, b) => {
+                const rank = (href: string) => {
+                  const index = NEW_CITY_SLUGS.indexOf(citySlugFromHref(href));
+                  return index === -1 ? NEW_CITY_SLUGS.length : index;
+                };
+                return rank(a.href) - rank(b.href);
+              }).map(city => (
                 <a
                   key={city.href}
                   href={city.href}
@@ -288,6 +307,7 @@ function PlatformHomeInner() {
                     <span className="text-sm font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
                     <span>{city.label}</span>
                   </span>
+                  {NEW_CITY_SLUGS.includes(citySlugFromHref(city.href)) && <NewCityBadge />}
                   <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
                 </a>
               ))}
@@ -775,10 +795,10 @@ function PlatformHomeInner() {
                 <div key={i} className="h-36 rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
-          ) : tenants && tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc", "atlanta", "houston"].includes(t.slug)).length > 0 ? (
+          ) : tenants && tenants.filter((t) => LIVE_CITY_ORDER.includes(t.slug)).length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tenants.filter((t) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc", "atlanta", "houston"].includes(t.slug))
-                .sort((a, b) => ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc", "atlanta", "houston"].indexOf(a.slug) - ["austin", "stlouis", "tokyo", "sacramento", "portland", "bulverde", "dc", "atlanta", "houston"].indexOf(b.slug))
+              {tenants.filter((t) => LIVE_CITY_ORDER.includes(t.slug))
+                .sort((a, b) => LIVE_CITY_ORDER.indexOf(a.slug) - LIVE_CITY_ORDER.indexOf(b.slug))
                 .map((tenant, i) => {
                 const CardEl = motion.a;
                 const cardProps = { href: `https://${tenant.slug}.eventcarpooling.com` };
@@ -849,7 +869,10 @@ function PlatformHomeInner() {
                         <ExternalLink className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
                       </div>
                       <div>
-                        <h3 className="font-serif font-bold" style={{ color: "#0f172a" }}>{tenant.name}</h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-serif font-bold" style={{ color: "#0f172a" }}>{tenant.name}</h3>
+                          {NEW_CITY_SLUGS.includes(tenant.slug) && <NewCityBadge />}
+                        </div>
                         <p className="text-sm" style={{ color: "#64748b" }}>{tenant.city}</p>
                       </div>
                       <div className="flex flex-wrap gap-1.5 mt-auto">
