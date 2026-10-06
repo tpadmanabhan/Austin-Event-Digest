@@ -393,6 +393,10 @@ function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) 
 export function EventCard({ event, digestId, distanceMiles, translating }: { event: EventItem; digestId?: number; distanceMiles?: number; translating?: boolean }) {
   const { citySlug } = useDomain();
   const cardSlug = slugify(event.title);
+  // Keep the original event photo on our own host so all four recurring yoga cards render reliably.
+  const imageUrl = citySlug === "austin" && event.title === "FREE Yoga in San Gabriel Park"
+    ? `${import.meta.env.BASE_URL}images/san-gabriel-yoga.jpg`
+    : event.imageUrl;
   const getCategoryIcon = (category: string) => {
     const cat = category.toLowerCase();
     if (cat.includes("music") || cat.includes("concert")) return <Music className="w-4 h-4" />;
@@ -417,10 +421,10 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
           <span className="text-sm font-medium text-muted-foreground tracking-wide">翻訳中…</span>
         </div>
       )}
-      {event.imageUrl && (
+      {imageUrl && (
         <div className="w-full overflow-hidden bg-muted rounded-t-2xl" style={{ height: "120px" }}>
           <img
-            src={event.imageUrl}
+            src={imageUrl}
             alt={event.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />

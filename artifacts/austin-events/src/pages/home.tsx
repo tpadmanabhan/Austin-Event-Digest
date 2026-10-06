@@ -694,7 +694,7 @@ export default function Home() {
                                   className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
                                   style={{ background: "linear-gradient(135deg, #16a34a, #22c55e)", boxShadow: "0 4px 14px rgba(22,163,74,0.35)" }}
                                 >
-                                  {jt("Apply Now", JA.applyNow)} <ExternalLink className="w-3.5 h-3.5" />
+                                  {tenant.slug === "austin" ? "Register" : jt("Apply Now", JA.applyNow)} <ExternalLink className="w-3.5 h-3.5" />
                                 </a>
                               )}
                             </div>

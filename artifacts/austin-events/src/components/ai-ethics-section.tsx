@@ -7,7 +7,7 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
       <h2 id="ai-ethics-title" className="mb-3 text-xl font-bold text-slate-900">AI Ethics</h2>
       <p className="text-sm leading-7 text-slate-600">
         AI promises convenience, but what does it cost us in privacy, trust, and human connection?
-        My latest post explores that trade-off. For deeper perspective, Nick Bostrom’s
+        My latest post explores that trade-off. For a deeper perspective, Nick Bostrom’s
         {" "}<em>Superintelligence</em> asks how we can keep increasingly powerful AI aligned with
         human values. And 404 Media, founded by former VICE journalists, is must-subscribe media
         for its independent reporting on AI’s real-world impact.
