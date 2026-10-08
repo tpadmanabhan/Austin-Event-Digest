@@ -91,6 +91,7 @@ Authorization: Bearer <token>
 | Bulverde | `bulverde` | Email-based | null passwordHash |
 | Brushy Creek | `brushycreek` | Email-based | null passwordHash |
 | DC | `dc` | Email-based | Look up target-environment tenant ID and email |
+| Atlanta | `atlanta` | Inspect target tenant | Password-hash auth verified for the current development and production tenants; re-query rather than assume |
 
 ## Updating Tenant Branding (name, digestTitle, etc.)
 

@@ -33,6 +33,8 @@ If a complete replacement is explicitly required, first obtain and review the fu
 
 After a write, check the HTTP status and response, then re-read the target digest and verify its week, intended fields, and event count. A response from `digestToApi()` may omit stale/adult events and is not proof that the raw stored array is unchanged.
 
+For additions or removals, compare retained raw objects by field/value and relative order, not serialized JSON key order. Verify edition metadata and send timestamps are unchanged, then check the target listing's presence or absence in both public latest/list endpoints. An authenticated data-only update is live immediately and needs no republish; Git commits do not contain database edits. Do not send or resend email unless separately requested.
+
 ### 4. Copy a dev digest to production (where supported)
 
 The admin UI's production-status check compares digest weeks. Its push action uses `POST /api/events/digest/:id/push-to-prod`, supported only for Sacramento, Portland, Bulverde, St. Louis, Brushy Creek, and Tokyo. It authenticates with production email-HMAC configuration and imports a **new** digest; it is not an update-in-place operation. Check for an existing matching week first and verify production afterward.

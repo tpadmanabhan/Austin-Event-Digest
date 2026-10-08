@@ -37,6 +37,10 @@ Optional: `"weekEnd": "YYYY-MM-DD"` for an extended range (read directly from th
 
 Use `parse-event-url` or inspect the source page to extract structured data. Verify its year, local time zone, weekday, venue, RSVP link, and image URL. `parse-event-url` can return an incorrect local time for a UTC timestamp; check it against the source.
 
+For Luma links, inspect the page's `application/ld+json` Event data as well as its visible copy. Confirm `startDate` and `endDate` including the year and UTC offset; retain the full local date range for multi-day events. Use the source's street address and `location.geo` coordinates when available rather than guessing a venue pin. Reference an absolute organizer image URL and check that it returns HTTP 200 with an image content type.
+
+Application deadlines are separate from event dates. Keep the event's actual start/end in `date`, and prominently include any application deadline, limited places, or approval requirement in the description. The regular event card does not render the community-post `deadline` field, so that field alone does not communicate a registration cutoff.
+
 ```bash
 # 1. Parse the URL (returns title, date, venue, description, imageUrl)
 curl -s -X POST "/api/events/digest/{id}/parse-event-url" \
@@ -55,6 +59,15 @@ curl -s -X POST "/api/events/digest/{id}/parse-event-url" \
 > ⚠️ **Use `-d @file` not piped stdin** — piping JSON into curl can silently drop data. Always write to a temp file first. Even `-d @file` can return FAIL with 0 events if the token is wrong — always verify `success: true` and a non-zero event count before assuming the PATCH worked.
 
 See `push-to-production` skill for the complete file-based patching workflow.
+
+### Verify a page-only addition
+
+- Check for an existing listing by link and title/date before adding it.
+- Preserve existing objects and their relative order; insert new events chronologically before later dated events without moving spotlights.
+- Re-read the raw stored array immediately before writing. Afterward, compare every retained object by field/value (JSON object key order is irrelevant), and verify the original count plus the intended additions.
+- Confirm edition metadata, including `sentAt`, is unchanged. Check the intended listing in both public `/digest/latest` and `/digest/list` responses; these feed the landing page and full edition. Check the rendered UI separately when layout or display behavior changes.
+- Development and production must each be authenticated and verified independently. Updating one environment is not evidence that the other changed.
+- A request to add an event to pages does not authorize a draft or subscriber email. Do not call any send endpoint. Successful live data writes do not require republishing code.
 
 ## Step 3: Patch Individual Event Fields
 
@@ -255,6 +268,8 @@ Also watch for **generic vs specific title duplicates** — e.g. "Summer Stock A
 ## Removing Events From a Digest
 
 Read the **raw stored event array** for the exact city and digest ID through the appropriate read-only database access. Remove only the requested entry, verify the remaining objects and count, then submit the **complete nonempty** replacement through authenticated `PATCH /api/events/digest/:id/events`. The public list filters historical entries and must never be used as the source of a replacement. Do not place bearer tokens in saved scripts or logs.
+
+Before replacing the array, account for schema normalization and automatic featured tagging: either can alter unrelated entries. If exact preservation is not possible through the deployed API, do not silently accept those changes or write production SQL; use a supported scoped operation or report the limitation. For development-only edits, an authorized atomic JSONB removal guarded by the original array can preserve every retained object without normalization. Verify the targeted title/link is absent from both public endpoints, all other objects and metadata are unchanged, and no email was sent.
 
 ## City Branding Audit (Run Before First Send for Any City)
 
