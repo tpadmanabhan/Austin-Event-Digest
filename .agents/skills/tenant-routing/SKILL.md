@@ -147,6 +147,9 @@ If any intro contains "Austin" → PATCH with `PATCH /api/events/digest/:id/intr
 7. Add subject emoji to the `subjectEmoji` ternary in `digestGenerator.ts`
 8. Add city bounding box to `CITY_BOUNDS` in `digest-workflow` skill for geocoding drift audit
 9. Deploy → startupMigration seeds the tenant in production → generate digest, push events via API
+10. Before considering the new city's first edition complete, curate one local **Business Spotlight** and one local **Community Spotlight**, unless the user specifies otherwise. Verify each against an official website, use accurate descriptions and working absolute image URLs, and add them to the intended city edition with `isBusinessSpotlight: true` or `isPost: true`. Check the **All** view on both the landing page and full edition; verify email rendering separately without sending.
+
+Spotlights are per-edition entries, not automatically seeded tenant settings. When preparing a subsequent edition, inspect the previous edition's spotlights and explicitly retain or replace still-current selections; do not assume featured-event carry-forward includes undated spotlights. Recheck deadline-based community posts and do not retain expired calls to action. This checklist guides agent work; it does not implement automatic carry-forward in the generator.
 
 ## Relevant Files
 

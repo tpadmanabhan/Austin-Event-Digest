@@ -96,6 +96,8 @@ Call the endpoint **once per spotlight** — one call for `type: "business"` and
 
 This endpoint **appends**; it does not replace an existing spotlight. To replace one, read the raw stored array, update the single `isBusinessSpotlight` or `isPost` object in place (including title/link/description/source), and full-array PATCH it. Verify there is exactly one intended spotlight of that type and all other entries remain. The response's `digest.events` is filtered and is not a safe source for a subsequent replacement.
 
+For a new city, include one verified local business and one community organization in its first edition unless the user requests a different scope. For later editions, inspect previous selections and explicitly retain or replace still-current spotlights, checking official links, images, descriptions, and any application deadlines. The featured-event carry-forward routine does not preserve undated spotlights automatically. Spotlights display under **All**, so verify that view on both public pages before declaring them missing or restored. Adding spotlights does not authorize email sends.
+
 ### Spotlight Audit (run before sending)
 
 Business spotlights (`isBusinessSpotlight: true`) and community posts (`isPost: true`) live inside the `events` array alongside regular events. They can accumulate duplicates or carry placeholder text if added more than once.
