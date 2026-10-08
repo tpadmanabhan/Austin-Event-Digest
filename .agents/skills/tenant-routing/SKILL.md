@@ -16,6 +16,18 @@ Every city runs on the same codebase but gets its own branded experience via sub
 - In production, the dev header and `DEFAULT_TENANT_SLUG` are ignored. The leading subdomain is used; a missing or unknown/inactive tenant does not silently fall back to another city.
 - `/api/healthz` and `/api` are registered before tenant resolution. The router also has platform-level routes that do not require a tenant; not every `/api` route is city-scoped.
 
+### Verify the correct tenant in development
+
+The ordinary preview hostname selects the default development tenant, normally Austin. A tenant-specific route such as AustinCares `/full` can return 404 on that host even when it works on its intended city hostname.
+
+For API checks, send the intended city `Host` header or the development-only tenant override. For visual checks, use a browser resolving that city's hostname to the shared local proxy on port 80, with its browser proxy disabled. Changing only the API header does not prove the frontend identified the same tenant. Verify the visible city branding and expected route before judging the page.
+
+When using Chromium's debugger, select an actual `type: "page"` target, not an extension background target. The first debugger target is not necessarily the application.
+
+### Audit city-specific content across surfaces
+
+Changes to one city's editorial sections, curator claims, images, or action labels must be guarded by that tenant on the landing page, full edition, and email independently. Check a non-target city as well as the target. For Austin's AI Ethics section, community-post registration label, recurring photos, and qualified curator wording, see the digest workflow's [Austin edition maintenance](../digest-workflow/references/austin-edition-maintenance.md).
+
 ## City Reference
 
 ### 🤠 Austin (`austin.eventcarpooling.com`)

@@ -12,6 +12,7 @@ description: Push event digest data or other changes from the dev environment to
 - **Code changes** → Publish via Replit deploy button.
 - **Production data writes** → Use the authenticated production API. Production `executeSql` is for read-only inspection; do not try to write production rows directly with it.
 - Public GET endpoints such as `/api/events/digest/latest` do not validate admin credentials.
+- Git synchronization, development screenshots, and an earlier successful publication do not prove that a newer code or bundled-asset change is live. Verify the actual published behavior and describe unverified code changes as local, not deployed.
 
 ## Safely edit or publish digest data
 

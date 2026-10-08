@@ -28,10 +28,14 @@ These GETs are public and filter past events; they are useful for finding the di
 
 ```
 POST /api/events/digest/generate
-{ "weekStart": "YYYY-MM-DD" }
+{ "weekOf": "YYYY-MM-DD" }
 ```
 
 Optional: `"weekEnd": "YYYY-MM-DD"` for an extended range (read directly from the request rather than the generated Zod body). Check the current handler before relying on this extension in production; deployment code can lag behind the workspace.
+
+The current custom-range filter uses an exclusive `weekEnd`: to include October 31, pass November 1. Verify local calendar boundaries and audit every requested date, not just the total event count; bounded source results can fill up on early busy days. When the user requests a strict visible date cutoff, also inspect intros, descriptions, labels, and spotlights for earlier dates. Preserve source URLs even if their paths contain historical dates.
+
+For extended Austin editions, image repairs, RSVP links, or Austin-specific editorial changes, read [Austin edition maintenance](references/austin-edition-maintenance.md). It covers sent-edition preservation, cross-page/email checks, and the distinction between live data updates and unpublished code changes.
 
 ## Step 2: Add an Event from a URL
 
