@@ -7,6 +7,8 @@ description: Understand how the multi-tenant routing system works for eventcarpo
 
 ## Public HTML checklist for every city
 
+Use `.agents/skills/verify-ai-readable-pages/SKILL.md` to audit the published documents, not just the JavaScript UI. Verify the default production API route independently of fixture overrides, preserving tenant Host headers. Reuse shared calendar-date and navigation-label formatting; never expose raw week timestamps or duplicate “Events events” labels.
+
 New active cities use the shared dynamic public web server; do not add API-only document handlers or restore a static SPA catch-all. Keep tenant Host forwarding intact through the internal proxy.
 
 After city setup, follow `docs/public-pages-publishing.md`: inspect no-JavaScript homepage/edition/event/venue content, correct branding/canonicals, robots and XML sitemap, real 404s for unknown tenants, and enabled navigation/signup/map controls. Treat AustinCares as deals and Tokyo as bilingual; never advertise unconfigured adapters as available features.

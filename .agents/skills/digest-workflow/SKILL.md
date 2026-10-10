@@ -7,6 +7,8 @@ description: Generate, review, patch, and send a city's weekly event digest. Use
 
 ## Keep digests readable publicly
 
+Use `.agents/skills/verify-ai-readable-pages/SKILL.md` for the live HTML audit. Check real body text with scripts/data removed, verified Event-schema coverage, and readable week/navigation labels. Local tests do not prove a change is published; do not promise rides or AI indexing.
+
 For every generation, import and edit, preserve persistent event/venue identities and retain original edition arrays and signed subscriber inputs. Supply structured dates/addresses only from verified source facts; do not infer missing years, times, prices or travel amenities. Date/venue edits must invalidate obsolete structured metadata.
 
 After editing, inspect the city's initial public HTML and one event/venue journey without submitting forms. Follow `docs/public-pages-publishing.md` for type/build/tests, canonical and sitemap checks, and separate user-approved publishing/live verification. Curated/community posts and AustinCares deals are not Schema.org Events. Check actual tenant/source availability before describing RSVP, sharing or carpool capabilities; no guaranteed rides.
