@@ -8,6 +8,21 @@
 import * as zod from "zod";
 
 /**
+ * @summary Read source-verified metadata for a publicly visible event
+ */
+export const GetPublicEventMetadataParams = zod.object({
+  eventId: zod.coerce.string(),
+});
+
+export const GetPublicEventMetadataResponse = zod.object({
+  metadata: zod.object({
+    startDate: zod.string().optional(),
+    timezone: zod.string().optional(),
+    venueAddress: zod.string().optional(),
+  }),
+});
+
+/**
  * Returns server health status
  * @summary Health check
  */
@@ -48,6 +63,9 @@ export const SubscribeToNewsletterResponse = zod.object({
       birthDay: zod.number().nullish(),
       subscribedAt: zod.coerce.date(),
       isActive: zod.boolean(),
+      displayAddress: zod.string().nullish(),
+      walkableOnly: zod.boolean().optional(),
+      radiusMiles: zod.number().nullish(),
     })
     .optional(),
 });
@@ -77,6 +95,9 @@ export const GetSubscribersResponse = zod.object({
       birthDay: zod.number().nullish(),
       subscribedAt: zod.coerce.date(),
       isActive: zod.boolean(),
+      displayAddress: zod.string().nullish(),
+      walkableOnly: zod.boolean().optional(),
+      radiusMiles: zod.number().nullish(),
     }),
   ),
   total: zod.number(),
@@ -93,6 +114,15 @@ export const GetLatestDigestResponse = zod.object({
     intro: zod.string(),
     events: zod.array(
       zod.object({
+        eventId: zod.string().optional(),
+        venueId: zod.string().optional(),
+        startDate: zod
+          .string()
+          .optional()
+          .describe("Verified ISO date or timestamp from the event source"),
+        endDate: zod.string().optional(),
+        timezone: zod.string().optional(),
+        venueAddress: zod.string().optional(),
         title: zod.string(),
         date: zod.string(),
         venue: zod.string(),
@@ -128,6 +158,15 @@ export const ListDigestsResponse = zod.object({
       intro: zod.string(),
       events: zod.array(
         zod.object({
+          eventId: zod.string().optional(),
+          venueId: zod.string().optional(),
+          startDate: zod
+            .string()
+            .optional()
+            .describe("Verified ISO date or timestamp from the event source"),
+          endDate: zod.string().optional(),
+          timezone: zod.string().optional(),
+          venueAddress: zod.string().optional(),
           title: zod.string(),
           date: zod.string(),
           venue: zod.string(),
@@ -174,6 +213,15 @@ export const GenerateDigestResponse = zod.object({
     intro: zod.string(),
     events: zod.array(
       zod.object({
+        eventId: zod.string().optional(),
+        venueId: zod.string().optional(),
+        startDate: zod
+          .string()
+          .optional()
+          .describe("Verified ISO date or timestamp from the event source"),
+        endDate: zod.string().optional(),
+        timezone: zod.string().optional(),
+        venueAddress: zod.string().optional(),
         title: zod.string(),
         date: zod.string(),
         venue: zod.string(),

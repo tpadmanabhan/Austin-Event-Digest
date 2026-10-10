@@ -268,7 +268,7 @@ const PatchDealBody = z.object({
 });
 
 router.patch("/admin/deals/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) {
     res.status(400).json({ error: "invalid_request", message: "Invalid deal id" });
     return;

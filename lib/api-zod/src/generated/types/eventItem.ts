@@ -7,6 +7,13 @@
  */
 
 export interface EventItem {
+  eventId?: string;
+  venueId?: string;
+  /** Verified ISO date or timestamp from the event source */
+  startDate?: string;
+  endDate?: string;
+  timezone?: string;
+  venueAddress?: string;
   title: string;
   date: string;
   venue: string;

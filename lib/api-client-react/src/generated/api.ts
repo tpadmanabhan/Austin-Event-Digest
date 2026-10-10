@@ -23,6 +23,7 @@ import type {
   ErrorResponse,
   GamificationMeResponse,
   GenerateDigestRequest,
+  GetPublicEventMetadata200,
   GetTenantConfigParams,
   HealthStatus,
   LeaderboardResponse,
@@ -44,6 +45,98 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Read source-verified metadata for a publicly visible event
+ */
+export const getGetPublicEventMetadataUrl = (eventId: string) => {
+  return `/api/events/public/${eventId}/metadata`;
+};
+
+export const getPublicEventMetadata = async (
+  eventId: string,
+  options?: RequestInit,
+): Promise<GetPublicEventMetadata200> => {
+  return customFetch<GetPublicEventMetadata200>(
+    getGetPublicEventMetadataUrl(eventId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetPublicEventMetadataQueryKey = (eventId: string) => {
+  return [`/api/events/public/${eventId}/metadata`] as const;
+};
+
+export const getGetPublicEventMetadataQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPublicEventMetadata>>,
+  TError = ErrorType<void>,
+>(
+  eventId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPublicEventMetadata>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPublicEventMetadataQueryKey(eventId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPublicEventMetadata>>
+  > = ({ signal }) =>
+    getPublicEventMetadata(eventId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!eventId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPublicEventMetadata>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPublicEventMetadataQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPublicEventMetadata>>
+>;
+export type GetPublicEventMetadataQueryError = ErrorType<void>;
+
+/**
+ * @summary Read source-verified metadata for a publicly visible event
+ */
+
+export function useGetPublicEventMetadata<
+  TData = Awaited<ReturnType<typeof getPublicEventMetadata>>,
+  TError = ErrorType<void>,
+>(
+  eventId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPublicEventMetadata>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPublicEventMetadataQueryOptions(eventId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * Returns server health status

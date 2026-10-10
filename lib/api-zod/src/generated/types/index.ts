@@ -16,6 +16,8 @@ export * from "./errorResponse";
 export * from "./eventItem";
 export * from "./gamificationMeResponse";
 export * from "./generateDigestRequest";
+export * from "./getPublicEventMetadata200";
+export * from "./getPublicEventMetadata200Metadata";
 export * from "./getTenantConfigParams";
 export * from "./healthStatus";
 export * from "./leaderboardEntry";

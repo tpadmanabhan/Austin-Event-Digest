@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { withPublicEventIds } from "../lib/publicEventIdentity";
+import { verifiedEventMetadata } from "../lib/verifiedEventMetadata";
 import { createHmac } from "node:crypto";
 import { db, digestsTable, subscribersTable, type EventItem, EventItemSchema } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
@@ -9,6 +11,7 @@ import {
   ListDigestsResponse,
   GenerateDigestResponse,
   SendDigestResponse,
+  GetPublicEventMetadataResponse,
 } from "@workspace/api-zod";
 import { generateSampleDigest, getStLouisSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendEmail, buildDigestEmailHtml, translateEventsForEmail } from "../lib/emailService";
@@ -183,12 +186,31 @@ function digestToApi(d: typeof digestsTable.$inferSelect) {
     weekOf: d.weekOf,
     subject: d.subject,
     intro: d.intro,
-    events: clean,
+    events: withPublicEventIds(clean, d.tenantId),
     sentAt: d.sentAt,
     sentCount: d.sentCount,
     createdAt: d.createdAt,
   };
 }
+
+router.get("/public/:eventId/metadata", async (req, res) => {
+  const eventId = String(req.params.eventId);
+  if (!/^ev-[a-f0-9]{24}$/.test(eventId) || req.tenant!.slug === "austincares") {
+    res.status(404).json({ error: "not_found" }); return;
+  }
+  try {
+    const digests = await db.select().from(digestsTable)
+      .where(eq(digestsTable.tenantId, req.tenant!.id))
+      .orderBy(desc(digestsTable.weekOf), desc(digestsTable.id));
+    const event = digests.flatMap(digest => digestToApi(digest).events).find(item =>
+      item.eventId === eventId && !item.isPost && !item.isBusinessSpotlight);
+    if (!event) { res.status(404).json({ error: "not_found" }); return; }
+    res.json(GetPublicEventMetadataResponse.parse({ metadata: await verifiedEventMetadata(event, req.tenant!.id) }));
+  } catch {
+    req.log.warn({ eventId }, "Public metadata lookup failed");
+    res.status(503).json({ error: "source_unavailable" });
+  }
+});
 
 router.get("/digest/latest", async (req, res) => {
   try {
@@ -218,7 +240,7 @@ router.get("/digest/list", async (req, res) => {
       .select()
       .from(digestsTable)
       .where(eq(digestsTable.tenantId, req.tenant!.id))
-      .orderBy(desc(digestsTable.weekOf));
+      .orderBy(desc(digestsTable.weekOf), desc(digestsTable.id));
 
     const response = ListDigestsResponse.parse({
       digests: digests.map(digestToApi),
@@ -366,7 +388,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
         weekOf,
         subject,
         intro,
-        events: taggedEvents,
+        events: withPublicEventIds(taggedEvents, req.tenant!.id),
         sentCount: 0,
       })
       .returning();
@@ -460,7 +482,7 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
 
   try {
     const [existing] = await db
-      .select({ weekOf: digestsTable.weekOf })
+      .select({ weekOf: digestsTable.weekOf, events: digestsTable.events })
       .from(digestsTable)
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .limit(1);
@@ -469,7 +491,7 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
       : applyTenantCategoryRestriction(req.tenant!.slug, normalised);
     const [updated] = await db
       .update(digestsTable)
-      .set({ events: taggedEvents })
+      .set({ events: withPublicEventIds(taggedEvents, req.tenant!.id, existing?.events || []) })
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .returning();
     if (!updated) {
@@ -628,7 +650,7 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
 
     const [updated] = await db
       .update(digestsTable)
-      .set({ events: updatedEvents })
+      .set({ events: withPublicEventIds(updatedEvents, req.tenant!.id, existing.events as EventItem[]) })
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .returning();
 
@@ -815,7 +837,7 @@ router.post("/digest/:id/scrape-event", requireAdmin, async (req, res) => {
 
     await db
       .update(digestsTable)
-      .set({ events: updatedEvents })
+      .set({ events: withPublicEventIds(updatedEvents, req.tenant!.id, existing.events as EventItem[]) })
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)));
 
     req.log.info({ digestId: id, url, title: event.title, geocoded: lat !== null }, "Event scraped and added to digest");
@@ -962,7 +984,7 @@ router.patch("/digest/:id/events/:idx", requireAdmin, async (req, res) => {
 
     const [updated] = await db
       .update(digestsTable)
-      .set({ events: taggedEvents as any })
+      .set({ events: withPublicEventIds(taggedEvents as EventItem[], req.tenant!.id, events as EventItem[]) })
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .returning();
 
@@ -1042,7 +1064,7 @@ router.patch("/digest/:id/events/:idx/venue", requireAdmin, async (req, res) => 
 
     const [updated] = await db
       .update(digestsTable)
-      .set({ events: finalEvents as any })
+      .set({ events: withPublicEventIds(finalEvents as EventItem[], req.tenant!.id, events as EventItem[]) })
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .returning();
 
@@ -1212,7 +1234,7 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
 
     const [digest] = await db
       .insert(digestsTable)
-      .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: taggedImportEvents, sentCount: 0 })
+      .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: withPublicEventIds(taggedImportEvents, req.tenant!.id), sentCount: 0 })
       .returning();
 
     const response = GenerateDigestResponse.parse({ digest: digestToApi(digest) });

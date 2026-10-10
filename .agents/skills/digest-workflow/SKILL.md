@@ -5,6 +5,12 @@ description: Generate, review, patch, and send a city's weekly event digest. Use
 
 # Digest Workflow
 
+## Keep digests readable publicly
+
+For every generation, import and edit, preserve persistent event/venue identities and retain original edition arrays and signed subscriber inputs. Supply structured dates/addresses only from verified source facts; do not infer missing years, times, prices or travel amenities. Date/venue edits must invalidate obsolete structured metadata.
+
+After editing, inspect the city's initial public HTML and one event/venue journey without submitting forms. Follow `docs/public-pages-publishing.md` for type/build/tests, canonical and sitemap checks, and separate user-approved publishing/live verification. Curated/community posts and AustinCares deals are not Schema.org Events. Check actual tenant/source availability before describing RSVP, sharing or carpool capabilities; no guaranteed rides.
+
 ## Key Concepts
 
 - Each city is a **tenant** identified by a slug (e.g. `austin`, `stlouis`, `tokyo`, `austincares`).

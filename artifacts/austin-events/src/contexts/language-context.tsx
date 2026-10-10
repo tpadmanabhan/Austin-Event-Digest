@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 
 type Lang = "en" | "ja";
 
@@ -23,6 +23,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     try { return (localStorage.getItem("ec-lang") as Lang) ?? "en"; } catch { return "en"; }
   });
   const [translationFailed, setTranslationFailed] = useState(false);
+  useEffect(() => {
+    document.documentElement.lang = window.__PUBLIC_DOCUMENT__?.citySlug === "tokyo" ? lang : "en";
+  }, [lang]);
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);

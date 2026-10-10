@@ -4,6 +4,12 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const EventItemSchema = z.object({
+  eventId: z.string().optional(),
+  venueId: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  timezone: z.string().optional(),
+  venueAddress: z.string().optional(),
   title: z.string(),
   date: z.string(),
   venue: z.string(),

@@ -37,7 +37,18 @@ const queryClient = new QueryClient({
 function ScrollToTop() {
   const [location] = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const anchor = window.location.hash.slice(1);
+    if (!anchor) { window.scrollTo(0, 0); return; }
+    const scroll = () => {
+      const target = document.getElementById(anchor);
+      if (!target) return false;
+      target.scrollIntoView(); return true;
+    };
+    if (scroll()) return;
+    const observer = new MutationObserver(() => { if (scroll()) observer.disconnect(); });
+    observer.observe(document.body, { childList: true, subtree: true });
+    const timeout = window.setTimeout(() => observer.disconnect(), 5000);
+    return () => { observer.disconnect(); window.clearTimeout(timeout); };
   }, [location]);
   return null;
 }

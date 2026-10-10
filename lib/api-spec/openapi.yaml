@@ -18,6 +18,37 @@ tags:
   - name: gamification
     description: Superconnector XP, badges, challenges, streaks and leaderboard
 paths:
+  /events/public/{eventId}/metadata:
+    get:
+      operationId: getPublicEventMetadata
+      tags: [events]
+      summary: Read source-verified metadata for a publicly visible event
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Verified fields only; empty metadata when the source cannot be verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:
+                      startDate:
+                        type: string
+                      timezone:
+                        type: string
+                      venueAddress:
+                        type: string
+                required: [metadata]
+        "404":
+          description: Event is not publicly visible in this city
   /healthz:
     get:
       operationId: healthCheck
@@ -347,6 +378,14 @@ components:
           format: date-time
         isActive:
           type: boolean
+        displayAddress:
+          type: string
+          nullable: true
+        walkableOnly:
+          type: boolean
+        radiusMiles:
+          type: number
+          nullable: true
       required:
         - id
         - email
@@ -369,6 +408,19 @@ components:
     EventItem:
       type: object
       properties:
+        eventId:
+          type: string
+        venueId:
+          type: string
+        startDate:
+          type: string
+          description: Verified ISO date or timestamp from the event source
+        endDate:
+          type: string
+        timezone:
+          type: string
+        venueAddress:
+          type: string
         title:
           type: string
         date:

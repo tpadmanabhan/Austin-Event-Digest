@@ -5,6 +5,14 @@ description: Understand how the multi-tenant routing system works for eventcarpo
 
 # Tenant Routing
 
+## Public HTML checklist for every city
+
+New active cities use the shared dynamic public web server; do not add API-only document handlers or restore a static SPA catch-all. Keep tenant Host forwarding intact through the internal proxy.
+
+After city setup, follow `docs/public-pages-publishing.md`: inspect no-JavaScript homepage/edition/event/venue content, correct branding/canonicals, robots and XML sitemap, real 404s for unknown tenants, and enabled navigation/signup/map controls. Treat AustinCares as deals and Tokyo as bilingual; never advertise unconfigured adapters as available features.
+
+Use persistent event/venue identities and source-verified ISO metadata. Keep signed subscriber actions private and preserve exact legacy inputs. Publishing and notifications require separate authorization.
+
 ## How It Works
 
 Every city runs on the same codebase but gets its own branded experience via subdomain. `app.ts` trusts the proxy, then `resolveTenant.ts` derives a slug from the request host and looks up an active tenant row. In production, a city subdomain such as `austin.eventcarpooling.com` selects that tenant; the root domain and the reserved `www`/`api` hosts have no tenant context. City routes are mounted behind `requireTenant`; admin routes additionally use `requireAdmin`.

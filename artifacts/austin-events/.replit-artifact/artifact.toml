@@ -11,20 +11,23 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = [ "/" ]
+paths = ["/"]
 localPort = 23822
 
 [services.development]
 run = "pnpm --filter @workspace/austin-events run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/austin-events", "run", "build" ]
-publicDir = "artifacts/austin-events/dist/public"
-serve = "static"
+build = ["pnpm", "--filter", "@workspace/austin-events", "run", "build"]
 
-[[services.production.rewrites]]
-from = "/*"
-to = "/index.html"
+[services.production.run]
+args = ["node", "artifacts/austin-events/server/index.mjs"]
+
+[services.production.run.env]
+NODE_ENV = "production"
+
+[services.production.health.startup]
+path = "/healthz"
 
 [services.env]
 PORT = "23822"

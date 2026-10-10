@@ -1,7 +1,8 @@
 import { db, digestsTable, subscribersTable, rsvpsTable, tenantsTable } from "@workspace/db";
-import { eq, inArray, sql, isNull } from "drizzle-orm";
+import { and, eq, inArray, sql, isNull } from "drizzle-orm";
 import { logger } from "./logger";
 import { hashPassword } from "./passwordHash";
+import { withPublicEventIds } from "./publicEventIdentity";
 
 const MARCH_29_EVENTS = [
   {
@@ -1145,5 +1146,17 @@ export async function runStartupMigration(): Promise<void> {
     await patchHtmlEncodedEventUrls();
   } catch (err) {
     logger.warn({ err }, "HTML entity URL patch failed (non-fatal)");
+  }
+
+  // Additive identity backfill: never change titles, dates, signed inputs or order.
+  const editions = await db.select().from(digestsTable);
+  for (const edition of editions) {
+    const events = edition.events || [];
+    if (events.every(event => /^ev-[a-f0-9]{24}$/.test(event.eventId || "") &&
+      (!event.venue?.trim() || /^vn-[a-f0-9]{24}$/.test(event.venueId || "")))) continue;
+    await db.update(digestsTable)
+      .set({ events: withPublicEventIds(events, edition.tenantId) })
+      .where(and(eq(digestsTable.id, edition.id), eq(digestsTable.tenantId, edition.tenantId),
+        sql`${digestsTable.events} = ${JSON.stringify(events)}::jsonb`));
   }
 }

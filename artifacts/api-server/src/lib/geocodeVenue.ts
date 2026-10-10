@@ -1,5 +1,6 @@
-import { db, digestsTable } from "@workspace/db";
-import { sql, eq } from "drizzle-orm";
+import { db, digestsTable, type EventItem } from "@workspace/db";
+import { sql, eq, and } from "drizzle-orm";
+import { withPublicEventIds } from "./publicEventIdentity";
 import { logger } from "./logger";
 import { isWithinCityBounds } from "./cityBounds";
 import { lookupKnownVenue, CITY_GEOCODE_HINTS } from "./knownVenues";
@@ -460,10 +461,17 @@ export async function geocodeAndPatchDigest(
 ): Promise<void> {
   try {
     const geocoded = await geocodeEvents(events, citySlug);
+    const [current] = await db.select().from(digestsTable).where(eq(digestsTable.id, digestId)).limit(1);
+    if (!current) return;
+    const located = withPublicEventIds(geocoded as EventItem[], current.tenantId, current.events);
+    const patched = withPublicEventIds(current.events, current.tenantId).map(event => {
+      const found = located.find(item => item.eventId === event.eventId && item.venue === event.venue);
+      return found ? { ...event, lat: found.lat, lng: found.lng } : event;
+    });
     await db
       .update(digestsTable)
-      .set({ events: geocoded as any })
-      .where(eq(digestsTable.id, digestId));
+      .set({ events: patched })
+      .where(and(eq(digestsTable.id, digestId), sql`${digestsTable.events} = ${JSON.stringify(current.events)}::jsonb`));
     logger.info({ digestId, total: events.length, citySlug }, "Geocode patch complete");
   } catch (err) {
     logger.warn({ digestId, err }, "geocodeAndPatchDigest failed");

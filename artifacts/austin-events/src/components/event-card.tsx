@@ -67,7 +67,7 @@ function toCalDate(d: Date): string {
 }
 
 function buildGoogleCalUrl(event: EventItem): string {
-  const start = parseEventDate(event.date);
+  const start = parseEventDate(event.startDate || event.date);
   const end = start ? new Date(start.getTime() + 2 * 3600_000) : null;
   const params = new URLSearchParams({ text: event.title });
   if (start && end) params.set("dates", `${toCalDate(start)}/${toCalDate(end)}`);
@@ -77,7 +77,7 @@ function buildGoogleCalUrl(event: EventItem): string {
 }
 
 function buildIcs(event: EventItem): string {
-  const start = parseEventDate(event.date) ?? new Date();
+  const start = parseEventDate(event.startDate || event.date) ?? new Date();
   const end = new Date(start.getTime() + 2 * 3600_000);
   const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/,/g, "\\,").replace(/;/g, "\\;").replace(/\n/g, "\\n");
   const now = new Date();
@@ -480,6 +480,11 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
               event.title
             )}
           </h3>
+          {event.eventId && !event.isPost && !event.isBusinessSpotlight && citySlug !== "austincares" && (
+            <a href={`${import.meta.env.BASE_URL}events/${event.eventId}/${cardSlug}`} className="inline-block mt-2 text-sm font-semibold text-primary underline underline-offset-4">
+              Event details and venue
+            </a>
+          )}
           {event.link && (
             <div
               className="pointer-events-none absolute left-0 top-full mt-2 z-50 w-72 rounded-xl bg-popover border border-border shadow-xl p-3 opacity-0 group-hover/title-wrap:opacity-100 transition-opacity duration-200 [@media(hover:none)]:hidden"

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 
-const DEFAULT_TITLE = "EventCarpooling — Local Events, Weekly Digest";
+const DEFAULT_TITLE = "EventCarpooling — Local Events & Community Connections";
 const DEFAULT_DESCRIPTION = "Weekly curated digests of the best local events in your city — live music, tech meetups, food pop-ups, and more.";
 
 function setMeta(selector: string, content: string) {
@@ -22,6 +22,8 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
   const [path] = useLocation();
 
   useEffect(() => {
+    const initial = window.__PUBLIC_DOCUMENT__;
+    if (initial && new URL(initial.canonical).pathname === path) return;
     const isCares = citySlug === "austincares";
     const isAustin = citySlug === "austin";
     const isAtlanta = citySlug === "atlanta";

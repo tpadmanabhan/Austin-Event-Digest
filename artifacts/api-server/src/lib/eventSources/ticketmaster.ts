@@ -21,7 +21,7 @@ const TM_CLASSIFICATION: Record<string, string> = {
 interface TmEvent {
   name: string;
   url?: string;
-  dates?: { start?: { dateTime?: string; localDate?: string; localTime?: string } };
+  dates?: { start?: { dateTime?: string; localDate?: string; localTime?: string; dateTBA?: boolean; dateTBD?: boolean; timeTBA?: boolean } };
   description?: string;
   info?: string;
   pleaseNote?: string;
@@ -136,6 +136,9 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
       link: ev.url || null,
       imageUrl: image,
       source: "Ticketmaster",
+      ...(!ev.dates?.start?.dateTBA && !ev.dates?.start?.dateTBD ?
+        ev.dates?.start?.dateTime && !ev.dates.start.timeTBA ? { startDate: ev.dates.start.dateTime } :
+        ev.dates?.start?.localDate ? { startDate: ev.dates.start.localDate } : {} : {}),
     });
   }
 

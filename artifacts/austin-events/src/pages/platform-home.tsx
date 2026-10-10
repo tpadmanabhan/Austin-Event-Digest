@@ -6,6 +6,7 @@ import { PlatformLayout } from "@/components/platform-layout";
 import { useLang } from "@/contexts/lang-context";
 import { LaunchCityModal } from "@/components/launch-city-modal";
 import { EventMap } from "@/components/event-map";
+import { PublicAbout } from "@/components/public-about";
 
 const NEW_CITY_SLUGS = ["austin", "atlanta", "houston", "tokyo"];
 const LIVE_CITY_ORDER = [...NEW_CITY_SLUGS, "stlouis", "sacramento", "portland", "bulverde", "dc"];
@@ -66,7 +67,7 @@ function PlatformHomeInner() {
   const { data: tenants, isLoading: loadingTenants } = useTenantList();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const STEPS = [
+  const STEPS: { number: string; icon: string; title: string; description: string; comingSoon?: boolean }[] = [
     { number: "01", icon: "📍", title: t.step1Title, description: t.step1Desc },
     { number: "02", icon: "📋", title: t.step2Title, description: t.step2Desc },
     { number: "03", icon: "🚀", title: t.step3Title, description: t.step3Desc },
@@ -401,6 +402,8 @@ function PlatformHomeInner() {
           </p>
         </div>
       </section>
+
+      <PublicAbout />
 
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="py-20" style={{ background: "#f8fafc" }}>

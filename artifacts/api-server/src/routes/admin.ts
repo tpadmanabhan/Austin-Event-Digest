@@ -281,7 +281,7 @@ router.post("/rsvp/resend", requireAdmin, async (req, res) => {
       return;
     }
 
-    const events = (latest.events as Record<string, unknown>[]) || [];
+    const events = (digest.events as Record<string, unknown>[]) || [];
     const event = events.find((e: any) => e.title === eventTitle)
       ?? events.find((e: any) =>
         e.title.toLowerCase().includes(eventTitle.toLowerCase()) ||
@@ -344,7 +344,7 @@ router.post("/fix-broken-links", requireAdmin, async (req, res) => {
       .where(eq(digestsTable.tenantId, tenantId));
     let totalFixed = 0;
     for (const digest of digests) {
-    const events = (latest.events as Record<string, unknown>[]) || [];
+    const events = (digest.events as Record<string, unknown>[]) || [];
       let changed = false;
       const fixed = events.map((e: any) => {
         if (e.link && /6amcity\.com\/[a-z]{2}\/[a-z-]+\/events\//i.test(e.link)) {
@@ -415,10 +415,10 @@ router.post("/dismiss-first-run", requireAdmin, async (req, res) => {
   const tenantId = req.tenant!.id;
   try {
     await db
-      .update(digestsTable)
-      .set({ subject })
-      .where(and(eq(digestsTable.id, digestId), eq(digestsTable.tenantId, tenantId)));
-    res.json({ success: true, digestId, subject });
+      .update(tenantsTable)
+      .set({ firstRun: false })
+      .where(eq(tenantsTable.id, tenantId));
+    res.json({ success: true });
   } catch (err) {
     req.log.error({ err }, "Error patching digest subject");
     res.status(500).json({ error: "server_error" });
@@ -691,8 +691,8 @@ function requireAustinCares(req: Request, res: Response, next: NextFunction): vo
 router.get("/deals/pending", requireAdmin, requireAustinCares, async (req, res) => {
   try {
     const result = await db.execute(drizzleSql`
-      DELETE FROM submitted_deals WHERE id = ${id}
-      RETURNING id
+      SELECT * FROM submitted_deals WHERE status = 'pending'
+      ORDER BY created_at DESC
     `);
     const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
     const deals = Array.isArray(rows) ? rows : (rows as any).rows ?? [];

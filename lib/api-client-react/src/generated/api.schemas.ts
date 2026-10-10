@@ -31,6 +31,9 @@ export interface Subscriber {
   birthDay?: number | null;
   subscribedAt: string;
   isActive: boolean;
+  displayAddress?: string | null;
+  walkableOnly?: boolean;
+  radiusMiles?: number | null;
 }
 
 export interface SubscribeResponse {
@@ -59,6 +62,13 @@ export interface SubscribersResponse {
 }
 
 export interface EventItem {
+  eventId?: string;
+  venueId?: string;
+  /** Verified ISO date or timestamp from the event source */
+  startDate?: string;
+  endDate?: string;
+  timezone?: string;
+  venueAddress?: string;
   title: string;
   date: string;
   venue: string;
@@ -179,6 +189,16 @@ export interface GamificationMeResponse {
   challenges: ChallengeProgress[];
   badges: Badge[];
 }
+
+export type GetPublicEventMetadata200Metadata = {
+  startDate?: string;
+  timezone?: string;
+  venueAddress?: string;
+};
+
+export type GetPublicEventMetadata200 = {
+  metadata: GetPublicEventMetadata200Metadata;
+};
 
 export type GetTenantConfigParams = {
   /**

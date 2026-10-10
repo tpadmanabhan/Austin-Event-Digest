@@ -14,4 +14,7 @@ export interface Subscriber {
   birthDay?: number | null;
   subscribedAt: Date;
   isActive: boolean;
+  displayAddress?: string | null;
+  walkableOnly?: boolean;
+  radiusMiles?: number | null;
 }
