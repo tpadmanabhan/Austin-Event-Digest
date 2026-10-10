@@ -270,3 +270,31 @@ mtime_ms = 1790847815532
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/6811dd27-254b-4524-89f4-02e2cd6fb518/0f0eebe7-5bec-4e86-bce8-cb331e65b11b"
 storage_version_token = "1790847820452353"
 content_type = "image/jpeg"
+
+[[outputs]]
+id = "aZ1jQmVKqkbXjKkRCj7u1"
+uri = "file://.local/outputs/eventcarpooling-one-page-summary-2026-10-10.pdf"
+type = "pdf"
+title = "EventCarpooling — Updated One-Page Summary"
+description = "Printable one-page PDF, updated October 10, 2026, highlighting the AI-readable rebuild, project metrics, capabilities, and integrations."
+logical_id = "a77c9471-0834-4288-a21c-cd960b79dfdc"
+content_hash = "sha256:814b7f9adf4cb417ab7c72691d523ce595796b22cf8daf6e87667ca197d94986"
+size = 59840
+mtime_ms = 1791629826133
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/a77c9471-0834-4288-a21c-cd960b79dfdc/c3ccfe2d-37c9-4bb4-ab43-73ef50318680"
+storage_version_token = "1791629856347062"
+content_type = "application/pdf"
+
+[[outputs]]
+id = "SkMkrwiD5ke49S7OqTQBC"
+uri = "file://.local/outputs/eventcarpooling-one-page-summary-2026-10-10.jpg"
+type = "image"
+title = "EventCarpooling Summary — JPG"
+description = "High-resolution 2550 × 3300 image of the updated one-page summary, suitable for sharing."
+logical_id = "ca333827-05dd-42f5-ba8f-321c9c77bccf"
+content_hash = "sha256:b26db3de98afd066f7e0d81cf162f5a900177207533307bef442f139b7c60a59"
+size = 1083803
+mtime_ms = 1791629826877
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/ca333827-05dd-42f5-ba8f-321c9c77bccf/77a759d5-a6f3-4c3e-9135-96c175fe0700"
+storage_version_token = "1791629856975337"
+content_type = "image/jpeg"
