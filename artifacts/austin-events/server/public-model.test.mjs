@@ -4,7 +4,7 @@ import http from "node:http";
 import net from "node:net";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { resolveSite, eventSchema, validIsoDate, venueIdentity } from "./public-model.mjs";
+import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin } from "./public-model.mjs";
 
 const cities = ["austin", "atlanta", "tokyo", "austincares"];
 const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: `${slug} community`, city: slug }));
@@ -72,6 +72,11 @@ test("host resolution never defaults an unknown production host to Austin", () =
   assert.equal(resolveSite("unrelated.example", false), null);
   assert.equal(resolveSite("tokyo.eventcarpooling.com", false).slug, "tokyo");
   assert.equal(resolveSite("eventcarpooling.com", false).slug, null);
+});
+test("published API requests never default to the development-only port-80 proxy", () => {
+  assert.equal(publicApiOrigin({ NODE_ENV: "production" }), "https://eventcarpooling.com");
+  assert.equal(publicApiOrigin({ NODE_ENV: "development" }), "http://127.0.0.1:80");
+  assert.equal(publicApiOrigin({ NODE_ENV: "production", INTERNAL_API_ORIGIN: "http://127.0.0.1:9000" }), "http://127.0.0.1:9000");
 });
 test("verified date validation rejects guessed years, impossible days and missing offsets", () => {
   assert.equal(validIsoDate("October 12 at noon"), false);

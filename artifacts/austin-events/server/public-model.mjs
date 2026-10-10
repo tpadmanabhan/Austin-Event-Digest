@@ -28,8 +28,15 @@ export function resolveSite(hostname, development = false) {
   return null;
 }
 
+export function publicApiOrigin(environment = process.env) {
+  return environment.INTERNAL_API_ORIGIN ||
+    (environment.NODE_ENV === "production" ? PLATFORM_ORIGIN : "http://127.0.0.1:80");
+}
+
 export async function publicApi(site, pathname) {
-  const origin = process.env.INTERNAL_API_ORIGIN || "http://127.0.0.1:80";
+  // Port 80 is the workspace proxy, not the published application's router.
+  // Published API requests use the platform's HTTPS edge, retaining the city Host.
+  const origin = publicApiOrigin();
   // Native transport preserves Host through the shared proxy. Node fetch may
   // silently replace Host, which would lose the city before reaching the API.
   return new Promise((resolve, reject) => {

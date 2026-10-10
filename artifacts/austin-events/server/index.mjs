@@ -81,7 +81,9 @@ http.createServer(async (req, res) => {
     template = template.replace("</head>", head + extras + "</head>").replace('<div id="root"></div>', `<div id="root">${body}</div><script id="public-document" type="application/json">${json(model)}</script>`);
     const status = model.kind === "not-found" ? 404 : 200;
     send(res, status, "text/html", template, model.noindex ? { "X-Robots-Tag": "noindex,nofollow", "Cache-Control": "no-store" } : { "Cache-Control": "public, max-age=0, must-revalidate" });
-  } catch {
+  } catch (error) {
+    // Log only the error classification, never signed query strings or credentials.
+    console.error("Public document request failed", { code: error?.code || error?.name || "unknown" });
     // No stale fake edition or empty success response on a backend failure.
     send(res, 503, "text/html", '<!doctype html><html lang="en"><head><title>Temporarily unavailable | EventCarpooling</title><meta name="robots" content="noindex"></head><body><h1>Temporarily unavailable</h1><p>Event information could not be loaded. Please try again shortly.</p></body></html>', { "Retry-After": "30", "Cache-Control": "no-store" });
   }
