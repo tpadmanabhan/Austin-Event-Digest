@@ -39,6 +39,23 @@ export interface PublicDocumentModel {
   schema?: Record<string, unknown>;
 }
 
+export function displayPublicWeek(value: string): string {
+  const day = value.match(/^(\d{4}-\d{2}-\d{2})(?:T|$)/)?.[1];
+  if (!day || !Number.isFinite(Date.parse(value))) return value;
+  const date = new Date(`${day}T00:00:00.000Z`);
+  if (date.toISOString().slice(0, 10) !== day) return value;
+  // Edition dates are calendar labels, not instants in the reader's timezone.
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC", month: "long", day: "numeric", year: "numeric",
+  }).format(date);
+}
+
+export function publicCityLabel(city: Pick<PublicDocumentModel["cities"][number], "name" | "slug">): string {
+  const suffix = city.slug === "austincares" ? "deals" : "events";
+  const hasSuffix = city.slug === "austincares" ? /\bdeals$/i.test(city.name) : /\bevents$/i.test(city.name);
+  return hasSuffix ? city.name : `${city.name} ${suffix}`;
+}
+
 export function displayPublicEventDate(event: Pick<PublicEvent, "date" | "startDate" | "timezone">): string {
   const start = event.startDate;
   if (!start || !/^\d{4}-\d{2}-\d{2}/.test(start) || !Number.isFinite(Date.parse(start))) return event.date;

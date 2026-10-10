@@ -1,5 +1,5 @@
 import type { PublicDocumentModel, PublicEvent } from "@/lib/public-document";
-import { displayPublicEventDate } from "@/lib/public-document";
+import { displayPublicEventDate, displayPublicWeek, publicCityLabel } from "@/lib/public-document";
 import { PublicHowItWorks } from "./public-how-it-works";
 
 const wrap = "mx-auto max-w-3xl px-4 py-10 sm:px-6";
@@ -54,7 +54,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
       <ul className="mx-auto flex max-w-3xl flex-wrap gap-x-5 gap-y-2 px-4 py-3 text-sm sm:px-6">
         <li><a href={model.homeUrl} className={linkCls}>{`${site} home`}</a></li>
         {model.cities.map((c) => (
-          <li key={c.slug}><a href={c.url} className={linkCls}>{`${c.name} ${c.slug === "austincares" ? "deals" : "events"}`}</a></li>
+          <li key={c.slug}><a href={c.url} className={linkCls}>{publicCityLabel(c)}</a></li>
         ))}
       </ul>
     </nav>
@@ -105,7 +105,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
     body = (
       <>
         <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">{model.title}</h1>
-        {model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${model.weekOf}`}</p> : null}
+        {model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
         <p className="mt-3 text-lg text-slate-800">{model.intro || model.description}</p>
         <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : "Events this week"}</h2>
         <EventList events={model.events} />
@@ -135,7 +135,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         <h2 id="city-editions" className="mb-3 mt-10 font-serif text-2xl font-bold text-slate-900">City editions</h2>
         <ul className="space-y-2">
           {model.cities.map((c) => (
-            <li key={c.slug}><a href={c.url} className={linkCls}>{`${c.name} ${c.slug === "austincares" ? "deals" : "events"}`}</a></li>
+            <li key={c.slug}><a href={c.url} className={linkCls}>{publicCityLabel(c)}</a></li>
           ))}
         </ul>
         <Faq items={[{ q: "Is this a ride service?", a: "No. EventCarpooling connects communities through local events and available carpool-interest tools; it does not book or guarantee rides." }]} />

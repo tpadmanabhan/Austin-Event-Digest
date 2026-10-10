@@ -7,10 +7,10 @@ import { fileURLToPath } from "node:url";
 import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin } from "./public-model.mjs";
 
 const cities = ["austin", "atlanta", "tokyo", "austincares"];
-const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: `${slug} community`, city: slug }));
+const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
 const eventId = city => `ev-${String(cities.indexOf(city) + 1).padStart(24, "0")}`;
 const fixture = city => ({
-  id: cities.indexOf(city) + 10, weekOf: "2031-10-12", subject: `${city} test edition`, intro: "A test newsletter introduction.",
+  id: cities.indexOf(city) + 10, weekOf: "2031-10-12T00:00:00.000Z", subject: `${city} test edition`, intro: "A test newsletter introduction.",
   events: [{ eventId: eventId(city), title: `${city} test community talk`, date: "October 12, 2031 at noon UTC",
     startDate: "2031-10-12T12:00:00Z", venue: `${city} test hall`, venueAddress: "1 Test Street",
     description: "A fixture for response tests, not a live listing.", category: "Community",
@@ -104,6 +104,19 @@ test("city and historical edition responses are tenant-specific and readable", a
     assert.equal(edition.response.status, 200);
     assert.equal(modelOf(edition.body).kind, "digest");
   }
+});
+test("edition dates are readable and city labels do not repeat events", async () => {
+  for (const pathname of ["/", `/digest/${fixture("austin").id}`]) {
+    const { body } = await document("austin.eventcarpooling.com", pathname);
+    const visible = body.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
+    assert.match(visible, /Week of October 12, 2031/);
+    assert.doesNotMatch(visible, /Week of 2031-10-12T/);
+    assert.match(visible, />Atlanta Events<\/a>/);
+    assert.doesNotMatch(visible, /Events events/);
+  }
+  const { body } = await document("eventcarpooling.com");
+  assert.equal((body.match(/>Atlanta Events<\/a>/g) || []).length, 2);
+  assert.doesNotMatch(body, /Atlanta Events events/);
 });
 test("event identities load newest content, canonical metadata and verified JSON-LD", async () => {
   const { response, body } = await document("austin.eventcarpooling.com", `/events/${eventId("austin")}/outdated-slug`);
