@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { withPublicEventIds } from "../lib/publicEventIdentity";
 import { verifiedEventMetadata } from "../lib/verifiedEventMetadata";
+import { parseEventLink } from "../lib/eventLink";
 import { createHmac } from "node:crypto";
 import { db, digestsTable, subscribersTable, type EventItem, EventItemSchema } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
@@ -930,10 +931,10 @@ router.post("/digest/:id/regeocoded", requireAdmin, async (req, res) => {
   }
 });
 
-// PATCH /digest/:id/events/:idx — update individual fields on a single event (title, date, venue, category, description)
+// PATCH /digest/:id/events/:idx — update fields on one event, including its link.
 router.patch("/digest/:id/events/:idx", requireAdmin, async (req, res) => {
   const id = parseInt(req.params["id"] as string, 10);
-  const idx = parseInt(req.params["idx"] as string, 10);
+  let idx = parseInt(req.params["idx"] as string, 10);
   if (isNaN(id) || isNaN(idx)) {
     res.status(400).json({ error: "invalid_request", message: "Invalid digest id or event index" });
     return;
@@ -944,8 +945,16 @@ router.patch("/digest/:id/events/:idx", requireAdmin, async (req, res) => {
   for (const f of allowedFields) {
     if (typeof body[f] === "string") updates[f] = (body[f] as string).trim();
   }
+  if (Object.hasOwn(body, "link")) {
+    const parsed = parseEventLink(body["link"]);
+    if (!parsed.ok) {
+      res.status(400).json({ error: "invalid_request", message: "Link must be a valid http:// or https:// URL, or blank to remove it" });
+      return;
+    }
+    updates["link"] = parsed.link;
+  }
   if (Object.keys(updates).length === 0) {
-    res.status(400).json({ error: "invalid_request", message: "At least one of title, date, venue, category, description is required" });
+    res.status(400).json({ error: "invalid_request", message: "At least one of title, date, venue, category, description, link is required" });
     return;
   }
   try {
@@ -959,6 +968,11 @@ router.patch("/digest/:id/events/:idx", requireAdmin, async (req, res) => {
       return;
     }
     const events = (digest.events as Array<Record<string, unknown>>) || [];
+    // The admin list filters expired events, so its display index may not match
+    // the raw saved array. Resolve a supplied stable ID inside this tenant/digest.
+    if (typeof body["eventId"] === "string") {
+      idx = events.findIndex(event => event["eventId"] === body["eventId"]);
+    }
     if (idx < 0 || idx >= events.length) {
       res.status(400).json({ error: "invalid_request", message: "Event index out of range" });
       return;
@@ -981,11 +995,13 @@ router.patch("/digest/:id/events/:idx", requireAdmin, async (req, res) => {
       ...events.slice(idx + 1),
     ];
 
-    const taggedEvents = autoTagFutureEvents(finalEvents as EventItem[], new Date(digest.weekOf));
+    // A URL correction must not re-tag other events or recompute their metadata.
+    const onlyLink = Object.keys(updates).every(field => field === "link");
+    const taggedEvents = onlyLink ? finalEvents : autoTagFutureEvents(finalEvents as EventItem[], new Date(digest.weekOf));
 
     const [updated] = await db
       .update(digestsTable)
-      .set({ events: withPublicEventIds(taggedEvents as EventItem[], req.tenant!.id, events as EventItem[]) })
+      .set({ events: onlyLink ? finalEvents as EventItem[] : withPublicEventIds(taggedEvents as EventItem[], req.tenant!.id, events as EventItem[]) })
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .returning();
 

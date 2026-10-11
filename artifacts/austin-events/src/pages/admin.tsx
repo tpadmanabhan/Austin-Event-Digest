@@ -201,7 +201,7 @@ export default function AdminDashboard() {
 
   const [togglingFeatured, setTogglingFeatured] = useState<{ digestId: number; eventIdx: number } | null>(null);
   const [editingEvent, setEditingEvent] = useState<{ digestId: number; eventIdx: number } | null>(null);
-  const [eventEditFields, setEventEditFields] = useState({ title: "", date: "", venue: "", category: "", description: "" });
+  const [eventEditFields, setEventEditFields] = useState({ title: "", date: "", venue: "", category: "", description: "", link: "" });
   const [isSavingEvent, setIsSavingEvent] = useState(false);
   const [isFetchingEventUrl, setIsFetchingEventUrl] = useState(false);
   const [eventFeatured, setEventFeatured] = useState(false);
@@ -661,34 +661,40 @@ export default function AdminDashboard() {
     }
   };
 
-  const onSaveEventFields = async (digestId: number, eventIdx: number) => {
+  const onSaveEventFields = async (digestId: number, eventIdx: number, original: Record<string, unknown>) => {
     setIsSavingEvent(true);
     try {
       // Build only the fields that were actually changed
       const body: Record<string, string> = {};
-      if (eventEditFields.title.trim()) body.title = eventEditFields.title.trim();
-      if (eventEditFields.date.trim()) body.date = eventEditFields.date.trim();
-      if (eventEditFields.venue.trim() !== "") body.venue = eventEditFields.venue.trim();
-      if (eventEditFields.category) body.category = eventEditFields.category;
-      if (eventEditFields.description.trim() !== "") body.description = eventEditFields.description.trim();
+      for (const [field, value] of Object.entries(eventEditFields)) {
+        const trimmed = value.trim();
+        if (trimmed !== String(original[field] ?? "").trim() && (trimmed || field === "link")) {
+          body[field] = trimmed;
+        }
+      }
 
       if (Object.keys(body).length === 0) {
         setEditingEvent(null);
         return;
       }
 
+      if (typeof original.eventId === "string") body.eventId = original.eventId;
       const token = sessionStorage.getItem("admin_token");
       const res = await fetch(`/api/events/digest/${digestId}/events/${eventIdx}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update event");
+      }
       queryClient.invalidateQueries({ queryKey: ["digests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/events/digest/latest"] });
       setEditingEvent(null);
       toast({ title: "Event updated" });
-    } catch {
-      toast({ variant: "destructive", title: "Failed to update event" });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to update event", description: error instanceof Error ? error.message : undefined });
     } finally {
       setIsSavingEvent(false);
     }
@@ -1658,6 +1664,11 @@ export default function AdminDashboard() {
                                             </div>
                                           </div>
                                           <div>
+                                            <label htmlFor={`event-link-${digest.id}-${i}`} className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Event link</label>
+                                            <Input id={`event-link-${digest.id}-${i}`} type="url" value={eventEditFields.link} onChange={e => setEventEditFields(f => ({ ...f, link: e.target.value }))} className="h-7 text-xs" placeholder="https://…" />
+                                            <p className="text-[10px] text-muted-foreground">Leave blank to remove the link.</p>
+                                          </div>
+                                          <div>
                                             <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Description</label>
                                             <Textarea value={eventEditFields.description} onChange={e => setEventEditFields(f => ({ ...f, description: e.target.value }))} className="text-xs min-h-[56px] resize-none" placeholder={ev.description || "Short description…"} />
                                           </div>
@@ -1665,7 +1676,7 @@ export default function AdminDashboard() {
                                             <button onClick={() => setEditingEvent(null)} className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-md bg-muted text-muted-foreground hover:bg-muted/80">
                                               <X className="w-3 h-3" />Cancel
                                             </button>
-                                            <button onClick={() => onSaveEventFields(digest.id, i)} disabled={isSavingEvent} className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+                                            <button onClick={() => onSaveEventFields(digest.id, i, ev)} disabled={isSavingEvent} className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
                                               {isSavingEvent ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}Save
                                             </button>
                                           </div>
@@ -1745,7 +1756,7 @@ export default function AdminDashboard() {
                                               </button>
                                             )}
                                             <button
-                                              onClick={() => { setEditingEvent({ digestId: digest.id, eventIdx: i }); setEventEditFields({ title: ev.title || "", date: ev.date || "", venue: ev.venue || "", category: ev.category || "", description: ev.description || "" }); }}
+                                              onClick={() => { setEditingEvent({ digestId: digest.id, eventIdx: i }); setEventEditFields({ title: ev.title || "", date: ev.date || "", venue: ev.venue || "", category: ev.category || "", description: ev.description || "", link: ev.link || "" }); }}
                                               title="Edit event fields"
                                               className="inline-flex items-center justify-center w-6 h-6 rounded text-muted-foreground/40 hover:text-primary transition-colors"
                                             >

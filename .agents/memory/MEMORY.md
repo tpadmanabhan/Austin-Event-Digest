@@ -34,3 +34,4 @@
 - [Git provider authentication](git-provider-auth.md) — public fetch and healthy connection metadata do not prove push credentials work; preserve commits when synchronization is blocked.
 - [Package installation side effects](package-installation-side-effects.md) — failed installs may still alter workspace configuration; prefer existing tools for report exports.
 - [Newsletter sender choice](newsletter-sender-choice.md) — user chose Gmail with a No Reply label, not a new verified sending address.
+- [Scoped event corrections](scoped-event-corrections.md) — user chose link-only editing over rewriting whole editions, even when publishing was required first.
