@@ -8,8 +8,8 @@ import { LaunchCityModal } from "@/components/launch-city-modal";
 import { EventMap } from "@/components/event-map";
 import { PublicAbout } from "@/components/public-about";
 
-const NEW_CITY_SLUGS = ["austin", "atlanta", "houston", "tokyo"];
-const LIVE_CITY_ORDER = [...NEW_CITY_SLUGS, "stlouis", "sacramento", "portland", "bulverde", "dc"];
+const NEW_CITY_SLUGS = ["atlanta", "austin"];
+const LIVE_CITY_ORDER = ["atlanta", "austin", "houston", "tokyo", "stlouis", "sacramento", "portland", "bulverde", "dc"];
 const citySlugFromHref = (href: string) => new URL(href).hostname.split(".")[0];
 
 function NewCityBadge() {
@@ -272,8 +272,8 @@ function PlatformHomeInner() {
                 },
               ].sort((a, b) => {
                 const rank = (href: string) => {
-                  const index = NEW_CITY_SLUGS.indexOf(citySlugFromHref(href));
-                  return index === -1 ? NEW_CITY_SLUGS.length : index;
+                  const index = LIVE_CITY_ORDER.indexOf(citySlugFromHref(href));
+                  return index === -1 ? LIVE_CITY_ORDER.length : index;
                 };
                 return rank(a.href) - rank(b.href);
               }).map(city => (

@@ -46,16 +46,20 @@ const baseDigest = {
 };
 
 describe("AI Ethics reading section", () => {
-  it("appears below Austin's introductory quote with all three reading links", () => {
+  it("appears below Austin's introduction with the four current resources, replacing the old readings", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
     });
     expect(html).toContain("AI Ethics");
-    expect(html).toContain("Nick Bostrom");
-    expect(html).toContain("must-subscribe media");
-    expect(html).toContain("https://customersuccessforgood.com/2026/09/30/are-we-trading-our-soul-for-convenience/");
-    expect(html).toContain('href="https://www.404media.co/"');
-    expect(html).toContain('href="https://note.com/akih/n/n1253589b1ffb?hl=en"');
+    expect(html).toContain("AI Doesn’t Solve This");
+    expect(html).toContain("https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/");
+    expect(html).toContain('href="https://podcasts.apple.com/us/podcast/10-happier-with-dan-harris/id1087147821?i=1000793503590"');
+    expect(html).toContain('href="https://podcasts.apple.com/us/podcast/chasing-life-with-dr-sanjay-gupta/id1501029683?i=1000791424717"');
+    expect(html).toContain('href="https://www.amazon.com/Wisdom-Bullfrog-Leadership-Made-Simple/dp/1538707942"');
+    expect(html).toContain("IRL Lifestyle Book of the Week");
+    expect(html).not.toContain("Nick Bostrom");
+    expect(html).not.toContain("404media.co");
+    expect(html).not.toContain("are-we-trading-our-soul-for-convenience");
     expect(html.indexOf("AI Ethics")).toBeGreaterThan(html.indexOf("<!-- Intro -->"));
     expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf("<!-- Location CTA -->"));
   });

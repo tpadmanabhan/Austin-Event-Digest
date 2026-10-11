@@ -55,7 +55,8 @@ const router: IRouter = Router();
 /**
  * Automatically marks events as featured (Special Event) when their date falls
  * beyond the digest's Saturday (weekOf + 6 days). Spotlights and already-featured
- * events are left unchanged.
+ * events are left unchanged. Explicit featured:false is an editor's decision,
+ * not an invitation to auto-tag a later event.
  */
 function autoTagFutureEvents(events: EventItem[], weekOf: Date): EventItem[] {
   const MONTH_IDX: Record<string, number> = {
@@ -65,7 +66,7 @@ function autoTagFutureEvents(events: EventItem[], weekOf: Date): EventItem[] {
   weekEnd.setHours(23, 59, 59, 999);
 
   return events.map(event => {
-    if (event.featured || (event as any).isBusinessSpotlight || (event as any).isPost) return event;
+    if (typeof event.featured === "boolean" || (event as any).isBusinessSpotlight || (event as any).isPost) return event;
     const dateStr = ((event as any).date as string) || "";
     const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
     if (!m) return event;

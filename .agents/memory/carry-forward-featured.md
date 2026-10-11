@@ -12,7 +12,14 @@ description: The generate endpoint carries forward featured events from the prev
 
 ## How to Apply
 - No action needed at generate time — it fires automatically.
-- If a carry-forward event is stale (date < weekOf), it is correctly filtered out.
+- Audit the complete stored carry-forward array against the requested calendar range. Do not assume stale entries were removed merely because public digest responses hide them.
 - Live-sourced events win on `title|date` collision (live events are in the array first before dedup).
 - Check server logs for `"Carried forward featured events from previous digest"` to confirm it fired.
 - Implementation: `carryForwardFeaturedEvents(tenantId, weekOf)` in `artifacts/api-server/src/routes/events.ts`, called right before `autoTagFutureEvents`.
+
+## Verify the raw date range
+Retain carried entries only when their actual dates fall inside the requested edition window; resolve ambiguous years from verified source information, not a guessed rollover.
+
+**Why:** Generating a later October edition carried earlier October events into its stored array, while the public response filtered them out. A public event count therefore concealed out-of-range carryovers.
+
+**How to apply:** Inspect raw stored entries after generation, prefer verified structured dates where present, and remove confirmed out-of-range entries from the new edition without modifying the prior edition.

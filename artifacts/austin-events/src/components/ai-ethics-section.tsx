@@ -6,32 +6,42 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
     >
       <h2 id="ai-ethics-title" className="mb-3 text-xl font-bold text-slate-900">AI Ethics</h2>
       <p className="text-sm leading-7 text-slate-600">
-        AI promises convenience, but what does it cost us in privacy, trust, and human connection?
-        My latest post explores that trade-off. For a deeper perspective, Nick Bostrom’s
-        {" "}<em>Superintelligence</em> asks how we can keep increasingly powerful AI aligned with
-        human values. And 404 Media, founded by former VICE journalists, is must-subscribe media
-        for its independent reporting on AI’s real-world impact.
+        AI can help us plan, but it cannot replace friends, new experiences, or time outside.
+        My latest post explores why human connection and real-life curiosity still matter.
+        Dan Harris’s podcast offers simple ways to calm the nervous system—and asks why
+        scrolling is not the same as rest. Sanjay Gupta explores the promise and risks of
+        giving AI our medical records. For an IRL leadership perspective, Admiral William
+        H. McRaven’s <em>The Wisdom of the Bullfrog</em> brings the focus back to character,
+        responsibility, and showing up for others. Use technology to help you get out there,
+        not keep you scrolling.
       </p>
       <ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-slate-600">
         <li>
-          <a href="https://customersuccessforgood.com/2026/09/30/are-we-trading-our-soul-for-convenience/"
+          <a href="https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/"
             target="_blank" rel="noopener noreferrer"
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
-            Are We Trading Our Soul for Convenience?
+            AI Doesn’t Solve This
           </a>{" "}— Raj’s blog
         </li>
         <li>
-          <a href="https://www.404media.co/" target="_blank" rel="noopener noreferrer"
+          <a href="https://podcasts.apple.com/us/podcast/10-happier-with-dan-harris/id1087147821?i=1000793503590" target="_blank" rel="noopener noreferrer"
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
-            404 Media
-          </a>{" "}— Must-subscribe journalism on AI, privacy, and accountability
+            10% Happier with Dan Harris
+          </a>{" "}— Calm Your Nervous System: simple daily practices with Nadia Narain and Katia Narain Phillips
         </li>
         <li>
-          <a href="https://note.com/akih/n/n1253589b1ffb?hl=en"
+          <a href="https://podcasts.apple.com/us/podcast/chasing-life-with-dr-sanjay-gupta/id1501029683?i=1000791424717"
             target="_blank" rel="noopener noreferrer"
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
-            Superintelligence: Paths, Dangers, Strategies
-          </a>{" "}— Nick Bostrom’s book, featured in Aki’s article
+            Chasing Life with Dr. Sanjay Gupta
+          </a>{" "}— Should You Give AI Your Medical Records? Sanjay Did.
+        </li>
+        <li>
+          <a href="https://www.amazon.com/Wisdom-Bullfrog-Leadership-Made-Simple/dp/1538707942"
+            target="_blank" rel="noopener noreferrer"
+            className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
+            IRL Lifestyle Book of the Week: The Wisdom of the Bullfrog
+          </a>{" "}— Leadership Made Simple (But Not Easy), by Admiral William H. McRaven
         </li>
       </ul>
     </section>
