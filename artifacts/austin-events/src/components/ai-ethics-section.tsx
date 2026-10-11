@@ -9,7 +9,7 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
         AI can help us plan, but it cannot replace friends, new experiences, or time outside.
         My latest post explores why human connection and real-life curiosity still matter.
         Dan Harris’s podcast offers simple ways to calm the nervous system—and asks why
-        scrolling is not the same as rest. Sanjay Gupta explores the promise and risks of
+        scrolling is not the same as rest. Dr. Sanjay Gupta explores the promise and risks of
         giving AI our medical records. For an IRL leadership perspective, Admiral William
         H. McRaven’s <em>The Wisdom of the Bullfrog</em> brings the focus back to character,
         responsibility, and showing up for others. Use technology to help you get out there,
