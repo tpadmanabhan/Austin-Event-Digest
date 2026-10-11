@@ -1,4 +1,6 @@
 // Shared with the readable document so the map and no-JavaScript offers agree.
+import { ADDITIONAL_CARES_DEALS } from "./additional-cares-deals";
+
 export const DEAL_LOCATIONS = [
   { name: "Spokesman Coffee", deal: "Mon: Free drip coffee with any pastry", lat: 30.3330, lng: -97.7388 },
   { name: "Lou's Barton Springs", deal: "Mon: Half-off chicken · Wed: Half-off burgers", lat: 30.2638, lng: -97.7529 },
@@ -12,4 +14,9 @@ export const DEAL_LOCATIONS = [
   { name: "Austin Habitat Counseling", deal: "Any day: Free homeownership & financial counseling", lat: 30.2280, lng: -97.7757 },
   { name: "Rosewood-Zaragosa Center", deal: "Weekdays: Free food pantry and food help", lat: 30.2656958, lng: -97.710023 },
   { name: "Dove Springs Center", deal: "Weekdays: Free health screenings; call ahead", lat: 30.1963082, lng: -97.7489352 },
+  ...ADDITIONAL_CARES_DEALS.flatMap((deal) =>
+    deal.lat == null || deal.lng == null
+      ? []
+      : [{ name: deal.business, deal: deal.deal, lat: deal.lat, lng: deal.lng }]
+  ),
 ];

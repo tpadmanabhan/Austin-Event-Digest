@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "wouter";
+import { ADDITIONAL_CARES_DEALS } from "../data/additional-cares-deals";
 
 const C = {
   cream:    "#FBF3E7",
@@ -36,6 +37,7 @@ interface Deal {
 }
 
 const STATIC_DEALS: Deal[] = [
+  ...ADDITIONAL_CARES_DEALS,
   // ── Monday ───────────────────────────────────────────────────────────────
   {
     day: "MON",
