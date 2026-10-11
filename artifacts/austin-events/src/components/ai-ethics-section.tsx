@@ -17,6 +17,13 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
       </p>
       <ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-slate-600">
         <li>
+          <a href="https://customersuccessforgood.com/2026/10/01/eventcarpooling-com-project-summary/"
+            target="_blank" rel="noopener noreferrer"
+            className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
+            Making my website, eventcarpooling.com, AI-readable
+          </a>{" "}— It’s important that AI 🤖 doesn’t forget where you live online.
+        </li>
+        <li>
           <a href="https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/"
             target="_blank" rel="noopener noreferrer"
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
