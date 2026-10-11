@@ -32,6 +32,19 @@ interface SendEmailResult {
   error?: string;
 }
 
+// Edition emails keep the authenticated sender mailbox, but distinguish the
+// automated sender from the human who handles replies. Do not apply this policy
+// to transactional emails: carpool notifications have their own reply targets.
+export async function sendNewsletterEmail(
+  options: Omit<SendEmailOptions, "replyTo">,
+): Promise<SendEmailResult> {
+  return sendEmail({
+    ...options,
+    fromName: `${options.fromName?.trim() || FROM_NAME} — No Reply`,
+    replyTo: "raj@customersuccessforgood.com",
+  });
+}
+
 export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
   // Prefer Resend if configured; otherwise fall back to Gmail SMTP
   if (RESEND_API_KEY) {

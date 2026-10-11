@@ -14,7 +14,7 @@ import {
   GetPublicEventMetadataResponse,
 } from "@workspace/api-zod";
 import { generateSampleDigest, getStLouisSampleDigest, getNextSunday } from "../lib/digestGenerator";
-import { sendEmail, buildDigestEmailHtml, translateEventsForEmail } from "../lib/emailService";
+import { sendNewsletterEmail, buildDigestEmailHtml, translateEventsForEmail } from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
 import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } from "../lib/eventSources";
 import { isAdultContent } from "../lib/contentFilter";
@@ -1460,12 +1460,11 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
         alsoNearby,
       }, recipient.name, recipient.email, req.tenant ?? undefined);
 
-      const result = await sendEmail({
+      const result = await sendNewsletterEmail({
         to: recipient.email,
         subject: digest.subject,
         html,
         fromName: req.tenant?.name || undefined,
-        replyTo: req.tenant?.adminEmail || undefined,
       });
 
       if (result.success) {
