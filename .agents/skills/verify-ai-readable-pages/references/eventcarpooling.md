@@ -21,6 +21,12 @@ Use this reference only in the EventCarpooling workspace; verify named files sti
 - Preserve Tokyo language controls and AustinCares deals/map behavior.
 - Public rendering failures return an honest 503, not an empty successful document. Failure logs must not contain signed queries or credentials.
 
+## Production-origin and rendering checks
+
+Development's proxy/API origin is not the production route. Test the server's default production API-origin selection while retaining the intended city Host; a fixture override can conceal a dependency on a workspace-only proxy and leave the live renderer unable to load data.
+
+After changing public document rendering, verify useful visible body content, calendar-date labels, unique city names, event/venue links, canonical URLs, and truthful Event JSON-LD before JavaScript runs. Shared formatting must stay consistent between the server document and hydrated client; do not fix the initial HTML by making the interactive page disagree. Report API/source failures honestly instead of substituting empty or fabricated successful content.
+
 ## Verification after changes
 
 ```bash

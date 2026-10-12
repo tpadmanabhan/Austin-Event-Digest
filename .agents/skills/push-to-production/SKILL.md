@@ -22,7 +22,9 @@ Use the correct city subdomain and list digests with `GET /api/events/digest/lis
 
 ### 2. Prefer a scoped event edit
 
-For a title/date/venue/category/description change on one event, use `PATCH /api/events/digest/:id/events/:idx` with only the intended fields. The index is in the **raw stored array**, not the filtered public list. This route merges those fields into the stored event and preserves its other properties; it cannot edit link, image, coordinates, source, or spotlight flags.
+For a title/date/venue/category/description/link change on one event, use `PATCH /api/events/digest/:id/events/:idx` with only the intended fields and the stable `eventId` when available. The server resolves that ID within the tenant and digest, avoiding incorrect targeting when the public/admin list filters earlier events. Without the ID, the index must come from the **raw stored array**, not the filtered public list.
+
+Link-only requests preserve other event fields, IDs, featured flags, order, and edition send metadata without global re-tagging. Use a valid HTTP(S) URL without embedded credentials; explicit `""` or `null` clears the link. The route does not support image, coordinates, source, featured, or spotlight flags. Verify live capability first: older builds reject link-only edits, requiring publication before the scoped change rather than a full-array workaround.
 
 **Do not use `PATCH /api/events/digest/:id/events` as a one-event edit.** It replaces the entire event array and runs every supplied object through `EventItemSchema`; fields outside that schema are dropped. It rejects an empty array, so it is not a clear-all/delete-all operation.
 
@@ -40,7 +42,22 @@ For additions or removals, compare retained raw objects by field/value and relat
 
 The admin UI's production-status check compares digest weeks. Its push action uses `POST /api/events/digest/:id/push-to-prod`, supported only for Sacramento, Portland, Bulverde, St. Louis, Brushy Creek, and Tokyo. It authenticates with production email-HMAC configuration and imports a **new** digest; it is not an update-in-place operation. Check for an existing matching week first and verify production afterward.
 
-For Austin, AustinCares, or another unsupported tenant, do not assume the push action works or copy an email-based token pattern. Use the authenticated production admin workflow/API available for that tenant.
+For Austin, AustinCares, or another unsupported tenant, do not assume the push action works. Use the authenticated production admin workflow/API available for that tenant and the authentication procedures in `admin-api-auth`.
+
+When the user approves a draft for production sending, follow the comparison and scheduling checklist in `digest-workflow`. Include subject, intro, event order/IDs, links, Special labels, and spotlight flags in the comparison. Explicit `featured: false` must remain false; older deployed auto-tagging code can change it. Do not create a duplicate edition when the intended production edition already exists.
+
+### 5. Inspect or add production subscribers
+
+Use production read-only queries scoped by the city's tenant to list subscribers. Distinguish active subscriptions from unsubscribed records; counts are a current lookup, never a standing constant. Do not save subscriber addresses or lists in agent memory.
+
+To add an address explicitly requested by the user, use the authenticated API on the verified city subdomain:
+
+```text
+POST /api/newsletter/subscribers/add
+{ "email": "<user-specified-address>" }
+```
+
+The handler trims/lowercases the address, inserts a new active record, reports an existing active subscription without creating a duplicate, or reactivates an unsubscribed record. Inspect existing status before reactivating: a generic request to add an address is not permission to override a known opt-out; clarify that case. An optional `name` must come from the user, not a guess. Check HTTP status and success, then re-read the tenant-scoped production record to verify it is active. This operation sends no email and requires no republish; it does not authorize a draft or broadcast.
 
 ## Neon Production Database
 

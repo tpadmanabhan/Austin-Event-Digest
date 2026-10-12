@@ -27,6 +27,8 @@ Use this reference when maintaining extended Austin editions, repairing event ph
 - **Interested?** is the separate interest/RSVP action. Do not relabel it as organizer registration or imply it registers someone with an external event host.
 - The **AI Ethics** reading section is Austin-only and appears on both pages and in the email. When changing its wording or links, update both the React section and the email-safe HTML version, and verify non-Austin cities do not receive it.
 - Keep the wording and reading links consistent across those surfaces. Preserve valid grammar such as “For a deeper perspective”; do not silently rewrite unrelated editorial text.
+- When the reading list changes, preserve each approved title, destination URL, description, and order, including any lifestyle/book recommendation. Check exact agreement between the React and email-safe versions rather than assuming one imports the other. Test tenant isolation after changes.
+- A reading-list update must not erase other edition sections, change Special labels, or resend a previously delivered edition. Distinguish email-header settings (sender display name and Reply-To) from the HTML section itself.
 
 ### Source and test entry points
 
@@ -47,6 +49,8 @@ Newsletter links serialize title, email, and optional name as UTF-8 base64url. T
 3. Preserve week-based links and legacy numeric-digest links. A development digest ID can differ from its production counterpart; prefer the existing stable week-based generator for new newsletter links.
 4. Retain the current missing/invalid-parameter behavior while testing valid links against their actual signature verifier.
 5. Test both standard padded base64 and unpadded base64url, exact round trips, week-based signatures, and compatibility with already-sent links. Do not log subscriber details, signatures, or tokens.
+
+An interest action records interest on the platform; it is not proof of organizer registration or a confirmed carpool. Keep organizer registration links separate, and verify a signed RSVP journey without submitting a form or creating a record unless the user authorized that operation.
 
 Current entry points are `buildRsvpUrl` in `artifacts/api-server/src/lib/emailService.ts`, `artifacts/austin-events/src/lib/rsvp-params.ts`, and `artifacts/austin-events/src/pages/rsvp.tsx`.
 

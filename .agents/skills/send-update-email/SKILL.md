@@ -40,6 +40,27 @@ for (const to of recipients) {
 
 Keep recipient addresses out of unnecessary logs and generated artifacts.
 
+## Attachments
+
+The server-side helper accepts attachment bytes; use this existing support instead of adding a separate sending route or exposing storage credentials:
+
+```ts
+const result = await sendEmail({
+  to: recipient,
+  subject,
+  html,
+  text,
+  attachments: [{
+    filename: "project-summary.pdf",
+    content: verifiedPdfBytes, // Buffer obtained through the approved server-side path
+    contentType: "application/pdf",
+  }],
+});
+if (!result.success) throw new Error(result.error || "Email send failed");
+```
+
+Confirm the requested recipient and attachment, and validate the actual file bytes and format before sending. A filename or successful HTML download is not proof of a valid PDF. Gmail receives the attachment Buffer; the helper encodes it to base64 for Resend. Never add recipients while attaching a file, send an unrequested artifact, or log attachment contents. For code changes, the focused regression suite is `src/lib/emailService.attachments.test.ts`; documentation edits do not require sending a test email.
+
 ## Email Format Conventions
 
 - Font: Georgia, serif — matches brand tone
@@ -49,3 +70,4 @@ Keep recipient addresses out of unnecessary logs and generated artifacts.
 - Use `<strong>` + emoji for section headers (e.g. `<strong>🎟️ Feature name:</strong>`)
 - Sign off and sender display name should match the requested project/tenant; do not assume a single fixed brand name.
 - Digest newsletters are a separate workflow: use the digest admin UI/API and its explicit test-vs-subscriber-send safeguards, not this ad-hoc template process.
+- Newsletter editions use `sendNewsletterEmail`, which appends `— No Reply` to the display name and routes replies to the configured human contact while retaining the authenticated sending mailbox. Do not copy that newsletter-only policy into ad-hoc or carpool messages; preserve their requested sender and reply behavior.

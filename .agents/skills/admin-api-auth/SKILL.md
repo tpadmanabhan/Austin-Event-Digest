@@ -5,7 +5,7 @@ description: Authenticate with city admin APIs. Use when making admin API calls 
 
 # Admin API Auth
 
-Protected city admin routes use one of two token patterns, depending on the tenant. Always send the token to the matching city subdomain; tenant resolution and token verification are both scoped to that request's tenant.
+Protected city admin routes accept password-hash and/or email-based tokens, depending on the tenant configuration. Always send the token to the matching city subdomain; tenant resolution and token verification are both scoped to that request's tenant.
 
 ## Pattern 1: Password-Hash HMAC (Austin, AustinCares)
 
@@ -50,6 +50,8 @@ Then compute `HMAC(passwordHash, "admin-session")` using the hash from the match
 
 ## Pattern 2: Email-Based HMAC
 
+This is not restricted to tenants with a null password hash. `requireAdmin` also accepts it for a password-based tenant when that tenant has an admin email and production has `RSVP_HMAC_SECRET`. Austin's email-HMAC authentication was verified against the protected production preview during the October 11, 2026 scheduled send. That observation does not guarantee the same secret/configuration in development or another deployment; verify against a protected endpoint before relying on it.
+
 For tenants authenticated by admin email (normally those with `null` passwordHash):
 
 ```
@@ -70,7 +72,7 @@ Get the correct tenant ID and email from the target tenant configuration/databas
 
 ## Login route caveat
 
-The protected-route middleware accepts the password-hash token for password tenants and the email-HMAC token when `RSVP_HMAC_SECRET` is configured. In the current `routes/admin.ts`, `/admin/login` returns the email-HMAC token even after validating a password, and `/admin/verify` checks the email-HMAC token in both branches. Therefore, for API automation use the token returned by the actual login flow or compute a token that `requireAdmin` accepts for the target tenant; do not assume the token returned by `/admin/login` is the password-hash HMAC. Keep this behavior in mind if changing auth code or its tests.
+The protected-route middleware accepts the password-hash token for password tenants and the email-HMAC token when the tenant has an admin email and `RSVP_HMAC_SECRET` is configured. The current `/admin/login` prefers an email-HMAC token when available, falling back to the password-hash token; `/admin/verify` accepts either configured pattern. Use a token from the actual login flow or derive one supported by the target tenant. Do not assume a token from one environment works in another, and never hard-code tenant IDs or admin emails from a past send.
 ## Using the Token
 
 Pass as a Bearer header:

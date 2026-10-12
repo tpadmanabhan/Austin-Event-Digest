@@ -13,6 +13,15 @@ For every generation, import and edit, preserve persistent event/venue identitie
 
 After editing, inspect the city's initial public HTML and one event/venue journey without submitting forms. Follow `docs/public-pages-publishing.md` for type/build/tests, canonical and sitemap checks, and separate user-approved publishing/live verification. Curated/community posts and AustinCares deals are not Schema.org Events. Check actual tenant/source availability before describing RSVP, sharing or carpool capabilities; no guaranteed rides.
 
+## Cross-surface edition maintenance
+
+Read [Austin edition maintenance](references/austin-edition-maintenance.md) when changes affect extended date ranges, recurring photos, curator copy, community-post action labels, AI Ethics reading links, or newsletter RSVP links. These requirements apply alongside the production-send checklist, not only to the newest edition:
+
+- Preserve sent-edition history and stable identities when preparing a new date range; past Special events are not exempt from public stale-event filtering.
+- Check landing page, full edition, and outgoing email independently. A card-only photo override or frontend editorial change does not automatically repair stored email content.
+- Preserve exact UTF-8 signed RSVP inputs and both week-based and legacy numeric-digest links. Organizer **Register** and platform **Interested?** are different actions.
+- Audit the real published HTML and default production API route with `verify-ai-readable-pages`; local rendering, a mocked API origin, or a Publish checkpoint alone does not prove a change is live.
+
 ## Key Concepts
 
 - Each city is a **tenant** identified by a slug (e.g. `austin`, `stlouis`, `tokyo`, `austincares`).
@@ -88,7 +97,16 @@ PATCH /api/events/digest/<digestId>/events/:idx/venue
 { "venue": "Corrected Venue Name, Address" }
 ```
 
-For title/date/venue/category/description, `PATCH /api/events/digest/:id/events/:idx` updates one **raw stored-array index**; a filtered public-array index may be different. The per-index route does **not** accept coordinates, link, image, source, or spotlight flags. For those use the full-array PATCH, preserving the stored entries. Changing a venue triggers geocoding.
+For title/date/venue/category/description/link, `PATCH /api/events/digest/:id/events/:idx` updates one event. Supply its stable `eventId` whenever available: the server resolves it within the tenant and digest, rather than trusting an index from the filtered admin/public list. Without `eventId`, the index must be the **raw stored-array index**.
+
+```text
+PATCH /api/events/digest/<verified-digest-id>/events/<numeric-index>
+{ "eventId": "<verified-stable-event-id>", "link": "https://organizer.example/event" }
+```
+
+Send only changed fields. Links must be valid HTTP(S) URLs without embedded credentials; surrounding whitespace is trimmed. An explicit blank string or `null` removes a link; omission leaves it unchanged. Link-only edits preserve other event fields, IDs, order, featured flags, and edition send metadata without re-tagging events. Changing a venue triggers geocoding.
+
+This scoped route does not accept coordinates, image, source, featured, or spotlight flags. Do not assume those unsupported fields were applied merely because another field succeeded. Check the deployed route before relying on link-only editing: older builds reject it. If publication is needed, wait for it rather than replacing the full edition just to correct one URL. Already-delivered emails cannot be changed by editing a saved edition.
 
 ## Step 4: Set Spotlight
 
@@ -155,6 +173,8 @@ POST /api/events/digest/<digestId>/regeocoded
 ```
 
 Geocoding is asynchronous, so check again after it finishes. Aim for 100% coverage before sending. Events without lat/lng won't appear on the digest map. If a full address still cannot be resolved, confirm coordinates from a trustworthy map source, re-read the raw array, and full-array PATCH that single entry's `lat`/`lng`; the per-index event route rejects those fields.
+
+Preserve organizer/Ticketmaster street addresses in venue strings instead of reducing them to a venue name. The geocoder uses city-scoped known-venue coordinates and a city-hinted second attempt to avoid same-named venues in other cities. Inspect `knownVenues.ts`, the current bounds, and cache behavior before changing this flow. A resolved coordinate is not proof of the correct venue: audit city bounds and the full address, and retain legitimate out-of-town events only when their organizer-confirmed location is intentional.
 
 ### Geocoding Drift Audit (run before sending)
 
@@ -268,6 +288,12 @@ Use `testEmail` — NOT `draftEmail` or `isDraft`. Confirm the city, digest ID, 
 
 The current handler requires `confirm: true` when `testEmail` is absent; check the currently deployed behavior before a subscriber-wide send. Never infer permission for a full blast from “update the newsletter” or “send a draft.” Sending uses the stored digest but filters past dated events; community posts and spotlights are retained. The preview-email endpoint currently renders the raw event array, including historical events, so its event count may differ from what gets sent. Preview still helps verify the template, title, and spotlights.
 
+### Newsletter sender and delivery checks
+
+Edition emails, including single-address drafts, use `sendNewsletterEmail`: keep the configured Gmail mailbox, append `— No Reply` to the tenant sender display name, and set `Reply-To` to `raj@customersuccessforgood.com`. Do not substitute an unverified no-reply mailbox or apply this policy to transactional/carpool emails, which have their own reply targets. The display name and Reply-To are email headers, not preview-body text; inspect the sending helper or actual message headers rather than searching preview HTML for them.
+
+For a draft, verify provider acceptance in the send logs as well as the API response: the handler's `success: true` alone does not prove the individual message was accepted. For broadcasts, inspect delivered/failed counts; an overall successful response can still contain recipient failures. Report provider acceptance, not guaranteed inbox delivery.
+
 ## Sending an approved draft to production at a specified time
 
 When the user asks to send a specific draft to production at a later time, treat content approval, production synchronization, recipient scope, and the send time as separate requirements:
@@ -281,6 +307,8 @@ When the user asks to send a specific draft to production at a later time, treat
 7. **Report the actual outcome.** Check the HTTP status, response body, delivered/failed counts, and production `sentAt`/`sentCount` after sending. Report the requested and actual start/completion times in the named city time zone. If a request times out or the result is unclear, inspect send state and server logs before deciding whether another request is safe; never automatically retry a potentially delivered broadcast.
 
 Keep production admin tokens and derived credentials in memory or the approved secrets flow. Never put them in task scripts, files, logs, or chat. A test send is not authorization for a subscriber-wide send; the user must explicitly authorize the production send, recipient scope, and timing.
+
+For a workspace one-time send, use the managed background shell runner and its returned task ID to monitor completion, not a detached Node child inside CodeExecution. Record a deterministic fingerprint of the reviewed content (subject, intro, week, ordered events) and re-check the same representation just before sending; abort if it changed. Stop if the requested time has passed or the edition is already sent; do not silently send early, late, or twice. Start the send at the requested instant and report completion separately, because sending the whole list takes time. If “CST” is used colloquially for Austin local time during daylight saving, clarify that the scheduled zone is `America/Chicago` and report the actual CDT/CST offset.
 
 ## Deduplication Check Before Sending
 
@@ -304,6 +332,8 @@ Before replacing the array, account for schema normalization and automatic featu
 Before a city's first send and after regeneration, inspect its subject, intro, spotlight copy, city names, map, and email header in the authenticated preview. Austin-specific greetings and sample events have previously appeared in other tenants' drafts. The workspace's generate route currently limits sample-event fallback to Austin/St. Louis, but older production records or unpublished code can differ; check the actual edition rather than assuming the fix applies. Never send an empty draft or Austin-venue sample events for another city. `digestGenerator.ts` supplies city-aware fallback copy; `events.ts` controls generation; `emailService.ts` renders the tenant email theme. If a stored intro is wrong, patch only the intro using Step 5b.
 
 ## Carry-Forward of Manually-Curated Featured Events
+
+Explicit `featured: false` is an editor's decision: the current auto-tagging helper preserves both explicit true and explicit false, and only auto-tags events without a boolean flag. Verify this behavior in the deployed build when syncing Special labels; older code can re-tag future events and make production differ from an approved draft. Do not assume a dev/production match merely because event titles and URLs match.
 
 When `POST /api/events/digest/generate` runs, it automatically carries forward any `featured: true` events from the **most recent existing digest** for that tenant whose dates are still >= the new `weekOf`. This prevents multi-week events, conferences, or anything added by hand from being silently dropped each week.
 
@@ -374,9 +404,9 @@ Content-Type: application/json
 { "date": "Wednesday, Aug 19 at 5:30 PM" }
 ```
 
-- `:idx` is the **0-based index** of the event in the digest's events array
-- Find the index in the complete **stored** array, not the filtered API response.
-- Only title/date/venue/category/description string fields are accepted; omitting a field leaves it unchanged.
+- Supply the stable `eventId` alongside the changed date when available; the server resolves it within the tenant/digest. Without that ID, `:idx` is the **0-based raw stored-array index**, not an index from the filtered API response.
+- The scoped route accepts title/date/venue/category/description strings and validated `link` edits; omit every field not being changed.
+- Date/venue changes must not retain obsolete structured dates or venue metadata. Verify persistent occurrence IDs and signed links still identify the intended event after the edit.
 - To check all cities for mismatches, fetch `/api/events/digest/list` for each city, parse each date string, and compare the stated weekday against the event's actual year/month/day. The public list may omit past records; audit raw records when needed.
 
 ## City-Scoped Digest Queries

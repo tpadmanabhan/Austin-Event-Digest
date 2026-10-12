@@ -46,7 +46,7 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Language:** English
 - **Special features:** Subscriber radius/distance personalization, walkable-only filter, signed preferences token in emails, Nearest First sort
 - **Layout:** Generic `home.tsx`; admin panel at `/admin`
-- **Community events:** None defined — relies entirely on adapters
+- **Community events:** Curated Austin recurring events are defined in `weeklyRefresh.ts` and merged during generation; inspect the current definitions rather than treating adapters as the only source.
 
 ### 🌲 Sacramento (`sacramento.eventcarpooling.com`)
 - **Auth:** Email-based HMAC — see `admin-api-auth`; resolve the tenant ID and admin email in the environment being targeted.
@@ -117,6 +117,14 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Positioning:** **Weekly deals site**, not an events site. Primary value = the deals directory, not the digest.
 - **Special features:** Dedicated pages — `/` → deals landing, `/full` → live deals map + directory + community submission form; digest email links readers to `/full`. The current `applyTenantCategoryRestriction` map is empty, so the events-array route applies no tenant-specific category filter.
 - **Layout:** `austin-cares-deals.tsx` and `austin-cares-full.tsx` (not generic `home.tsx`)
+
+### Atlanta and Houston
+
+Both cities have tenant and geographic configuration in the current workspace. Before preparing an edition, inspect their actual tenant row, `TENANT_CONFIGS`, enabled adapters, community-event definitions, bounds, and email theme rather than copying Austin's content or auth assumptions.
+
+- Atlanta's `ATLTech.events` adapter is registered for the Tech category and restricted to Atlanta by tenant-aware adapter selection. Verify live source results and do not leak its events into another city's digest.
+- Preserve real venue street addresses and include both cities in email-map center/label configuration when changing onboarding. Generating records or seeding a tenant does not prove its production domain, public pages, signup, or email delivery is configured.
+- Use the shared label helper on server-rendered navigation and city lists so an already named city such as “Atlanta Events” is not rendered as “Atlanta Events events.”
 
 ## Auth Quick Reference
 
