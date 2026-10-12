@@ -3,6 +3,7 @@ import { displayPublicEventDate, displayPublicWeek, publicCityLabel } from "@/li
 import { PublicHowItWorks } from "./public-how-it-works";
 import { AiEthicsSection } from "./ai-ethics-section";
 import { SfAiEthicsSection } from "./sf-ai-ethics-section";
+import { SpockAboutMention } from "./spock-mascot";
 
 const wrap = "mx-auto max-w-3xl px-4 py-10 sm:px-6";
 const linkCls = "font-semibold text-green-800 underline underline-offset-2 hover:text-green-700";
@@ -135,6 +136,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           <li>A localized Tokyo edition.</li>
           <li>AustinCares, a distinct guide to local deals.</li>
         </ul>
+        <SpockAboutMention className="mt-8" />
         <PublicHowItWorks citySlug={model.citySlug} />
         <h2 id="city-editions" className="mb-3 mt-10 font-serif text-2xl font-bold text-slate-900">City editions</h2>
         <ul className="space-y-2">

@@ -7,6 +7,7 @@ import { useLang } from "@/contexts/lang-context";
 import { LaunchCityModal } from "@/components/launch-city-modal";
 import { EventMap } from "@/components/event-map";
 import { PublicAbout } from "@/components/public-about";
+import { SpockNote } from "@/components/spock-mascot";
 
 const NEW_CITY_SLUGS = ["atlanta", "sanfrancisco", "austin"];
 const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "houston", "tokyo", "stlouis", "sacramento", "portland", "bulverde", "dc"];
@@ -321,6 +322,10 @@ function PlatformHomeInner() {
               ))}
             </div>
 
+            <div className="flex justify-center mb-2">
+              <SpockNote text={t.spockHero} lazy={false} />
+            </div>
+
             {/* Persona chips */}
             <div className="flex flex-wrap justify-center gap-3 mt-8 mb-2">
               {[
@@ -428,7 +433,7 @@ function PlatformHomeInner() {
             <p style={{ color: "#64748b" }}>{t.howSub}</p>
           </div>
 
-          <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-0">
+          <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-0">
             {/* connecting line */}
             <div
               className="absolute hidden lg:block pointer-events-none"
@@ -972,6 +977,9 @@ function PlatformHomeInner() {
               {t.ctaButton} <ArrowRight className="w-5 h-5" />
             </button>
             <p className="text-sm mt-4" style={{ color: "#86efac" }}>{t.ctaNoCard}</p>
+            <div className="flex justify-center mt-8">
+              <SpockNote text={t.spockCta} />
+            </div>
           </motion.div>
         </div>
       </section>

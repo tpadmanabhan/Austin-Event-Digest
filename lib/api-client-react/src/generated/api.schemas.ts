@@ -5,6 +5,31 @@
  * API specification for Raj's Austin Events newsletter
  * OpenAPI spec version: 0.1.0
  */
+export interface CityRequestInput {
+  /**
+   * @minLength 2
+   * @maxLength 100
+   */
+  cityName: string;
+  /** @maxLength 254 */
+  email: string;
+}
+
+export type CityRequestReceiptNotificationStatus =
+  (typeof CityRequestReceiptNotificationStatus)[keyof typeof CityRequestReceiptNotificationStatus];
+
+export const CityRequestReceiptNotificationStatus = {
+  sent: "sent",
+  failed: "failed",
+  unconfirmed: "unconfirmed",
+} as const;
+
+export interface CityRequestReceipt {
+  saved: boolean;
+  duplicate: boolean;
+  notificationStatus: CityRequestReceiptNotificationStatus;
+}
+
 export interface HealthStatus {
   status: string;
 }

@@ -94,6 +94,17 @@ test("the platform document is readable and has real city links without scripts 
   assert.match(body, /<h1/);
   assert.equal(modelOf(body).kind, "platform");
 });
+test("Spock's role and transparent mascot are in public platform and About HTML", async () => {
+  for (const path of ["/", "/about"]) {
+    const { response, body } = await document("eventcarpooling.com", path);
+    assert.equal(response.status, 200);
+    assert.match(body, /Spock/);
+    assert.match(body, /images\/spock-mascot\.png/);
+    assert.match(body, /research/i);
+    assert.match(body, /newsletters/i);
+    assert.match(body, /review/i);
+  }
+});
 test("city and historical edition responses are tenant-specific and readable", async () => {
   for (const city of ["austin", "atlanta", "tokyo", "sanfrancisco"]) {
     const { response, body } = await document(`${city}.eventcarpooling.com`);

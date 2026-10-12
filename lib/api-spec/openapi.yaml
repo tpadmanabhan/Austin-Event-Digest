@@ -18,6 +18,38 @@ tags:
   - name: gamification
     description: Superconnector XP, badges, challenges, streaks and leaderboard
 paths:
+  /city-requests:
+    post:
+      operationId: submitCityRequest
+      tags: [tenants]
+      summary: Save a city request for manual review on the platform root
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CityRequestInput"
+      responses:
+        "201":
+          description: Saved; notificationStatus separately reports provider acceptance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CityRequestReceipt"
+        "200":
+          description: Already saved; duplicate submissions never resend email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CityRequestReceipt"
+        "400":
+          description: Invalid city or email
+        "403":
+          description: Platform root only
+        "429":
+          description: Request limit reached
+        "503":
+          description: Request could not be saved
   /events/public/{eventId}/metadata:
     get:
       operationId: getPublicEventMetadata
@@ -288,6 +320,31 @@ paths:
 
 components:
   schemas:
+    CityRequestInput:
+      type: object
+      additionalProperties: false
+      required: [cityName, email]
+      properties:
+        cityName:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+    CityRequestReceipt:
+      type: object
+      required: [saved, duplicate, notificationStatus]
+      properties:
+        saved:
+          type: boolean
+          enum: [true]
+        duplicate:
+          type: boolean
+        notificationStatus:
+          type: string
+          enum: [sent, failed, unconfirmed]
     HealthStatus:
       type: object
       properties:

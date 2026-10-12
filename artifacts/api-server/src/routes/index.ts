@@ -5,6 +5,7 @@ import eventsRouter from "./events";
 import rsvpRouter from "./rsvp";
 import adminRouter from "./admin";
 import tenantsRouter from "./tenants";
+import cityRequestsRouter from "./cityRequests";
 import gamificationRouter from "./gamification";
 import mapImageRouter from "./mapImage";
 import translateRouter from "./translate";
@@ -23,6 +24,7 @@ router.use(storageRouter);
 // Tenant config + list are used by city subdomains too — no host guard.
 // requirePlatformRoot is applied per-route inside tenantsRouter for onboarding-only endpoints.
 router.use(tenantsRouter);
+router.use(cityRequestsRouter);
 
 // City-level routes — require a resolved tenant from the subdomain
 router.use("/newsletter", requireTenant, newsletterRouter);

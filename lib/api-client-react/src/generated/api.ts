@@ -18,6 +18,8 @@ import type {
 
 import type {
   BadgesResponse,
+  CityRequestInput,
+  CityRequestReceipt,
   DigestListResponse,
   DigestResponse,
   ErrorResponse,
@@ -45,6 +47,92 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Save a city request for manual review on the platform root
+ */
+export const getSubmitCityRequestUrl = () => {
+  return `/api/city-requests`;
+};
+
+export const submitCityRequest = async (
+  cityRequestInput: CityRequestInput,
+  options?: RequestInit,
+): Promise<CityRequestReceipt> => {
+  return customFetch<CityRequestReceipt>(getSubmitCityRequestUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(cityRequestInput),
+  });
+};
+
+export const getSubmitCityRequestMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitCityRequest>>,
+    TError,
+    { data: BodyType<CityRequestInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof submitCityRequest>>,
+  TError,
+  { data: BodyType<CityRequestInput> },
+  TContext
+> => {
+  const mutationKey = ["submitCityRequest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof submitCityRequest>>,
+    { data: BodyType<CityRequestInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return submitCityRequest(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SubmitCityRequestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof submitCityRequest>>
+>;
+export type SubmitCityRequestMutationBody = BodyType<CityRequestInput>;
+export type SubmitCityRequestMutationError = ErrorType<void>;
+
+/**
+ * @summary Save a city request for manual review on the platform root
+ */
+export const useSubmitCityRequest = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitCityRequest>>,
+    TError,
+    { data: BodyType<CityRequestInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof submitCityRequest>>,
+  TError,
+  { data: BodyType<CityRequestInput> },
+  TContext
+> => {
+  return useMutation(getSubmitCityRequestMutationOptions(options));
+};
 
 /**
  * @summary Read source-verified metadata for a publicly visible event

@@ -1,4 +1,5 @@
 import { PublicHowItWorks } from "./public-how-it-works";
+import { SpockAboutMention } from "./spock-mascot";
 
 const TOPICS = [
   { h: "City editions", p: "Each city has its own edition with a weekly list of hand-picked events, written for that neighborhood and linked back to the official source." },
@@ -26,6 +27,7 @@ export function PublicAbout() {
             </div>
           ))}
         </dl>
+        <SpockAboutMention className="mt-6" />
         <PublicHowItWorks />
       </div>
     </section>

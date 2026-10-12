@@ -8,6 +8,28 @@
 import * as zod from "zod";
 
 /**
+ * @summary Save a city request for manual review on the platform root
+ */
+export const submitCityRequestBodyCityNameMin = 2;
+export const submitCityRequestBodyCityNameMax = 100;
+
+export const submitCityRequestBodyEmailMax = 254;
+
+export const SubmitCityRequestBody = zod.object({
+  cityName: zod
+    .string()
+    .min(submitCityRequestBodyCityNameMin)
+    .max(submitCityRequestBodyCityNameMax),
+  email: zod.string().email().max(submitCityRequestBodyEmailMax),
+});
+
+export const SubmitCityRequestResponse = zod.object({
+  saved: zod.literal(true),
+  duplicate: zod.boolean(),
+  notificationStatus: zod.enum(["sent", "failed", "unconfirmed"]),
+});
+
+/**
  * @summary Read source-verified metadata for a publicly visible event
  */
 export const GetPublicEventMetadataParams = zod.object({
