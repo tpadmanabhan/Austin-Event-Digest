@@ -23,6 +23,7 @@ If no qualifying AI events can be verified, briefly report that outcome and the 
 - Deduplicate against existing listings by organizer link and title/date.
 - Set `category: "Tech"`; do not create an `AI` category or categorize an AI event as a community spotlight merely because a community organizes it. Use `featured: false` for new regular listings unless the user requests Special labeling.
 - Store verified `startDate`, `endDate`, `timezone`, and `venueAddress` when available. Use an absolute organizer image URL and verify that it responds successfully with an image content type. Missing verified optional metadata must remain missing rather than fabricated.
+- Use display dates compatible with the current homepage, full-edition, and email parsers, such as `Tuesday, Oct 13 at 11:30 AM`; retain the verified year/offset in structured timestamps. Read [Date ordering and preview checks](date-ordering-and-preview-checks.md) before formatting corrections.
 - Follow the digest workflow's raw-array preservation and target-environment authentication procedures. Insert new events chronologically without changing retained objects, stable identities, relative order, spotlights, or send metadata.
 - Do not assume `scrape-event` retains structured timestamps, address fields, or supplied coordinates; inspect the current handler before choosing it. If a full-array PATCH is necessary, audit schema compatibility, re-read immediately before writing, and compare retained objects afterward.
 - AI additions do not authorize emails, publication, or changes to other cities. Follow the current request's target-environment scope and verify each environment actually updated.
@@ -35,4 +36,5 @@ Before delivering a newly created or refreshed city edition:
 - Confirm each added AI event is labeled **Tech** and has the correct local date and official link.
 - Check the intended edition in both public latest/list responses and the visible homepage/full edition; an API success alone is insufficient.
 - Verify an event/venue journey using links actually present in the page. Inspect the email preview when preparing a newsletter, without sending it unless requested.
+- Verify chronological display independently on the homepage, full edition, and newsletter preview, including same-day start times. Re-read raw records to confirm source-backed timestamps survived any caption edits; inclusion alone does not prove ordering or preservation.
 - Confirm original listings and spotlights were preserved, additions are not duplicated, and edition send metadata is unchanged for page-only edits.

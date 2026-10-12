@@ -26,6 +26,8 @@ For a title/date/venue/category/description/link change on one event, use `PATCH
 
 Link-only requests preserve other event fields, IDs, featured flags, order, and edition send metadata without global re-tagging. Use a valid HTTP(S) URL without embedded credentials; explicit `""` or `null` clears the link. The route does not support image, coordinates, source, featured, or spotlight flags. Verify live capability first: older builds reject link-only edits, requiring publication before the scoped change rather than a full-array workaround.
 
+Display-only date formatting is not a schedule change. Inspect metadata invalidation before editing: the scoped date route can clear verified structured timestamps and does not accept them as restoration fields. Follow `.agents/skills/digest-workflow/references/date-ordering-and-preview-checks.md`; compare raw source timestamps afterward and resolve any loss before sending. Do not infer preservation from API success or substitute an unsafe full-array replacement.
+
 **Do not use `PATCH /api/events/digest/:id/events` as a one-event edit.** It replaces the entire event array and runs every supplied object through `EventItemSchema`; fields outside that schema are dropped. It rejects an empty array, so it is not a clear-all/delete-all operation.
 
 ### 3. Do not build a replacement array from a public digest response

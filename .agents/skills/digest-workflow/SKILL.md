@@ -105,6 +105,8 @@ PATCH /api/events/digest/<digestId>/events/:idx/venue
 
 For title/date/venue/category/description/link, `PATCH /api/events/digest/:id/events/:idx` updates one event. Supply its stable `eventId` whenever available: the server resolves it within the tenant and digest, rather than trusting an index from the filtered admin/public list. Without `eventId`, the index must be the **raw stored-array index**.
 
+For date-format or ordering fixes, read [Date ordering and preview checks](references/date-ordering-and-preview-checks.md) first. A display-only date edit can clear verified structured timestamps; inspect the deployed behavior and compare complete raw objects afterward.
+
 ```text
 PATCH /api/events/digest/<verified-digest-id>/events/<numeric-index>
 { "eventId": "<verified-stable-event-id>", "link": "https://organizer.example/event" }
@@ -292,6 +294,8 @@ POST /api/events/digest/send
 
 Use `testEmail` — NOT `draftEmail` or `isDraft`. Confirm the city, digest ID, subject, intro, spotlight, upcoming events and intended address before calling send. Check HTTP status **and** `success: true`, and send only once. A test send does not update subscriber-wide `sentAt`/`sentCount`.
 
+Check intended event inclusion and chronological order in the authenticated preview before sending. Compare decoded visible text rather than raw escaped HTML; an apostrophe encoded as `&#39;` is not a missing event. Follow [Date ordering and preview checks](references/date-ordering-and-preview-checks.md) for metadata preservation and safe single-recipient verification.
+
 The current handler requires `confirm: true` when `testEmail` is absent; check the currently deployed behavior before a subscriber-wide send. Never infer permission for a full blast from “update the newsletter” or “send a draft.” Sending uses the stored digest but filters past dated events; community posts and spotlights are retained. The preview-email endpoint currently renders the raw event array, including historical events, so its event count may differ from what gets sent. Preview still helps verify the template, title, and spotlights.
 
 ### Newsletter sender and delivery checks
@@ -299,6 +303,8 @@ The current handler requires `confirm: true` when `testEmail` is absent; check t
 Edition emails, including single-address drafts, use `sendNewsletterEmail`: keep the configured Gmail mailbox, append `— No Reply` to the tenant sender display name, and set `Reply-To` to `raj@customersuccessforgood.com`. Do not substitute an unverified no-reply mailbox or apply this policy to transactional/carpool emails, which have their own reply targets. The display name and Reply-To are email headers, not preview-body text; inspect the sending helper or actual message headers rather than searching preview HTML for them.
 
 For a draft, verify provider acceptance in the send logs as well as the API response: the handler's `success: true` alone does not prove the individual message was accepted. For broadcasts, inspect delivered/failed counts; an overall successful response can still contain recipient failures. Report provider acceptance, not guaranteed inbox delivery.
+
+Match the provider log to the intended recipient and the request's recorded time window, not an older draft. Re-read the edition's subscriber-wide send metadata after a test send. If acceptance is unclear, investigate before retrying; an unverified response is not permission to send twice.
 
 ## Sending an approved draft to production at a specified time
 
@@ -413,6 +419,7 @@ Content-Type: application/json
 - Supply the stable `eventId` alongside the changed date when available; the server resolves it within the tenant/digest. Without that ID, `:idx` is the **0-based raw stored-array index**, not an index from the filtered API response.
 - The scoped route accepts title/date/venue/category/description strings and validated `link` edits; omit every field not being changed.
 - Date/venue changes must not retain obsolete structured dates or venue metadata. Verify persistent occurrence IDs and signed links still identify the intended event after the edit.
+- For a display-only formatting correction, the source schedule is not obsolete: retain its verified timestamps and timezone, and check all three rendering/sorting paths using [Date ordering and preview checks](references/date-ordering-and-preview-checks.md).
 - To check all cities for mismatches, fetch `/api/events/digest/list` for each city, parse each date string, and compare the stated weekday against the event's actual year/month/day. The public list may omit past records; audit raw records when needed.
 
 ## City-Scoped Digest Queries
