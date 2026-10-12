@@ -326,3 +326,17 @@ mtime_ms = 1791837089477
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/3da4f1b5-106f-4d7d-8c7c-34133d81cf71/26cbf747-2976-4e17-9706-d0c1126c075e"
 storage_version_token = "1791837132959991"
 content_type = "image/jpeg"
+
+[[outputs]]
+id = "zbQF4tiZgxNZd04E9P1rb"
+uri = "file://generated-artifacts/EventCarpooling-Summary-Spock-2026-10-12.pdf"
+type = "pdf"
+title = "EventCarpooling Summary with Spock — PDF Download"
+description = "Fresh copy of the verified, one-page PDF. Also available in the project's generated-artifacts folder."
+logical_id = "0a71fe18-afa8-42cd-afe9-b2d82a443e15"
+content_hash = "sha256:ef4a860a137db3db944c4fbbee479b1ef5d5ccf4ec099b198699ed4f50411371"
+size = 96820
+mtime_ms = 1791837367321
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/0a71fe18-afa8-42cd-afe9-b2d82a443e15/e3ed216d-6fe3-4d89-8c6b-56bd3f35df7b"
+storage_version_token = "1791837374143413"
+content_type = "application/pdf"
