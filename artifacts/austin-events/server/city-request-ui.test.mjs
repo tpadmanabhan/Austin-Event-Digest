@@ -37,6 +37,19 @@ test("city request form: both buttons, validation, loading, retries, keyboard an
     const footer = page.getByRole("button", { name: "Request your city", exact: true });
     const dialog = page.getByRole("dialog");
     const submit = page.getByRole("button", { name: "Submit request", exact: true });
+    const checkLaunchAnchor = async () => {
+      await page.locator("header a[href='#launch']").click();
+      await page.waitForFunction(() => {
+        const header = document.querySelector("header")?.getBoundingClientRect();
+        const launch = document.getElementById("launch")?.getBoundingClientRect();
+        return header && launch && launch.top >= header.bottom + 12;
+      });
+      const heading = await page.locator("#launch h2").boundingBox();
+      const header = await page.locator("header").boundingBox();
+      assert.ok(heading.y >= header.y + header.height + 16, "Launch heading must clear the sticky header");
+    };
+    await hero.waitFor();
+    await checkLaunchAnchor();
     await hero.click();
     await dialog.waitFor();
     assert.equal(await dialog.locator("input").count(), 2);
@@ -90,6 +103,7 @@ test("city request form: both buttons, validation, loading, retries, keyboard an
     await dialog.waitFor({ state: "hidden" });
 
     await page.setViewportSize({ width: 375, height: 812 });
+    await checkLaunchAnchor();
     await footer.click();
     await dialog.waitFor();
     await dialog.evaluate((element) => Promise.all(element.getAnimations().map((animation) => animation.finished)));

@@ -947,7 +947,7 @@ function PlatformHomeInner() {
       {/* LAUNCH CTA */}
       <section
         id="launch"
-        className="relative overflow-hidden py-24 text-center"
+        className="relative overflow-hidden py-24 text-center scroll-mt-20 sm:scroll-mt-32"
         style={{ background: "linear-gradient(135deg, #14532d 0%, #166534 50%, #15803d 100%)" }}
       >
         <div
