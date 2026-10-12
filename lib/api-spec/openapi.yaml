@@ -345,6 +345,10 @@ components:
         notificationStatus:
           type: string
           enum: [sent, failed, unconfirmed]
+        acknowledgementStatus:
+          type: string
+          enum: [not_sent, sent, failed, unconfirmed]
+          description: Requester email provider acceptance, tracked separately from the admin notification. Absent on older servers.
     HealthStatus:
       type: object
       properties:

@@ -35,18 +35,19 @@ describe.skipIf(process.env.RUN_CITY_REQUEST_DB_TESTS !== "1")("durable city req
     const send = vi.fn(async () => {
       const [saved] = await db.select().from(cityRequestsTable).where(eq(cityRequestsTable.email, data.email));
       expect(saved.notificationStatus).toBe("unconfirmed");
+      expect(saved.acknowledgementStatus).toBe("unconfirmed");
       await wait;
       return { success: true };
     });
     const first = saveCityRequest(data, ip("concurrent"), { send });
-    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(2));
     const duplicate = await saveCityRequest(data, ip("other-worker"), { send });
-    expect(duplicate).toMatchObject({ saved: true, duplicate: true, notificationStatus: "unconfirmed" });
+    expect(duplicate).toMatchObject({ saved: true, duplicate: true, notificationStatus: "unconfirmed", acknowledgementStatus: "unconfirmed" });
     release();
-    expect(await first).toMatchObject({ saved: true, notificationStatus: "sent" });
+    expect(await first).toMatchObject({ saved: true, notificationStatus: "sent", acknowledgementStatus: "sent" });
     const retry = await saveCityRequest({ ...data, cityName: "test city" }, ip("retry"), { send });
     expect(retry).toMatchObject({ duplicate: true, notificationStatus: "sent" });
-    expect(send).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenCalledTimes(2);
   });
 
   it("keeps failed notifications recorded and never sends again on a retry", async () => {
@@ -57,7 +58,9 @@ describe.skipIf(process.env.RUN_CITY_REQUEST_DB_TESTS !== "1")("durable city req
     const [row] = await db.select().from(cityRequestsTable).where(eq(cityRequestsTable.email, data.email));
     expect(row.cityName).toBe(data.cityName);
     expect(row.notifiedAt).toBeNull();
-    expect(send).toHaveBeenCalledTimes(1);
+    expect(row.acknowledgementStatus).toBe("failed");
+    expect(row.acknowledgedAt).toBeNull();
+    expect(send).toHaveBeenCalledTimes(2);
   });
 
   it("does not retry provider exceptions or timed-out/uncertain delivery", async () => {
@@ -70,8 +73,46 @@ describe.skipIf(process.env.RUN_CITY_REQUEST_DB_TESTS !== "1")("durable city req
         .toMatchObject({ saved: true, notificationStatus: "unconfirmed" });
       expect(await saveCityRequest(data, ip(`${mode}-retry`), { send }))
         .toMatchObject({ duplicate: true, notificationStatus: "unconfirmed" });
-      expect(send).toHaveBeenCalledTimes(1);
+      expect(send).toHaveBeenCalledTimes(2);
     }
+  });
+
+  it("tracks admin and requester delivery independently", async () => {
+    for (const requesterSuccess of [true, false]) {
+      const data = input("Partial Delivery City", `${marker}-partial-${requesterSuccess}@example.invalid`);
+      const send = vi.fn(async (message: Parameters<typeof sendEmail>[0]) => ({
+        success: message.to === data.email ? requesterSuccess : !requesterSuccess,
+      }));
+      const receipt = await saveCityRequest(data, ip(`partial-${requesterSuccess}`), { send });
+      expect(receipt.notificationStatus).toBe(requesterSuccess ? "failed" : "sent");
+      expect(receipt.acknowledgementStatus).toBe(requesterSuccess ? "sent" : "failed");
+      expect(send).toHaveBeenCalledTimes(2);
+      await saveCityRequest(data, ip("partial-retry"), { send });
+      expect(send).toHaveBeenCalledTimes(2);
+    }
+  });
+
+  it("acknowledges a historical request once without repeating its admin email", async () => {
+    const data = input("Historical Miami", `${marker}-historical@example.invalid`);
+    const notifiedAt = new Date("2026-01-01T00:00:00Z");
+    await db.insert(cityRequestsTable).values({
+      ...data, cityKey: data.cityName.toLowerCase(), ipHash: `${marker}-historical`,
+      notificationStatus: "sent", notifiedAt,
+    });
+    const send = vi.fn(async (_message: Parameters<typeof sendEmail>[0]) => ({ success: true }));
+    const receipts = await Promise.all([
+      saveCityRequest(data, ip("historical"), { send }),
+      saveCityRequest(data, ip("historical-worker"), { send }),
+    ]);
+    expect(receipts.every(receipt => receipt.duplicate && receipt.notificationStatus === "sent")).toBe(true);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][0]).toMatchObject({ to: data.email });
+    await saveCityRequest(data, ip("historical-retry"), { send });
+    expect(send).toHaveBeenCalledTimes(1);
+    const [row] = await db.select().from(cityRequestsTable).where(eq(cityRequestsTable.email, data.email));
+    expect(row.acknowledgementStatus).toBe("sent");
+    expect(row.acknowledgedAt).toBeInstanceOf(Date);
+    expect(row.notifiedAt).toEqual(notifiedAt);
   });
 
   it("enforces durable email and IP limits without tenant or newsletter changes", async () => {
@@ -94,7 +135,7 @@ describe.skipIf(process.env.RUN_CITY_REQUEST_DB_TESTS !== "1")("durable city req
     await expect(saveCityRequest(input("IP City 6", `${marker}-ip6@example.invalid`), sharedIp, { send }))
       .rejects.toBeInstanceOf(CityRequestLimitError);
     expect((await fingerprints()).rows).toEqual(before.rows);
-    expect(send).toHaveBeenCalledTimes(8);
+    expect(send).toHaveBeenCalledTimes(16);
   });
 
   it("bounds total notifications even when callers change IP and email", async () => {

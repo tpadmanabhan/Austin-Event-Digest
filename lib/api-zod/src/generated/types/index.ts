@@ -11,6 +11,7 @@ export * from "./badgesResponse";
 export * from "./challengeProgress";
 export * from "./cityRequestInput";
 export * from "./cityRequestReceipt";
+export * from "./cityRequestReceiptAcknowledgementStatus";
 export * from "./cityRequestReceiptNotificationStatus";
 export * from "./digest";
 export * from "./digestListResponse";

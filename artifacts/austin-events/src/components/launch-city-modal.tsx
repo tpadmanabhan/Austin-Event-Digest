@@ -98,6 +98,14 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
           <div className="space-y-4">
             <div role="status" aria-live="polite" className="space-y-2 text-sm leading-relaxed">
               <p><strong>{cityName.trim()}</strong> has been requested. We’ll use <strong className="break-all">{email.trim()}</strong> for manual follow-up.</p>
+              {receipt.acknowledgementStatus === "sent" ? (
+                <p className="text-muted-foreground">An acknowledgement email to {email.trim()} was accepted by our email service. Please check your inbox and spam folder; delivery can take a few minutes.</p>
+              ) : (
+                <p className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-amber-900">
+                  Your request is saved, but your acknowledgement email could not be confirmed.
+                  Your request remains recorded for review.
+                </p>
+              )}
               {receipt.notificationStatus === "sent" ? (
                 <p className="text-muted-foreground">The admin notification was accepted by our email service.</p>
               ) : (
@@ -106,7 +114,7 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
                   Please don’t resubmit; your request remains recorded for review.
                 </p>
               )}
-              {receipt.duplicate && <p className="text-muted-foreground">This request was already recorded. No duplicate notification was sent.</p>}
+              {receipt.duplicate && <p className="text-muted-foreground">This request was already recorded. No duplicate admin notification was sent.</p>}
               <p className="text-muted-foreground">Submitting a request does not automatically launch a city or create an account.</p>
             </div>
             <Button type="button" className="w-full rounded-xl" onClick={() => handleOpenChange(false)}>Close</Button>

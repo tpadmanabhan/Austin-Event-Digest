@@ -27,6 +27,12 @@ export const SubmitCityRequestResponse = zod.object({
   saved: zod.literal(true),
   duplicate: zod.boolean(),
   notificationStatus: zod.enum(["sent", "failed", "unconfirmed"]),
+  acknowledgementStatus: zod
+    .enum(["not_sent", "sent", "failed", "unconfirmed"])
+    .optional()
+    .describe(
+      "Requester email provider acceptance, tracked separately from the admin notification. Absent on older servers.",
+    ),
 });
 
 /**

@@ -24,10 +24,25 @@ export const CityRequestReceiptNotificationStatus = {
   unconfirmed: "unconfirmed",
 } as const;
 
+/**
+ * Requester email provider acceptance, tracked separately from the admin notification. Absent on older servers.
+ */
+export type CityRequestReceiptAcknowledgementStatus =
+  (typeof CityRequestReceiptAcknowledgementStatus)[keyof typeof CityRequestReceiptAcknowledgementStatus];
+
+export const CityRequestReceiptAcknowledgementStatus = {
+  not_sent: "not_sent",
+  sent: "sent",
+  failed: "failed",
+  unconfirmed: "unconfirmed",
+} as const;
+
 export interface CityRequestReceipt {
   saved: boolean;
   duplicate: boolean;
   notificationStatus: CityRequestReceiptNotificationStatus;
+  /** Requester email provider acceptance, tracked separately from the admin notification. Absent on older servers. */
+  acknowledgementStatus?: CityRequestReceiptAcknowledgementStatus;
 }
 
 export interface HealthStatus {

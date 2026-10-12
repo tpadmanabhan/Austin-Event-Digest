@@ -8,7 +8,7 @@ vi.mock("../lib/emailService", () => ({
 }));
 
 import { createCityRequestsRouter } from "./cityRequests";
-import { buildCityRequestEmail, CITY_REQUEST_RECIPIENT, CityRequestLimitError, validateCityRequest } from "../lib/cityRequests";
+import { buildCityRequestEmail, buildCityRequestAcknowledgement, CITY_REQUEST_RECIPIENT, CityRequestLimitError, validateCityRequest } from "../lib/cityRequests";
 import type { saveCityRequest } from "../lib/cityRequests";
 
 describe("city request validation and notification content", () => {
@@ -39,6 +39,16 @@ describe("city request validation and notification content", () => {
     expect(email.html).toContain("&lt;Town &amp; &quot;City&quot;&gt;");
     expect(email.html).not.toContain('<Town & "City">');
     expect(email.text).toContain('<Town & "City">');
+  });
+  it("acknowledges only the requester with escaped content and no approval claim", () => {
+    const email = buildCityRequestAcknowledgement({ cityName: "<Miami & City>", email: "requester@example.invalid" }, 8);
+    expect(email.to).toBe("requester@example.invalid");
+    expect(email.subject).toBe("<Miami & City> city request received");
+    expect(email.html).toContain("&lt;Miami &amp; City&gt;");
+    expect(email.html).not.toContain("<Miami & City>");
+    expect(email.text).toContain("not an approval");
+    expect(email.text).toContain("request #8");
+    expect(email.text).toContain("No city website or account");
   });
 });
 
@@ -71,11 +81,11 @@ describe("platform-root city request HTTP endpoint", () => {
   const valid = { cityName: "London", email: "hello@example.com" };
 
   it("returns a saved receipt and normalizes the input", async () => {
-    submit.mockResolvedValue({ saved: true, duplicate: false, notificationStatus: "sent" });
+    submit.mockResolvedValue({ saved: true, duplicate: false, notificationStatus: "sent", acknowledgementStatus: "sent" });
     const res = await request({ cityName: " London ", email: " HELLO@example.com " });
     expect(res.status).toBe(201);
     expect(res.headers.get("cache-control")).toBe("no-store");
-    expect(await res.json()).toEqual({ saved: true, duplicate: false, notificationStatus: "sent" });
+    expect(await res.json()).toEqual({ saved: true, duplicate: false, notificationStatus: "sent", acknowledgementStatus: "sent" });
     expect(submit).toHaveBeenCalledWith(valid, expect.any(String));
   });
   it("rejects city-subdomain requests without saving or sending", async () => {

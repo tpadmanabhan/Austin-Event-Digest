@@ -17,7 +17,7 @@ test("city request form: both buttons, validation, loading, retries, keyboard an
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   let posts = 0;
-  let reply = { status: 201, body: { saved: true, duplicate: false, notificationStatus: "sent" } };
+  let reply = { status: 201, body: { saved: true, duplicate: false, notificationStatus: "sent", acknowledgementStatus: "sent" } };
   let delay = false;
   let release;
   await page.route("**/api/**", async (route) => {
@@ -85,6 +85,10 @@ test("city request form: both buttons, validation, loading, retries, keyboard an
     release();
     await page.getByRole("heading", { name: "Request saved" }).waitFor();
     assert.match(await page.getByRole("status").innerText(), /team|notification|manual/);
+    assert.match(await page.getByRole("status").innerText(), /acknowledgement email to test@example.invalid was accepted/);
+    if (process.env.CITY_REQUEST_RECEIPT_SCREENSHOT) {
+      await page.screenshot({ path: process.env.CITY_REQUEST_RECEIPT_SCREENSHOT });
+    }
     await page.getByRole("button", { name: "Close", exact: true }).first().click();
     await dialog.waitFor({ state: "hidden" });
 
@@ -95,10 +99,11 @@ test("city request form: both buttons, validation, loading, retries, keyboard an
     await submit.click();
     await page.getByRole("alert").waitFor();
     assert.equal(await page.getByLabel("City name").inputValue(), "Paris");
-    reply = { status: 201, body: { saved: true, duplicate: false, notificationStatus: "failed" } };
+    reply = { status: 201, body: { saved: true, duplicate: false, notificationStatus: "failed", acknowledgementStatus: "failed" } };
     await submit.click();
     await page.getByRole("heading", { name: "Request saved" }).waitFor();
     assert.match(await page.getByRole("status").innerText(), /saved, but.*could not be confirmed/s);
+    assert.match(await page.getByRole("status").innerText(), /acknowledgement email could not be confirmed/);
     await page.keyboard.press("Escape");
     await dialog.waitFor({ state: "hidden" });
 
@@ -117,10 +122,10 @@ test("city request form: both buttons, validation, loading, retries, keyboard an
     await submit.click();
     await page.getByRole("alert").waitFor();
     assert.match(await page.getByRole("alert").innerText(), /Connection error/);
-    reply = { status: 200, body: { saved: true, duplicate: true, notificationStatus: "unconfirmed" } };
+    reply = { status: 200, body: { saved: true, duplicate: true, notificationStatus: "unconfirmed", acknowledgementStatus: "unconfirmed" } };
     await submit.click();
     await page.getByRole("heading", { name: "Request saved" }).waitFor();
-    assert.match(await page.getByRole("status").innerText(), /No duplicate notification was sent/);
+    assert.match(await page.getByRole("status").innerText(), /No duplicate admin notification was sent/);
     await page.keyboard.press("Escape");
     await dialog.waitFor({ state: "hidden" });
     await footer.click();

@@ -12,6 +12,11 @@ export const cityRequestsTable = pgTable("city_requests", {
   notificationStatus: text("notification_status")
     .$type<"sent" | "failed" | "unconfirmed">().notNull().default("unconfirmed"),
   notifiedAt: timestamp("notified_at", { withTimezone: true }),
+  // Historical requests have never received a requester acknowledgement.
+  acknowledgementStatus: text("acknowledgement_status")
+    .$type<"not_sent" | "sent" | "failed" | "unconfirmed">().notNull().default("not_sent"),
+  acknowledgementAttemptedAt: timestamp("acknowledgement_attempted_at", { withTimezone: true }),
+  acknowledgedAt: timestamp("acknowledged_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   uniqueIndex("city_requests_city_email_unique").on(table.cityKey, table.email),

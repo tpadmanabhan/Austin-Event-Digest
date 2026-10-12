@@ -5,10 +5,13 @@
  * API specification for Raj's Austin Events newsletter
  * OpenAPI spec version: 0.1.0
  */
+import type { CityRequestReceiptAcknowledgementStatus } from "./cityRequestReceiptAcknowledgementStatus";
 import type { CityRequestReceiptNotificationStatus } from "./cityRequestReceiptNotificationStatus";
 
 export interface CityRequestReceipt {
   saved: boolean;
   duplicate: boolean;
   notificationStatus: CityRequestReceiptNotificationStatus;
+  /** Requester email provider acceptance, tracked separately from the admin notification. Absent on older servers. */
+  acknowledgementStatus?: CityRequestReceiptAcknowledgementStatus;
 }
