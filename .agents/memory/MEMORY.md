@@ -37,3 +37,4 @@
 - [Scoped event corrections](scoped-event-corrections.md) — user chose link-only editing over rewriting whole editions, even when publishing was required first.
 - [Spock city-building defaults](spock-city-building-defaults.md) — latest formatting, autonomous spotlights, fresh AI Ethics readings, and city-specific visual themes.
 - [SQL callback result format](sql-callback-result-format.md) — JSON-valued SQL results may be CSV-escaped; decode the cell before JSON parsing.
+- [Display-only date corrections](display-date-corrections.md) — formatting fixes must retain verified source timestamps; visible ordering alone is not a preservation check.
