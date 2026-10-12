@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin } from "./public-model.mjs";
 
-const cities = ["austin", "atlanta", "tokyo", "austincares"];
+const cities = ["austin", "atlanta", "tokyo", "austincares", "sanfrancisco"];
 const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
 const eventId = city => `ev-${String(cities.indexOf(city) + 1).padStart(24, "0")}`;
 const fixture = city => ({
@@ -95,7 +95,7 @@ test("the platform document is readable and has real city links without scripts 
   assert.equal(modelOf(body).kind, "platform");
 });
 test("city and historical edition responses are tenant-specific and readable", async () => {
-  for (const city of ["austin", "atlanta", "tokyo"]) {
+  for (const city of ["austin", "atlanta", "tokyo", "sanfrancisco"]) {
     const { response, body } = await document(`${city}.eventcarpooling.com`);
     assert.equal(response.status, 200);
     assert.match(body, new RegExp(`${city} test community talk`));
@@ -104,6 +104,23 @@ test("city and historical edition responses are tenant-specific and readable", a
     assert.equal(edition.response.status, 200);
     assert.equal(modelOf(edition.body).kind, "digest");
   }
+});
+test("San Francisco shares its Golden Gate image in initial homepage and edition HTML", async () => {
+  const host = "sanfrancisco.eventcarpooling.com";
+  const image = `https://${host}/images/sanfrancisco-hero.jpg`;
+  for (const pathname of ["/", `/digest/${fixture("sanfrancisco").id}`]) {
+    const { response, body } = await document(host, pathname, "facebookexternalhit/1.1");
+    assert.equal(response.status, 200);
+    assert.ok(body.includes(`<meta property="og:image" content="${image}">`));
+    assert.ok(body.includes(`<meta name="twitter:image" content="${image}">`));
+    assert.doesNotMatch(body, /<meta (?:property="og:image"|name="twitter:image") content="[^"]*\/opengraph\.jpg"/);
+    assert.equal(modelOf(body).citySlug, "sanfrancisco");
+  }
+  const asset = await document(host, "/images/sanfrancisco-hero.jpg");
+  assert.equal(asset.response.status, 200);
+  assert.match(asset.response.headers.get("content-type"), /^image\/jpeg/);
+  const austin = await document("austin.eventcarpooling.com");
+  assert.match(austin.body, /<meta property="og:image" content="https:\/\/austin\.eventcarpooling\.com\/opengraph\.jpg">/);
 });
 test("edition dates are readable and city labels do not repeat events", async () => {
   for (const pathname of ["/", `/digest/${fixture("austin").id}`]) {

@@ -76,7 +76,9 @@ http.createServer(async (req, res) => {
     const head = `<title>${escape(model.title)}</title><meta name="description" content="${escape(model.description)}"><link rel="canonical" href="${escape(model.canonical)}"><meta property="og:title" content="${escape(model.title)}"><meta property="og:description" content="${escape(model.description)}"><meta property="og:url" content="${escape(model.canonical)}"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(model.title)}"><meta name="twitter:description" content="${escape(model.description)}">${model.noindex ? '<meta name="robots" content="noindex,nofollow">' : ""}${model.schema ? `<script type="application/ld+json">${json(model.schema)}</script>` : ""}`;
     template = template.replace(/<title>[\s\S]*?<\/title>/i, "").replace(/<meta\b[^>]*(?:name=["'](?:description|twitter:[^"']*)["']|property=["']og:[^"']*["'])[^>]*>/gi, "");
     const body = privateRoute ? "" : module.render(model);
-    const image = model.event?.imageUrl || `https://${site.host}/opengraph.jpg`;
+    // Share crawlers read this initial HTML without running client metadata effects.
+    const imagePath = site.slug === "sanfrancisco" ? "/images/sanfrancisco-hero.jpg" : "/opengraph.jpg";
+    const image = model.event?.imageUrl || `https://${site.host}${imagePath}`;
     const extras = `<meta property="og:image" content="${escape(image)}"><meta name="twitter:image" content="${escape(image)}">${vite ? '<link rel="stylesheet" href="/src/index.css?direct">' : ""}`;
     template = template.replace("</head>", head + extras + "</head>").replace('<div id="root"></div>', `<div id="root">${body}</div><script id="public-document" type="application/json">${json(model)}</script>`);
     const status = model.kind === "not-found" ? 404 : 200;
