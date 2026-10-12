@@ -35,3 +35,4 @@
 - [Package installation side effects](package-installation-side-effects.md) — failed installs may still alter workspace configuration; prefer existing tools for report exports.
 - [Newsletter sender choice](newsletter-sender-choice.md) — user chose Gmail with a No Reply label, not a new verified sending address.
 - [Scoped event corrections](scoped-event-corrections.md) — user chose link-only editing over rewriting whole editions, even when publishing was required first.
+- [Spock city-building defaults](spock-city-building-defaults.md) — latest formatting, autonomous spotlights, fresh AI Ethics readings, and city-specific visual themes.
