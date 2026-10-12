@@ -9,6 +9,12 @@ CodeExecution's durable scope does not provide `URL` or `Intl`; parse URLs and f
 
 **How to apply:** Put URL parsing, time-zone formatting, and network work in the smallest impure function, passing inputs explicitly. Use a new local variable for filtered arrays. Omit `AbortSignal.timeout` unless its availability is confirmed, and never log credentials or tokens.
 
+The durable runtime may also reject `Date.now()` as disabled. Obtain real operation timestamps inside the impure function performing the request, and return the timestamp with the safe result.
+
+**Why:** A draft-send preflight stopped at `Date.now()` in durable scope; moving timestamp capture into the impure request function worked.
+
+**How to apply:** Use the returned timestamp for subsequent log queries. If timestamp capture fails before a side-effecting request, fix it before sending; never retry a completed email send merely to obtain a timestamp.
+
 ## Background processes
 
 Start delayed or long-running shell processes with the managed background shell tool, not a detached child process inside CodeExecution.
