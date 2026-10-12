@@ -93,6 +93,15 @@ test("the platform document is readable and has real city links without scripts 
   assert.match(body, /https:\/\/tokyo\.eventcarpooling\.com\//);
   assert.match(body, /<h1/);
   assert.equal(modelOf(body).kind, "platform");
+  assert.match(body, /<div id="public-fallback">/);
+  assert.match(body, /<div id="root"><\/div>/);
+  assert.ok(body.indexOf('setAttribute("data-public-boot","pending")') < body.indexOf('<div id="public-fallback">'));
+});
+test("hydrated About pages do not hide their initial document behind an app handoff", async () => {
+  const { response, body } = await document("eventcarpooling.com", "/about");
+  assert.equal(response.status, 200);
+  assert.match(body, /<div id="root"><div/);
+  assert.doesNotMatch(body, /id="public-fallback"|id="public-app-loading"|data-public-boot/);
 });
 test("Spock's role and transparent mascot are in public platform and About HTML", async () => {
   for (const path of ["/", "/about"]) {

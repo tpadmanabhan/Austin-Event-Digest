@@ -1,3 +1,4 @@
+export { hydratesPublicDocument } from "../src/lib/public-handoff";
 import { renderToString } from "react-dom/server";
 import { PublicDocumentView } from "../src/components/public-document-view";
 import type { PublicDocumentModel } from "../src/lib/public-document";

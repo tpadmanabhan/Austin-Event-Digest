@@ -15,6 +15,22 @@ const escape = text => String(text).replaceAll("&", "&amp;").replaceAll("<", "&l
 const json = value => JSON.stringify(value).replaceAll("<", "\\u003c").replaceAll("\u2028", "\\u2028").replaceAll("\u2029", "\\u2029");
 const mime = { ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".avif": "image/avif", ".woff2": "font/woff2", ".ico": "image/x-icon", ".html": "text/html" };
 
+// Runs in the head before first paint, not after the entry bundle has downloaded.
+// With JS disabled, the public document is visible normally. If startup fails,
+// restore it after a bounded wait rather than leaving an indefinite loading page.
+const handoffHead = `<style>
+#public-app-loading{display:none}
+html[data-public-boot="pending"] #public-fallback,html[data-public-boot="pending"] #root{display:none}
+html[data-public-boot="pending"] body{margin:0}
+html[data-public-boot="pending"] #public-app-loading{display:flex;min-height:100svh;align-items:center;justify-content:center;background:#f4fbf6;color:#166534;font:500 16px/1.5 system-ui,sans-serif}
+</style><script>
+document.documentElement.setAttribute("data-public-boot","pending");
+document.documentElement.setAttribute("data-public-boot-timer",String(setTimeout(function(){
+document.documentElement.removeAttribute("data-public-boot");
+document.documentElement.removeAttribute("data-public-boot-timer");
+},8000)));
+</script>`;
+
 function send(res, status, type, body, headers = {}) {
   res.writeHead(status, { "Content-Type": `${type}; charset=utf-8`, "X-Content-Type-Options": "nosniff", ...headers });
   res.end(body);
@@ -76,11 +92,15 @@ http.createServer(async (req, res) => {
     const head = `<title>${escape(model.title)}</title><meta name="description" content="${escape(model.description)}"><link rel="canonical" href="${escape(model.canonical)}"><meta property="og:title" content="${escape(model.title)}"><meta property="og:description" content="${escape(model.description)}"><meta property="og:url" content="${escape(model.canonical)}"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(model.title)}"><meta name="twitter:description" content="${escape(model.description)}">${model.noindex ? '<meta name="robots" content="noindex,nofollow">' : ""}${model.schema ? `<script type="application/ld+json">${json(model.schema)}</script>` : ""}`;
     template = template.replace(/<title>[\s\S]*?<\/title>/i, "").replace(/<meta\b[^>]*(?:name=["'](?:description|twitter:[^"']*)["']|property=["']og:[^"']*["'])[^>]*>/gi, "");
     const body = privateRoute ? "" : module.render(model);
+    const handoff = !privateRoute && !module.hydratesPublicDocument(model.kind);
+    const pageBody = handoff
+      ? `<div id="public-fallback">${body}</div><div id="public-app-loading" role="status" aria-live="polite">Loading EventCarpooling…</div><div id="root"></div>`
+      : `<div id="root">${body}</div>`;
     // Share crawlers read this initial HTML without running client metadata effects.
     const imagePath = site.slug === "sanfrancisco" ? "/images/sanfrancisco-hero.jpg" : "/opengraph.jpg";
     const image = model.event?.imageUrl || `https://${site.host}${imagePath}`;
     const extras = `<meta property="og:image" content="${escape(image)}"><meta name="twitter:image" content="${escape(image)}">${vite ? '<link rel="stylesheet" href="/src/index.css?direct">' : ""}`;
-    template = template.replace("</head>", head + extras + "</head>").replace('<div id="root"></div>', `<div id="root">${body}</div><script id="public-document" type="application/json">${json(model)}</script>`);
+    template = template.replace("</head>", head + extras + (handoff ? handoffHead : "") + "</head>").replace('<div id="root"></div>', `${pageBody}<script id="public-document" type="application/json">${json(model)}</script>`);
     const status = model.kind === "not-found" ? 404 : 200;
     send(res, status, "text/html", template, model.noindex ? { "X-Robots-Tag": "noindex,nofollow", "Cache-Control": "no-store" } : { "Cache-Control": "public, max-age=0, must-revalidate" });
   } catch (error) {

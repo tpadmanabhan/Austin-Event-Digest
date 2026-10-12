@@ -39,3 +39,4 @@
 - [SQL callback result format](sql-callback-result-format.md) — JSON-valued SQL results may be CSV-escaped; decode the cell before JSON parsing.
 - [Display-only date corrections](display-date-corrections.md) — formatting fixes must retain verified source timestamps; visible ordering alone is not a preservation check.
 - [Vitest hook returns](vitest-hook-returns.md) — reset-only hooks must return void; a returned mock can be invoked as cleanup and reject after a passing test.
+- [Public HTML and startup](public-html-startup.md) — readable no-JS content must not flash before the interactive homepage; preserve a usable fallback if startup fails.
