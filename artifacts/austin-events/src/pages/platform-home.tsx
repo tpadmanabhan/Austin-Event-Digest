@@ -272,7 +272,7 @@ function PlatformHomeInner() {
                 },
                 {
                   href: "https://sanfrancisco.eventcarpooling.com",
-                  icon: <img src={`${import.meta.env.BASE_URL}images/sanfrancisco-giants.svg`} alt="" className="h-7 w-7 object-contain" />,
+                  icon: <img src={`${import.meta.env.BASE_URL}images/sf-giants.svg`} alt="" className="h-7 w-7 object-contain" />,
                   iconBg: "linear-gradient(135deg, #102b38, #F15A24)",
                   iconShadow: "0 3px 10px rgba(16,43,56,0.5)",
                   label: "San Francisco Events",
@@ -850,6 +850,9 @@ function PlatformHomeInner() {
                 } else if (tenant.slug === "houston") {
                   iconContent = <img src={`${import.meta.env.BASE_URL}images/houston-astros.svg`} alt="" className="h-16 w-16 object-contain" />;
                   iconStyle = { background: "linear-gradient(135deg, #002d62, #174579)", boxShadow: "0 6px 20px rgba(0,45,98,0.45)" };
+                } else if (tenant.slug === "sanfrancisco") {
+                  iconContent = <img src={`${import.meta.env.BASE_URL}images/sf-giants.svg`} alt="" className="h-16 w-16 object-contain" />;
+                  iconStyle = { background: "linear-gradient(135deg, #102b38, #F15A24)", boxShadow: "0 6px 20px rgba(16,43,56,0.45)" };
                 } else {
                   iconContent = tenant.name.charAt(0);
                   iconStyle = { background: `linear-gradient(135deg, ${tenant.accentColor}, ${tenant.accentColor}cc)`, color: "#fff", fontSize: "1.5rem", fontWeight: 700, fontFamily: "Georgia, serif" };
