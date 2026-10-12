@@ -9,6 +9,12 @@ CodeExecution's durable scope does not provide `URL` or `Intl`; parse URLs and f
 
 **How to apply:** Put URL parsing, time-zone formatting, and network work in the smallest impure function, passing inputs explicitly. Use a new local variable for filtered arrays. Omit `AbortSignal.timeout` unless its availability is confirmed, and never log credentials or tokens.
 
+`structuredClone` may also be unavailable inside an impure function. For plain JSON request data, use `JSON.parse(JSON.stringify(value))` when a deep copy is necessary.
+
+**Why:** An event-update preflight failed before making any requests because `structuredClone` was undefined; a JSON round-trip copy worked.
+
+**How to apply:** Use this alternative only for JSON-compatible data, not dates, buffers, or other typed objects. If a preflight fails, confirm whether any side effects occurred before retrying.
+
 The durable runtime may also reject `Date.now()` as disabled. Obtain real operation timestamps inside the impure function performing the request, and return the timestamp with the safe result.
 
 **Why:** A draft-send preflight stopped at `Date.now()` in durable scope; moving timestamp capture into the impure request function worked.

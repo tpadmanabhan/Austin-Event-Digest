@@ -5,6 +5,12 @@ description: Understand how the multi-tenant routing system works for eventcarpo
 
 # Tenant Routing
 
+## New-city content default: AI events under Tech
+
+When a city prompt includes launching or curating an event website/newsletter, load the `digest-workflow` skill and its `.agents/skills/digest-workflow/references/ai-event-curation.md` reference. Research and include verified local AI events labeled **Tech** in the requested date range; do not wait for a separate AI request.
+
+Before completing city setup, verify these listings on the homepage and full edition, or explicitly report that no qualifying AI events could be verified. AI Ethics readings and generic science events do not satisfy this default. Routing/branding-only fixes and deals-only requests do not trigger unrelated event additions.
+
 ## Public HTML checklist for every city
 
 Use `.agents/skills/verify-ai-readable-pages/SKILL.md` to audit the published documents, not just the JavaScript UI. Verify the default production API route independently of fixture overrides, preserving tenant Host headers. Reuse shared calendar-date and navigation-label formatting; never expose raw week timestamps or duplicate “Events events” labels.

@@ -1,9 +1,15 @@
 ---
 name: digest-workflow
-description: Generate, review, patch, and send a city's weekly event digest. Use when the user asks to create, update, or send a weekly digest for any city on the platform (Austin, Sacramento, Portland, St. Louis, Brushy Creek, Bulverde, Tokyo, AustinCares, etc.).
+description: Generate, review, patch, and send city event digests and curate city event pages, including verified local AI events labeled Tech by default. Use for new-city event website/newsletter prompts and creating, curating, refreshing, updating, or sending editions for any city on the platform (Austin, San Francisco, Atlanta, Sacramento, Portland, St. Louis, Brushy Creek, Bulverde, Tokyo, AustinCares, etc.).
 ---
 
 # Digest Workflow
+
+## Include AI events in future city prompts
+
+When creating or refreshing a city's event website or newsletter, actively research and add verified local AI events labeled **Tech** as part of normal curation. Do not wait for a separate request for AI events, and do not treat an AI Ethics reading section or a general science listing as satisfying this requirement.
+
+Read [AI event curation](references/ai-event-curation.md) before generating, importing, or curating an edition. Follow its source-verification, date-range, safe-addition, and completion checks. This default applies across cities, not just San Francisco; it does not expand isolated technical fixes or deals-only requests.
 
 ## Keep digests readable publicly
 
