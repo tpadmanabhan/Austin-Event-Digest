@@ -28,6 +28,7 @@ export const MAP_CENTERS: Record<string, CityCenter> = {
   dc:          { lat: 38.907, lng: -77.037 },
   atlanta:     { lat: 33.749, lng: -84.388 },
   houston:     { lat: 29.760, lng: -95.370 },
+  sanfrancisco: { lat: 37.7749, lng: -122.4194 },
 };
 
 export const CITY_LABELS: Record<string, string> = {
@@ -42,6 +43,7 @@ export const CITY_LABELS: Record<string, string> = {
   dc:          "Washington, DC",
   atlanta:     "Atlanta",
   houston:     "Houston",
+  sanfrancisco: "San Francisco",
 };
 
 /**
@@ -63,6 +65,7 @@ export const CITY_MAX_RADIUS_MILES: Record<string, number> = {
   dc:          60,
   atlanta:     50,
   houston:     75,
+  sanfrancisco: 50,
 };
 
 /** Haversine distance in miles between two lat/lng pairs. */

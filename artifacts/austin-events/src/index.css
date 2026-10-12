@@ -515,3 +515,73 @@
     text-wrap: balance;
   }
 }
+
+/* San Francisco: International Orange, Pacific teal, fog paper. Tenant scoped. */
+[data-tenant="sanfrancisco"] {
+  --background: 200 18% 95%;
+  --foreground: 200 45% 13%;
+  --border: 200 14% 83%;
+  --input: 200 14% 83%;
+  --ring: 9 82% 47%;
+  --card: 40 30% 98%;
+  --card-foreground: 200 45% 13%;
+  --card-border: 200 14% 83%;
+  --popover: 40 30% 98%;
+  --popover-foreground: 200 45% 13%;
+  --popover-border: 200 14% 83%;
+  --primary: 9 82% 47%;
+  --primary-foreground: 40 30% 98%;
+  --secondary: 192 55% 22%;
+  --secondary-foreground: 40 30% 98%;
+  --muted: 200 16% 90%;
+  --muted-foreground: 200 15% 38%;
+  --accent: 32 85% 58%;
+  --accent-foreground: 200 45% 13%;
+  --sidebar: 200 18% 95%;
+  --sidebar-foreground: 200 45% 13%;
+  --sidebar-border: 200 14% 83%;
+  --sidebar-primary: 9 82% 47%;
+  --sidebar-primary-foreground: 40 30% 98%;
+  --sidebar-accent: 200 16% 90%;
+  --sidebar-accent-foreground: 200 45% 13%;
+  --sidebar-ring: 9 82% 47%;
+}
+[data-tenant="sanfrancisco"] .sf-home-hero {
+  background:
+    radial-gradient(ellipse at 85% 10%, hsla(9, 82%, 60%, .14), transparent 45%),
+    linear-gradient(170deg, hsl(200 18% 95%), hsl(195 20% 90%));
+}
+[data-tenant="sanfrancisco"] .sf-home-hero h1 { letter-spacing: -.045em; }
+[data-tenant="sanfrancisco"] .sf-hero-frame {
+  position: relative;
+  padding: 10px;
+  background: hsl(9 82% 47%);
+  border-radius: 1.5rem;
+  box-shadow: -20px 24px 0 -10px hsl(192 55% 22% / .22), 0 24px 70px hsl(200 45% 13% / .16);
+  overflow: hidden;
+}
+[data-tenant="sanfrancisco"] .sf-hero-frame img {
+  border-radius: 1rem; border: 0; box-shadow: none;
+  animation: sf-drift 22s ease-in-out infinite alternate;
+}
+[data-tenant="sanfrancisco"] .sf-hero-frame::after {
+  content: ""; position: absolute; inset: 10px; border-radius: 1rem; pointer-events: none;
+  background: linear-gradient(90deg, transparent, hsl(200 30% 96% / .35) 40%, transparent 70%);
+  animation: sf-fog 14s linear infinite;
+}
+@keyframes sf-drift { from { transform: scale(1.02); } to { transform: scale(1.08) translateX(-1.5%); } }
+@keyframes sf-fog { from { transform: translateX(-60%); } to { transform: translateX(60%); } }
+@media (prefers-reduced-motion: reduce) {
+  [data-tenant="sanfrancisco"] .sf-hero-frame img, [data-tenant="sanfrancisco"] .sf-hero-frame::after { animation: none; }
+}
+[data-tenant="sanfrancisco"] .sf-edition-tag {
+  position: absolute; bottom: 25px; left: 25px; right: 25px; z-index: 2;
+  display: flex; justify-content: space-between; gap: 12px;
+  color: hsl(40 30% 98%); padding: 12px 15px;
+  background: hsl(200 45% 13% / .86); border: 1px solid hsl(40 30% 98% / .25);
+  border-radius: 9px; backdrop-filter: blur(8px);
+  font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+}
+@media (max-width: 640px) {
+  [data-tenant="sanfrancisco"] .sf-edition-tag { font-size: 9px; letter-spacing: .07em; }
+}

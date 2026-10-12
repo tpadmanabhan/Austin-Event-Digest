@@ -28,6 +28,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     const isAustin = citySlug === "austin";
     const isAtlanta = citySlug === "atlanta";
     const isHouston = citySlug === "houston";
+    const isSF = citySlug === "sanfrancisco";
     const isHoustonDigest = isHouston && path.startsWith("/digest/");
     const isAtlantaDigest = isAtlanta && path.startsWith("/digest/");
     const title = isCares
@@ -35,6 +36,8 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
       : isAustin ? "Raj's Austin Events — Weekly Local Events"
       : isAtlantaDigest ? "Atlanta Events — Full Weekly Edition | EventCarpooling"
       : isAtlanta ? "Atlanta Events — A Local Guide for the Curious | EventCarpooling"
+      : isSF && path.startsWith("/digest/") ? "San Francisco Events — Full Edition, October 12–31 | EventCarpooling"
+      : isSF ? "San Francisco Events — Fog, Hills, and Plenty to Do | EventCarpooling"
       : isHoustonDigest ? "Houston Events — Full Citywide Edition | EventCarpooling"
       : isHouston ? "Houston Events — The Whole City. Your Next Plan. | EventCarpooling"
       : DEFAULT_TITLE;
@@ -44,6 +47,8 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
         ? "Discover Austin's weekly picks for live music, food, tech, sports and community events."
         : isAtlanta
         ? "Explore real gatherings across Atlanta: tech, arts, sports, civic life and wellness. Browse the weekly local events edition and find your people."
+        : isSF
+        ? "Explore San Francisco's events edition: tech, arts, sports, civic life and wellness across the city's neighborhoods, October 12–31, 2026."
         : isHouston
         ? "Explore Houston's citywide events edition: real local plans across innovation, art, sports, civic life and wellness, from the bayou to your neighborhood."
         : DEFAULT_DESCRIPTION;
@@ -55,8 +60,8 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     setMeta('meta[name="twitter:title"]', title);
     setMeta('meta[name="twitter:description"]', description);
     setMeta('meta[property="og:url"]', new URL(path, window.location.origin).href);
-    if (isAtlanta || isHouston) {
-      const image = new URL(`${import.meta.env.BASE_URL}images/${isHouston ? "houston-dusk.jpg" : "atlanta-hero.svg"}`, window.location.origin).href;
+    if (isAtlanta || isHouston || isSF) {
+      const image = new URL(`${import.meta.env.BASE_URL}images/${isSF ? "sanfrancisco-hero.jpg" : isHouston ? "houston-dusk.jpg" : "atlanta-hero.svg"}`, window.location.origin).href;
       ensureMeta("property", "og:image", image);
       ensureMeta("name", "twitter:image", image);
       setMeta('meta[name="twitter:card"]', "summary_large_image");
@@ -67,7 +72,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     }
 
     const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-    if (icon) icon.href = `${import.meta.env.BASE_URL}${isHouston ? "images/houston-astros.svg" : isAtlanta ? "images/atlanta-icon.svg" : isCares ? "austincares-favicon.svg" : "favicon.svg"}`;
+    if (icon) icon.href = `${import.meta.env.BASE_URL}${isSF ? "images/sf-giants.svg" : isHouston ? "images/houston-astros.svg" : isAtlanta ? "images/atlanta-icon.svg" : isCares ? "austincares-favicon.svg" : "favicon.svg"}`;
   }, [citySlug, path]);
 
   return null;

@@ -46,6 +46,26 @@ const baseDigest = {
 };
 
 describe("AI Ethics reading section", () => {
+  it("renders San Francisco's date range, local theme, and fresh readings without Austin copy", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest, subject: "San Francisco Events — October 12 – October 31, 2026",
+      weekOf: "2026-10-12", siteUrl: "https://sanfrancisco.eventcarpooling.com",
+    }, null, null, {
+      slug: "sanfrancisco", name: "San Francisco Events", city: "San Francisco, CA", digestTitle: "San Francisco Events",
+    });
+    expect(html).toContain("October 12 – October 31, 2026");
+    expect(html).toContain("AI Ethics");
+    expect(html).toContain("AI Index Report 2026");
+    expect(html).toContain("The AI Con");
+    expect(html).toContain("The Worlds I See");
+    expect(html).toContain("#F15A24");
+    expect(html).not.toContain("theaicon.com");
+    expect(html).not.toContain("Curated with ❤️ by Raj");
+    expect(html).not.toContain("Happy Sunday, Austin");
+    expect(html).not.toContain("🤠");
+    expect(html).not.toContain("AI Doesn’t Solve This");
+  });
+
   it("appears below Austin's introduction with the four current resources, replacing the old readings", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,

@@ -1066,6 +1066,29 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Houston tenant seed failed (non-fatal)");
   }
 
+  // New cities start without invented contacts or subscribers. Only a configured
+  // shared password is hashed; no existing tenant or sent edition is overwritten.
+  try {
+    const [existing] = await db.select({ id: tenantsTable.id }).from(tenantsTable)
+      .where(eq(tenantsTable.slug, "sanfrancisco")).limit(1);
+    if (!existing) {
+      const configuredPassword = process.env.ADMIN_PASSWORD;
+      const passwordHash = configuredPassword && configuredPassword.trim().length >= 12
+        ? await hashPassword(configuredPassword) : null;
+      await db.execute(sql`
+        INSERT INTO tenants (slug, name, city, accent_color, categories, digest_title,
+          is_active, email_verified, password_hash)
+        VALUES ('sanfrancisco', 'San Francisco Events', 'San Francisco, CA', '#F15A24',
+          '["Tech","Arts","Sports","Civics","Wellness"]'::jsonb, 'San Francisco Events',
+          true, false, ${passwordHash})
+        ON CONFLICT (slug) DO NOTHING
+      `);
+    }
+    logger.info("San Francisco tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "San Francisco tenant seed failed (non-fatal)");
+  }
+
   // Migrate austincares subscribers → brushycreek (idempotent)
   try {
     await db.execute(sql`

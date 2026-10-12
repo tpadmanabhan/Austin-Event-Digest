@@ -12,6 +12,7 @@ import { useLanguage } from "@/contexts/language-context";
 import { JA } from "@/i18n/ja";
 import { EventMap } from "@/components/event-map";
 import { AiEthicsSection } from "@/components/ai-ethics-section";
+import { SfAiEthicsSection } from "@/components/sf-ai-ethics-section";
 
 // Fallback blocklist used before the API responds or if the fetch fails
 const ADULT_BLOCKED_FALLBACK = [
@@ -255,6 +256,7 @@ export default function DigestView() {
   const isAtlanta = tenant.slug === "atlanta";
   const isHouston = tenant.slug === "houston";
   const isToky = tenant.slug === "tokyo";
+  const isSF = tenant.slug === "sanfrancisco";
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
@@ -268,6 +270,7 @@ export default function DigestView() {
   const MAP_CENTERS: Record<string, [number, number]> = {
     atlanta:     [33.749, -84.388],
     houston:     [29.7604, -95.3698],
+    sanfrancisco: [37.7749, -122.4194],
     austin:      [30.267, -97.743],
     austincares: [30.267, -97.743],
     brushycreek: [30.508, -97.679],
@@ -406,13 +409,13 @@ export default function DigestView() {
   }
 
   const { label: editionDateRange, extended: hasExtendedRange } =
-    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky, isHouston || isToky);
+    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky || isSF, isHouston || isToky || isSF);
   const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
     <Layout>
       {/* ANNOUNCEMENT BANNER */}
-      {!isAtlanta && !isHouston && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
+      {!isAtlanta && !isHouston && !isSF && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
         <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
         <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
@@ -426,6 +429,7 @@ export default function DigestView() {
         </Link>
         
         <header className="mb-16">
+          {isSF && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> San Francisco / The full edition</div>}
           {isHouston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Houston / The citywide edition</div>}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             {!isAustinCares && <Calendar className="w-4 h-4" />}
@@ -434,7 +438,7 @@ export default function DigestView() {
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
             {(() => {
-               const emojiMatch = isHouston ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
+               const emojiMatch = isHouston || isSF ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
                const emoji = emojiMatch ? emojiMatch[1] : "";
               if (isAustinCares) return `${emoji}Austin Cares Weekly Deals`;
                const titleBase = tenant.slug === "austin" && /upcoming events/i.test(digest.subject)
@@ -464,6 +468,7 @@ export default function DigestView() {
             )}
           </div>
           {tenant.slug === "austin" && <AiEthicsSection className="mt-6" />}
+          {isSF && <SfAiEthicsSection className="mt-6" />}
         </header>
 
         {/* Translation unavailable banner — shown when Japanese mode fails */}
@@ -490,7 +495,7 @@ export default function DigestView() {
                       : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   }`}
                 >
-                   <span>{isAtlanta || isHouston ? "·" : cfg.emoji}</span>
+                   <span>{isAtlanta || isHouston || isSF ? "·" : cfg.emoji}</span>
                   <span>{catLabel(cat)}</span>
                 </button>
               );
@@ -519,9 +524,9 @@ export default function DigestView() {
                   {geoStatus === "loading" ? (
                     <><Loader2 className="w-3.5 h-3.5 animate-spin" />Getting location…</>
                   ) : geoStatus === "active" ? (
-                     <>{isAtlanta || isHouston ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
+                     <>{isAtlanta || isHouston || isSF ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
                   ) : (
-                     <>{isAtlanta || isHouston ? "Nearest first" : "📍 Nearest first"}</>
+                     <>{isAtlanta || isHouston || isSF ? "Nearest first" : "📍 Nearest first"}</>
                   )}
                 </button>
                 {geoStatus === "denied" && (
@@ -565,7 +570,7 @@ export default function DigestView() {
                       autoFocus
                       value={manualAddress}
                       onChange={(e) => setManualAddress(e.target.value)}
-                       placeholder={isHouston ? "e.g. Montrose, Houston TX" : "e.g. Rainey Street, Austin TX"}
+                       placeholder={isSF ? "e.g. Hayes Valley, San Francisco CA" : isHouston ? "e.g. Montrose, Houston TX" : "e.g. Rainey Street, Austin TX"}
                       className="px-3 py-1.5 rounded-full text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
                     />
                     <button

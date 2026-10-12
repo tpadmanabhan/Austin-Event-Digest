@@ -46,6 +46,12 @@ const SLUG_ALIASES: Record<string, string> = {
  * normalizeVenueName() form.
  */
 const KNOWN_VENUES: Record<string, Record<string, VenueCoords>> = {
+  sanfrancisco: {
+    // Organizer-linked Google Maps place coordinates for the Campfire Circle.
+    "presidio tunnel tops campfire circle": { lat: 37.8024097, lng: -122.4569573 },
+    // Verified 3117 16th Street building, OSM way 260361511 (not the Oakland theater).
+    "roxie theater": { lat: 37.7646712, lng: -122.4224312 },
+  },
   portland: {
     "dantes":                        { lat: 45.5231, lng: -122.6731 },
     "crystal ballroom":              { lat: 45.5224, lng: -122.6852 },

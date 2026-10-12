@@ -8,8 +8,8 @@ import { LaunchCityModal } from "@/components/launch-city-modal";
 import { EventMap } from "@/components/event-map";
 import { PublicAbout } from "@/components/public-about";
 
-const NEW_CITY_SLUGS = ["atlanta", "austin"];
-const LIVE_CITY_ORDER = ["atlanta", "austin", "houston", "tokyo", "stlouis", "sacramento", "portland", "bulverde", "dc"];
+const NEW_CITY_SLUGS = ["atlanta", "austin", "sanfrancisco"];
+const LIVE_CITY_ORDER = ["atlanta", "austin", "houston", "sanfrancisco", "tokyo", "stlouis", "sacramento", "portland", "bulverde", "dc"];
 const citySlugFromHref = (href: string) => new URL(href).hostname.split(".")[0];
 
 function NewCityBadge() {
@@ -270,7 +270,14 @@ function PlatformHomeInner() {
                   iconShadow: "0 3px 10px rgba(0,45,98,0.5)",
                   label: "Houston Events",
                 },
-              ].sort((a, b) => {
+                {
+                  href: "https://sanfrancisco.eventcarpooling.com",
+                  icon: <img src={`${import.meta.env.BASE_URL}images/sanfrancisco-giants.svg`} alt="" className="h-7 w-7 object-contain" />,
+                  iconBg: "linear-gradient(135deg, #102b38, #F15A24)",
+                  iconShadow: "0 3px 10px rgba(16,43,56,0.5)",
+                  label: "San Francisco Events",
+                },
+              ].filter(city => citySlugFromHref(city.href) !== "sanfrancisco" || tenants?.some(tenant => tenant.slug === "sanfrancisco")).sort((a, b) => {
                 const rank = (href: string) => {
                   const index = LIVE_CITY_ORDER.indexOf(citySlugFromHref(href));
                   return index === -1 ? LIVE_CITY_ORDER.length : index;
@@ -339,7 +346,7 @@ function PlatformHomeInner() {
               style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 40 }}
             >
               {[
-                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "9", label: t.statCities },
+                { icon: <Globe className="w-5 h-5" style={{ color: "#4ade80" }} />, value: String(LIVE_CITY_ORDER.filter(slug => tenants?.some(tenant => tenant.slug === slug)).length || 9), label: t.statCities },
                 { icon: <Star className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "5", label: t.statCategories },
                 { icon: <Users className="w-5 h-5" style={{ color: "#4ade80" }} />, value: "10+", label: t.statSources },
               ].map((stat, i) => (
