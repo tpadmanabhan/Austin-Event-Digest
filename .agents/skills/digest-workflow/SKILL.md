@@ -5,6 +5,14 @@ description: Generate, review, patch, and send city event digests and curate cit
 
 # Digest Workflow
 
+## AI Ethics for every city
+
+Every city must include an **AI Ethics** section with topics and readings relevant to that location. This is a platform-wide content requirement, not an Austin/San Francisco/Sacramento-only feature. Apply it to existing and future cities, including city guides that do not have scheduled AI events.
+
+Research locally relevant issues, such as public-sector accountability, regional industries, labor, community access, language, privacy or environmental impact. Choose verified resources and books that address those issues; do not merely substitute a city name into another city's reading list or invent local initiatives.
+
+Keep each city's section consistent across its homepage, full edition, readable public document and newsletter. Refresh topics and books for new editions while preserving historical edition contents. Audit actual coverage before reporting it complete: updated instructions do not mean every city's section has already been implemented. Publishing and sending remain separately authorized actions.
+
 ## Include AI events in future city prompts
 
 When creating or refreshing a city's event website or newsletter, actively research and add verified local AI events labeled **Tech** as part of normal curation. Do not wait for a separate request for AI events, and do not treat an AI Ethics reading section or a general science listing as satisfying this requirement.
@@ -20,6 +28,8 @@ For every generation, import and edit, preserve persistent event/venue identitie
 After editing, inspect the city's initial public HTML and one event/venue journey without submitting forms. Follow `docs/public-pages-publishing.md` for type/build/tests, canonical and sitemap checks, and separate user-approved publishing/live verification. Curated/community posts and AustinCares deals are not Schema.org Events. Check actual tenant/source availability before describing RSVP, sharing or carpool capabilities; no guaranteed rides.
 
 ## Cross-surface edition maintenance
+
+Read [City pages, directory placement and targeted sends](references/city-pages-and-targeted-sends.md) when bringing another city up to an existing edition's standard, changing its position or NEW badge on the platform landing page, or sending the reviewed newsletter to named recipients.
 
 Read [Austin edition maintenance](references/austin-edition-maintenance.md) when changes affect extended date ranges, recurring photos, curator copy, community-post action labels, AI Ethics reading links, or newsletter RSVP links. These requirements apply alongside the production-send checklist, not only to the newest edition:
 

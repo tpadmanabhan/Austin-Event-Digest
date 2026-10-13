@@ -7,11 +7,15 @@ description: Understand how the multi-tenant routing system works for eventcarpo
 
 ## New-city content default: AI events under Tech
 
+Every existing and future city must also have location-specific **AI Ethics** content on the homepage, full edition, readable public document and newsletter. Follow the digest workflow's universal AI Ethics requirement; no city is exempt merely because it lacks verified scheduled AI events. Keep local topics and readings distinct rather than copying another city's list.
+
 When a city prompt includes launching or curating an event website/newsletter, load the `digest-workflow` skill and its `.agents/skills/digest-workflow/references/ai-event-curation.md` reference. Research and include verified local AI events labeled **Tech** in the requested date range; do not wait for a separate AI request.
 
 Before completing city setup, verify these listings on the homepage and full edition, or explicitly report that no qualifying AI events could be verified. AI Ethics readings and generic science events do not satisfy this default. Routing/branding-only fixes and deals-only requests do not trigger unrelated event additions.
 
 ## Public HTML checklist for every city
+
+For platform launch forms, request-email statuses, Spock branding and directory maintenance, read [Platform maintenance](references/platform-maintenance.md). These platform-only changes must not alter city subscription or RSVP flows.
 
 Use `.agents/skills/verify-ai-readable-pages/SKILL.md` to audit the published documents, not just the JavaScript UI. Verify the default production API route independently of fixture overrides, preserving tenant Host headers. Reuse shared calendar-date and navigation-label formatting; never expose raw week timestamps or duplicate “Events events” labels.
 
@@ -40,6 +44,8 @@ For API checks, send the intended city `Host` header or the development-only ten
 
 When using Chromium's debugger, select an actual `type: "page"` target, not an extension background target. The first debugger target is not necessarily the application.
 
+When intentionally changing the ordinary development preview city, set both development-only `DEFAULT_TENANT_SLUG` and `VITE_TENANT_SLUG`, then restart the corresponding services once. Changing only the API default can display one city's events inside another city's branding. Preserve production settings.
+
 ### Audit city-specific content across surfaces
 
 Changes to one city's editorial sections, curator claims, images, or action labels must be guarded by that tenant on the landing page, full edition, and email independently. Check a non-target city as well as the target. For Austin's AI Ethics section, community-post registration label, recurring photos, and qualified curator wording, see the digest workflow's [Austin edition maintenance](../digest-workflow/references/austin-edition-maintenance.md).
@@ -54,13 +60,18 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Layout:** Generic `home.tsx`; admin panel at `/admin`
 - **Community events:** Curated Austin recurring events are defined in `weeklyRefresh.ts` and merged during generation; inspect the current definitions rather than treating adapters as the only source.
 
-### 🌲 Sacramento (`sacramento.eventcarpooling.com`)
+### Sacramento (`sacramento.eventcarpooling.com`)
 - **Auth:** Email-based HMAC — see `admin-api-auth`; resolve the tenant ID and admin email in the environment being targeted.
 - **Curator:** Bob
 - **Language:** English
-- **Special features:** None beyond standard platform
-- **Layout:** Generic `home.tsx`; Sacramento-specific intro/flag in home
-- **Community events:** Public Library, Old Sac Waterfront Concert, Midtown Farmers Market, Urban Bee Festival, Sac Tech Meetup, Land Park Farmers Market
+- **Branding:** Preserve its Sacramento Kings/purple theme and city hero unless the user requests a redesign.
+- **Layout:** Shared homepage/full-edition structure with Sacramento-specific capital-city copy, extended-range labels and its own AI Ethics readings on web/public-document/email surfaces.
+- **Curation:** Verify current organizer listings across the requested categories, including local AI workshops and regional outings under Tech. Do not treat older fallback event examples as a verified current calendar.
+
+### San Francisco (`sanfrancisco.eventcarpooling.com`)
+- **Auth:** Inspect the target environment's tenant and use `admin-api-auth`; do not assume another city's token applies.
+- **Branding:** Preserve the San Francisco Giants/orange identity and city-specific hero.
+- **Layout and curation:** Keep extended-range labels, local spotlights and San Francisco's own readings consistent on the homepage, full edition, public document and email. Verified local AI events remain Tech; a reading list does not substitute for scheduled AI events.
 
 ### 🌹 Portland (`portland.eventcarpooling.com`)
 - **Auth:** Email-based HMAC — see `admin-api-auth`.

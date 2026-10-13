@@ -31,6 +31,8 @@ If the document fails but its public API works, inspect the published web-servic
 
 For this project's implementation and acceptance checks, read [EventCarpooling checks](references/eventcarpooling.md).
 
+That reference also covers JavaScript startup without a reader-view flash, recovery when scripts fail, city-specific social images, and representative browser checks. A no-JavaScript HTML audit alone does not verify those behaviors.
+
 ## Report format
 
 - Live URL and check time.

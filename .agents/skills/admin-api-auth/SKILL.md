@@ -31,6 +31,12 @@ Dev and production have separate tenant rows and may have different password has
 
 Public digest GETs do not prove that a supplied token is valid. Verify authentication only with a protected endpoint, and never include passwords, password hashes, HMAC secrets, or derived tokens in source files, logs, or chat.
 
+### Verify tenant selection before changing credentials
+
+A 401 can mean the request resolved to the wrong city, not that the token is invalid. Development proxies and Node fetch can replace or override a supplied `Host` header. Inspect the current tenant resolver and select the intended development tenant explicitly; this app supports `x-tenant-slug` only outside production. Never enable a development override in production.
+
+Use `POST /api/admin/verify` with `{ "token": "<runtime-derived-token>" }` or the authenticated email preview to verify access. `GET /api/admin/settings` is not a valid authentication probe in the current app: its 404 does not establish that credentials failed. Derive the token from the matching environment's tenant row and test it against that same tenant.
+
 **For dev API calls** (through the workspace proxy at `http://localhost:80/...`, with the city `Host` header):
 ```sql
 -- Run against dev DB (psql $DATABASE_URL or executeSql without environment param)
@@ -59,7 +65,7 @@ token = HMAC-SHA256(RSVP_HMAC_SECRET, "admin-email:{tenantId}:{email}")
 ```
 
 - `RSVP_HMAC_SECRET` is a Replit Secret (env var)
-- `email` must be lowercase (`aiimplementationclubaustin@gmail.com`)
+- `email` must be lowercase (for example, `admin@example.org`)
 - `tenantId` is the integer from the tenant row in the environment being targeted (it can differ between dev and production)
 
 ```js
@@ -69,6 +75,8 @@ const token = crypto.createHmac("sha256", process.env.RSVP_HMAC_SECRET).update(m
 ```
 
 Get the correct tenant ID and email from the target tenant configuration/database; do not rely on a hard-coded ID table. Compute the token at runtime. `RSVP_HMAC_SECRET` is a Replit Secret—use the secret-access mechanism for runtime computation without printing or persisting the secret or token. Recompute after secret rotation or tenant email/ID changes.
+
+When SQL callback results contain a JSON-valued cell, inspect the result format before parsing: CSV-escaped double quotes may need decoding before `JSON.parse`. Validate that exactly the intended tenant row was obtained without logging its private authentication fields. A parsing or routing failure is not evidence that a runtime secret is missing.
 
 ## Login route caveat
 
