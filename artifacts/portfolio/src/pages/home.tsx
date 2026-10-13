@@ -1,11 +1,11 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { 
   Terminal, Server, Globe2, ShieldCheck, Mail, Database, 
   Map as MapIcon, Calendar, Zap, LayoutDashboard, Languages, Lock, Award, Heart
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const fadeIn = {
+const fadeIn: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 

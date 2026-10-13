@@ -41,3 +41,4 @@
 - [Vitest hook returns](vitest-hook-returns.md) — reset-only hooks must return void; a returned mock can be invoked as cleanup and reject after a passing test.
 - [Public HTML and startup](public-html-startup.md) — readable no-JS content must not flash before the interactive homepage; preserve a usable fallback if startup fails.
 - [TypeScript reference refresh](typescript-reference-refresh.md) — rebuild shared references after schema/codegen changes; consumers can otherwise see stale declarations.
+- [Publication readiness](publication-readiness.md) — reproduce artifact build context; verify dynamic newsletter content in saved data and rendered output.
