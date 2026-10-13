@@ -354,3 +354,17 @@ mtime_ms = 1791916666657
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/cfc40dcf-558f-4b19-b0e9-f12bfc81797b/94ade264-cbbf-46d7-a537-680756db00e6"
 storage_version_token = "1791916683046113"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "0TqAER9EtL7dd6V_7NVoY"
+uri = "file://generated-artifacts/EventCarpooling-AI-Ethics-and-Local-Trust.pdf"
+type = "pdf"
+title = "AI Ethics, Local Trust, and the Future of Work — Revised"
+description = "Revised two-page essay centered on EventCarpooling.com, trusted influencer networks, subscriptions, delegated administration, and ethical AI training informed by newsletter content. References the Instinct assistant app and includes linked citations."
+logical_id = "a7c4b655-2901-430a-ba6e-f256e9a72194"
+content_hash = "sha256:3a341d86c954593d79e935608ccbaf1a714fa363d95f318fccc3faf3d8a1c6e3"
+size = 61656
+mtime_ms = 1791921510334
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/a7c4b655-2901-430a-ba6e-f256e9a72194/9b9c3691-9fc6-4d6d-aa88-da4db9722e12"
+storage_version_token = "1791921542762247"
+content_type = "application/pdf"
