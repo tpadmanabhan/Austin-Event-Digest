@@ -10,7 +10,7 @@ import { PublicAbout } from "@/components/public-about";
 import { SpockNote } from "@/components/spock-mascot";
 
 const NEW_CITY_SLUGS = ["atlanta", "sanfrancisco", "austin", "sacramento", "miami"];
-const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "sacramento", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "miami"];
+const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
 const citySlugFromHref = (href: string) => new URL(href).hostname.split(".")[0];
 
 function NewCityBadge({ label = "New" }: { label?: string }) {
