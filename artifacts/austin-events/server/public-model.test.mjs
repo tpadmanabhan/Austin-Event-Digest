@@ -6,7 +6,8 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin } from "./public-model.mjs";
 
-const cities = ["austin", "atlanta", "tokyo", "austincares", "sanfrancisco"];
+const cities = ["austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
+  "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston"];
 const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
 const eventId = city => `ev-${String(cities.indexOf(city) + 1).padStart(24, "0")}`;
 const fixture = city => ({
@@ -141,6 +142,56 @@ test("San Francisco shares its Golden Gate image in initial homepage and edition
   assert.match(asset.response.headers.get("content-type"), /^image\/jpeg/);
   const austin = await document("austin.eventcarpooling.com");
   assert.match(austin.body, /<meta property="og:image" content="https:\/\/austin\.eventcarpooling\.com\/opengraph\.jpg">/);
+});
+test("every city sends its own share image and theme in the initial document", async () => {
+  const expected = {
+    austin: "/opengraph.jpg",
+    austincares: "/images/austin-cares-brand-icon.jpg",
+    brushycreek: "/images/brushycreek-hero.jpg",
+    portland: "/images/portland-hero.jpg",
+    sacramento: "/images/sacramento-hero.jpg",
+    bulverde: "/images/bulverde-hero.jpg",
+    stlouis: "/images/stlouis-hero.jpg",
+    dc: "/images/dc-hero.jpg",
+    atlanta: "/api/storage/public-objects/city-previews/atlanta-share.png",
+    houston: "/images/houston-dusk.jpg",
+    sanfrancisco: "/images/sanfrancisco-hero.jpg",
+    tokyo: "https://images.unsplash.com/photo-1480796927426-f609979314bd",
+  };
+  for (const city of cities) {
+    const host = `${city}.eventcarpooling.com`;
+    const paths = city === "austincares" ? ["/", "/full", "/about"] : ["/", `/digest/${fixture(city).id}`, "/about"];
+    for (const pathname of paths) {
+      const { response, body } = await document(host, pathname, "facebookexternalhit/1.1");
+      assert.equal(response.status, 200, `${city}${pathname}`);
+      assert.match(body, new RegExp(`<html[^>]+data-tenant="${city}"`));
+      const image = body.match(/<meta property="og:image" content="([^"]+)">/)[1];
+      const twitter = body.match(/<meta name="twitter:image" content="([^"]+)">/)[1];
+      assert.equal(twitter, image);
+      assert.ok(image.includes(expected[city]), `${city}: ${image}`);
+      if (city !== "austin") {
+        assert.doesNotMatch(image, /\/opengraph\.jpg|\/austin-hero\.png/);
+      }
+      assert.equal(modelOf(body).citySlug, city);
+    }
+    if (expected[city].startsWith("/images/")) {
+      const { response } = await document(host, expected[city]);
+      assert.equal(response.status, 200, `Image missing: ${city}`);
+      assert.match(response.headers.get("content-type"), /^image\/(?:jpeg|png)/);
+    }
+  }
+});
+test("platform and future city image fallbacks never borrow Austin's preview", async () => {
+  const { response, body } = await document("eventcarpooling.com");
+  assert.equal(response.status, 200);
+  assert.match(body, /og:image" content="https:\/\/eventcarpooling\.com\/eventcarpooling-logo\.png"/);
+  assert.doesNotMatch(body, /<html[^>]+data-tenant="austin"/);
+  const { cityShareImage } = await import("../dist/server/entry-server.js");
+  assert.equal(cityShareImage("futurecity", "https://futurecity.eventcarpooling.com"),
+    "https://futurecity.eventcarpooling.com/eventcarpooling-logo.png");
+  assert.equal(cityShareImage("tokyo", "https://tokyo.eventcarpooling.com").startsWith("https://images.unsplash.com/"), true);
+  assert.equal(cityShareImage("portland", "https://preview.test", "/city-preview/"),
+    "https://preview.test/city-preview/images/portland-hero.jpg");
 });
 test("edition dates are readable and city labels do not repeat events", async () => {
   for (const pathname of ["/", `/digest/${fixture("austin").id}`]) {

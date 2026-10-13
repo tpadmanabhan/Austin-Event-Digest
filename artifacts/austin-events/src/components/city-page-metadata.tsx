@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-
-const DEFAULT_TITLE = "EventCarpooling — Local Events & Community Connections";
-const DEFAULT_DESCRIPTION = "Weekly curated digests of the best local events in your city — live music, tech meetups, food pop-ups, and more.";
+import { useTenant } from "@/contexts/tenant-context";
+import { cityShareImage } from "@/lib/city-share-image";
 
 function setMeta(selector: string, content: string) {
   document.querySelector<HTMLMetaElement>(selector)?.setAttribute("content", content);
@@ -20,10 +19,11 @@ function ensureMeta(attribute: "name" | "property", key: string, content: string
 
 export function CityPageMetadata({ citySlug }: { citySlug: string }) {
   const [path] = useLocation();
+  const tenant = useTenant();
 
   useEffect(() => {
     const initial = window.__PUBLIC_DOCUMENT__;
-    if (initial && new URL(initial.canonical).pathname === path) return;
+    if (initial?.citySlug === citySlug && new URL(initial.canonical).pathname === path) return;
     const isCares = citySlug === "austincares";
     const isAustin = citySlug === "austin";
     const isAtlanta = citySlug === "atlanta";
@@ -40,7 +40,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
       : isSF ? "San Francisco Events — Fog, Hills, and Plenty to Do | EventCarpooling"
       : isHoustonDigest ? "Houston Events — Full Citywide Edition | EventCarpooling"
       : isHouston ? "Houston Events — The Whole City. Your Next Plan. | EventCarpooling"
-      : DEFAULT_TITLE;
+      : `${tenant.name} | Local Events & Community`;
     const description = isCares
       ? "Find Austin-area food specials, free neighborhood services, health screenings and community resources, organized by day and location."
       : isAustin
@@ -51,7 +51,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
         ? "Explore San Francisco's events edition: tech, arts, sports, civic life and wellness across the city's neighborhoods, October 12–31, 2026."
         : isHouston
         ? "Explore Houston's citywide events edition: real local plans across innovation, art, sports, civic life and wellness, from the bayou to your neighborhood."
-        : DEFAULT_DESCRIPTION;
+        : `Explore curated ${tenant.city} events, local newsletters, venues, and community activities.`;
 
     document.title = title;
     setMeta('meta[name="description"]', description);
@@ -60,20 +60,14 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     setMeta('meta[name="twitter:title"]', title);
     setMeta('meta[name="twitter:description"]', description);
     setMeta('meta[property="og:url"]', new URL(path, window.location.origin).href);
-    if (isAtlanta || isHouston || isSF) {
-      const image = new URL(`${import.meta.env.BASE_URL}images/${isSF ? "sanfrancisco-hero.jpg" : isHouston ? "houston-dusk.jpg" : "atlanta-hero.svg"}`, window.location.origin).href;
-      ensureMeta("property", "og:image", image);
-      ensureMeta("name", "twitter:image", image);
-      setMeta('meta[name="twitter:card"]', "summary_large_image");
-    } else {
-      document.querySelector('meta[property="og:image"]')?.remove();
-      document.querySelector('meta[name="twitter:image"]')?.remove();
-      setMeta('meta[name="twitter:card"]', "summary");
-    }
+    const image = cityShareImage(citySlug, window.location.origin, import.meta.env.BASE_URL);
+    ensureMeta("property", "og:image", image);
+    ensureMeta("name", "twitter:image", image);
+    setMeta('meta[name="twitter:card"]', "summary_large_image");
 
     const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (icon) icon.href = `${import.meta.env.BASE_URL}${isSF ? "images/sf-giants.svg" : isHouston ? "images/houston-astros.svg" : isAtlanta ? "images/atlanta-icon.svg" : isCares ? "austincares-favicon.svg" : "favicon.svg"}`;
-  }, [citySlug, path]);
+  }, [citySlug, path, tenant.name, tenant.city]);
 
   return null;
 }

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, ReactNode } from "react";
+import { createContext, useContext, useLayoutEffect, ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 export interface TenantConfig {
@@ -66,7 +66,7 @@ export function TenantProvider({ slug, children }: { slug: string; children: Rea
     retry: (count, err) => err.message !== "NOT_FOUND" && count < 2,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (tenant?.slug) {
       document.documentElement.setAttribute("data-tenant", tenant.slug);
     }

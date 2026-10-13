@@ -1,4 +1,5 @@
 export { hydratesPublicDocument } from "../src/lib/public-handoff";
+export { cityShareImage } from "../src/lib/city-share-image";
 import { renderToString } from "react-dom/server";
 import { PublicDocumentView } from "../src/components/public-document-view";
 import type { PublicDocumentModel } from "../src/lib/public-document";

@@ -22,7 +22,7 @@ const handoffHead = `<style>
 #public-app-loading{display:none}
 html[data-public-boot="pending"] #public-fallback,html[data-public-boot="pending"] #root{display:none}
 html[data-public-boot="pending"] body{margin:0}
-html[data-public-boot="pending"] #public-app-loading{display:flex;min-height:100svh;align-items:center;justify-content:center;background:#f4fbf6;color:#166534;font:500 16px/1.5 system-ui,sans-serif}
+html[data-public-boot="pending"] #public-app-loading{display:flex;min-height:100svh;align-items:center;justify-content:center;background:var(--background,#f4fbf6);color:var(--foreground,#166534);font:500 16px/1.5 system-ui,sans-serif}
 </style><script>
 document.documentElement.setAttribute("data-public-boot","pending");
 document.documentElement.setAttribute("data-public-boot-timer",String(setTimeout(function(){
@@ -87,6 +87,10 @@ http.createServer(async (req, res) => {
     if ([...requested.searchParams.keys()].some(key => /^(?:email|token|sig|signature|subscriber|subscriberId|hmac)$/i.test(key))) model.noindex = true;
     let template = await fs.readFile(path.join(root, production ? "dist/public/index.html" : "index.html"), "utf8");
     if (vite) template = await vite.transformIndexHtml(req.url, template);
+    // Select the theme in the opening tag, before CSS or any client effects can paint Austin defaults.
+    if (site.slug && (model.citySlug === site.slug || privateRoute)) {
+      template = template.replace(/<html\b([^>]*)>/i, `<html$1 data-tenant="${escape(site.slug)}">`);
+    }
     const module = renderer || await vite.ssrLoadModule("/server/entry-server.tsx");
     Object.assign(model, module.enrichModel(model));
     const head = `<title>${escape(model.title)}</title><meta name="description" content="${escape(model.description)}"><link rel="canonical" href="${escape(model.canonical)}"><meta property="og:title" content="${escape(model.title)}"><meta property="og:description" content="${escape(model.description)}"><meta property="og:url" content="${escape(model.canonical)}"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(model.title)}"><meta name="twitter:description" content="${escape(model.description)}">${model.noindex ? '<meta name="robots" content="noindex,nofollow">' : ""}${model.schema ? `<script type="application/ld+json">${json(model.schema)}</script>` : ""}`;
@@ -97,8 +101,7 @@ http.createServer(async (req, res) => {
       ? `<div id="public-fallback">${body}</div><div id="public-app-loading" role="status" aria-live="polite">Loading EventCarpooling…</div><div id="root"></div>`
       : `<div id="root">${body}</div>`;
     // Share crawlers read this initial HTML without running client metadata effects.
-    const imagePath = site.slug === "sanfrancisco" ? "/images/sanfrancisco-hero.jpg" : "/opengraph.jpg";
-    const image = model.event?.imageUrl || `https://${site.host}${imagePath}`;
+    const image = model.event?.imageUrl || module.cityShareImage(site.slug, `https://${site.host}`);
     const extras = `<meta property="og:image" content="${escape(image)}"><meta name="twitter:image" content="${escape(image)}">${vite ? '<link rel="stylesheet" href="/src/index.css?direct">' : ""}`;
     template = template.replace("</head>", head + extras + (handoff ? handoffHead : "") + "</head>").replace('<div id="root"></div>', `${pageBody}<script id="public-document" type="application/json">${json(model)}</script>`);
     const status = model.kind === "not-found" ? 404 : 200;

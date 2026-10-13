@@ -7,6 +7,13 @@ export interface DomainInfo {
 }
 
 export function useDomain(): DomainInfo {
+  // The initial document already resolved this host. Honor it instead of
+  // briefly using a workspace default (or treating a published alternate root as Austin).
+  const initial = window.__PUBLIC_DOCUMENT__;
+  if (initial?.citySlug) return { isPlatformRoot: false, citySlug: initial.citySlug };
+  if (initial?.kind === "platform" || (initial?.kind === "about" && !initial.citySlug)) {
+    return { isPlatformRoot: true, citySlug: null };
+  }
   const hostname = window.location.hostname;
 
   if (hostname === PLATFORM_DOMAIN) {
