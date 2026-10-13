@@ -1,4 +1,5 @@
 import { CalendarDays, ExternalLink, MapPin } from "lucide-react";
+import { RsvpBox } from "./event-card";
 
 export const MIAMI_OPEN_LINK = "https://www.miamiopen.com/";
 const norm = (u?: string | null) => (u ?? "").trim().replace(/\/+$/, "").toLowerCase();
@@ -25,7 +26,7 @@ type FeaturedEvent = {
   url?: string | null;
 };
 
-export function MiamiFeaturedEvent({ event, headingLevel = "h2", className = "" }: { event: FeaturedEvent; headingLevel?: "h2" | "h3"; className?: string }) {
+export function MiamiFeaturedEvent({ event, digestId, headingLevel = "h2", className = "" }: { event: FeaturedEvent; digestId?: number; headingLevel?: "h2" | "h3"; className?: string }) {
   const H = headingLevel;
   const [lead, rest] = splitLead(event.description);
   return (
@@ -69,6 +70,11 @@ export function MiamiFeaturedEvent({ event, headingLevel = "h2", className = "" 
               </a>
             ) : null}
           </p>
+          {digestId ? (
+            <div className="mt-5 rounded-xl bg-white p-4 text-slate-900" data-testid="miami-featured-rsvp">
+              <RsvpBox digestId={digestId} eventTitle={event.title} eventDate={event.date} eventVenue={event.venue ?? ""} />
+            </div>
+          ) : null}
         </div>
       </article>
     </section>

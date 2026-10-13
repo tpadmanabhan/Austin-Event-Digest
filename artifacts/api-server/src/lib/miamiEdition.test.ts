@@ -85,4 +85,18 @@ describe("Miami October 14–31 edition", () => {
     expect(html.indexOf("<!-- Miami curator-attended feature -->")).toBeLessThan(html.indexOf("<!-- Featured Events -->"));
     expect(html.match(/<h3[^>]*>Miami Open 2027<\/h3>/g)).toHaveLength(1);
   });
+  it("adds the existing personalized RSVP action to the Miami Open newsletter feature", () => {
+    for (const weekOf of [edition.weekOf, undefined]) {
+      const html = buildDigestEmailHtml({
+        ...edition, events, digestId: 123, weekOf: weekOf as any,
+        siteUrl: "https://miami.eventcarpooling.com",
+      }, "Reviewer", "reviewer@example.com", { slug: "miami", city: "Miami, FL" });
+      const feature = html.split("<!-- Miami curator-attended feature -->")[1].split("<!-- Featured Events -->")[0];
+      expect(feature).toContain("✨ Interested?");
+      expect(feature).toContain(weekOf ? "/rsvp?w=" : "/rsvp?d=123");
+      expect(feature).toContain(Buffer.from("Miami Open 2027").toString("base64url"));
+      expect(feature).toContain(Buffer.from("reviewer@example.com").toString("base64url"));
+      expect(feature).toContain("Official site &amp; tickets");
+    }
+  });
 });

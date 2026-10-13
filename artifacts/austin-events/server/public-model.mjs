@@ -140,7 +140,7 @@ export async function loadPublicModel(site, pathname) {
     description: site.slug === "austincares" ? "Explore Austin-area curated offers, community-submitted deals, free services, and map-based local discovery." :
       `Explore curated ${cityName} events, local newsletters, venues, and community activities. Learn about attendance and carpool-interest options where available.`,
     intro: digest?.intro || `Explore local activities in ${cityName}. Subscribe on this city's homepage for new editions.`,
-    weekOf: digest?.weekOf, events,
+    weekOf: digest?.weekOf, digestId: digest?.id, events,
     editionUrl: digest ? `/digest/${digest.id}` : undefined,
   };
   if (cityModel.kind === "deals") {

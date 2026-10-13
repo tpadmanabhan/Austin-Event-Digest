@@ -753,7 +753,7 @@ export default function Home() {
                       })}
                     </div>
                   )}
-                  {showMiamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} headingLevel="h3" />}
+                  {showMiamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} digestId={latestDigest.id} headingLevel="h3" />}
                   {allEventsSorted.length > 0 ? (
                     <div className="flex flex-col gap-6">
                       {allEventsSorted.map((event: any, i: number) => (

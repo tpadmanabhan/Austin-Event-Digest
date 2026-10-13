@@ -7,6 +7,7 @@ import { buildAustinAiEthicsSection } from "./austinAiEthics";
 import { buildSanFranciscoAiEthicsSection } from "./sanFranciscoAiEthics";
 import { buildSacramentoAiEthicsSection } from "./sacramentoAiEthics";
 import { buildMiamiAiEthicsSection } from "./miamiAiEthics";
+import { signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
@@ -372,7 +373,6 @@ function safeHref(url: string | null | undefined): string | null {
 }
 
 export function buildRsvpUrl(siteUrl: string, digestId: number, eventTitle: string, subscriberEmail: string, subscriberName?: string | null, weekOf?: Date | string | null): string {
-  const { signRsvpParams, signRsvpParamsByWeek } = require("./rsvpToken") as typeof import("./rsvpToken");
   const e = Buffer.from(eventTitle).toString("base64url");
   const em = Buffer.from(subscriberEmail).toString("base64url");
   const n = subscriberName ? `&n=${Buffer.from(subscriberName).toString("base64url")}` : "";
@@ -981,7 +981,11 @@ export function buildDigestEmailHtml(digest: {
   const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
   const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
   const alsoNearbyCards = alsoNearby.map(e => buildEventCard(e, false)).join("");
-  const miamiAttendingCards = miamiAttendingEvents.map(event => `
+   const miamiAttendingCards = miamiAttendingEvents.map(event => {
+     const rsvpLink = digest.digestId && digest.siteUrl && subscriberEmail
+       ? buildRsvpUrl(digest.siteUrl, digest.digestId, event.title, subscriberEmail, subscriberName, digest.weekOf)
+       : null;
+     return `
     <section style="border:2px solid #0E5560;border-radius:16px;background:#edf7f3;padding:24px;margin-bottom:24px;">
       <h2 style="color:#0E5560;font-size:20px;margin:0 0 12px;">Featured event</h2>
       <p style="color:#E8664A;font-size:12px;font-weight:800;text-transform:uppercase;margin:0 0 12px;">I’ll be attending</p>
@@ -991,7 +995,9 @@ export function buildDigestEmailHtml(digest: {
       <p style="color:#12343a;font-size:18px;font-weight:700;margin:0 0 12px;">${escapeHtml(event.description.split(". ")[0])}</p>
       <p style="color:#475569;line-height:1.7;margin:0 0 16px;">${escapeHtml(event.description.split(". ").slice(1).join(". "))}</p>
       ${safeHref(event.link) ? `<a href="${safeHref(event.link)}" style="display:inline-block;background:#0E5560;color:#fff;border-radius:8px;padding:10px 20px;text-decoration:none;font-weight:700;">Official site &amp; tickets →</a>` : ""}
-    </section>`).join("");
+       ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-block;background:#fff;color:#0E5560;border:1.5px solid #0E5560;border-radius:8px;padding:10px 20px;margin-left:8px;text-decoration:none;font-weight:700;">✨ Interested?</a>` : ""}
+     </section>`;
+   }).join("");
 
   const buildSpotlightCard = (event: (typeof digest.events)[number], accentColor: string, labelText: string, labelEmoji: string) => {
     const safeLink = safeHref(event.link);

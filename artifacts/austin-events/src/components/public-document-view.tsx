@@ -138,7 +138,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
             <EventList events={miamiCommunity} />
           </section>
         )}
-        {miamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} className="mt-10" />}
+        {miamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} digestId={model.digestId} className="mt-10" />}
         <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : "Events this week"}</h2>
         <EventList events={listEvents} />
         <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2">

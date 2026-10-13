@@ -860,7 +860,7 @@ export default function DigestView() {
                 </section>
               )}
 
-              {showMiamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} className="mb-12" />}
+              {showMiamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} digestId={digest.id} className="mb-12" />}
 
               <section>
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-8">

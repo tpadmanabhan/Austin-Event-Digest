@@ -201,7 +201,7 @@ function getRsvpKey(digestId: number, eventTitle: string) {
 
 function useRsvpState(digestId: number | undefined, eventTitle: string) {
   const key = digestId ? getRsvpKey(digestId, eventTitle) : null;
-  const [rsvpd, setRsvpd] = useState(() => key ? localStorage.getItem(key) === "1" : false);
+  const [rsvpd, setRsvpd] = useState(() => key && typeof window !== "undefined" ? localStorage.getItem(key) === "1" : false);
 
   const markRsvpd = () => {
     if (key) localStorage.setItem(key, "1");
@@ -244,7 +244,7 @@ interface RsvpBoxProps {
   eventVenue: string;
 }
 
-function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) {
+export function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) {
   const { rsvpd, markRsvpd } = useRsvpState(digestId, eventTitle);
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
