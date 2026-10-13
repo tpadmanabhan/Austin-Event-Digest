@@ -6,6 +6,7 @@ import { MAP_CENTERS, CITY_LABELS, haversineMiles } from "./cityBounds";
 import { buildAustinAiEthicsSection } from "./austinAiEthics";
 import { buildSanFranciscoAiEthicsSection } from "./sanFranciscoAiEthics";
 import { buildSacramentoAiEthicsSection } from "./sacramentoAiEthics";
+import { buildMiamiAiEthicsSection } from "./miamiAiEthics";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
@@ -518,7 +519,7 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const slug = tenant?.slug;
-  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento"
+  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento" || slug === "miami"
     ? digest.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s*(?:to|[-–—])\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
     : null;
   const editionRange = editionRangeMatch
@@ -526,7 +527,18 @@ export function buildDigestEmailHtml(digest: {
     : null;
   const cityName = tenant?.city?.split(",")[0] ?? "Austin";
   const greeting = `Hey ${cityName}!`;
-  const theme = slug === "portland" ? {
+  const theme = slug === "miami" ? {
+    headerGradient: "linear-gradient(135deg, #12343a 0%, #0E5560 65%, #277d79 100%)",
+    primary: "#E8664A", primaryBtn: "#E8664A", primaryDark: "#0E5560",
+    primaryLight: "#edf7f3", primaryMuted: "#8FD3C4",
+    textOnDark: "#ffffff", textMutedOnDark: "#d0eee5", textStrong: "#ffffff",
+    linkColor: "#0E5560", curatorName: "", curatorUrl: null as string | null,
+    cityGuideText: "Your October guide to Miami, Miami Beach and Coral Gables",
+    digestDisplayName: tenant?.digestTitle || "Miami Events", headerEmoji: "",
+    eventBtnColor: "#0E5560", eventBtnBorder: "#0E5560",
+    pillText: "#edf7f3", pillBorder: "rgba(143,211,196,0.45)",
+    rideBtnBg: "#8FD3C4", rideBtnColor: "#12343a",
+  } : slug === "portland" ? {
     headerGradient: "linear-gradient(135deg, #3d0010 0%, #5a0018 55%, #780020 100%)",
     primary: "#CE1141",
     primaryBtn: "#CE1141",
@@ -845,7 +857,7 @@ export function buildDigestEmailHtml(digest: {
     Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
   };
 
-  const eventTimezone = slug === "sanfrancisco" || slug === "sacramento" ? "America/Los_Angeles" : slug === "atlanta" ? "America/New_York" : "America/Chicago";
+  const eventTimezone = slug === "sanfrancisco" || slug === "sacramento" ? "America/Los_Angeles" : slug === "atlanta" || slug === "miami" ? "America/New_York" : "America/Chicago";
 
   function parseSortKey(dateStr: string): number {
     const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
@@ -952,7 +964,10 @@ export function buildDigestEmailHtml(digest: {
   const cleanDigestEvents = digest.events.filter(
     e => !isAdultContent(e.title ?? "", e.description ?? ""),
   );
-  const featuredEvents = cleanDigestEvents.filter(e => e.featured);
+  const miamiAttendingEvents = slug === "miami"
+    ? cleanDigestEvents.filter(e => e.featured && e.link === "https://www.miamiopen.com/")
+    : [];
+  const featuredEvents = cleanDigestEvents.filter(e => e.featured && !miamiAttendingEvents.includes(e));
   const bizSpotlights = cleanDigestEvents.filter(e => !e.featured && e.isBusinessSpotlight);
   const commSpotlights = cleanDigestEvents.filter(e => !e.featured && e.isPost);
   const regularEventsRaw = [...cleanDigestEvents.filter(e => !e.featured && !e.isBusinessSpotlight && !e.isPost)];
@@ -966,6 +981,17 @@ export function buildDigestEmailHtml(digest: {
   const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
   const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
   const alsoNearbyCards = alsoNearby.map(e => buildEventCard(e, false)).join("");
+  const miamiAttendingCards = miamiAttendingEvents.map(event => `
+    <section style="border:2px solid #0E5560;border-radius:16px;background:#edf7f3;padding:24px;margin-bottom:24px;">
+      <h2 style="color:#0E5560;font-size:20px;margin:0 0 12px;">Featured event</h2>
+      <p style="color:#E8664A;font-size:12px;font-weight:800;text-transform:uppercase;margin:0 0 12px;">I’ll be attending</p>
+      <h3 style="color:#12343a;font-size:22px;margin:0 0 12px;">${escapeHtml(event.title)}</h3>
+      <p style="color:#12343a;font-weight:700;margin:0 0 10px;">${escapeHtml(event.date)}</p>
+      <p style="color:#475569;margin:0 0 12px;">${escapeHtml(event.venue)}</p>
+      <p style="color:#12343a;font-size:18px;font-weight:700;margin:0 0 12px;">${escapeHtml(event.description.split(". ")[0])}</p>
+      <p style="color:#475569;line-height:1.7;margin:0 0 16px;">${escapeHtml(event.description.split(". ").slice(1).join(". "))}</p>
+      ${safeHref(event.link) ? `<a href="${safeHref(event.link)}" style="display:inline-block;background:#0E5560;color:#fff;border-radius:8px;padding:10px 20px;text-decoration:none;font-weight:700;">Official site &amp; tickets →</a>` : ""}
+    </section>`).join("");
 
   const buildSpotlightCard = (event: (typeof digest.events)[number], accentColor: string, labelText: string, labelEmoji: string) => {
     const safeLink = safeHref(event.link);
@@ -1034,6 +1060,7 @@ export function buildDigestEmailHtml(digest: {
     ${slug === "austin" ? buildAustinAiEthicsSection() : ""}
     ${slug === "sanfrancisco" ? buildSanFranciscoAiEthicsSection() : ""}
     ${slug === "sacramento" ? buildSacramentoAiEthicsSection() : ""}
+    ${slug === "miami" ? buildMiamiAiEthicsSection() : ""}
 
     <!-- Location CTA -->
     ${digest.preferencesUrl ? `
@@ -1059,7 +1086,7 @@ export function buildDigestEmailHtml(digest: {
     </div>` : ""}
 
     <!-- AustinCares Launch Promo (other established city newsletters) -->
-    ${slug !== "austincares" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" ? `
+    ${slug !== "austincares" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" ? `
     <div style="background:${slug === "austin" ? "linear-gradient(135deg,#fff8ed 0%,#f8f2e8 54%,#edf7f0 100%)" : "linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%)"}; border:${slug === "austin" ? "1.5px solid #ead7ba" : "none"}; border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
       <p style="margin:0 0 6px; color:${slug === "austin" ? "#a45b22" : "#fbbf24"}; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ New · Austin Cares</p>
       <p style="margin:0 0 10px; color:${slug === "austin" ? "#3f392f" : "#ffffff"}; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
@@ -1080,7 +1107,7 @@ export function buildDigestEmailHtml(digest: {
     ${buildStaticMapSection(cleanDigestEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
 
     <!-- Coming Soon: New Features -->
-    ${slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" ? `
+    ${slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" ? `
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <!-- Badge -->
       <div style="display:inline-block; background:${slug === "austin" ? "rgba(47,133,90,0.10)" : "rgba(255,255,255,0.12)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.22)" : "rgba(255,255,255,0.2)"}; border-radius:100px; padding:5px 14px; margin-bottom:16px;">
@@ -1130,6 +1157,9 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Community Spotlights -->
     ${commSpotlightCards}
+
+    <!-- Miami curator-attended feature -->
+    ${miamiAttendingCards}
 
     <!-- Featured Events -->
     ${featuredCards}

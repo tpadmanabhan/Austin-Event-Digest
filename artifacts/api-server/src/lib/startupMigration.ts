@@ -3,6 +3,7 @@ import { and, eq, inArray, sql, isNull } from "drizzle-orm";
 import { logger } from "./logger";
 import { hashPassword } from "./passwordHash";
 import { withPublicEventIds } from "./publicEventIdentity";
+import { seedMiami } from "./seedMiami";
 
 const MARCH_29_EVENTS = [
   {
@@ -1087,6 +1088,13 @@ export async function runStartupMigration(): Promise<void> {
     logger.info("San Francisco tenant seeded");
   } catch (err) {
     logger.warn({ err }, "San Francisco tenant seed failed (non-fatal)");
+  }
+
+  try {
+    await seedMiami();
+    logger.info("Miami tenant and unsent first edition seeded");
+  } catch (err) {
+    logger.warn({ err }, "Miami seed failed (non-fatal)");
   }
 
   // Migrate austincares subscribers → brushycreek (idempotent)

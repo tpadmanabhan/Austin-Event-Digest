@@ -284,6 +284,10 @@ export async function geocodeVenue(
   citySlug?: string,
 ): Promise<{ lat: number | null; lng: number | null }> {
   const clean = venueText.trim();
+  // A city centroid must never be presented as a registration-only venue.
+  if (/exact address after registration|exact meeting point/i.test(clean)) {
+    return { lat: null, lng: null };
+  }
   if (!clean) return { lat: null, lng: null };
 
   // Known-venue lookup table wins over cache and geocoders — these are

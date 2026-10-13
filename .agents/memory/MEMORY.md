@@ -14,7 +14,7 @@
 - [Brushy Creek admin auth](brushycreek-admin-auth.md) — use email-based HMAC token (not password-hash token) for brushycreek admin API calls
 - [Draft send field name](stlouis-send-draft.md) — use `testEmail` (not `draftEmail`/`isDraft`) in POST /api/events/digest/send to avoid accidental full subscriber sends
 - [Tokyo translation cache](translation-cache.md) — DB cache for translations; `ANY(${array})` broken in drizzle sql; single batched frontend call; pre-warm on digest import
-- [Stale event filtering](stale-event-filtering.md) — past events filtered in `digestToApi()`; featured events NOT exempt (bug fix); home.tsx + digest.tsx client filters also fixed
+- [Stale event filtering](stale-event-filtering.md) — verify page, preview and send inclusion; retain verified future years and final local days; featured events still expire.
 - [Ticketmaster classification](ticketmaster-classification.md) — only Music/Sports are reliable TM classificationNames; Arts & Theatre/Miscellaneous return 0; others query broadly
 - [Tokyo production auth](tokyo-prod-auth.md) — null password_hash in prod; use email-based HMAC (tenant ID 8), NOT password-hash pattern
 - [Carry-forward featured events](carry-forward-featured.md) — generate endpoint now auto-carries featured events from previous digest; live events win on title+date collision
@@ -27,7 +27,7 @@
 - [Tenant-specific dev previews](tenant-dev-previews.md) — default app preview host shows Austin; use a hostname-mapped browser to visually check AustinCares locally
 - [Recurring AustinCares digest offers](recurring-austincares-digest.md) — use an undated weekly label for ongoing offers; weekday-only dates are filtered after that day
 - [Austin Sierra Club event dates](austin-sierra-club-events.md) — official Austin group points to Meetup; read Meetup's Event JSON-LD for exact local start times
-- [Sandbox web globals](sandbox-fetch-timeout.md) — parse URLs in impure scope; fetch works there, but AbortSignal may be unavailable
+- [Sandbox web globals](sandbox-fetch-timeout.md) — URL and Intl require impure scope; fetch works there, but AbortSignal may be unavailable.
 - [Tokyo development admin auth](tokyo-dev-auth.md) — a shell-derived email token may work in production yet fail development verification; check both before choosing an import path
 - [Drizzle push prompts](drizzle-push-prompts.md) — a closed-stdin push can exit 0 at an unanswered truncation prompt without applying the schema; detect prompts explicitly
 - [Austin curator attendance](austin-curator-attendance.md) — "most Special events" is qualified factual copy, not a guarantee of attendance at every Special event.

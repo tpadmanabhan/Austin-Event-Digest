@@ -14,6 +14,8 @@ import { EventMap } from "@/components/event-map";
 import { AiEthicsSection } from "@/components/ai-ethics-section";
 import { SfAiEthicsSection } from "@/components/sf-ai-ethics-section";
 import { SacramentoAiEthicsSection } from "@/components/sacramento-ai-ethics-section";
+import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "@/components/miami-featured-event";
+import { MiamiAiEthicsSection } from "@/components/miami-ai-ethics-section";
 
 // Fallback blocklist used before the API responds or if the fetch fails
 const ADULT_BLOCKED_FALLBACK = [
@@ -259,6 +261,7 @@ export default function DigestView() {
   const isToky = tenant.slug === "tokyo";
   const isSF = tenant.slug === "sanfrancisco";
   const isSacramento = tenant.slug === "sacramento";
+  const isMiami = tenant.slug === "miami";
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
@@ -279,6 +282,7 @@ export default function DigestView() {
     bulverde:    [29.747, -98.446],
     portland:    [45.523, -122.676],
     sacramento:  [38.575, -121.479],
+    miami:       [25.7617, -80.1918],
     stlouis:     [38.627, -90.197],
     tokyo:       [35.676,  139.650],
     dc:          [38.907,  -77.037],
@@ -411,13 +415,13 @@ export default function DigestView() {
   }
 
   const { label: editionDateRange, extended: hasExtendedRange } =
-    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky || isSF || isSacramento, isHouston || isToky || isSF || isSacramento);
+    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky || isSF || isSacramento || isMiami, isHouston || isToky || isSF || isSacramento || isMiami);
   const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
     <Layout>
       {/* ANNOUNCEMENT BANNER */}
-      {!isAtlanta && !isHouston && !isSF && !isSacramento && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
+      {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
         <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
         <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
@@ -431,6 +435,7 @@ export default function DigestView() {
         </Link>
         
         <header className="mb-16">
+          {isMiami && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Miami / The bayfront edition</div>}
           {isSacramento && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Sacramento / The full edition</div>}
           {isSF && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> San Francisco / The full edition</div>}
           {isHouston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Houston / The citywide edition</div>}
@@ -441,7 +446,7 @@ export default function DigestView() {
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
             {(() => {
-               const emojiMatch = isHouston || isSF ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
+               const emojiMatch = isHouston || isSF || isMiami ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
                const emoji = emojiMatch ? emojiMatch[1] : "";
               if (isAustinCares) return `${emoji}Austin Cares Weekly Deals`;
                const titleBase = tenant.slug === "austin" && /upcoming events/i.test(digest.subject)
@@ -473,6 +478,7 @@ export default function DigestView() {
           {tenant.slug === "austin" && <AiEthicsSection className="mt-6" />}
           {isSF && <SfAiEthicsSection className="mt-6" />}
           {isSacramento && <SacramentoAiEthicsSection className="mt-6" />}
+          {isMiami && <MiamiAiEthicsSection className="mt-6" />}
         </header>
 
         {/* Translation unavailable banner — shown when Japanese mode fails */}
@@ -574,7 +580,7 @@ export default function DigestView() {
                       autoFocus
                       value={manualAddress}
                       onChange={(e) => setManualAddress(e.target.value)}
-                        placeholder={isSacramento ? "e.g. Midtown, Sacramento CA" : isSF ? "e.g. Hayes Valley, San Francisco CA" : isHouston ? "e.g. Montrose, Houston TX" : "e.g. Rainey Street, Austin TX"}
+                        placeholder={isMiami ? "e.g. Little Havana, Miami FL" : isSacramento ? "e.g. Midtown, Sacramento CA" : isSF ? "e.g. Hayes Valley, San Francisco CA" : isHouston ? "e.g. Montrose, Houston TX" : "e.g. Rainey Street, Austin TX"}
                       className="px-3 py-1.5 rounded-full text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
                     />
                     <button
@@ -636,10 +642,14 @@ export default function DigestView() {
           const staleCount = digest.events.filter((e: any) =>
             !e.isPost &&
             !e.isBusinessSpotlight &&
+            !isMiamiFeaturedEvent(e, tenant.slug) &&
             !isAdult(e) &&
             !isEventTodayOrLater(e.date, e, digest.weekOf)
           ).length;
+          const miamiFeatured = digest.events.find((e: any) => isMiamiFeaturedEvent(e, tenant.slug) && !isAdult(e));
+          const showMiamiFeatured = !!miamiFeatured && (categoryFilter === "All" || categoryFilter === "Sports");
           const upcomingEvents = digest.events.filter((e: any) =>
+            !isMiamiFeaturedEvent(e, tenant.slug) &&
             !e.isPost &&
             !e.isBusinessSpotlight &&
             !isAdult(e) &&
@@ -849,6 +859,8 @@ export default function DigestView() {
                   </div>
                 </section>
               )}
+
+              {showMiamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} className="mb-12" />}
 
               <section>
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-8">

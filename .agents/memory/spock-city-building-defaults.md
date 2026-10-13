@@ -16,3 +16,11 @@ When the user asks Spock to build city newsletters and event websites:
 **Why:** The user specified these defaults for future “ask Spock” city-building prompts, explicitly requested updating agent skills so AI events get included, and clarified that AI Ethics applies to all cities with location-specific topics.
 
 **How to apply:** Use these defaults when the user requests a city newsletter and event website. Research and verify source material and spotlights rather than inventing facts or endorsements. Preserve the project's separate authorization requirements for publishing and sending email.
+
+## Miami hero imagery
+
+Use an actual photo for Miami's hero rather than an illustration, as with Sacramento.
+
+**Why:** The user requested this visual direction for Miami.
+
+**How to apply:** Preserve this choice when refreshing Miami's theme; the general photo-or-animation default still applies to other cities.

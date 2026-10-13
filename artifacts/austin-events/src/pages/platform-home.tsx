@@ -9,8 +9,8 @@ import { EventMap } from "@/components/event-map";
 import { PublicAbout } from "@/components/public-about";
 import { SpockNote } from "@/components/spock-mascot";
 
-const NEW_CITY_SLUGS = ["atlanta", "sanfrancisco", "austin", "sacramento"];
-const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "sacramento", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
+const NEW_CITY_SLUGS = ["atlanta", "sanfrancisco", "austin", "sacramento", "miami"];
+const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "sacramento", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "miami"];
 const citySlugFromHref = (href: string) => new URL(href).hostname.split(".")[0];
 
 function NewCityBadge({ label = "New" }: { label?: string }) {
@@ -219,6 +219,13 @@ function PlatformHomeInner() {
                   label: "Sacramento Events",
                 },
                 {
+                  href: "https://miami.eventcarpooling.com",
+                  icon: <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/miami/mark.png`} alt="" className="h-full w-full object-contain" />,
+                  iconBg: "linear-gradient(135deg, #0E5560, #E8664A)",
+                  iconShadow: "0 3px 10px rgba(14,85,96,0.45)",
+                  label: "Miami Events",
+                },
+                {
                   href: "https://portland.eventcarpooling.com",
                   icon: "🌹",
                   iconBg: "linear-gradient(135deg, #1a3a1a, #2d6a2d)",
@@ -278,7 +285,7 @@ function PlatformHomeInner() {
                   iconShadow: "0 3px 10px rgba(16,43,56,0.5)",
                   label: "San Francisco Events",
                 },
-              ].filter(city => citySlugFromHref(city.href) !== "sanfrancisco" || tenants?.some(tenant => tenant.slug === "sanfrancisco")).sort((a, b) => {
+              ].filter(city => !["sanfrancisco", "miami"].includes(citySlugFromHref(city.href)) || tenants?.some(tenant => tenant.slug === citySlugFromHref(city.href))).sort((a, b) => {
                 const rank = (href: string) => {
                   const index = LIVE_CITY_ORDER.indexOf(citySlugFromHref(href));
                   return index === -1 ? LIVE_CITY_ORDER.length : index;
@@ -316,7 +323,7 @@ function PlatformHomeInner() {
                     <span className="text-sm font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
                     <span>{city.label}</span>
                   </span>
-                  {NEW_CITY_SLUGS.includes(citySlugFromHref(city.href)) && <NewCityBadge label={citySlugFromHref(city.href) === "sacramento" ? "NEW" : "New"} />}
+                  {NEW_CITY_SLUGS.includes(citySlugFromHref(city.href)) && <NewCityBadge label={["sacramento", "miami"].includes(citySlugFromHref(city.href)) ? "NEW" : "New"} />}
                   <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
                 </a>
               ))}
@@ -826,6 +833,9 @@ function PlatformHomeInner() {
                 } else if (tenant.slug === "sacramento") {
                   iconContent = "👑";
                   iconStyle = { background: "linear-gradient(135deg, #1a0a30, #5A2D81)", boxShadow: "0 6px 20px rgba(90,45,129,0.45)" };
+                } else if (tenant.slug === "miami") {
+                  iconContent = <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/miami/mark.png`} alt="" style={{ width: 44, height: 44, objectFit: "contain" }} />;
+                  iconStyle = { background: "linear-gradient(135deg, #0E5560, #E8664A)", boxShadow: "0 6px 20px rgba(14,85,96,0.45)" };
                 } else if (tenant.slug === "stlouis") {
                   iconContent = (
                     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 44, height: 44 }}>
@@ -889,7 +899,7 @@ function PlatformHomeInner() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-serif font-bold" style={{ color: "#0f172a" }}>{tenant.name}</h3>
-                          {NEW_CITY_SLUGS.includes(tenant.slug) && <NewCityBadge label={tenant.slug === "sacramento" ? "NEW" : "New"} />}
+                          {NEW_CITY_SLUGS.includes(tenant.slug) && <NewCityBadge label={["sacramento", "miami"].includes(tenant.slug) ? "NEW" : "New"} />}
                         </div>
                         <p className="text-sm" style={{ color: "#64748b" }}>{tenant.city}</p>
                       </div>

@@ -3,6 +3,14 @@ name: Stale event filtering
 description: Past events are now filtered at the API response layer in digestToApi(), not just by the nightly DB cleanup — covers sent digests too.
 ---
 
+## Preview versus actual email inclusion
+
+Verify event inclusion in public responses, the newsletter preview, and the actual send preparation—not just in the HTML renderer. Future-year and multi-day features must retain verified years and their final local day, without inventing session times.
+
+**Why:** A next-year tournament rendered correctly in an email preview but separate caption-only filters treated it as a past event in the current year, hiding it from public pages and actual email preparation.
+
+**How to apply:** Test next-year, final-day, and expired fixtures through the real filtering paths before publishing or sending. Keep page and send filtering consistent; featured status never exempts an expired event.
+
 ## Rule
 
 Past events are stripped inside `filterStaleEvents()`, called from `digestToApi()` in `artifacts/api-server/src/routes/events.ts`. This applies to every `GET /digest/latest` and `GET /digest/list` response, for every city.

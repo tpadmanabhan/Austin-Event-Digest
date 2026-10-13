@@ -4,6 +4,8 @@ import { PublicHowItWorks } from "./public-how-it-works";
 import { AiEthicsSection } from "./ai-ethics-section";
 import { SfAiEthicsSection } from "./sf-ai-ethics-section";
 import { SacramentoAiEthicsSection } from "./sacramento-ai-ethics-section";
+import { MiamiAiEthicsSection } from "./miami-ai-ethics-section";
+import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "./miami-featured-event";
 import { SpockAboutMention } from "./spock-mascot";
 
 const wrap = "mx-auto max-w-3xl px-4 py-10 sm:px-6";
@@ -64,11 +66,20 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
     </nav>
   );
 
+  const miamiFeatured = model.events?.find((e) => isMiamiFeaturedEvent(e, model.citySlug));
+  const isMiamiCity = model.citySlug === "miami";
+  const miamiBusiness = isMiamiCity ? (model.events ?? []).filter((e) => e.isBusinessSpotlight) : [];
+  const miamiCommunity = isMiamiCity ? (model.events ?? []).filter((e) => e.isPost && !e.isBusinessSpotlight) : [];
+  const listEvents = (model.events ?? []).filter((e) =>
+    e !== miamiFeatured && !(isMiamiCity && (e.isBusinessSpotlight || e.isPost)));
+  const eventIsMiamiFeatured = !!event && isMiamiFeaturedEvent(event, model.citySlug);
+
   let body;
   if (kind === "event" && event) {
     const when = displayPublicEventDate(event);
     body = (
       <>
+        {eventIsMiamiFeatured && <p className="mb-2 text-xs font-bold uppercase tracking-widest" style={{ color: "#C2452B" }}>Featured event / I’ll be attending</p>}
         <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">{event.title}</h1>
         <p className="mt-3 text-lg text-slate-800">
           {`${event.title} takes place ${when}${event.venue ? ` at ${event.venue}` : ""}${model.cityName ? ` in ${model.cityName}` : ""}.`}
@@ -114,8 +125,22 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         {model.citySlug === "austin" && <AiEthicsSection className="mt-6" />}
         {model.citySlug === "sanfrancisco" && <SfAiEthicsSection className="mt-6" />}
         {model.citySlug === "sacramento" && <SacramentoAiEthicsSection className="mt-6" />}
+        {model.citySlug === "miami" && <MiamiAiEthicsSection className="mt-6" />}
+        {miamiBusiness.length > 0 && (
+          <section aria-labelledby="miami-business-h" className="mt-10">
+            <h2 id="miami-business-h" className="mb-4 font-serif text-2xl font-bold text-slate-900">Business Spotlight</h2>
+            <EventList events={miamiBusiness} />
+          </section>
+        )}
+        {miamiCommunity.length > 0 && (
+          <section aria-labelledby="miami-community-h" className="mt-10">
+            <h2 id="miami-community-h" className="mb-4 font-serif text-2xl font-bold text-slate-900">Community Spotlight</h2>
+            <EventList events={miamiCommunity} />
+          </section>
+        )}
+        {miamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} className="mt-10" />}
         <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : "Events this week"}</h2>
-        <EventList events={model.events} />
+        <EventList events={listEvents} />
         <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
           {model.editionUrl ? <a href={model.editionUrl} className={linkCls}>{`Read the full ${model.cityName || ""} edition`}</a> : null}
           <a href={subscribe} className={linkCls}>Subscribe to the newsletter</a>

@@ -585,3 +585,72 @@
 @media (max-width: 640px) {
   [data-tenant="sanfrancisco"] .sf-edition-tag { font-size: 9px; letter-spacing: .07em; }
 }
+
+/* Miami: bay teal, Deco coral, seafoam and sand. Tenant scoped. */
+[data-tenant="miami"] {
+  --background: 34 60% 95%;
+  --foreground: 190 55% 13%;
+  --border: 28 32% 84%;
+  --input: 28 32% 84%;
+  --ring: 10 77% 54%;
+  --card: 36 70% 98%;
+  --card-foreground: 190 55% 13%;
+  --card-border: 28 32% 84%;
+  --popover: 36 70% 98%;
+  --popover-foreground: 190 55% 13%;
+  --popover-border: 28 32% 84%;
+  --primary: 10 77% 54%;
+  --primary-foreground: 36 70% 98%;
+  --secondary: 187 75% 22%;
+  --secondary-foreground: 36 70% 98%;
+  --muted: 30 42% 90%;
+  --muted-foreground: 190 20% 36%;
+  --accent: 166 44% 69%;
+  --accent-foreground: 190 55% 13%;
+  --sidebar: 34 60% 95%;
+  --sidebar-foreground: 190 55% 13%;
+  --sidebar-border: 28 32% 84%;
+  --sidebar-primary: 10 77% 54%;
+  --sidebar-primary-foreground: 36 70% 98%;
+  --sidebar-accent: 30 42% 90%;
+  --sidebar-accent-foreground: 190 55% 13%;
+  --sidebar-ring: 10 77% 54%;
+}
+[data-tenant="miami"] .miami-home-hero {
+  background:
+    radial-gradient(ellipse at 88% 6%, hsla(10, 77%, 62%, .18), transparent 46%),
+    repeating-linear-gradient(90deg, transparent 0 46px, hsl(166 44% 69% / .10) 46px 48px),
+    linear-gradient(165deg, hsl(34 60% 95%), hsl(28 55% 91%));
+}
+[data-tenant="miami"] .miami-home-hero h1 { letter-spacing: -.045em; }
+[data-tenant="miami"] .miami-hero-frame {
+  position: relative; padding: 10px;
+  background: hsl(187 75% 22%);
+  border-radius: 12rem 12rem 1.5rem 1.5rem;
+  box-shadow: 20px 24px 0 -10px hsl(10 77% 54% / .28), 0 24px 70px hsl(190 55% 13% / .18);
+  overflow: hidden;
+}
+[data-tenant="miami"] .miami-hero-frame img {
+  border-radius: 11.4rem 11.4rem 1rem 1rem; border: 0; box-shadow: none;
+}
+[data-tenant="miami"] .miami-hero-frame::before {
+  content: ""; position: absolute; inset: 10px; border-radius: inherit; pointer-events: none; z-index: 1;
+  background: repeating-linear-gradient(0deg, transparent 0 22px, hsl(36 70% 98% / .06) 22px 23px);
+}
+[data-tenant="miami"] .miami-edition-tag {
+  position: absolute; bottom: 25px; left: 25px; right: 25px; z-index: 2;
+  display: flex; justify-content: space-between; gap: 12px;
+  color: hsl(36 70% 98%); padding: 12px 15px;
+  background: hsl(190 55% 13% / .86); border: 1px solid hsl(166 44% 69% / .4);
+  border-radius: 9px; backdrop-filter: blur(8px);
+  font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+}
+[data-tenant="miami"] .miami-ethics::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px;
+  background: linear-gradient(90deg, hsl(10 77% 54%) 0 33%, hsl(166 44% 69%) 33% 66%, hsl(187 75% 22%) 66%);
+}
+@media (max-width: 640px) {
+  [data-tenant="miami"] .miami-edition-tag { font-size: 9px; letter-spacing: .07em; }
+  [data-tenant="miami"] .miami-hero-frame { border-radius: 7rem 7rem 1.25rem 1.25rem; }
+  [data-tenant="miami"] .miami-hero-frame img { border-radius: 6.4rem 6.4rem .8rem .8rem; }
+}
