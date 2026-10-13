@@ -9,15 +9,15 @@ import { EventMap } from "@/components/event-map";
 import { PublicAbout } from "@/components/public-about";
 import { SpockNote } from "@/components/spock-mascot";
 
-const NEW_CITY_SLUGS = ["atlanta", "sanfrancisco", "austin"];
-const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "houston", "tokyo", "stlouis", "sacramento", "portland", "bulverde", "dc"];
+const NEW_CITY_SLUGS = ["atlanta", "sanfrancisco", "austin", "sacramento"];
+const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "sacramento", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
 const citySlugFromHref = (href: string) => new URL(href).hostname.split(".")[0];
 
-function NewCityBadge() {
+function NewCityBadge({ label = "New" }: { label?: string }) {
   return (
     <span className="inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-bold"
       style={{ background: "#dcfce7", color: "#166534" }}>
-      New
+      {label}
     </span>
   );
 }
@@ -316,7 +316,7 @@ function PlatformHomeInner() {
                     <span className="text-sm font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
                     <span>{city.label}</span>
                   </span>
-                  {NEW_CITY_SLUGS.includes(citySlugFromHref(city.href)) && <NewCityBadge />}
+                  {NEW_CITY_SLUGS.includes(citySlugFromHref(city.href)) && <NewCityBadge label={citySlugFromHref(city.href) === "sacramento" ? "NEW" : "New"} />}
                   <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
                 </a>
               ))}
@@ -889,7 +889,7 @@ function PlatformHomeInner() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-serif font-bold" style={{ color: "#0f172a" }}>{tenant.name}</h3>
-                          {NEW_CITY_SLUGS.includes(tenant.slug) && <NewCityBadge />}
+                          {NEW_CITY_SLUGS.includes(tenant.slug) && <NewCityBadge label={tenant.slug === "sacramento" ? "NEW" : "New"} />}
                         </div>
                         <p className="text-sm" style={{ color: "#64748b" }}>{tenant.city}</p>
                       </div>
