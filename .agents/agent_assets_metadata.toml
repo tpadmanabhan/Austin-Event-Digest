@@ -340,3 +340,17 @@ mtime_ms = 1791837367321
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/0a71fe18-afa8-42cd-afe9-b2d82a443e15/e3ed216d-6fe3-4d89-8c6b-56bd3f35df7b"
 storage_version_token = "1791837374143413"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "QnLL-4Xk2RfGIY0xnYJjU"
+uri = "file://generated-artifacts/AI-Small-Businesses-and-the-Future-of-Work.pdf"
+type = "pdf"
+title = "AI, Small Businesses, and the Future of Work"
+description = "A one-page essay on EventCarpooling, AI ethics and guardrails, market concentration, U.S. data centers, white-collar employment, and the future of SaaS. Includes source links and clearly labeled forecasts."
+logical_id = "cfc40dcf-558f-4b19-b0e9-f12bfc81797b"
+content_hash = "sha256:6bd02e1785596a79c9c06744413dc3f44f6153c73e76910edfc54efa67edb740"
+size = 47143
+mtime_ms = 1791916666657
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/cfc40dcf-558f-4b19-b0e9-f12bfc81797b/94ade264-cbbf-46d7-a537-680756db00e6"
+storage_version_token = "1791916683046113"
+content_type = "application/pdf"
