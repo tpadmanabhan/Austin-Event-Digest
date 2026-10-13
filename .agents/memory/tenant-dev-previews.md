@@ -24,3 +24,11 @@ The local Chromium debugger's target list can start with an extension background
 **Why:** Navigating an extension target produced `net::ERR_ABORTED` and an empty document, falsely suggesting the platform homepage was not rendering.
 
 **How to apply:** Select a target whose `type` is `page` and whose URL is not a `chrome-extension:` URL before issuing navigation, DOM assertions, or screenshot commands.
+
+## Confirm the tenant before diagnosing failed admin authentication
+
+A valid city-specific admin token can return 401 when the development proxy resolves the request to a different city.
+
+**Why:** Correct Sacramento credentials failed while the API was still resolving the development default to San Francisco. The failure was tenant selection, not a missing or invalid credential.
+
+**How to apply:** Confirm or explicitly select the development request's tenant before regenerating credentials or changing authentication settings. Never change production routing to fix a development-only mismatch.

@@ -5,6 +5,7 @@ import { isAdultContent } from "./contentFilter";
 import { MAP_CENTERS, CITY_LABELS, haversineMiles } from "./cityBounds";
 import { buildAustinAiEthicsSection } from "./austinAiEthics";
 import { buildSanFranciscoAiEthicsSection } from "./sanFranciscoAiEthics";
+import { buildSacramentoAiEthicsSection } from "./sacramentoAiEthics";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
@@ -517,7 +518,7 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const slug = tenant?.slug;
-  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco"
+  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento"
     ? digest.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s*(?:to|[-–—])\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
     : null;
   const editionRange = editionRangeMatch
@@ -844,7 +845,7 @@ export function buildDigestEmailHtml(digest: {
     Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
   };
 
-  const eventTimezone = slug === "sanfrancisco" ? "America/Los_Angeles" : slug === "atlanta" ? "America/New_York" : "America/Chicago";
+  const eventTimezone = slug === "sanfrancisco" || slug === "sacramento" ? "America/Los_Angeles" : slug === "atlanta" ? "America/New_York" : "America/Chicago";
 
   function parseSortKey(dateStr: string): number {
     const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
@@ -1032,6 +1033,7 @@ export function buildDigestEmailHtml(digest: {
 
     ${slug === "austin" ? buildAustinAiEthicsSection() : ""}
     ${slug === "sanfrancisco" ? buildSanFranciscoAiEthicsSection() : ""}
+    ${slug === "sacramento" ? buildSacramentoAiEthicsSection() : ""}
 
     <!-- Location CTA -->
     ${digest.preferencesUrl ? `

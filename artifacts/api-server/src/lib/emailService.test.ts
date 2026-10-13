@@ -46,6 +46,25 @@ const baseDigest = {
 };
 
 describe("AI Ethics reading section", () => {
+  it("renders Sacramento's extended range and new readings in its local theme", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest, subject: "Sacramento Events — October 13 – October 31, 2026",
+      weekOf: "2026-10-13", siteUrl: "https://sacramento.eventcarpooling.com",
+    }, null, null, {
+      slug: "sacramento", name: "Sacramento Events", city: "Sacramento, CA",
+      digestTitle: "Sacramento Events",
+    });
+    expect(html).toContain("October 13 – October 31, 2026");
+    expect(html).toContain("Reading list / Sacramento");
+    expect(html).toContain("AI Risk Management Framework");
+    expect(html).toContain("Principles for Trustworthy AI");
+    expect(html).toContain("Atlas of AI");
+    expect(html).toContain("Automating Inequality");
+    expect(html).toContain("#5A2D81");
+    expect(html).not.toContain("The AI Con");
+    expect(html).not.toContain("AI Doesn’t Solve This");
+    expect(html).not.toContain("Happy Sunday, Austin");
+  });
   it("renders San Francisco's date range, local theme, and fresh readings without Austin copy", () => {
     const html = buildDigestEmailHtml({
       ...baseDigest, subject: "San Francisco Events — October 12 – October 31, 2026",
@@ -84,7 +103,7 @@ describe("AI Ethics reading section", () => {
     expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf("<!-- Location CTA -->"));
   });
 
-  it.each(["tokyo", "austincares", "brushycreek", "sacramento", "portland", "bulverde", "stlouis", "dc", "atlanta", "houston"])(
+  it.each(["tokyo", "austincares", "brushycreek", "portland", "bulverde", "stlouis", "dc", "atlanta", "houston"])(
     "does not leak Austin's editorial section into %s",
     slug => {
       const html = buildDigestEmailHtml(baseDigest, null, null, {

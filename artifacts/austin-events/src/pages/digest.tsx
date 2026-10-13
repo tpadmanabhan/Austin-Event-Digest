@@ -13,6 +13,7 @@ import { JA } from "@/i18n/ja";
 import { EventMap } from "@/components/event-map";
 import { AiEthicsSection } from "@/components/ai-ethics-section";
 import { SfAiEthicsSection } from "@/components/sf-ai-ethics-section";
+import { SacramentoAiEthicsSection } from "@/components/sacramento-ai-ethics-section";
 
 // Fallback blocklist used before the API responds or if the fetch fails
 const ADULT_BLOCKED_FALLBACK = [
@@ -257,6 +258,7 @@ export default function DigestView() {
   const isHouston = tenant.slug === "houston";
   const isToky = tenant.slug === "tokyo";
   const isSF = tenant.slug === "sanfrancisco";
+  const isSacramento = tenant.slug === "sacramento";
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
@@ -409,13 +411,13 @@ export default function DigestView() {
   }
 
   const { label: editionDateRange, extended: hasExtendedRange } =
-    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky || isSF, isHouston || isToky || isSF);
+    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky || isSF || isSacramento, isHouston || isToky || isSF || isSacramento);
   const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
     <Layout>
       {/* ANNOUNCEMENT BANNER */}
-      {!isAtlanta && !isHouston && !isSF && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
+      {!isAtlanta && !isHouston && !isSF && !isSacramento && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
         <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
         <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
@@ -429,6 +431,7 @@ export default function DigestView() {
         </Link>
         
         <header className="mb-16">
+          {isSacramento && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Sacramento / The full edition</div>}
           {isSF && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> San Francisco / The full edition</div>}
           {isHouston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Houston / The citywide edition</div>}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
@@ -469,6 +472,7 @@ export default function DigestView() {
           </div>
           {tenant.slug === "austin" && <AiEthicsSection className="mt-6" />}
           {isSF && <SfAiEthicsSection className="mt-6" />}
+          {isSacramento && <SacramentoAiEthicsSection className="mt-6" />}
         </header>
 
         {/* Translation unavailable banner — shown when Japanese mode fails */}
@@ -570,7 +574,7 @@ export default function DigestView() {
                       autoFocus
                       value={manualAddress}
                       onChange={(e) => setManualAddress(e.target.value)}
-                       placeholder={isSF ? "e.g. Hayes Valley, San Francisco CA" : isHouston ? "e.g. Montrose, Houston TX" : "e.g. Rainey Street, Austin TX"}
+                        placeholder={isSacramento ? "e.g. Midtown, Sacramento CA" : isSF ? "e.g. Hayes Valley, San Francisco CA" : isHouston ? "e.g. Montrose, Houston TX" : "e.g. Rainey Street, Austin TX"}
                       className="px-3 py-1.5 rounded-full text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
                     />
                     <button

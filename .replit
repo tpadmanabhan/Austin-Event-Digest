@@ -32,8 +32,8 @@ GMAIL_USER = "aiimplementationclubaustin@gmail.com"
 VITE_TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
 
 [userenv.development]
-DEFAULT_TENANT_SLUG = "sanfrancisco"
-VITE_TENANT_SLUG = "sanfrancisco"
+DEFAULT_TENANT_SLUG = "sacramento"
+VITE_TENANT_SLUG = "sacramento"
 
 [nix]
 channel = "stable-25_05"

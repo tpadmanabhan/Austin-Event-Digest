@@ -3,6 +3,7 @@ import { displayPublicEventDate, displayPublicWeek, publicCityLabel } from "@/li
 import { PublicHowItWorks } from "./public-how-it-works";
 import { AiEthicsSection } from "./ai-ethics-section";
 import { SfAiEthicsSection } from "./sf-ai-ethics-section";
+import { SacramentoAiEthicsSection } from "./sacramento-ai-ethics-section";
 import { SpockAboutMention } from "./spock-mascot";
 
 const wrap = "mx-auto max-w-3xl px-4 py-10 sm:px-6";
@@ -112,6 +113,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         <p className="mt-3 text-lg text-slate-800">{model.intro || model.description}</p>
         {model.citySlug === "austin" && <AiEthicsSection className="mt-6" />}
         {model.citySlug === "sanfrancisco" && <SfAiEthicsSection className="mt-6" />}
+        {model.citySlug === "sacramento" && <SacramentoAiEthicsSection className="mt-6" />}
         <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : "Events this week"}</h2>
         <EventList events={model.events} />
         <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
