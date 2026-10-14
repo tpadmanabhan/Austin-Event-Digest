@@ -24,3 +24,11 @@ Use an actual photo for Miami's hero rather than an illustration, as with Sacram
 **Why:** The user requested this visual direction for Miami.
 
 **How to apply:** Preserve this choice when refreshing Miami's theme; the general photo-or-animation default still applies to other cities.
+
+## Boston hero imagery
+
+Use a picture instead of animation for Boston's landing page.
+
+**Why:** The user explicitly requested this direction for Boston.
+
+**How to apply:** Keep Boston's hero static when refreshing the city page.

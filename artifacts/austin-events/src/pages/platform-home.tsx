@@ -9,8 +9,8 @@ import { EventMap } from "@/components/event-map";
 import { PublicAbout } from "@/components/public-about";
 import { SpockNote } from "@/components/spock-mascot";
 
-const NEW_CITY_SLUGS = ["atlanta", "sanfrancisco", "austin", "sacramento", "miami"];
-const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
+const NEW_CITY_SLUGS = ["atlanta", "sanfrancisco", "austin", "sacramento", "miami", "boston"];
+const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "boston"];
 const citySlugFromHref = (href: string) => new URL(href).hostname.split(".")[0];
 
 function NewCityBadge({ label = "New" }: { label?: string }) {
@@ -285,7 +285,14 @@ function PlatformHomeInner() {
                   iconShadow: "0 3px 10px rgba(16,43,56,0.5)",
                   label: "San Francisco Events",
                 },
-              ].filter(city => !["sanfrancisco", "miami"].includes(citySlugFromHref(city.href)) || tenants?.some(tenant => tenant.slug === citySlugFromHref(city.href))).sort((a, b) => {
+                {
+                  href: "https://boston.eventcarpooling.com",
+                  icon: <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/boston/mark.svg`} alt="" className="h-full w-full object-contain" />,
+                  iconBg: "linear-gradient(135deg, #14304A, #BD3039)",
+                  iconShadow: "0 3px 10px rgba(20,48,74,0.45)",
+                  label: "Boston Events",
+                },
+              ].filter(city => !["sanfrancisco", "miami", "boston"].includes(citySlugFromHref(city.href)) || tenants?.some(tenant => tenant.slug === citySlugFromHref(city.href))).sort((a, b) => {
                 const rank = (href: string) => {
                   const index = LIVE_CITY_ORDER.indexOf(citySlugFromHref(href));
                   return index === -1 ? LIVE_CITY_ORDER.length : index;
@@ -323,7 +330,7 @@ function PlatformHomeInner() {
                     <span className="text-sm font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
                     <span>{city.label}</span>
                   </span>
-                  {NEW_CITY_SLUGS.includes(citySlugFromHref(city.href)) && <NewCityBadge label={["sacramento", "miami"].includes(citySlugFromHref(city.href)) ? "NEW" : "New"} />}
+                  {NEW_CITY_SLUGS.includes(citySlugFromHref(city.href)) && <NewCityBadge label={["sacramento", "miami", "boston"].includes(citySlugFromHref(city.href)) ? "NEW" : "New"} />}
                   <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
                 </a>
               ))}

@@ -654,3 +654,66 @@
   [data-tenant="miami"] .miami-hero-frame { border-radius: 7rem 7rem 1.25rem 1.25rem; }
   [data-tenant="miami"] .miami-hero-frame img { border-radius: 6.4rem 6.4rem .8rem .8rem; }
 }
+
+/* Boston: brick red, Charles River slate, Back Bay brownstone paper. Tenant scoped. Static, no motion. */
+[data-tenant="boston"] {
+  --background: 30 33% 95%;
+  --foreground: 208 50% 14%;
+  --border: 25 20% 83%;
+  --input: 25 20% 83%;
+  --ring: 356 59% 46%;
+  --card: 36 40% 98%;
+  --card-foreground: 208 50% 14%;
+  --card-border: 25 20% 83%;
+  --popover: 36 40% 98%;
+  --popover-foreground: 208 50% 14%;
+  --popover-border: 25 20% 83%;
+  --primary: 356 59% 46%;
+  --primary-foreground: 36 40% 98%;
+  --secondary: 208 57% 19%;
+  --secondary-foreground: 36 40% 98%;
+  --muted: 28 25% 90%;
+  --muted-foreground: 208 16% 38%;
+  --accent: 205 33% 63%;
+  --accent-foreground: 208 50% 14%;
+  --sidebar: 30 33% 95%;
+  --sidebar-foreground: 208 50% 14%;
+  --sidebar-border: 25 20% 83%;
+  --sidebar-primary: 356 59% 46%;
+  --sidebar-primary-foreground: 36 40% 98%;
+  --sidebar-accent: 28 25% 90%;
+  --sidebar-accent-foreground: 208 50% 14%;
+  --sidebar-ring: 356 59% 46%;
+}
+[data-tenant="boston"] .boston-home-hero {
+  background:
+    linear-gradient(180deg, transparent 0 calc(100% - 6px), hsl(356 59% 46% / .18) calc(100% - 6px)),
+    repeating-linear-gradient(0deg, transparent 0 31px, hsl(208 57% 19% / .045) 31px 32px),
+    linear-gradient(170deg, hsl(30 33% 95%), hsl(28 30% 91%));
+}
+[data-tenant="boston"] .boston-home-hero h1 { letter-spacing: -.045em; }
+[data-tenant="boston"] .boston-hero-frame {
+  position: relative; padding: 10px; background: hsl(208 57% 19%);
+  border-radius: 1.5rem;
+  box-shadow: 18px 22px 0 -10px hsl(356 59% 46% / .3), 0 24px 70px hsl(208 50% 14% / .18);
+}
+[data-tenant="boston"] .boston-hero-frame img {
+  border-radius: 1rem; border: 0; box-shadow: none; object-position: 50% 60%;
+  animation: none !important; transform: none !important;
+}
+[data-tenant="boston"] .boston-edition-tag {
+  position: absolute; top: 25px; left: 25px; right: 25px; z-index: 2;
+  display: flex; justify-content: space-between; gap: 12px;
+  color: hsl(36 40% 98%); padding: 12px 15px;
+  background: hsl(208 50% 14% / .86); border: 1px solid hsl(205 33% 63% / .45);
+  border-left: 4px solid hsl(356 59% 46%);
+  border-radius: 9px;
+  font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+}
+[data-tenant="boston"] .boston-ethics::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px;
+  background: linear-gradient(90deg, hsl(356 59% 46%) 0 50%, hsl(208 57% 19%) 50%);
+}
+@media (max-width: 640px) {
+  [data-tenant="boston"] .boston-edition-tag { font-size: 9px; letter-spacing: .07em; }
+}

@@ -19,6 +19,7 @@ import { SfAiEthicsSection } from "@/components/sf-ai-ethics-section";
 import { SacramentoAiEthicsSection } from "@/components/sacramento-ai-ethics-section";
 import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "@/components/miami-featured-event";
 import { MiamiAiEthicsSection } from "@/components/miami-ai-ethics-section";
+import { BostonAiEthicsSection } from "@/components/boston-ai-ethics-section";
 
 const SHOW_AUSTIN_CARES = true;
 
@@ -122,7 +123,7 @@ export default function Home() {
   const latestIssueRangeMatch = tenant.slug === "austin" || tenant.slug === "atlanta"
     ? latestDigest?.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s+to\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
     : null;
-  const houstonRangeMatch = tenant.slug === "houston" || tenant.slug === "tokyo" || tenant.slug === "sanfrancisco" || tenant.slug === "sacramento" || tenant.slug === "miami"
+  const houstonRangeMatch = tenant.slug === "houston" || tenant.slug === "tokyo" || tenant.slug === "sanfrancisco" || tenant.slug === "sacramento" || tenant.slug === "miami" || tenant.slug === "boston"
     ? latestDigest?.subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s*(?:to|[-–—])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),\s*(\d{4})\s*$/i)
     : null;
   const latestIssueRange = houstonRangeMatch
@@ -141,6 +142,7 @@ export default function Home() {
   const isToky = tenant.slug === "tokyo";
   const isSF = tenant.slug === "sanfrancisco";
   const isMiami = tenant.slug === "miami";
+  const isBoston = tenant.slug === "boston";
   const { lang, translate, translationFailed } = useLanguage();
   const [homeTranslatedMap, setHomeTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
   const [homeTranslating, setHomeTranslating] = useState(false);
@@ -190,6 +192,7 @@ export default function Home() {
     portland:    [45.523, -122.676],
     sacramento:  [38.575, -121.479],
     miami:       [25.7617, -80.1918],
+    boston:      [42.3601, -71.0589],
     stlouis:     [38.627, -90.197],
     tokyo:       [35.676,  139.650],
     dc:          [38.907, -77.037],
@@ -219,14 +222,18 @@ export default function Home() {
               : tenant.slug === "dc"
                 ? "dc-hero.jpg"
                 : "austin-hero.png";
-  const heroSrc = isToky
+  const heroSrc = isBoston
+    ? `${import.meta.env.BASE_URL}api/storage/public-objects/cities/boston/hero.jpg?v=photo-20261014`
+    : isToky
     ? "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1400&auto=format&fit=crop&q=80"
     : isMiami
       ? `${import.meta.env.BASE_URL}api/storage/public-objects/cities/miami/hero.jpg?v=photo-20261013`
     : tenant.hasHeroImage && !isAtlanta && !isHouston && !isSF && !isMiami
       ? `/api/tenant/image/hero?slug=${encodeURIComponent(tenant.slug)}`
       : `${import.meta.env.BASE_URL}images/${heroImage}`;
-  const heroAlt = isMiami
+  const heroAlt = isBoston
+    ? "Photograph of the Back Bay skyline across the Charles River at golden hour, with sailboats moored at the Community Boating docks"
+    : isMiami
     ? "Aerial photograph of Miami Beach’s coastline, waterfront towers and blue Atlantic water"
     : isSF
     ? "Illustration of the Golden Gate Bridge in fog above San Francisco rooftops"
@@ -307,7 +314,7 @@ export default function Home() {
       </Dialog>
 
       {/* ANNOUNCEMENT BANNER */}
-      {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm flex items-center justify-center gap-3 flex-wrap">
+      {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm flex items-center justify-center gap-3 flex-wrap">
         <span>
           <span className="font-semibold text-primary">Coming Soon:</span>{" "}
           <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
@@ -325,11 +332,11 @@ export default function Home() {
       </div>}
 
       {/* HERO SECTION */}
-      <section className={`relative overflow-hidden bg-background py-6 sm:py-10 ${isHouston ? "houston-home-hero sm:py-16 lg:py-20" : isSF ? "sf-home-hero sm:py-16 lg:py-20" : isMiami ? "miami-home-hero sm:py-16 lg:py-20" : ""}`}>
+      <section className={`relative overflow-hidden bg-background py-6 sm:py-10 ${isHouston ? "houston-home-hero sm:py-16 lg:py-20" : isSF ? "sf-home-hero sm:py-16 lg:py-20" : isMiami ? "miami-home-hero sm:py-16 lg:py-20" : isBoston ? "boston-home-hero sm:py-16 lg:py-20" : ""}`}>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary)_0%,transparent_40%)] opacity-5" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className={`grid lg:grid-cols-2 gap-12 lg:gap-8 ${isMiami ? "items-start" : "items-center"}`}>
+          <div className={`grid lg:grid-cols-2 gap-12 lg:gap-8 ${isMiami || isBoston ? "items-start" : "items-center"}`}>
             
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
@@ -339,13 +346,15 @@ export default function Home() {
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4 border border-secondary/20">
                 <Sparkles className="w-4 h-4" />
-                <span>{isMiami ? "MIAMI / BAYFRONT EDITION" : isSacramento ? "SACRAMENTO / CAPITAL CITY EDITION" : isSF ? "SAN FRANCISCO / FOG CITY EDITION" : isHouston ? "HOUSTON / CITYWIDE FIELD GUIDE" : isAtlanta ? "Citywide, one good plan at a time." : jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
+                <span>{isBoston ? "BOSTON / CHARLES RIVER EDITION" : isMiami ? "MIAMI / BAYFRONT EDITION" : isSacramento ? "SACRAMENTO / CAPITAL CITY EDITION" : isSF ? "SAN FRANCISCO / FOG CITY EDITION" : isHouston ? "HOUSTON / CITYWIDE FIELD GUIDE" : isAtlanta ? "Citywide, one good plan at a time." : jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
               </div>
               
-              <h1 className={`text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1] ${isHouston || isSF || isMiami ? "lg:text-[4.5rem]" : ""}`}>
-                {isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} <br/>
+              <h1 className={`text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1] ${isHouston || isSF || isMiami || isBoston ? "lg:text-[4.5rem]" : ""}`}>
+                {isBoston ? "Both banks of the river." : isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} <br/>
                 {isAustinCares ? (
                   <>Start <span className="text-primary italic">helping</span>.</>
+                ) : isBoston ? (
+                  <>One <span className="text-primary italic">city of neighborhoods.</span></>
                 ) : isMiami ? (
                   <>One <span className="text-primary italic">waterfront city.</span></>
                 ) : isSacramento ? (
@@ -368,6 +377,8 @@ export default function Home() {
                   ? "Every Sunday, a curated list of volunteering opportunities, school events, networking activities, and high school club stuff will be published for the week ahead."
                   : isAtlanta
                   ? "The gatherings worth leaving the house for: tech, arts, sports, civic life and wellness across Atlanta. Explore the weekly edition, find your people, and make a plan."
+                  : isBoston
+                  ? "AI governance and builder meetups, the Head of the Charles Regatta, the Boston Book Festival, waterfront art, neighborhood conversation and Halloween. October 14 to 31 across Boston, Cambridge and nearby Newton, gathered in one edition."
                   : isMiami
                   ? "Practical AI builder nights, creator meetups, gallery evenings, Heat basketball, civic conversations and bayside movement. October 14 to 31 across Miami, from Little Havana to Little Haiti, Wynwood to the Beach."
                   : isSacramento
@@ -389,6 +400,8 @@ export default function Home() {
                     ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek 😎"`
                     : isAtlanta
                     ? "From neighborhood conversations to big ideas, Atlanta is better when you show up. Here's your guide to getting out and getting connected."
+                    : isBoston
+                    ? "Boston is a city of neighborhoods stitched together by the T and the river, where students arrive every September and longtime residents keep the corner traditions going. Every listing here is chosen by a person, with help from Spock, our research assistant, and links back to the original source so you can check the details and go meet people in person."
                     : isMiami
                     ? "Miami is a city of neighborhoods strung along the water, and conversations that switch between English, Spanish and Haitian Creole mid-sentence. This guide gathers the creators, builders and neighbors who show up in person, so you can pick a plan and meet them there."
                     : isSF
@@ -423,6 +436,7 @@ export default function Home() {
               {tenant.slug === "austin" && <AiEthicsSection className="mb-8 max-w-xl" />}
               {isSF && <SfAiEthicsSection className="mb-8 max-w-xl" />}
               {isSacramento && <SacramentoAiEthicsSection className="mb-8 max-w-xl" />}
+              {isBoston && <BostonAiEthicsSection className="mb-8 max-w-xl" />}
 
               <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60 scroll-mt-24">
                 <SubscribeForm />
@@ -430,17 +444,19 @@ export default function Home() {
             </motion.div>
 
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={isBoston ? false : { opacity: 0, scale: 0.95 }}
+              animate={isBoston ? undefined : { opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-               className={`relative ${(isAustinCares || isBulverde) ? "order-first lg:order-none" : ""} block ${isHouston ? "houston-hero-frame" : isSF ? "sf-hero-frame" : isMiami ? "miami-hero-frame" : ""}`}
+               className={`relative ${(isAustinCares || isBulverde) ? "order-first lg:order-none" : ""} block ${isHouston ? "houston-hero-frame" : isSF ? "sf-hero-frame" : isMiami ? "miami-hero-frame" : isBoston ? "boston-hero-frame" : ""}`}
             >
-               {!isHouston && !isSF && !isMiami && <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />}
+               {!isHouston && !isSF && !isMiami && !isBoston && <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />}
               <img 
                 src={heroSrc}
                 alt={heroAlt}
                 className={`relative rounded-3xl shadow-2xl border border-border w-full ${isAtlanta ? "atlanta-hero-image" : ""} ${tenant.slug === "austincares" ? "object-contain aspect-[3/4]" : isAustinCares ? "object-contain aspect-[16/9] bg-stone-900" : "object-cover aspect-[4/3]"}`}
               />
+               {isBoston && <div className="boston-edition-tag"><span>Back Bay from the Charles / In real life</span><span>{latestIssueRange || "October 14 – 31, 2026"}</span></div>}
+               {isBoston && <p data-testid="text-boston-photo-credit" className="mt-3 text-[11px] leading-5 text-white/80">Photo: <a href="https://commons.wikimedia.org/wiki/File:Boston_skyline_from_Longfellow_Bridge_September_2017_panorama_2.jpg" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">King of Hearts, Wikimedia Commons</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white">CC BY-SA 4.0</a>. Resized and cropped.</p>}
                {isMiami && <div className="miami-edition-tag"><span>Miami Beach / In real life</span><span>{latestIssueRange || "October 14 – 31, 2026"}</span></div>}
                {isSF && <div className="sf-edition-tag"><span>The Golden Gate / In real life</span><span>{latestIssueRange || "October 12 – 31, 2026"}</span></div>}
                {isHouston && <div className="houston-edition-tag"><span>Bayou City / In real life</span><span>{latestIssueRange || "Your next plan starts here"}</span></div>}
@@ -478,9 +494,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <div className="max-w-2xl">
-              <h2 className="font-serif text-4xl font-bold mb-4">{isSF ? "The city, block by block." : isHouston ? "The city, on your calendar." : jt("Inside the Latest Issue", JA.insideLatestIssue)}</h2>
+              <h2 className="font-serif text-4xl font-bold mb-4">{isBoston ? "The edition, neighborhood by neighborhood." : isSF ? "The city, block by block." : isHouston ? "The city, on your calendar." : jt("Inside the Latest Issue", JA.insideLatestIssue)}</h2>
               <p className="text-muted-foreground text-lg">
-                {isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : tenant.slug === "austin" ? "A look at the upcoming events in this edition." : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
+                {isBoston ? "A look inside the Boston edition, October 14 – 31. Filter by category, check the map, and pick a plan in Allston, Eastie, JP or across the river." : isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : tenant.slug === "austin" ? "A look at the upcoming events in this edition." : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
               </p>
               {latestIssueRange && (
                 <p className="mt-3 text-sm font-semibold text-primary">Events: {latestIssueRange}</p>
@@ -522,7 +538,7 @@ export default function Home() {
                           : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                       }`}
                     >
-                       <span>{isAtlanta || isHouston || isSF ? "·" : cfg.emoji}</span>
+                       <span>{isAtlanta || isHouston || isSF || isBoston ? "·" : cfg.emoji}</span>
                       <span>{catLabel(cat)}</span>
                     </button>
                   );
@@ -535,7 +551,7 @@ export default function Home() {
           {showMap && latestDigest?.events && (
             <div className="mb-10">
               <h3 className="font-serif text-xl font-bold mb-4 flex items-center gap-2">
-                 {isMiami ? "Find your way around Miami" : isSacramento ? "Find your way around Sacramento" : isSF ? "Find your way around San Francisco" : isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : (isToky || tenant.slug === "austin") && latestIssueRange ? "🗺️ Where this edition's events are happening" : "🗺️ Where this week's events are happening"}
+                 {isBoston ? "Find your way around Boston" : isMiami ? "Find your way around Miami" : isSacramento ? "Find your way around Sacramento" : isSF ? "Find your way around San Francisco" : isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : (isToky || tenant.slug === "austin") && latestIssueRange ? "🗺️ Where this edition's events are happening" : "🗺️ Where this week's events are happening"}
               </h3>
               <EventMap
                 events={latestDigest.events as any[]}
@@ -547,7 +563,7 @@ export default function Home() {
           )}
 
           {/* ── Coming Soon: New Features ───────────────────────────────── */}
-           {!isHouston && !isSF && !isSacramento && !isMiami && <div className="mb-10">
+           {!isHouston && !isSF && !isSacramento && !isMiami && !isBoston && <div className="mb-10">
             <div
               className="rounded-3xl p-8 sm:p-10 overflow-hidden relative"
               style={{ background: "linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#0f3460 100%)" }}

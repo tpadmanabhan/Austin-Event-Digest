@@ -5,6 +5,7 @@ import { AiEthicsSection } from "./ai-ethics-section";
 import { SfAiEthicsSection } from "./sf-ai-ethics-section";
 import { SacramentoAiEthicsSection } from "./sacramento-ai-ethics-section";
 import { MiamiAiEthicsSection } from "./miami-ai-ethics-section";
+import { BostonAiEthicsSection } from "./boston-ai-ethics-section";
 import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "./miami-featured-event";
 import { SpockAboutMention } from "./spock-mascot";
 
@@ -126,6 +127,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         {model.citySlug === "sanfrancisco" && <SfAiEthicsSection className="mt-6" />}
         {model.citySlug === "sacramento" && <SacramentoAiEthicsSection className="mt-6" />}
         {model.citySlug === "miami" && <MiamiAiEthicsSection className="mt-6" />}
+        {model.citySlug === "boston" && <BostonAiEthicsSection className="mt-6" />}
         {miamiBusiness.length > 0 && (
           <section aria-labelledby="miami-business-h" className="mt-10">
             <h2 id="miami-business-h" className="mb-4 font-serif text-2xl font-bold text-slate-900">Business Spotlight</h2>

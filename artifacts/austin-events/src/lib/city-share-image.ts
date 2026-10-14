@@ -13,6 +13,7 @@ const CITY_SHARE_IMAGES: Record<string, string> = {
   houston: "images/houston-dusk.jpg",
   sanfrancisco: "images/sanfrancisco-hero.jpg",
   miami: "api/storage/public-objects/cities/miami/share.jpg",
+  boston: "api/storage/public-objects/cities/boston/hero.jpg",
   tokyo: "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1200&h=630&auto=format&fit=crop&q=80",
 };
 

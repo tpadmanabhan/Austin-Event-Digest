@@ -103,14 +103,14 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant
       : `Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Get out there and enjoy it!`;
   const intro = cityIntro;
 
-  const subjectEmoji = slug === "miami" || slug === "sanfrancisco" ? "" : slug === "atlanta" ? "🍑" : slug === "houston" ? "⭐" : slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
+  const subjectEmoji = slug === "boston" || slug === "miami" || slug === "sanfrancisco" ? "" : slug === "atlanta" ? "🍑" : slug === "houston" ? "⭐" : slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
 
   return {
-    subject: `${subjectEmoji ? `${subjectEmoji} ` : ""}${digestName}${["atlanta", "houston", "sanfrancisco", "miami"].includes(slug ?? "") ? "" : " Events"} — Week of ${dateRange}`,
+    subject: `${subjectEmoji ? `${subjectEmoji} ` : ""}${digestName}${["atlanta", "houston", "sanfrancisco", "miami", "boston"].includes(slug ?? "") ? "" : " Events"} — Week of ${dateRange}`,
     intro,
     // The generic sample fixture is Austin-specific. Atlanta and Houston start
     // empty until real city events arrive from source adapters.
-    events: slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "miami" ? [] : SAMPLE_EVENTS,
+    events: ["atlanta", "houston", "sanfrancisco", "miami", "boston"].includes(slug ?? "") ? [] : SAMPLE_EVENTS,
   };
 }
 

@@ -16,6 +16,7 @@ import { SfAiEthicsSection } from "@/components/sf-ai-ethics-section";
 import { SacramentoAiEthicsSection } from "@/components/sacramento-ai-ethics-section";
 import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "@/components/miami-featured-event";
 import { MiamiAiEthicsSection } from "@/components/miami-ai-ethics-section";
+import { BostonAiEthicsSection } from "@/components/boston-ai-ethics-section";
 
 // Fallback blocklist used before the API responds or if the fetch fails
 const ADULT_BLOCKED_FALLBACK = [
@@ -262,6 +263,7 @@ export default function DigestView() {
   const isSF = tenant.slug === "sanfrancisco";
   const isSacramento = tenant.slug === "sacramento";
   const isMiami = tenant.slug === "miami";
+  const isBoston = tenant.slug === "boston";
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
@@ -283,6 +285,7 @@ export default function DigestView() {
     portland:    [45.523, -122.676],
     sacramento:  [38.575, -121.479],
     miami:       [25.7617, -80.1918],
+    boston:      [42.3601, -71.0589],
     stlouis:     [38.627, -90.197],
     tokyo:       [35.676,  139.650],
     dc:          [38.907,  -77.037],
@@ -415,13 +418,13 @@ export default function DigestView() {
   }
 
   const { label: editionDateRange, extended: hasExtendedRange } =
-    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky || isSF || isSacramento || isMiami, isHouston || isToky || isSF || isSacramento || isMiami);
+    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky || isSF || isSacramento || isMiami || isBoston, isHouston || isToky || isSF || isSacramento || isMiami || isBoston);
   const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
     <Layout>
       {/* ANNOUNCEMENT BANNER */}
-      {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
+      {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
         <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
         <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
@@ -435,6 +438,7 @@ export default function DigestView() {
         </Link>
         
         <header className="mb-16">
+          {isBoston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Boston / The Charles River edition</div>}
           {isMiami && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Miami / The bayfront edition</div>}
           {isSacramento && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Sacramento / The full edition</div>}
           {isSF && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> San Francisco / The full edition</div>}
@@ -446,7 +450,7 @@ export default function DigestView() {
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
             {(() => {
-               const emojiMatch = isHouston || isSF || isMiami ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
+               const emojiMatch = isHouston || isSF || isMiami || isBoston ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
                const emoji = emojiMatch ? emojiMatch[1] : "";
               if (isAustinCares) return `${emoji}Austin Cares Weekly Deals`;
                const titleBase = tenant.slug === "austin" && /upcoming events/i.test(digest.subject)
@@ -479,6 +483,7 @@ export default function DigestView() {
           {isSF && <SfAiEthicsSection className="mt-6" />}
           {isSacramento && <SacramentoAiEthicsSection className="mt-6" />}
           {isMiami && <MiamiAiEthicsSection className="mt-6" />}
+          {isBoston && <BostonAiEthicsSection className="mt-6" />}
         </header>
 
         {/* Translation unavailable banner — shown when Japanese mode fails */}
@@ -505,7 +510,7 @@ export default function DigestView() {
                       : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   }`}
                 >
-                   <span>{isAtlanta || isHouston || isSF ? "·" : cfg.emoji}</span>
+                   <span>{isAtlanta || isHouston || isSF || isBoston ? "·" : cfg.emoji}</span>
                   <span>{catLabel(cat)}</span>
                 </button>
               );
@@ -534,9 +539,9 @@ export default function DigestView() {
                   {geoStatus === "loading" ? (
                     <><Loader2 className="w-3.5 h-3.5 animate-spin" />Getting location…</>
                   ) : geoStatus === "active" ? (
-                     <>{isAtlanta || isHouston || isSF ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
+                     <>{isAtlanta || isHouston || isSF || isBoston ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
                   ) : (
-                     <>{isAtlanta || isHouston || isSF ? "Nearest first" : "📍 Nearest first"}</>
+                     <>{isAtlanta || isHouston || isSF || isBoston ? "Nearest first" : "📍 Nearest first"}</>
                   )}
                 </button>
                 {geoStatus === "denied" && (
@@ -580,7 +585,7 @@ export default function DigestView() {
                       autoFocus
                       value={manualAddress}
                       onChange={(e) => setManualAddress(e.target.value)}
-                        placeholder={isMiami ? "e.g. Little Havana, Miami FL" : isSacramento ? "e.g. Midtown, Sacramento CA" : isSF ? "e.g. Hayes Valley, San Francisco CA" : isHouston ? "e.g. Montrose, Houston TX" : "e.g. Rainey Street, Austin TX"}
+                        placeholder={isBoston ? "e.g. Jamaica Plain, Boston MA" : isMiami ? "e.g. Little Havana, Miami FL" : isSacramento ? "e.g. Midtown, Sacramento CA" : isSF ? "e.g. Hayes Valley, San Francisco CA" : isHouston ? "e.g. Montrose, Houston TX" : "e.g. Rainey Street, Austin TX"}
                       className="px-3 py-1.5 rounded-full text-sm border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
                     />
                     <button
