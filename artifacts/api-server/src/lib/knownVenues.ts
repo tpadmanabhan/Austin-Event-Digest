@@ -46,6 +46,12 @@ const SLUG_ALIASES: Record<string, string> = {
  * normalizeVenueName() form.
  */
 const KNOWN_VENUES: Record<string, Record<string, VenueCoords>> = {
+  boston: {
+    // OpenStreetMap place identities checked against the organizer's Boston venues.
+    "adams park": { lat: 42.2863873, lng: -71.1285388 },
+    "harbor plaza": { lat: 42.3499251, lng: -71.0416558 },
+    "boston common frog pond": { lat: 42.3560901, lng: -71.0657136 },
+  },
   sanfrancisco: {
     // Organizer-linked Google Maps place coordinates for the Campfire Circle.
     "presidio tunnel tops campfire circle": { lat: 37.8024097, lng: -122.4569573 },
@@ -195,6 +201,7 @@ export function lookupKnownVenue(venueText: string, citySlug?: string): VenueCoo
  * Portland, Oregon"). Reduces same-name drift to other states.
  */
 export const CITY_GEOCODE_HINTS: Record<string, string> = {
+  boston: "Boston, Massachusetts",
   austin:      "Austin, Texas",
   austincares: "Austin, Texas",
   brushycreek: "Round Rock, Texas",

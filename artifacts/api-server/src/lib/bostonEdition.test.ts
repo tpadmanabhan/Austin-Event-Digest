@@ -7,6 +7,8 @@ import { BOSTON_AI_ETHICS_INTRO, BOSTON_AI_ETHICS_READINGS } from "./bostonAiEth
 import { isWithinCityBounds, MAP_CENTERS } from "./cityBounds";
 import { filterStaleEvents } from "../routes/events";
 import { generateSampleDigest } from "./digestGenerator";
+import { geocodeEvents } from "./geocodeVenue";
+import { lookupKnownVenue } from "./knownVenues";
 
 describe("Boston October 14–31 edition", () => {
   const events = EventItemSchema.array().parse(edition.events);
@@ -40,6 +42,17 @@ describe("Boston October 14–31 edition", () => {
     expect(MAP_CENTERS.boston).toEqual({ lat: 42.3601, lng: -71.0589 });
     expect(isWithinCityBounds("boston", 42.3601, -71.0589)).toBe(true);
     expect(isWithinCityBounds("boston", 30.267, -97.743)).toBe(false);
+  });
+  it("resolves ambiguous Boston venues and never maps regional listings to centroids", async () => {
+    for (const venue of ["Adams Park", "Harbor Plaza, Commonwealth Pier", "Boston Common Frog Pond"]) {
+      const coords = lookupKnownVenue(venue, "boston");
+      expect(coords).toBeTruthy();
+      expect(isWithinCityBounds("boston", coords!.lat, coords!.lng)).toBe(true);
+    }
+    const broad = ["Greater Boston", "Charles River, Boston and Cambridge"]
+      .map(venue => ({ venue, lat: 42.1, lng: -71.0 }));
+    const located = await geocodeEvents(broad, "boston");
+    expect(located.every(e => e.lat === null && e.lng === null)).toBe(true);
   });
   it("keeps multi-day sports and undated spotlights through local final days", () => {
     vi.useFakeTimers();

@@ -354,7 +354,14 @@ export async function geocodeEvents(
   const result: Array<Record<string, unknown>> = [];
 
   for (const event of events) {
-    const venue = typeof event["venue"] === "string" ? event["venue"].trim() : "";
+    const venueName = typeof event["venue"] === "string" ? event["venue"].trim() : "";
+    // Regional listings have no single meeting point. Never use a river/metro centroid.
+    if (citySlug === "boston" && ["Greater Boston", "Charles River, Boston and Cambridge"].includes(venueName)) {
+      result.push({ ...event, lat: null, lng: null });
+      continue;
+    }
+    const address = typeof event["venueAddress"] === "string" ? event["venueAddress"].trim() : "";
+    const venue = citySlug === "boston" && address ? `${venueName}, ${address}` : venueName;
 
     // Skip events with no venue; but for events that already have coordinates,
     // still validate them against city bounds when a slug is provided — this

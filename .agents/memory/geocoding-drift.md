@@ -49,3 +49,11 @@ Street-intersection searches can return a point elsewhere on one of the named st
 **Why:** Re-geocoding alone won't fix drift when the venue name exists in multiple cities. The venue string must be unambiguous (full address) AND coords may need to be set directly.
 
 **Update (Aug 2026):** ingest-time defenses now exist: `knownVenues.ts` hand-verified venue→coord table (checked before cache/geocoders; add recurring failures there), a second Nominatim pass with a city/state hint when pass 1 is out of bounds, and Ticketmaster venue strings now include street address line1.
+
+## Regional listings are not meeting points
+
+Do not pin a regional spotlight or river-wide event at the geocoder's centroid. Leave it unmapped unless a specific venue or viewing point is verified.
+
+**Why:** Boston's river-wide regatta resolved to a remote river segment, and “Greater Boston” resolved to a location unrelated to the volunteer spotlight. Both passed the metro radius check.
+
+**How to apply:** Audit place identity as well as city bounds after geocoding; a successfully returned coordinate is not proof of a correct meeting point.
