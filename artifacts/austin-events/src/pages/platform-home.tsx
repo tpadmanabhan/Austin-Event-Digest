@@ -13,11 +13,11 @@ const NEW_CITY_SLUGS = ["atlanta", "sanfrancisco", "austin", "sacramento", "miam
 const LIVE_CITY_ORDER = ["atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "boston"];
 const citySlugFromHref = (href: string) => new URL(href).hostname.split(".")[0];
 
-function NewCityBadge({ label = "New" }: { label?: string }) {
+function NewCityBadge() {
   return (
     <span className="inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-bold"
       style={{ background: "#dcfce7", color: "#166534" }}>
-      {label}
+      New
     </span>
   );
 }
@@ -330,7 +330,7 @@ function PlatformHomeInner() {
                     <span className="text-sm font-medium" style={{ color: "#94a3b8" }}>{t.heroLiveNow}</span>
                     <span>{city.label}</span>
                   </span>
-                  {NEW_CITY_SLUGS.includes(citySlugFromHref(city.href)) && <NewCityBadge label={["sacramento", "miami", "boston"].includes(citySlugFromHref(city.href)) ? "NEW" : "New"} />}
+                  {NEW_CITY_SLUGS.includes(citySlugFromHref(city.href)) && <NewCityBadge />}
                   <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: "#94a3b8" }} />
                 </a>
               ))}
@@ -909,7 +909,7 @@ function PlatformHomeInner() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-serif font-bold" style={{ color: "#0f172a" }}>{tenant.name}</h3>
-                          {NEW_CITY_SLUGS.includes(tenant.slug) && <NewCityBadge label={["sacramento", "miami", "boston"].includes(tenant.slug) ? "NEW" : "New"} />}
+                          {NEW_CITY_SLUGS.includes(tenant.slug) && <NewCityBadge />}
                         </div>
                         <p className="text-sm" style={{ color: "#64748b" }}>{tenant.city}</p>
                       </div>
