@@ -843,6 +843,9 @@ function PlatformHomeInner() {
                 } else if (tenant.slug === "miami") {
                   iconContent = <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/miami/mark.png`} alt="" style={{ width: 44, height: 44, objectFit: "contain" }} />;
                   iconStyle = { background: "linear-gradient(135deg, #0E5560, #E8664A)", boxShadow: "0 6px 20px rgba(14,85,96,0.45)" };
+                } else if (tenant.slug === "boston") {
+                  iconContent = <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/boston/mark.svg`} alt="" style={{ width: 44, height: 44, objectFit: "contain" }} />;
+                  iconStyle = { background: "linear-gradient(135deg, #14304A, #BD3039)", boxShadow: "0 6px 20px rgba(20,48,74,0.45)" };
                 } else if (tenant.slug === "stlouis") {
                   iconContent = (
                     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 44, height: 44 }}>
@@ -906,7 +909,7 @@ function PlatformHomeInner() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-serif font-bold" style={{ color: "#0f172a" }}>{tenant.name}</h3>
-                          {NEW_CITY_SLUGS.includes(tenant.slug) && <NewCityBadge label={["sacramento", "miami"].includes(tenant.slug) ? "NEW" : "New"} />}
+                          {NEW_CITY_SLUGS.includes(tenant.slug) && <NewCityBadge label={["sacramento", "miami", "boston"].includes(tenant.slug) ? "NEW" : "New"} />}
                         </div>
                         <p className="text-sm" style={{ color: "#64748b" }}>{tenant.city}</p>
                       </div>
