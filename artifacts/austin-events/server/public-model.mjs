@@ -95,6 +95,16 @@ export function eventSchema(event, origin) {
   };
 }
 
+const PLATFORM_CITY_ORDER = ["boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
+const NEW_CITY_SLUGS = new Set(["atlanta", "sanfrancisco", "austin", "sacramento", "miami", "boston"]);
+const CITY_ETHICS_RESOURCES = {
+  boston: { url: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", title: "Boston’s generative AI policy" },
+  sanfrancisco: { url: "https://hai.stanford.edu/ai-index/2026-ai-index-report", title: "Stanford HAI AI Index 2026" },
+  austin: { url: "https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/", title: "AI Doesn’t Solve This" },
+  sacramento: { url: "https://www.nist.gov/itl/ai-risk-management-framework", title: "NIST AI Risk Management Framework" },
+  miami: { url: "https://algorithmsofoppression.com/about/", title: "Algorithms of Oppression" },
+};
+
 export async function loadPublicModel(site, pathname) {
   const origin = `https://${site.host}`;
   const listing = await publicApi(site, "/tenants/list");
@@ -103,7 +113,21 @@ export async function loadPublicModel(site, pathname) {
   const base = {
     kind: "not-found", title: "Page not found | EventCarpooling", description: "This public page could not be found.",
     canonical: origin + pathname, homeUrl: "/", events: [],
-    cities: tenants.map(t => ({ slug: t.slug, name: t.name || t.city, url: `https://${t.slug}.eventcarpooling.com/` })),
+    cities: tenants.map(t => {
+      const url = `https://${t.slug}.eventcarpooling.com/`;
+      const ethics = CITY_ETHICS_RESOURCES[t.slug];
+      return {
+        slug: t.slug, name: t.name || t.city, url, isNew: NEW_CITY_SLUGS.has(t.slug),
+        ethicsUrl: ethics?.url || url,
+        ethicsTitle: ethics?.title || `Explore the ${t.city || t.name} edition for local updates`,
+      };
+    }).sort((a, b) => {
+      const rank = slug => {
+        const index = PLATFORM_CITY_ORDER.indexOf(slug);
+        return index < 0 ? PLATFORM_CITY_ORDER.length : index;
+      };
+      return rank(a.slug) - rank(b.slug);
+    }),
     noindex: true,
   };
   if (site.slug && !tenant) return base;
@@ -111,9 +135,9 @@ export async function loadPublicModel(site, pathname) {
   if (!site.slug) {
     if (pathname !== "/" && !about) return base;
     return { ...base, kind: about ? "about" : "platform", noindex: false,
-      title: "EventCarpooling — Local Events & Community Connections",
-      description: "Discover curated local events, city newsletters, maps, and community activities. Explore RSVP and carpool-interest features where available.",
-      intro: "Find local events and connect with your community.",
+      title: "Event Newsletter in an Hour | EventCarpooling",
+      description: "Explore local city newsletters, recently updated editions, AustinCares deals, and city-specific AI Ethics reading from EventCarpooling.",
+      intro: "Event Newsletter in an Hour.",
       schema: { "@context": "https://schema.org", "@type": "WebSite", name: "EventCarpooling", url: PLATFORM_ORIGIN } };
   }
   const cityName = tenant.city || tenant.name;

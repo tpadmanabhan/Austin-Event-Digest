@@ -184,7 +184,7 @@ function PlatformHomeInner() {
           <a href="#city-directory" className="spotlight-link">
             Explore city-by-city resources <ArrowRight size={16} aria-hidden="true" />
           </a>
-          <span className="ethics-index" aria-hidden="true">FIELD<br />NOTES<br /><b>01—12</b></span>
+          <img className="integrity-logo" src={publicImage("intelligence-integrity.png")} alt="Intelligence with integrity" loading="lazy" />
         </article>
       </section>
 

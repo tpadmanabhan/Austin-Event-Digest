@@ -194,8 +194,8 @@
 .ethics-spotlight h2 em { color: #a7674e; }
 .ethics-spotlight p { color: #718078; }
 .ethics-spotlight .spotlight-link { color: #31594b; }
-.ethics-index { position: absolute; right: 28px; bottom: 18px; color: rgba(83, 111, 92, .14); font-size: 16px; font-weight: 800; letter-spacing: .19em; line-height: 1.28; }
-.ethics-index b { font-size: 11px; }
+.integrity-logo { position: absolute; right: 18px; bottom: 17px; width: 142px; height: auto; border-radius: 3px; mix-blend-mode: multiply; }
+.ethics-spotlight .spotlight-link { max-width: calc(100% - 148px); }
 .closing-cta { padding: 78px 24px 86px; color: #f3f2e7; background: #243e34; text-align: center; }
 .closing-inner { max-width: 650px; margin: 0 auto; }
 .closing-inner .eyebrow { color: #c3cbbc; }
@@ -251,6 +251,8 @@
   .spotlight-row { grid-template-columns: 1fr; padding: 0 17px 55px; gap: 11px; }
   .cares-spotlight, .ethics-spotlight { min-height: 276px; padding: 27px 24px; }
   .cares-spotlight h2, .ethics-spotlight h2 { font-size: 35px; }
+  .integrity-logo { right: 13px; bottom: 15px; width: 112px; }
+  .ethics-spotlight .spotlight-link { max-width: calc(100% - 116px); }
   .closing-cta { padding: 62px 22px 68px; }
   .closing-inner h2 { font-size: 48px; }
 }

@@ -134,7 +134,7 @@ export function Simplified() {
             <h2>Technology belongs<br />in a <em>local conversation.</em></h2>
             <p>Each city edition brings AI questions back to the people, places and public choices around us.</p>
             <a href="#city-directory" className="spotlight-link">Explore city-by-city resources <ArrowRight size={16} /></a>
-            <span className="ethics-index" aria-hidden="true">FIELD<br />NOTES<br /><b>01—12</b></span>
+            <img className="integrity-logo" src="/__mockup/images/intelligence-integrity.png" alt="Intelligence with integrity" loading="lazy" />
           </article>
         </section>
 

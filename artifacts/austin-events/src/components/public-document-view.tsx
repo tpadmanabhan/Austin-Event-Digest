@@ -150,7 +150,54 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         <Faq items={[{ q: "Does EventCarpooling arrange rides?", a: "No. Where enabled, digests offer carpool interest links so neighbors can signal interest. Rides are not booked or guaranteed." }]} />
       </>
     );
-  } else if (kind === "platform" || kind === "about") {
+  } else if (kind === "platform") {
+    body = (
+      <>
+        <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">Event Newsletter in an Hour.</h1>
+        <p className="mt-3 text-lg text-slate-800">
+          Find local events, city newsletters and useful community resources. Browse a city edition or request one for your city; requests are reviewed by our team.
+        </p>
+        <h2 className="mb-3 mt-8 font-serif text-2xl font-bold text-slate-900">City newsletters</h2>
+        <ul className="space-y-2">
+          {model.cities.map((city) => (
+            <li key={city.slug}>
+              {city.isNew && <span className="mr-2 inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-800">New</span>}
+              <a href={city.url} className={linkCls}>{publicCityLabel(city)}</a>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4">
+          <a href="https://austincares.eventcarpooling.com" className={linkCls}>Explore AustinCares local deals</a>
+        </p>
+        <section aria-labelledby="platform-ai-ethics" className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 id="platform-ai-ethics" className="font-serif text-2xl font-bold text-slate-900">Local AI Ethics</h2>
+              <p className="mt-2 text-slate-700">
+                Explore AI ethics resources connected to city policy, research and local conversations. For cities without a dedicated resource listed, visit the city edition for local updates.
+              </p>
+            </div>
+            <img src="/images/intelligence-integrity.png" alt="Intelligence with integrity" className="h-auto w-40 rounded-md" />
+          </div>
+          <ul className="mt-4 space-y-2">
+            {model.cities.map((city) => (
+              <li key={`ethics-${city.slug}`}>
+                <span className="font-semibold">{city.name}: </span>
+                <a href={city.ethicsUrl || city.url} className={linkCls}>{city.ethicsTitle || `Explore the ${city.name} edition for local updates`}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section aria-labelledby="request-city-public" className="mt-8 border-t border-slate-200 pt-6">
+          <h2 id="request-city-public" className="font-serif text-2xl font-bold text-slate-900">Request your city</h2>
+          <p className="mt-2 text-slate-700">
+            If your city is not listed, the interactive page lets you submit its name and your email address. The team reviews each request; submitting one does not automatically launch a city.
+          </p>
+          <p className="mt-3"><a href="#city-editions" className={linkCls}>Browse available city editions</a></p>
+        </section>
+      </>
+    );
+  } else if (kind === "about") {
     body = (
       <>
         <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">{kind === "platform" ? model.intro || model.title : model.title}</h1>
