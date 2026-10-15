@@ -30,7 +30,7 @@ const CITY_DIRECTORY = [
   { slug: "houston", name: "Houston Events", city: "Houston", image: publicImage("houston-dusk.jpg"), alt: "Houston skyline at dusk" },
   { slug: "tokyo", name: "Tokyo Events", city: "Tokyo" },
   { slug: "stlouis", name: "St. Louis Events", city: "St. Louis", image: publicImage("stlouis-hero.jpg"), alt: "St. Louis city vista" },
-  { slug: "portland", name: "Portland Events", city: "Portland", image: publicImage("portland-hero.jpg"), alt: "Portland city vista" },
+  { slug: "portland", name: "Portland Events", city: "Portland" },
   { slug: "bulverde", name: "Bulverde Events", city: "Bulverde", image: publicImage("bulverde-hero.jpg"), alt: "Bulverde Hill Country landscape" },
   { slug: "dc", name: "DC Events", city: "Washington, DC", image: publicImage("dc-hero.jpg"), alt: "Washington, DC city vista" },
 ];
@@ -114,18 +114,18 @@ function PlatformHomeInner() {
             <p className="hero-footnote">No account needed. Requests are reviewed by our team.</p>
           </motion.div>
 
-          <motion.div className="vista-collage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08 }} aria-label="Views from Boston, San Francisco, Austin and Sacramento">
+          <motion.div className="vista-collage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08 }} aria-label="Views from Boston, Houston, Miami and Sacramento">
             <figure className="vista vista-large">
               <img src="/api/storage/public-objects/cities/boston/hero.jpg" alt="Boston city view" fetchPriority="high" />
               <figcaption><span>01 / NEW EDITION</span><b>Boston</b></figcaption>
             </figure>
             <figure className="vista vista-sf">
-              <img src={publicImage("sanfrancisco-hero.jpg")} alt="San Francisco city view" />
-              <figcaption><span>02</span><b>San Francisco</b></figcaption>
+              <img src={publicImage("houston-dusk.jpg")} alt="Houston skyline at dusk" />
+              <figcaption><span>02</span><b>Houston</b></figcaption>
             </figure>
             <figure className="vista vista-austin">
-              <img src={publicImage("austin-hero.png")} alt="Austin city view" />
-              <figcaption><span>03</span><b>Austin</b></figcaption>
+              <img src="/api/storage/public-objects/cities/miami/hero.jpg" alt="Miami waterfront skyline" />
+              <figcaption><span>03</span><b>Miami</b></figcaption>
             </figure>
             <figure className="vista vista-sac">
               <img src={publicImage("sacramento-hero.jpg")} alt="Sacramento city view" />
@@ -184,7 +184,7 @@ function PlatformHomeInner() {
           <a href="#city-directory" className="spotlight-link">
             Explore city-by-city resources <ArrowRight size={16} aria-hidden="true" />
           </a>
-          <img className="integrity-logo" src={publicImage("intelligence-integrity.png")} alt="Intelligence with integrity" loading="lazy" />
+          <img className="integrity-logo" src={publicImage("intelligence-integrity.png")} alt="Intelligence with integrity" />
         </article>
       </section>
 

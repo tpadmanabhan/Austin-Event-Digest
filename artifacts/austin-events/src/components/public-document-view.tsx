@@ -157,7 +157,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         <p className="mt-3 text-lg text-slate-800">
           Find local events, city newsletters and useful community resources. Browse a city edition or request one for your city; requests are reviewed by our team.
         </p>
-        <h2 className="mb-3 mt-8 font-serif text-2xl font-bold text-slate-900">City newsletters</h2>
+        <h2 id="city-editions" className="mb-3 mt-8 font-serif text-2xl font-bold text-slate-900">City newsletters</h2>
         <ul className="space-y-2">
           {model.cities.map((city) => (
             <li key={city.slug}>
@@ -195,12 +195,13 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           </p>
           <p className="mt-3"><a href="#city-editions" className={linkCls}>Browse available city editions</a></p>
         </section>
+        <SpockAboutMention className="mt-8" />
       </>
     );
   } else if (kind === "about") {
     body = (
       <>
-        <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">{kind === "platform" ? model.intro || model.title : model.title}</h1>
+        <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">{model.title}</h1>
         <p className="mt-3 text-lg text-slate-800">{model.description}</p>
         <h2 className="mb-3 mt-10 font-serif text-2xl font-bold text-slate-900">What you get</h2>
         <ul className="list-disc space-y-2 pl-5 text-slate-700">

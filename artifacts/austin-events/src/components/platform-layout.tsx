@@ -127,10 +127,10 @@ function PlatformLayoutInner({ children }: { children: ReactNode }) {
                 {t.langToggle}
               </button>
               <a
-                href="#how-it-works"
+                href="#city-directory"
                 className="hidden md:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t.howItWorks}
+                {t.liveH2}
               </a>
               <a
                 href="#launch"

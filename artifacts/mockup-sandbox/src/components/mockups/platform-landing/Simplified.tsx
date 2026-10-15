@@ -14,7 +14,7 @@ const CITIES = [
   { slug: "houston", name: "Houston Events", city: "Houston", image: "/__mockup/images/houston-dusk.jpg", alt: "Houston skyline at dusk" },
   { slug: "tokyo", name: "Tokyo Events", city: "Tokyo" },
   { slug: "stlouis", name: "St. Louis Events", city: "St. Louis", image: "/__mockup/images/stlouis-hero.jpg", alt: "St. Louis city view" },
-  { slug: "portland", name: "Portland Events", city: "Portland", image: "/__mockup/images/portland-hero.jpg", alt: "Portland city view" },
+  { slug: "portland", name: "Portland Events", city: "Portland" },
   { slug: "bulverde", name: "Bulverde Events", city: "Bulverde", image: "/__mockup/images/bulverde-hero.jpg", alt: "Bulverde landscape" },
   { slug: "dc", name: "DC Events", city: "Washington, DC", image: "/__mockup/images/dc-hero.jpg", alt: "Washington, DC city view" },
 ];
@@ -83,10 +83,10 @@ export function Simplified() {
               </div>
               <p className="hero-footnote">No account needed. Requests are reviewed by our team.</p>
             </div>
-            <div className="vista-collage" aria-label="Views from Boston, San Francisco, Austin and Sacramento">
+            <div className="vista-collage" aria-label="Views from Boston, Houston, Miami and Sacramento">
               <figure className="vista vista-large"><img src="/api/storage/public-objects/cities/boston/hero.jpg" alt="Boston city view" /><figcaption><span>01 / NEW EDITION</span><b>Boston</b></figcaption></figure>
-              <figure className="vista vista-sf"><img src="/__mockup/images/sanfrancisco-hero.jpg" alt="San Francisco city view" /><figcaption><span>02</span><b>San Francisco</b></figcaption></figure>
-              <figure className="vista vista-austin"><img src="/__mockup/images/austin-hero.png" alt="Austin city view" /><figcaption><span>03</span><b>Austin</b></figcaption></figure>
+              <figure className="vista vista-sf"><img src="/__mockup/images/houston-dusk.jpg" alt="Houston skyline at dusk" /><figcaption><span>02</span><b>Houston</b></figcaption></figure>
+              <figure className="vista vista-austin"><img src="/api/storage/public-objects/cities/miami/hero.jpg" alt="Miami waterfront skyline" /><figcaption><span>03</span><b>Miami</b></figcaption></figure>
               <figure className="vista vista-sac"><img src="/__mockup/images/sacramento-hero.jpg" alt="Sacramento city view" /></figure>
               <span className="collage-stamp">GOOD THINGS<br />HAPPEN HERE</span>
             </div>
@@ -134,7 +134,7 @@ export function Simplified() {
             <h2>Technology belongs<br />in a <em>local conversation.</em></h2>
             <p>Each city edition brings AI questions back to the people, places and public choices around us.</p>
             <a href="#city-directory" className="spotlight-link">Explore city-by-city resources <ArrowRight size={16} /></a>
-            <img className="integrity-logo" src="/__mockup/images/intelligence-integrity.png" alt="Intelligence with integrity" loading="lazy" />
+            <img className="integrity-logo" src="/__mockup/images/intelligence-integrity.png" alt="Intelligence with integrity" />
           </article>
         </section>
 

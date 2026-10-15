@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin } from "./public-model.mjs";
 
 const cities = ["austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
-  "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston"];
+  "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston", "boston", "miami"];
 const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
 const eventId = city => `ev-${String(cities.indexOf(city) + 1).padStart(24, "0")}`;
 const fixture = city => ({
@@ -90,7 +90,15 @@ test("verified date validation rejects guessed years, impossible days and missin
 test("the platform document is readable and has real city links without scripts running", async () => {
   const { response, body } = await document("eventcarpooling.com");
   assert.equal(response.status, 200);
-  assert.match(body, /Find local events and connect with your community/);
+  assert.match(body, /Event Newsletter in an Hour/);
+  assert.match(body, /Request your city/);
+  assert.match(body, /Local AI Ethics/);
+  assert.match(body, /Intelligence with integrity/);
+  assert.match(body, /https:\/\/austincares\.eventcarpooling\.com/);
+  const model = modelOf(body);
+  assert.equal(model.cities[0].slug, "boston");
+  assert.equal(model.cities[0].isNew, true);
+  assert.match(model.cities[0].ethicsUrl, /boston\.gov/);
   assert.match(body, /https:\/\/tokyo\.eventcarpooling\.com\//);
   assert.match(body, /<h1/);
   assert.equal(modelOf(body).kind, "platform");
@@ -156,6 +164,8 @@ test("every city sends its own share image and theme in the initial document", a
     atlanta: "/api/storage/public-objects/city-previews/atlanta-share.png",
     houston: "/images/houston-dusk.jpg",
     sanfrancisco: "/images/sanfrancisco-hero.jpg",
+    boston: "/api/storage/public-objects/cities/boston/hero.jpg",
+    miami: "/api/storage/public-objects/cities/miami/share.jpg",
     tokyo: "https://images.unsplash.com/photo-1480796927426-f609979314bd",
   };
   for (const city of cities) {

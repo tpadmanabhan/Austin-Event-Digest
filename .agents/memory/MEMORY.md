@@ -43,3 +43,4 @@
 - [Public HTML and startup](public-html-startup.md) — readable no-JS content must not flash before the interactive homepage; preserve a usable fallback if startup fails.
 - [TypeScript reference refresh](typescript-reference-refresh.md) — rebuild shared references after schema/codegen changes; consumers can otherwise see stale declarations.
 - [Publication readiness](publication-readiness.md) — reproduce artifact build context; verify dynamic newsletter content in saved data and rendered output.
+- [Platform landing priorities](platform-landing-priorities.md) — concise one-hour newsletter, cities, deals, local AI Ethics, city requests, scenic photos, and readable public HTML.
