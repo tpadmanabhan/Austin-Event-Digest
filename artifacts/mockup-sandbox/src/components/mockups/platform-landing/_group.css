@@ -1,0 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&family=DM+Serif+Display:ital@0;1&family=Noto+Serif+JP:wght@700&display=swap");
+
+:root {
+  --font-sans: "DM Sans", sans-serif;
+  --font-serif: "DM Serif Display", serif;
+  --background: 138 30% 97%;
+  --foreground: 150 25% 12%;
+  --border: 138 20% 87%;
+  --input: 138 20% 87%;
+  --ring: 142 55% 42%;
+  --card: 0 0% 100%;
+  --card-foreground: 150 25% 12%;
+  --card-border: 138 20% 87%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 150 25% 12%;
+  --popover-border: 138 20% 87%;
+  --primary: 142 55% 42%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 160 45% 32%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 138 20% 91%;
+  --muted-foreground: 150 12% 44%;
+  --accent: 120 45% 55%;
+  --accent-foreground: 150 25% 12%;
+  --destructive: 0 80% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: 150 20% 10%;
+  --foreground: 138 30% 97%;
+  --border: 150 15% 20%;
+  --input: 150 15% 20%;
+  --ring: 142 55% 42%;
+  --card: 150 20% 12%;
+  --card-foreground: 138 30% 97%;
+  --popover: 150 20% 12%;
+  --popover-foreground: 138 30% 97%;
+  --primary: 142 55% 42%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 160 45% 32%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 150 15% 17%;
+  --muted-foreground: 138 12% 60%;
+  --accent: 120 45% 55%;
+  --accent-foreground: 150 25% 12%;
+  --destructive: 0 80% 50%;
+  --destructive-foreground: 0 0% 100%;
+}

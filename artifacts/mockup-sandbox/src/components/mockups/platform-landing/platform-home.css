@@ -1,0 +1,260 @@
+.platform-hero {
+  --ink: #20332d;
+  position: relative;
+  overflow: hidden;
+  padding: clamp(38px, 7vw, 86px) max(24px, calc((100vw - 1180px) / 2)) 20px;
+  color: var(--ink);
+  background: #f2f5ed;
+}
+.platform-hero::before {
+  position: absolute;
+  content: "";
+  width: 640px;
+  height: 640px;
+  right: -13%;
+  top: -56%;
+  border-radius: 50%;
+  background: #e5eadc;
+  pointer-events: none;
+}
+.platform-hero-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(410px, 1.08fr);
+  align-items: center;
+  gap: clamp(38px, 7vw, 105px);
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.hero-copy { padding: 16px 0 40px; }
+.hero-kicker, .eyebrow, .spotlight-topline {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: #577267;
+  font: 700 11px/1.2 "DM Sans", sans-serif;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+.kicker-rule { width: 28px; height: 1px; background: #bd7859; }
+.hero-copy h1, .section-heading h2, .cares-spotlight h2, .ethics-spotlight h2, .closing-inner h2 {
+  margin: 23px 0 17px;
+  color: #213b33;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -.045em;
+}
+.hero-copy h1 {
+  font-size: clamp(49px, 6.2vw, 77px);
+  line-height: .98;
+}
+.hero-copy h1 em, .section-heading h2 em, .cares-spotlight h2 em, .ethics-spotlight h2 em, .closing-inner h2 em {
+  color: #ad684c;
+  font-weight: 400;
+}
+.hero-description {
+  max-width: 450px;
+  margin: 22px 0 27px;
+  color: #65766d;
+  font-size: 16px;
+  line-height: 1.75;
+}
+.hero-actions { display: flex; align-items: center; gap: 23px; flex-wrap: wrap; }
+.button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 1px solid #31594b;
+  border-radius: 4px;
+  color: #fff;
+  background: #31594b;
+  font: 700 14px "DM Sans", sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .2s ease, background .2s ease;
+}
+.button-primary:hover { transform: translateY(-2px); background: #24483c; }
+.button-primary:focus-visible, .button-quiet:focus-visible, .city-card a:focus-visible, .text-link-button:focus-visible, .spotlight-link:focus-visible {
+  outline: 3px solid #be805d;
+  outline-offset: 4px;
+}
+.button-quiet { display: inline-flex; align-items: center; gap: 8px; color: #46685b; font-size: 13px; font-weight: 700; text-decoration: none; }
+.hero-footnote { margin-top: 14px; color: #849087; font-size: 11px; letter-spacing: .02em; }
+.vista-collage { position: relative; height: min(480px, 42vw); min-height: 370px; }
+.vista {
+  position: absolute;
+  overflow: hidden;
+  margin: 0;
+  border: 6px solid #f8f8f1;
+  background: #dfe4db;
+  box-shadow: 0 13px 35px rgba(46, 63, 52, .15);
+}
+.vista img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.vista::after { position: absolute; inset: 35% 0 0; content: ""; background: linear-gradient(transparent, rgba(26, 43, 38, .68)); }
+.vista-large { left: 6%; top: 4%; width: 65%; height: 73%; transform: rotate(-2deg); }
+.vista-sf { right: 2%; top: 0; width: 34%; height: 43%; transform: rotate(3.2deg); }
+.vista-austin { right: 7%; bottom: 5%; width: 47%; height: 44%; transform: rotate(2deg); }
+.vista-sac { left: 0; bottom: 8%; width: 32%; height: 38%; transform: rotate(-4deg); }
+.vista figcaption { position: absolute; z-index: 1; bottom: 13px; left: 16px; display: flex; flex-direction: column; gap: 4px; color: #fff; text-shadow: 0 1px 12px #1c2924; }
+.vista figcaption span { font-size: 8px; font-weight: 700; letter-spacing: .16em; }
+.vista figcaption b { font: 22px "DM Serif Display", Georgia, serif; }
+.collage-stamp {
+  position: absolute;
+  z-index: 2;
+  left: 26%;
+  bottom: 1%;
+  display: grid;
+  width: 89px;
+  height: 89px;
+  place-content: center;
+  border: 1px solid #f3eee3;
+  border-radius: 50%;
+  color: #fff8e9;
+  background: #a7674e;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  line-height: 1.45;
+  text-align: center;
+  transform: rotate(-11deg);
+}
+.hero-baseline {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 30px auto 0;
+  padding: 15px 0 3px;
+  border-top: 1px solid #dbe0d6;
+  color: #7e8d83;
+  font-size: 10px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.baseline-dot, .spotlight-marker, .ethics-mark { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #bc775a; }
+.directory-section { padding: clamp(58px, 8vw, 100px) max(22px, calc((100vw - 1180px) / 2)); background: #fbfaf5; }
+.section-heading { display: flex; justify-content: space-between; align-items: end; gap: 25px; max-width: 1180px; margin: 0 auto 27px; }
+.section-heading h2 { margin: 12px 0 7px; font-size: clamp(37px, 4vw, 52px); }
+.section-heading p { margin: 0; color: #718078; font-size: 14px; }
+.directory-key { display: flex; align-items: center; gap: 9px; padding-bottom: 5px; color: #718078; font-size: 12px; white-space: nowrap; }
+.city-grid { max-width: 1180px; margin: 0 auto; }
+.city-grid:not(:has(.directory-skeletons)) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; }
+.city-card { overflow: hidden; border: 1px solid #e2e3d9; border-radius: 5px; background: #f4f3ec; transition: transform .22s ease, box-shadow .22s ease; }
+.city-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(37, 58, 47, .1); }
+.city-card-featured { grid-column: span 2; grid-row: span 2; }
+.city-card-main { position: relative; display: block; height: 132px; overflow: hidden; color: white; text-decoration: none; }
+.city-card-featured .city-card-main { height: 297px; }
+.city-card-photo { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
+.city-card:hover .city-card-photo { transform: scale(1.045); }
+.city-card-shade { position: absolute; inset: 20% 0 0; background: linear-gradient(transparent, rgba(22, 39, 33, .82)); }
+.city-card-heading { position: absolute; left: 17px; bottom: 15px; display: flex; flex-direction: column; gap: 2px; text-shadow: 0 1px 10px rgba(0,0,0,.45); }
+.city-card-city { font-size: 10px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+.city-card-name { font: 22px/1.15 "DM Serif Display", Georgia, serif; }
+.city-card-new { position: absolute; top: 13px; left: 13px; }
+.city-card-external { position: absolute; right: 14px; bottom: 17px; opacity: .8; }
+.city-card-placeholder { display: grid; width: 100%; height: 100%; place-items: center; color: #597668; background: linear-gradient(135deg, #e5e9dd, #d8e3d8); }
+.city-card-reading { display: flex; min-height: 61px; align-items: center; gap: 8px; padding: 9px 12px; color: #375749; text-decoration: none; }
+.reading-label { display: flex; flex: 0 0 auto; align-items: center; gap: 5px; color: #74857a; font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.reading-title { overflow: hidden; flex: 1; color: #405d50; font-size: 10px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.city-card-reading > svg:last-child { flex: 0 0 auto; color: #8d9a90; }
+.directory-skeletons { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; }
+.city-skeleton { height: 195px; padding: 13px; border: 1px solid #e4e5dc; border-radius: 5px; background: linear-gradient(120deg, #e7e9e0 8%, #f1f1e9 30%, #e7e9e0 55%); background-size: 200% 100%; animation: city-shimmer 1.8s ease-in-out infinite; }
+.city-skeleton:first-child { grid-column: span 2; grid-row: span 2; height: 403px; }
+.city-skeleton span, .city-skeleton i { display: block; width: 38%; height: 9px; border-radius: 8px; background: rgba(106, 124, 110, .2); }
+.city-skeleton i { width: 68%; margin-top: 9px; }
+@keyframes city-shimmer { to { background-position: -200% 0; } }
+.directory-alert { display: flex; justify-content: space-between; align-items: center; gap: 12px; max-width: 1180px; margin: 0 auto 15px; padding: 11px 14px; border: 1px solid #ead7c8; border-radius: 4px; color: #755844; background: #fbf4ec; font-size: 12px; }
+.directory-alert button { border: 0; color: #31594b; background: none; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.request-note { display: flex; align-items: center; gap: 13px; max-width: 1180px; margin: 25px auto 0; padding: 16px 18px; border: 1px solid #dfe4d9; background: #f4f5ed; }
+.request-note-mark { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; color: #527365; background: #e6ecdf; }
+.request-note p { flex: 1; margin: 0; color: #6c7b71; font-size: 12px; }
+.request-note p strong { color: #314b3f; }
+.text-link-button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; padding: 5px; border: 0; color: #31594b; background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
+.spotlight-row { display: grid; grid-template-columns: 1fr 1fr; max-width: 1180px; margin: 0 auto; padding: 0 20px 82px; gap: 15px; }
+.cares-spotlight, .ethics-spotlight { position: relative; overflow: hidden; min-height: 300px; padding: clamp(25px, 4vw, 44px); }
+.cares-spotlight { color: #f9f4e8; background: #31594b; }
+.cares-spotlight .spotlight-topline { color: #c5d2c4; }
+.cares-spotlight h2, .ethics-spotlight h2 { position: relative; z-index: 1; margin: 23px 0 12px; font-size: clamp(30px, 3.5vw, 43px); line-height: 1.02; }
+.cares-spotlight h2 { color: #f8f4e8; }
+.cares-spotlight h2 em { color: #e5b98c; }
+.cares-spotlight p, .ethics-spotlight p { position: relative; z-index: 1; max-width: 390px; margin: 0 0 20px; font-size: 13px; line-height: 1.7; }
+.cares-spotlight p { color: #cbd8cb; }
+.spotlight-link { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 9px; color: inherit; font-size: 12px; font-weight: 700; text-decoration: none; }
+.spotlight-ornament { position: absolute; right: 15px; bottom: -37px; color: rgba(239, 228, 201, .1); font: 210px/.8 "DM Serif Display", Georgia, serif; }
+.ethics-spotlight { border: 1px solid #deded4; color: #33473d; background: #eeeee5; }
+.ethics-spotlight .spotlight-topline { color: #7c806e; }
+.ethics-spotlight .ethics-mark { background: #a96b4e; }
+.ethics-spotlight h2 { color: #31453b; }
+.ethics-spotlight h2 em { color: #a7674e; }
+.ethics-spotlight p { color: #718078; }
+.ethics-spotlight .spotlight-link { color: #31594b; }
+.ethics-index { position: absolute; right: 28px; bottom: 18px; color: rgba(83, 111, 92, .14); font-size: 16px; font-weight: 800; letter-spacing: .19em; line-height: 1.28; }
+.ethics-index b { font-size: 11px; }
+.closing-cta { padding: 78px 24px 86px; color: #f3f2e7; background: #243e34; text-align: center; }
+.closing-inner { max-width: 650px; margin: 0 auto; }
+.closing-inner .eyebrow { color: #c3cbbc; }
+.closing-inner h2 { margin: 15px 0 13px; color: #f5f3e8; font-size: clamp(42px, 6vw, 65px); line-height: .98; }
+.closing-inner h2 em { color: #dfb58a; }
+.closing-inner p { max-width: 470px; margin: 0 auto 24px; color: #c2cdc2; font-size: 14px; line-height: 1.7; }
+.closing-inner .button-primary { border-color: #f4f0e5; color: #29473b; background: #f4f0e5; }
+.closing-inner .button-primary:hover { background: #fffaf0; }
+.closing-inner small { display: block; margin-top: 13px; color: #aebdb0; font-size: 10px; }
+@media (max-width: 900px) {
+  .platform-hero-inner { grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr); gap: 28px; }
+  .vista-collage { min-height: 340px; }
+  .city-grid:not(:has(.directory-skeletons)), .directory-skeletons { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .city-card-main { height: 145px; }
+  .city-card-featured .city-card-main { height: 305px; }
+}
+@media (max-width: 680px) {
+  .platform-hero { padding: 33px 20px 16px; }
+  .platform-hero-inner { grid-template-columns: 1fr; gap: 8px; }
+  .hero-copy { padding: 12px 0 0; }
+  .hero-copy h1 { margin-top: 16px; font-size: clamp(47px, 13vw, 67px); }
+  .hero-description { max-width: 420px; margin: 16px 0 20px; font-size: 14px; }
+  .hero-actions { gap: 15px; }
+  .button-primary { min-height: 46px; padding: 0 17px; font-size: 13px; }
+  .vista-collage { width: 100%; height: 320px; min-height: 0; margin: 7px auto 0; }
+  .vista-large { left: 7%; width: 68%; height: 72%; }
+  .vista-sf { width: 36%; height: 43%; }
+  .vista-austin { right: 5%; bottom: 4%; }
+  .vista-sac { left: 1%; bottom: 7%; width: 32%; height: 37%; }
+  .collage-stamp { left: 25%; bottom: 0; width: 70px; height: 70px; font-size: 7px; }
+  .vista figcaption { left: 10px; bottom: 9px; }
+  .vista figcaption b { font-size: 17px; }
+  .hero-baseline { flex-wrap: wrap; gap: 7px 10px; margin-top: 19px; padding-top: 12px; font-size: 8px; }
+  .directory-section { padding: 53px 17px; }
+  .section-heading { align-items: start; flex-direction: column; gap: 14px; margin-bottom: 21px; }
+  .section-heading h2 { font-size: 40px; }
+  .section-heading p { max-width: 350px; font-size: 13px; line-height: 1.6; }
+  .city-grid:not(:has(.directory-skeletons)), .directory-skeletons { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .city-card-featured { grid-column: span 2; grid-row: span 1; }
+  .city-card-main { height: 123px; }
+  .city-card-featured .city-card-main { height: 195px; }
+  .city-card-name { font-size: 18px; }
+  .city-card-city { font-size: 8px; }
+  .city-card-reading { display: block; min-height: 62px; padding: 8px 9px; }
+  .reading-label { display: flex; font-size: 8px; }
+  .reading-title { display: block; margin-top: 5px; font-size: 9px; }
+  .city-card-reading > svg:last-child { display: none; }
+  .city-skeleton { height: 171px; }
+  .city-skeleton:first-child { height: 171px; }
+  .request-note { align-items: flex-start; flex-wrap: wrap; gap: 10px; padding: 13px; }
+  .request-note p { min-width: calc(100% - 50px); padding-top: 3px; }
+  .text-link-button { margin-left: 43px; padding: 0; }
+  .spotlight-row { grid-template-columns: 1fr; padding: 0 17px 55px; gap: 11px; }
+  .cares-spotlight, .ethics-spotlight { min-height: 276px; padding: 27px 24px; }
+  .cares-spotlight h2, .ethics-spotlight h2 { font-size: 35px; }
+  .closing-cta { padding: 62px 22px 68px; }
+  .closing-inner h2 { font-size: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .city-skeleton { animation: none; }
+  .city-card, .city-card-photo, .button-primary { transition: none; }
+}

@@ -8,7 +8,7 @@ export const T = {
     launchShort: "Launch",
     launchFull: "Launch your city",
     footerTagline: "Helping cities connect in real life.",
-    langToggle: "🇯🇵 日本語",
+    langToggle: "日本語",
 
     heroBadge: "🚀 Something for everyone",
     heroH1a: "In Real Life,",
@@ -86,7 +86,7 @@ export const T = {
     launchShort: "立ち上げる",
     launchFull: "あなたの街を立ち上げる",
     footerTagline: "都市を、リアルなつながりで。",
-    langToggle: "🇺🇸 English",
+    langToggle: "English",
 
     heroBadge: "🚀 新しいものを始めています",
     heroH1a: "リアルな体験を、",
