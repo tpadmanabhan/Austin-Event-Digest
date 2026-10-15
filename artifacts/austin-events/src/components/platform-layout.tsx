@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Bell, CheckCircle2, Loader2 } from "lucide-react";
 import { LangProvider, useLang } from "@/contexts/lang-context";
@@ -7,11 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 function PlatformLayoutInner({ children }: { children: ReactNode }) {
-  const { t, toggleLang } = useLang();
+  const { lang, t, toggleLang } = useLang();
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [featureEmail, setFeatureEmail] = useState("");
   const [featureStatus, setFeatureStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [featureError, setFeatureError] = useState("");
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   async function handleFeatureInterestSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -101,7 +105,7 @@ function PlatformLayoutInner({ children }: { children: ReactNode }) {
                   className="h-12 sm:h-20 w-auto max-w-[55vw] sm:max-w-none object-contain transition-transform group-hover:-translate-y-0.5"
                 />
                 <span className="absolute -bottom-1 -right-1 rounded-full border border-amber-400/70 bg-amber-50 px-1 py-px text-[7px] font-bold uppercase tracking-wide text-amber-700 leading-tight">
-                  Beta
+                  {lang === "ja" ? "ベータ版" : "Beta"}
                 </span>
               </div>
             </a>
@@ -122,7 +126,7 @@ function PlatformLayoutInner({ children }: { children: ReactNode }) {
               <button
                 onClick={toggleLang}
                 className="inline-flex items-center justify-center rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-colors"
-                aria-label="Toggle language"
+                aria-label={lang === "ja" ? "言語を切り替え" : "Toggle language"}
               >
                 {t.langToggle}
               </button>

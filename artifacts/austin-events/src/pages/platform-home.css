@@ -49,6 +49,11 @@
   font-size: clamp(49px, 6.2vw, 77px);
   line-height: .98;
 }
+.platform-hero-ja .hero-copy h1 {
+  font-size: clamp(40px, 4.2vw, 54px);
+  line-height: 1.16;
+  letter-spacing: -.02em;
+}
 .hero-copy h1 em, .section-heading h2 em, .cares-spotlight h2 em, .ethics-spotlight h2 em, .closing-inner h2 em {
   color: #ad684c;
   font-weight: 400;
@@ -220,6 +225,7 @@
   .platform-hero-inner { grid-template-columns: 1fr; gap: 8px; }
   .hero-copy { padding: 12px 0 0; }
   .hero-copy h1 { margin-top: 16px; font-size: clamp(47px, 13vw, 67px); }
+  .platform-hero-ja .hero-copy h1 { font-size: clamp(34px, 9.2vw, 44px); line-height: 1.22; }
   .hero-description { max-width: 420px; margin: 16px 0 20px; font-size: 14px; }
   .hero-actions { gap: 15px; }
   .button-primary { min-height: 46px; padding: 0 17px; font-size: 13px; }

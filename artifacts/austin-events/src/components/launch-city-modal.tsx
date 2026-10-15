@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check, Loader2, MapPin } from "lucide-react";
 import { SpockImage } from "@/components/spock-mascot";
+import { useLang } from "@/contexts/lang-context";
+import { CITY_REQUEST_MODAL_COPY } from "@/i18n/platform-home";
 
 interface Props {
   open: boolean;
@@ -12,6 +14,8 @@ interface Props {
 }
 
 export function LaunchCityModal({ open, onOpenChange }: Props) {
+  const { lang } = useLang();
+  const copy = CITY_REQUEST_MODAL_COPY[lang];
   const formId = useId();
   const [cityName, setCityName] = useState("");
   const [email, setEmail] = useState("");
@@ -49,19 +53,33 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cityName: cityName.trim(), email: email.trim() }),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => null) as
+        | (Partial<CityRequestReceipt> & { message?: string; saved?: boolean })
+        | null;
       if (!response.ok) {
-        throw new Error(typeof data.message === "string" ? data.message : "Your request could not be saved. Please try again.");
+        if (lang === "ja") {
+          const message = response.status === 400
+            ? copy.invalidRequest
+            : response.status === 429
+              ? copy.rateLimited
+              : response.status === 503
+                ? copy.requestNotConfirmed
+                : copy.genericError;
+          throw new Error(message);
+        }
+        throw new Error(typeof data?.message === "string" ? data.message : copy.genericError);
       }
-      if (data.saved !== true || !["sent", "failed", "unconfirmed"].includes(data.notificationStatus)) {
-        throw new Error("We could not confirm your request. You can safely retry the same city and email.");
+      if (data?.saved !== true || !["sent", "failed", "unconfirmed"].includes(data.notificationStatus ?? "")) {
+        throw new Error(lang === "ja" ? copy.requestNotConfirmed : "We could not confirm your request. You can safely retry the same city and email.");
       }
       if (openRef.current) setReceipt(data as CityRequestReceipt);
     } catch (error) {
       if (openRef.current) {
-        setSubmitError(error instanceof Error && error.name !== "TypeError"
-          ? error.message
-          : "Connection error. Please try again with the same city and email; this will not send duplicate notifications.");
+        setSubmitError(error instanceof TypeError
+          ? copy.connectionError
+          : error instanceof Error
+            ? error.message
+            : copy.genericError);
       }
     } finally {
       submittingRef.current = false;
@@ -85,51 +103,54 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
             {receipt ? <Check className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
           </div>
           <DialogTitle className="font-serif text-2xl">
-            {receipt ? "Request saved" : "Launch your city"}
+            {receipt ? copy.savedTitle : copy.title}
           </DialogTitle>
           <DialogDescription>
             {receipt
-              ? "Thank you. Your city request is saved for the team to review."
-              : "Tell us your city and email. Our team will review your request and follow up about next steps."}
+              ? copy.savedDescription
+              : copy.description}
           </DialogDescription>
         </DialogHeader>
 
         {receipt ? (
           <div className="space-y-4">
             <div role="status" aria-live="polite" className="space-y-2 text-sm leading-relaxed">
-              <p><strong>{cityName.trim()}</strong> has been requested. We’ll use <strong className="break-all">{email.trim()}</strong> for manual follow-up.</p>
+              <p>
+                <strong>{cityName.trim()}</strong>{lang === "ja" ? "" : " "}
+                {lang === "ja" ? copy.requested : `${copy.requested} `}
+                <strong className="break-all">{email.trim()}</strong>
+                {lang === "ja" ? "宛にお送りします。" : " for manual follow-up."}
+              </p>
               {receipt.acknowledgementStatus === "sent" ? (
-                <p className="text-muted-foreground">An acknowledgement email to {email.trim()} was accepted by our email service. Please check your inbox and spam folder; delivery can take a few minutes.</p>
+                <p className="text-muted-foreground">{lang === "ja" ? copy.acknowledgementSent : <>An acknowledgement email to {email.trim()} was accepted by our email service. Please check your inbox and spam folder; delivery can take a few minutes.</>}</p>
               ) : (
                 <p className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-amber-900">
-                  Your request is saved, but your acknowledgement email could not be confirmed.
-                  Your request remains recorded for review.
+                  {copy.acknowledgementFailed}
                 </p>
               )}
               {receipt.notificationStatus === "sent" ? (
-                <p className="text-muted-foreground">The admin notification was accepted by our email service.</p>
+                <p className="text-muted-foreground">{copy.notificationSent}</p>
               ) : (
                 <p className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-amber-900">
-                  Your request is saved, but the admin email notification could not be confirmed.
-                  Please don’t resubmit; your request remains recorded for review.
+                  {copy.notificationFailed}
                 </p>
               )}
-              {receipt.duplicate && <p className="text-muted-foreground">This request was already recorded. No duplicate admin notification was sent.</p>}
-              <p className="text-muted-foreground">Submitting a request does not automatically launch a city or create an account.</p>
+              {receipt.duplicate && <p className="text-muted-foreground">{copy.duplicate}</p>}
+              <p className="text-muted-foreground">{copy.noAutomaticLaunch}</p>
             </div>
-            <Button type="button" className="w-full rounded-xl" onClick={() => handleOpenChange(false)}>Close</Button>
+            <Button type="button" className="w-full rounded-xl" onClick={() => handleOpenChange(false)}>{copy.close}</Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4" aria-busy={isSubmitting}>
             <div className="space-y-1.5">
-              <label htmlFor={`${formId}-city`} className="text-sm font-semibold">City name</label>
-              <Input id={`${formId}-city`} name="cityName" placeholder="San Antonio"
+              <label htmlFor={`${formId}-city`} className="text-sm font-semibold">{copy.cityLabel}</label>
+              <Input id={`${formId}-city`} name="cityName" placeholder={copy.cityPlaceholder}
                 autoComplete="address-level2" required minLength={2} maxLength={100}
                 value={cityName} onChange={event => setCityName(event.target.value)}
                 disabled={isSubmitting} className="rounded-xl text-base" />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor={`${formId}-email`} className="text-sm font-semibold">Email address</label>
+              <label htmlFor={`${formId}-email`} className="text-sm font-semibold">{copy.emailLabel}</label>
               <Input id={`${formId}-email`} name="email" type="email" inputMode="email"
                 placeholder="you@example.com" autoComplete="email" required maxLength={254}
                 value={email} onChange={event => setEmail(event.target.value)}
@@ -141,12 +162,12 @@ export function LaunchCityModal({ open, onOpenChange }: Props) {
             <Button type="submit" className="w-full rounded-xl h-11 gap-2"
               disabled={isSubmitting || cityName.trim().length < 2 || !email.trim()}>
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-              {isSubmitting ? "Submitting request…" : "Submit request"}
+              {isSubmitting ? copy.submitting : copy.submit}
             </Button>
-            <p className="text-xs text-muted-foreground">No password or account needed. Requests are reviewed manually.</p>
+            <p className="text-xs text-muted-foreground">{copy.noAccount}</p>
             <div className="flex items-center gap-2 rounded-xl bg-primary/5 px-2 py-1.5">
               <SpockImage width={40} />
-              <p className="text-xs text-muted-foreground">Spock helps our team research events and draft guides; a person reviews your request.</p>
+              <p className="text-xs text-muted-foreground">{copy.spockNote}</p>
             </div>
           </form>
         )}

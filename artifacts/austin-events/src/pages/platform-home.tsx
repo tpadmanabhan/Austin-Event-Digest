@@ -6,6 +6,7 @@ import { ArrowDown, ArrowRight, ExternalLink, MapPin, Newspaper } from "lucide-r
 import { PlatformLayout } from "@/components/platform-layout";
 import { useLang } from "@/contexts/lang-context";
 import { LaunchCityModal } from "@/components/launch-city-modal";
+import { JAPANESE_CITY_COPY, PLATFORM_HOME_COPY } from "@/i18n/platform-home";
 
 interface TenantSummary {
   slug: string;
@@ -35,12 +36,12 @@ const CITY_DIRECTORY = [
   { slug: "dc", name: "DC Events", city: "Washington, DC", image: publicImage("dc-hero.jpg"), alt: "Washington, DC city vista" },
 ];
 
-const ETHICS_RESOURCES: Record<string, { href: string; label: string }> = {
-  boston: { href: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", label: "Boston’s generative AI policy" },
-  sanfrancisco: { href: "https://hai.stanford.edu/ai-index/2026-ai-index-report", label: "Stanford HAI AI Index 2026" },
-  austin: { href: "https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/", label: "AI Doesn’t Solve This" },
-  sacramento: { href: "https://www.nist.gov/itl/ai-risk-management-framework", label: "NIST AI Risk Management Framework" },
-  miami: { href: "https://algorithmsofoppression.com/about/", label: "Algorithms of Oppression" },
+const ETHICS_RESOURCES: Record<string, { href: string; label: string; jaLabel: string }> = {
+  boston: { href: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", label: "Boston’s generative AI policy", jaLabel: "ボストン市の生成AI方針" },
+  sanfrancisco: { href: "https://hai.stanford.edu/ai-index/2026-ai-index-report", label: "Stanford HAI AI Index 2026", jaLabel: "スタンフォードHAI AIインデックス 2026" },
+  austin: { href: "https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/", label: "AI Doesn’t Solve This", jaLabel: "AI Doesn’t Solve This" },
+  sacramento: { href: "https://www.nist.gov/itl/ai-risk-management-framework", label: "NIST AI Risk Management Framework", jaLabel: "NIST AIリスクマネジメント・フレームワーク" },
+  miami: { href: "https://algorithmsofoppression.com/about/", label: "Algorithms of Oppression", jaLabel: "Algorithms of Oppression" },
 };
 
 function useTenantList() {
@@ -57,30 +58,39 @@ function useTenantList() {
 }
 
 function NewCityBadge() {
-  return <span className="inline-flex shrink-0 rounded-full bg-[#dcfce7] px-2 py-0.5 text-xs font-bold text-[#166534]">New</span>;
+  const { lang } = useLang();
+  return <span className="inline-flex shrink-0 rounded-full bg-[#dcfce7] px-2 py-0.5 text-xs font-bold text-[#166534]">{lang === "ja" ? "新着" : "New"}</span>;
 }
 
 function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
   const reading = ETHICS_RESOURCES[city.slug];
+  const { lang } = useLang();
+  const copy = PLATFORM_HOME_COPY[lang];
+  const japaneseCity = lang === "ja" ? JAPANESE_CITY_COPY[city.slug] : undefined;
+  const cityName = japaneseCity?.city ?? city.city;
+  const displayName = japaneseCity?.name ?? city.name;
+  const readingTitle = reading
+    ? lang === "ja" ? reading.jaLabel : reading.label
+    : copy.cityExplore.replace("{city}", cityName);
   return (
     <article className={`city-card group ${city.slug === "boston" ? "city-card-featured" : ""}`}>
-      <a className="city-card-main" href={cityUrl(city.slug)} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${city.name}`}>
+      <a className="city-card-main" href={cityUrl(city.slug)} target="_blank" rel="noopener noreferrer" aria-label={lang === "ja" ? `${displayName}を見る` : `Visit ${city.name}`}>
         {city.image ? (
-          <img className="city-card-photo" src={city.image} alt={city.alt ?? ""} loading="lazy" />
+          <img className="city-card-photo" src={city.image} alt={japaneseCity?.alt ?? city.alt ?? ""} loading="lazy" />
         ) : (
           <div className="city-card-placeholder" aria-hidden="true"><MapPin size={21} strokeWidth={1.6} /></div>
         )}
         <span className="city-card-shade" aria-hidden="true" />
         <span className="city-card-heading">
-          <span className="city-card-city">{city.city}</span>
-          <span className="city-card-name">{city.name}</span>
+          <span className="city-card-city">{cityName}</span>
+          <span className="city-card-name">{displayName}</span>
         </span>
         {NEW_CITY_SLUGS.includes(city.slug) && <span className="city-card-new"><NewCityBadge /></span>}
         <ExternalLink className="city-card-external" size={17} aria-hidden="true" />
       </a>
       <a className="city-card-reading" href={reading?.href ?? cityUrl(city.slug)} target="_blank" rel="noopener noreferrer">
-        <span className="reading-label"><Newspaper size={14} aria-hidden="true" /> Local AI Ethics</span>
-        <span className="reading-title">{reading?.label ?? `Explore the ${city.city} edition`}</span>
+        <span className="reading-label"><Newspaper size={14} aria-hidden="true" />{copy.localEthics}</span>
+        <span className="reading-title">{readingTitle}</span>
         <ExternalLink size={13} aria-hidden="true" />
       </a>
     </article>
@@ -90,116 +100,119 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
 function PlatformHomeInner() {
   const { data: tenants, isLoading, isError, refetch } = useTenantList();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { t, lang } = useLang();
+  const { lang } = useLang();
+  const copy = PLATFORM_HOME_COPY[lang];
   const cities = [...CITY_DIRECTORY]
     .filter(city => !["sanfrancisco", "miami", "boston"].includes(city.slug) || tenants?.some(tenant => tenant.slug === city.slug) || !tenants)
     .sort((a, b) => LIVE_CITY_ORDER.indexOf(a.slug) - LIVE_CITY_ORDER.indexOf(b.slug));
 
   return (
     <>
-      <section className="platform-hero">
+      <section className={`platform-hero ${lang === "ja" ? "platform-hero-ja" : ""}`}>
         <div className="platform-hero-inner">
           <motion.div className="hero-copy" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-            <div className="hero-kicker"><span className="kicker-rule" /> A local editor in your inbox</div>
-            <h1>Event Newsletter<br /><em>in an Hour.</em></h1>
+            <div className="hero-kicker"><span className="kicker-rule" /> {copy.heroKicker}</div>
+            <h1>{copy.heroTitle}<br /><em>{copy.heroHighlight}</em></h1>
             <p className="hero-description">
-              A simple way to find worthwhile things happening nearby. Browse your city’s edition, or ask us to bring one to yours.
+              {copy.heroDescription}
             </p>
             <div className="hero-actions">
               <button type="button" className="button-primary" onClick={() => setIsModalOpen(true)} data-testid="button-request-city-hero">
-                {lang === "ja" ? "あなたの街をリクエスト" : "Request your city"} <ArrowRight size={17} aria-hidden="true" />
+                {copy.requestButton} <ArrowRight size={17} aria-hidden="true" />
               </button>
               <a className="button-quiet" href="#city-directory"><span>{lang === "ja" ? "都市を探す" : "Find your city"}</span><ArrowDown size={15} aria-hidden="true" /></a>
             </div>
-            <p className="hero-footnote">No account needed. Requests are reviewed by our team.</p>
+            <p className="hero-footnote">{copy.heroFootnote}</p>
           </motion.div>
 
-          <motion.div className="vista-collage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08 }} aria-label="Views from Boston, Houston, Miami and Sacramento">
+          <motion.div className="vista-collage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08 }} aria-label={copy.collageLabel}>
             <figure className="vista vista-large">
-              <img src="/api/storage/public-objects/cities/boston/hero.jpg" alt="Boston city view" fetchPriority="high" />
-              <figcaption><span>01 / NEW EDITION</span><b>Boston</b></figcaption>
+              <img src="/api/storage/public-objects/cities/boston/hero.jpg" alt={lang === "ja" ? "ボストンの街並み" : "Boston city view"} fetchPriority="high" />
+              <figcaption><span>{copy.newEdition}</span><b>{lang === "ja" ? "ボストン" : "Boston"}</b></figcaption>
             </figure>
             <figure className="vista vista-sf">
-              <img src={publicImage("houston-dusk.jpg")} alt="Houston skyline at dusk" />
-              <figcaption><span>02</span><b>Houston</b></figcaption>
+              <img src={publicImage("houston-dusk.jpg")} alt={lang === "ja" ? "夕暮れのヒューストンのスカイライン" : "Houston skyline at dusk"} />
+              <figcaption><span>02</span><b>{lang === "ja" ? "ヒューストン" : "Houston"}</b></figcaption>
             </figure>
             <figure className="vista vista-austin">
-              <img src="/api/storage/public-objects/cities/miami/hero.jpg" alt="Miami waterfront skyline" />
-              <figcaption><span>03</span><b>Miami</b></figcaption>
+              <img src="/api/storage/public-objects/cities/miami/hero.jpg" alt={lang === "ja" ? "マイアミの水辺とスカイライン" : "Miami waterfront skyline"} />
+              <figcaption><span>03</span><b>{lang === "ja" ? "マイアミ" : "Miami"}</b></figcaption>
             </figure>
             <figure className="vista vista-sac">
-              <img src={publicImage("sacramento-hero.jpg")} alt="Sacramento city view" />
+              <img src={publicImage("sacramento-hero.jpg")} alt={lang === "ja" ? "サクラメントの街並み" : "Sacramento city view"} />
             </figure>
-            <span className="collage-stamp">GOOD THINGS<br />HAPPEN HERE</span>
+            <span className="collage-stamp">{lang === "ja" ? <>素敵な出会いが<br />ここにある</> : <>GOOD THINGS<br />HAPPEN HERE</>}</span>
           </motion.div>
         </div>
-        <div className="hero-baseline"><span>Made for your corner of the world</span><span className="baseline-dot" /><span>Local events, useful reads, neighborly finds</span></div>
+        <div className="hero-baseline"><span>{copy.baselineLead}</span><span className="baseline-dot" /><span>{copy.baselineTail}</span></div>
       </section>
 
       <section id="city-directory" className="directory-section">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">The city editions</span>
-            <h2>Find your <em>nearby.</em></h2>
-            <p>Choose a city for its local newsletter, event guide and city-specific reading.</p>
+            <span className="eyebrow">{copy.directoryEyebrow}</span>
+            <h2>{copy.directoryTitle}{lang === "ja" ? "" : " "}<em>{copy.directoryHighlight}</em></h2>
+            <p>{copy.directoryDescription}</p>
             <p className="custom-newsletter-note">
-              We can build custom Event Newsletters around your city’s voice and interests—like <a href="https://austin.eventcarpooling.com" target="_blank" rel="noopener noreferrer">Raj’s Austin Events</a>.
+              {copy.customNewsletterIntro}
+              <a href="https://austin.eventcarpooling.com" target="_blank" rel="noopener noreferrer">{copy.customNewsletterLink}</a>
+              {copy.customNewsletterEnding}
             </p>
           </div>
-          <div className="directory-key"><NewCityBadge /><span>Recently added</span></div>
+          <div className="directory-key"><NewCityBadge /><span>{copy.recentlyAdded}</span></div>
         </div>
         {isError && (
           <div className="directory-alert" role="status">
-            <span>The directory is taking a moment. Showing the available editions.</span>
-            <button type="button" onClick={() => void refetch()} data-testid="button-retry-cities">Try again</button>
+            <span>{copy.directoryError}</span>
+            <button type="button" onClick={() => void refetch()} data-testid="button-retry-cities">{copy.tryAgain}</button>
           </div>
         )}
         <div className="city-grid" aria-busy={isLoading}>
           {isLoading ? (
-            <div className="directory-skeletons" role="status" aria-label="Loading city editions">
+            <div className="directory-skeletons" role="status" aria-label={lang === "ja" ? "都市版を読み込み中" : "Loading city editions"}>
               {CITY_DIRECTORY.slice(0, 6).map(city => <div className="city-skeleton" key={city.slug}><span /><i /></div>)}
             </div>
           ) : cities.map(city => <CityCard key={city.slug} city={city} />)}
         </div>
         <div className="request-note">
           <span className="request-note-mark"><MapPin size={18} aria-hidden="true" /></span>
-          <p><strong>Not seeing your city?</strong> Tell us where you are and we’ll review a city request.</p>
+          <p><strong>{copy.requestNoteTitle}</strong> {copy.requestNote}</p>
           <button type="button" className="text-link-button" onClick={() => setIsModalOpen(true)} data-testid="button-request-city-directory">
-            Request your city <ArrowRight size={15} aria-hidden="true" />
+            {copy.requestButton} <ArrowRight size={15} aria-hidden="true" />
           </button>
         </div>
       </section>
 
-      <section className="spotlight-row" aria-label="Featured local programs">
+      <section className="spotlight-row" aria-label={lang === "ja" ? "地域の注目プログラム" : "Featured local programs"}>
         <article className="cares-spotlight">
-          <div className="spotlight-topline"><span className="spotlight-marker" /> AUSTIN · WEEKLY DEALS</div>
-          <h2>Good things nearby.<br /><em>Good prices, too.</em></h2>
-          <p>AustinCares gathers local deals to help make life in Austin a little more affordable.</p>
+          <div className="spotlight-topline"><span className="spotlight-marker" />{copy.caresEyebrow}</div>
+          <h2>{copy.caresTitle}<br /><em>{copy.caresHighlight}</em></h2>
+          <p>{copy.caresDescription}</p>
           <a href="https://austincares.eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="spotlight-link">
-            Explore AustinCares <ArrowRight size={16} aria-hidden="true" />
+            {copy.caresLink} <ArrowRight size={16} aria-hidden="true" />
           </a>
           <span className="spotlight-ornament" aria-hidden="true">AC</span>
         </article>
         <article className="ethics-spotlight">
-          <div className="spotlight-topline"><span className="ethics-mark" /> LOCAL AI ETHICS</div>
-          <h2>Technology belongs<br />in a <em>local conversation.</em></h2>
-          <p>Each city edition brings AI questions back to the people, places and public choices around us.</p>
+          <div className="spotlight-topline"><span className="ethics-mark" />{copy.ethicsEyebrow}</div>
+          <h2>{copy.ethicsTitle}<br />{lang === "ja" ? <em>{copy.ethicsHighlight}</em> : <>in a <em>{copy.ethicsHighlight}</em></>}</h2>
+          <p>{copy.ethicsDescription}</p>
           <a href="#city-directory" className="spotlight-link">
-            Explore city-by-city resources <ArrowRight size={16} aria-hidden="true" />
+            {copy.ethicsLink} <ArrowRight size={16} aria-hidden="true" />
           </a>
-          <img className="integrity-logo" src={publicImage("intelligence-integrity.png")} alt="Intelligence with integrity" />
+          <img className="integrity-logo" src={publicImage("intelligence-integrity.png")} alt={lang === "ja" ? "知性と誠実さ" : "Intelligence with integrity"} />
         </article>
       </section>
 
       <section className="closing-cta" id="launch">
         <div className="closing-inner">
-          <span className="eyebrow">A good place to begin</span>
-          <h2>Your city has<br /><em>a story to tell.</em></h2>
-          <p>Request a city edition. Our team will review your note and follow up about next steps.</p>
+          <span className="eyebrow">{copy.closingEyebrow}</span>
+          <h2>{copy.closingTitle}<br /><em>{copy.closingHighlight}</em></h2>
+          <p>{copy.closingDescription}</p>
           <button type="button" className="button-primary" onClick={() => setIsModalOpen(true)} data-testid="button-request-city-footer">
-            {t.ctaButton} <ArrowRight size={17} aria-hidden="true" />
+            {copy.requestButton} <ArrowRight size={17} aria-hidden="true" />
           </button>
-          <small>No password or account needed. A request does not automatically launch a city.</small>
+          <small>{copy.noAutomaticLaunch}</small>
         </div>
       </section>
       <LaunchCityModal open={isModalOpen} onOpenChange={setIsModalOpen} />
