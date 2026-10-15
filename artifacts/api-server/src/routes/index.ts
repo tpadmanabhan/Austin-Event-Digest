@@ -22,7 +22,7 @@ router.use(contentRouter);
 router.use(mapImageRouter);
 router.use(storageRouter);
 // Tenant config + list are used by city subdomains too — no host guard.
-// requirePlatformRoot is applied per-route inside tenantsRouter for onboarding-only endpoints.
+// Platform-only guards are per-route; legacy public city creation is retired.
 router.use(tenantsRouter);
 router.use(cityRequestsRouter);
 

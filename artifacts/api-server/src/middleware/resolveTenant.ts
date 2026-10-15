@@ -125,8 +125,9 @@ export function requireTenant(req: Request, res: Response, next: NextFunction): 
  * that reach here with req.tenant set are simulating a subdomain call.
  * In production, any resolved tenant means the caller is on a city subdomain.
  *
- * Apply to self-serve tenant creation routes so operators on one city's subdomain
- * cannot hit the onboarding API.
+ * This is a routing boundary, NOT authentication or authorization.
+ * Use for public platform-only routes such as city requests. It must not be
+ * treated as permission to provision cities or issue administrator credentials.
  */
 export function requirePlatformRoot(req: Request, res: Response, next: NextFunction): void {
   if (req.tenant) {

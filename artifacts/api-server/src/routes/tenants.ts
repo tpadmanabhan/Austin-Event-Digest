@@ -1,11 +1,8 @@
 import { Router, type IRouter } from "express";
 import { createHmac } from "crypto";
 import { db, tenantsTable } from "@workspace/db";
-import { eq, sql } from "drizzle-orm";
-import { hashPassword } from "../lib/passwordHash";
+import { eq } from "drizzle-orm";
 import { requirePlatformRoot } from "../middleware/resolveTenant";
-import { sendEmail } from "../lib/emailService";
-import { awardXP } from "../lib/gamification";
 
 const router: IRouter = Router();
 
@@ -28,54 +25,6 @@ function generateVerifyToken(slug: string): string {
 
 function isEmailVerificationEnabled(): boolean {
   return !!process.env.RSVP_HMAC_SECRET;
-}
-
-async function sendVerificationEmail(slug: string, adminEmail: string): Promise<void> {
-  const token = generateVerifyToken(slug);
-  const verifyUrl = `https://eventcarpooling.com/api/tenants/verify?slug=${encodeURIComponent(slug)}&token=${encodeURIComponent(token)}`;
-  const cityDisplay = slug.charAt(0).toUpperCase() + slug.slice(1);
-
-  await sendEmail({
-    to: adminEmail,
-    subject: `Verify your ${cityDisplay} Events newsletter`,
-    html: `
-      <!DOCTYPE html>
-      <html>
-      <head><meta charset="utf-8"></head>
-      <body style="font-family:system-ui,sans-serif;background:#f5f5f5;margin:0;padding:32px 16px;">
-        <div style="max-width:500px;margin:0 auto;background:#fff;border-radius:16px;padding:40px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-          <p style="font-size:32px;text-align:center;margin:0 0 16px;">🗺️</p>
-          <h1 style="font-size:22px;font-weight:700;text-align:center;color:#111;margin:0 0 8px;">Confirm your email</h1>
-          <p style="color:#555;font-size:15px;text-align:center;margin:0 0 32px;line-height:1.5;">
-            You're one click away from launching <strong>${cityDisplay} Events</strong> on eventcarpooling.com.
-          </p>
-          <a href="${verifyUrl}"
-             style="display:block;text-align:center;background:#7c3aed;color:#fff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 24px;border-radius:12px;">
-            Confirm &amp; activate my city →
-          </a>
-          <p style="color:#999;font-size:12px;text-align:center;margin:24px 0 0;line-height:1.6;">
-            If you didn't sign up for this, ignore this email.<br>
-            Link expires in 48 hours.
-          </p>
-        </div>
-      </body>
-      </html>
-    `,
-  });
-}
-
-// ── Rate limiting ───────────────────────────────────────────────────────────
-
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT_MAX = 3;
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const prev = (rateLimitMap.get(ip) || []).filter(t => now - t < RATE_LIMIT_WINDOW_MS);
-  if (prev.length >= RATE_LIMIT_MAX) return true;
-  rateLimitMap.set(ip, [...prev, now]);
-  return false;
 }
 
 // ── Routes ──────────────────────────────────────────────────────────────────
@@ -213,129 +162,15 @@ router.get("/tenants/check-slug", requirePlatformRoot, async (req, res) => {
   }
 });
 
-router.post("/tenants", requirePlatformRoot, async (req, res) => {
-  const { cityName, slug, adminEmail, adminPassword, categories, accentColor, referrerSlug } = req.body ?? {};
-
-  if (!cityName || typeof cityName !== "string" || cityName.trim().length < 2) {
-    res.status(400).json({ error: "invalid_request", message: "cityName must be at least 2 characters" });
-    return;
-  }
-
-  if (!slug || !isValidSlug(slug)) {
-    res.status(400).json({ error: "invalid_request", message: "slug must be 2-30 lowercase alphanumeric characters or hyphens" });
-    return;
-  }
-
-  if (RESERVED_SLUGS.has(slug)) {
-    res.status(400).json({ error: "invalid_request", message: `"${slug}" is a reserved name` });
-    return;
-  }
-
-  if (!adminEmail || typeof adminEmail !== "string" || !adminEmail.includes("@")) {
-    res.status(400).json({ error: "invalid_request", message: "adminEmail must be a valid email address" });
-    return;
-  }
-
-  if (!adminPassword || typeof adminPassword !== "string" || adminPassword.length < 8) {
-    res.status(400).json({ error: "invalid_request", message: "adminPassword must be at least 8 characters" });
-    return;
-  }
-
-  const allowedCategories = new Set(["Tech", "Music", "Food", "Wellness", "Civics", "Sports"]);
-  if (!Array.isArray(categories) || categories.length === 0 || !categories.every((c: unknown) => typeof c === "string" && allowedCategories.has(c))) {
-    res.status(400).json({ error: "invalid_request", message: "categories must be a non-empty array of valid category names" });
-    return;
-  }
-
-  // Rate limit by IP
-  const clientIp = (req.ip ?? req.socket.remoteAddress ?? "unknown").replace(/^::ffff:/, "");
-  if (isRateLimited(clientIp)) {
-    res.status(429).json({ error: "rate_limited", message: "Too many signups from this IP. Please try again in an hour." });
-    return;
-  }
-
-  try {
-    const [existing] = await db
-      .select({ slug: tenantsTable.slug })
-      .from(tenantsTable)
-      .where(eq(tenantsTable.slug, slug))
-      .limit(1);
-
-    if (existing) {
-      res.status(409).json({ error: "conflict", message: `The subdomain "${slug}" is already taken` });
-      return;
-    }
-
-    const passwordHash = await hashPassword(adminPassword);
-    const trimmedCity = cityName.trim();
-    const tenantName = `${trimmedCity} Events`;
-    const color = typeof accentColor === "string" && /^#[0-9a-fA-F]{6}$/.test(accentColor) ? accentColor : "#7c3aed";
-    const emailVerificationEnabled = isEmailVerificationEnabled();
-
-    // Ensure the sequence is ahead of the actual max ID (guards against manual inserts)
-    await db.execute(sql`SELECT setval(pg_get_serial_sequence('tenants', 'id'), COALESCE((SELECT MAX(id) FROM tenants), 0) + 1, false)`);
-
-    const [tenantRow] = await db
-      .insert(tenantsTable)
-      .values({
-        slug,
-        name: tenantName,
-        city: trimmedCity,
-        accentColor: color,
-        categories,
-        passwordHash,
-        adminEmail: adminEmail.trim().toLowerCase(),
-        emailVerified: !emailVerificationEnabled,
-        firstRun: true,
-        // isActive is false until email verified (when verification is enabled)
-        isActive: !emailVerificationEnabled,
-      })
-      .returning();
-
-    const tenant = {
-      slug: tenantRow.slug,
-      name: tenantRow.name,
-      city: tenantRow.city,
-      accentColor: tenantRow.accentColor,
-      categories: tenantRow.categories,
-    };
-
-    req.log.info({ slug, city: trimmedCity, emailVerification: emailVerificationEnabled, referrerSlug }, "New tenant created via onboarding");
-
-    // Award referral XP to the REFERRING city (not the new tenant).
-    // referrerSlug is optional — if omitted or invalid, no XP is awarded.
-    if (referrerSlug && typeof referrerSlug === "string") {
-      db.select({ id: tenantsTable.id })
-        .from(tenantsTable)
-        .where(eq(tenantsTable.slug, referrerSlug))
-        .limit(1)
-        .then(([referrer]) => {
-          if (referrer) {
-            awardXP(referrer.id, "tenant_referral", 50, { referredSlug: slug, referredCity: trimmedCity }).catch(() => {});
-          }
-        })
-        .catch(() => {});
-    }
-
-    if (emailVerificationEnabled) {
-      try {
-        await sendVerificationEmail(slug, adminEmail.trim().toLowerCase());
-        req.log.info({ slug }, "Verification email sent");
-      } catch (emailErr) {
-        req.log.error({ emailErr, slug }, "Failed to send verification email — tenant created but not yet active");
-      }
-    }
-
-    res.status(201).json({
-      tenant,
-      requiresVerification: emailVerificationEnabled,
-      url: `https://${slug}.eventcarpooling.com`,
-      adminUrl: `https://${slug}.eventcarpooling.com/admin`,
-    });
-  } catch (err) {
-    req.log.error({ err }, "Error creating tenant");
-    res.status(500).json({ error: "server_error", message: "Failed to create city" });
-  }
+// Public city creation is retired, including for authenticated city admins.
+// Requests must be reviewed before a city is provisioned through operator tooling.
+// Do not redirect POST bodies: legacy payloads can contain passwords.
+router.post("/tenants", requirePlatformRoot, (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.status(410).json({
+    error: "city_creation_disabled",
+    message: "Automatic city creation is no longer available. Submit your city name and email to /api/city-requests for manual review.",
+  });
 });
 
 // Email verification — activate tenant after clicking the link in their email

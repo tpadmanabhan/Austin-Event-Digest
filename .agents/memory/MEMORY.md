@@ -44,3 +44,4 @@
 - [TypeScript reference refresh](typescript-reference-refresh.md) — rebuild shared references after schema/codegen changes; consumers can otherwise see stale declarations.
 - [Publication readiness](publication-readiness.md) — reproduce artifact build context; verify dynamic newsletter content in saved data and rendered output.
 - [Platform landing priorities](platform-landing-priorities.md) — concise one-hour newsletter, cities, deals, local AI Ethics, city requests, scenic photos, and readable public HTML.
+- [City provisioning policy](city-provisioning-policy.md) — manual review stays separate from account creation; root routing and city admin credentials are not platform approval.
