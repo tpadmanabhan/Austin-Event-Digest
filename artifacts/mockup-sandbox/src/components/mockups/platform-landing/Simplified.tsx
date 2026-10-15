@@ -10,11 +10,11 @@ const CITIES = [
   { slug: "sanfrancisco", name: "San Francisco Events", city: "San Francisco", image: "/__mockup/images/sanfrancisco-hero.jpg", alt: "San Francisco city view" },
   { slug: "austin", name: "Raj's Austin Events", city: "Austin", image: "/__mockup/images/austin-hero.png", alt: "Austin city view" },
   { slug: "sacramento", name: "Sacramento Events", city: "Sacramento", image: "/__mockup/images/sacramento-hero.jpg", alt: "Sacramento city view" },
-  { slug: "miami", name: "Miami Events", city: "Miami" },
+  { slug: "miami", name: "Miami Events", city: "Miami", image: "/api/storage/public-objects/cities/miami/hero.jpg", alt: "Miami waterfront skyline and beach" },
   { slug: "houston", name: "Houston Events", city: "Houston", image: "/__mockup/images/houston-dusk.jpg", alt: "Houston skyline at dusk" },
-  { slug: "tokyo", name: "Tokyo Events", city: "Tokyo" },
+  { slug: "tokyo", name: "Tokyo Events", city: "Tokyo", image: "/__mockup/images/tokyo-city.jpg", alt: "Tokyo skyline glowing at twilight" },
   { slug: "stlouis", name: "St. Louis Events", city: "St. Louis", image: "/__mockup/images/stlouis-hero.jpg", alt: "St. Louis city view" },
-  { slug: "portland", name: "Portland Events", city: "Portland" },
+  { slug: "portland", name: "Portland Events", city: "Portland", image: "/__mockup/images/portland-city.jpg", alt: "Portland skyline reflected across the Willamette River" },
   { slug: "bulverde", name: "Bulverde Events", city: "Bulverde", image: "/__mockup/images/bulverde-hero.jpg", alt: "Bulverde landscape" },
   { slug: "dc", name: "DC Events", city: "Washington, DC", image: "/__mockup/images/dc-hero.jpg", alt: "Washington, DC city view" },
 ];
@@ -96,7 +96,7 @@ export function Simplified() {
 
         <section id="city-directory" className="directory-section">
           <div className="section-heading">
-            <div><span className="eyebrow">The city editions</span><h2>Find your <em>nearby.</em></h2><p>Choose a city for its local newsletter, event guide and city-specific reading.</p></div>
+            <div><span className="eyebrow">The city editions</span><h2>Find your <em>nearby.</em></h2><p>Choose a city for its local newsletter, event guide and city-specific reading.</p><p className="custom-newsletter-note">We can build custom Event Newsletters around your city’s voice and interests—like <a href="https://austin.eventcarpooling.com" target="_blank" rel="noreferrer">Raj’s Austin Events</a>.</p></div>
             <div className="directory-key"><NewBadge /><span>Recently added</span></div>
           </div>
           <div className="city-grid">

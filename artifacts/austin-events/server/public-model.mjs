@@ -136,7 +136,7 @@ export async function loadPublicModel(site, pathname) {
     if (pathname !== "/" && !about) return base;
     return { ...base, kind: about ? "about" : "platform", noindex: false,
       title: about ? "About EventCarpooling" : "Event Newsletter in an Hour | EventCarpooling",
-      description: "Explore local city newsletters, recently updated editions, AustinCares deals, and city-specific AI Ethics reading from EventCarpooling.",
+      description: "Explore local and customized city newsletters, recently updated editions, AustinCares deals, and city-specific AI Ethics reading from EventCarpooling.",
       intro: "Event Newsletter in an Hour.",
       schema: { "@context": "https://schema.org", "@type": "WebSite", name: "EventCarpooling", url: PLATFORM_ORIGIN } };
   }

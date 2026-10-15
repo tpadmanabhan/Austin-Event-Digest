@@ -94,6 +94,8 @@ test("the platform document is readable and has real city links without scripts 
   assert.match(body, /Request your city/);
   assert.match(body, /Local AI Ethics/);
   assert.match(body, /Intelligence with integrity/);
+  assert.match(body, /custom Event Newsletters/);
+  assert.match(body, /Raj’s Austin Events/);
   assert.match(body, /https:\/\/austincares\.eventcarpooling\.com/);
   const model = modelOf(body);
   assert.equal(model.cities[0].slug, "boston");

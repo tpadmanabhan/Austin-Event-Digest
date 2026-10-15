@@ -157,6 +157,9 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         <p className="mt-3 text-lg text-slate-800">
           Find local events, city newsletters and useful community resources. Browse a city edition or request one for your city; requests are reviewed by our team.
         </p>
+        <p className="mt-3 text-slate-700">
+          We can build custom Event Newsletters around your city’s voice and interests—like <a href="https://austin.eventcarpooling.com" className={linkCls}>Raj’s Austin Events</a>.
+        </p>
         <h2 id="city-editions" className="mb-3 mt-8 font-serif text-2xl font-bold text-slate-900">City newsletters</h2>
         <ul className="space-y-2">
           {model.cities.map((city) => (

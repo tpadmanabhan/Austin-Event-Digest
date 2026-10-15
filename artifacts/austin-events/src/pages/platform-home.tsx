@@ -26,11 +26,11 @@ const CITY_DIRECTORY = [
   { slug: "sanfrancisco", name: "San Francisco Events", city: "San Francisco", image: publicImage("sanfrancisco-hero.jpg"), alt: "San Francisco across the bay" },
   { slug: "austin", name: "Raj's Austin Events", city: "Austin", image: publicImage("austin-hero.png"), alt: "Austin skyline at sunset" },
   { slug: "sacramento", name: "Sacramento Events", city: "Sacramento", image: publicImage("sacramento-hero.jpg"), alt: "Sacramento city vista" },
-  { slug: "miami", name: "Miami Events", city: "Miami" },
+  { slug: "miami", name: "Miami Events", city: "Miami", image: "/api/storage/public-objects/cities/miami/hero.jpg", alt: "Miami waterfront skyline and beach" },
   { slug: "houston", name: "Houston Events", city: "Houston", image: publicImage("houston-dusk.jpg"), alt: "Houston skyline at dusk" },
-  { slug: "tokyo", name: "Tokyo Events", city: "Tokyo" },
+  { slug: "tokyo", name: "Tokyo Events", city: "Tokyo", image: publicImage("tokyo-city.jpg"), alt: "Tokyo skyline glowing at twilight" },
   { slug: "stlouis", name: "St. Louis Events", city: "St. Louis", image: publicImage("stlouis-hero.jpg"), alt: "St. Louis city vista" },
-  { slug: "portland", name: "Portland Events", city: "Portland" },
+  { slug: "portland", name: "Portland Events", city: "Portland", image: publicImage("portland-city.jpg"), alt: "Portland skyline reflected across the Willamette River" },
   { slug: "bulverde", name: "Bulverde Events", city: "Bulverde", image: publicImage("bulverde-hero.jpg"), alt: "Bulverde Hill Country landscape" },
   { slug: "dc", name: "DC Events", city: "Washington, DC", image: publicImage("dc-hero.jpg"), alt: "Washington, DC city vista" },
 ];
@@ -142,6 +142,9 @@ function PlatformHomeInner() {
             <span className="eyebrow">The city editions</span>
             <h2>Find your <em>nearby.</em></h2>
             <p>Choose a city for its local newsletter, event guide and city-specific reading.</p>
+            <p className="custom-newsletter-note">
+              We can build custom Event Newsletters around your city’s voice and interests—like <a href="https://austin.eventcarpooling.com" target="_blank" rel="noopener noreferrer">Raj’s Austin Events</a>.
+            </p>
           </div>
           <div className="directory-key"><NewCityBadge /><span>Recently added</span></div>
         </div>

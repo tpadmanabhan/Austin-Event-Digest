@@ -20,3 +20,9 @@ The supplied “Intelligence with integrity” graphic belongs with the platform
 **Why:** The user requested adding this graphic where it looks good; it reinforces the local AI Ethics message without competing with city photography.
 
 **How to apply:** Preserve its words and aspect ratio, with descriptive alternative text.
+
+Mention that customized Event Newsletters can be built like Raj's Austin page.
+
+**Why:** The user explicitly requested this as a homepage message.
+
+**How to apply:** Use Raj's Austin edition as the concrete example while preserving the manual city-request review process.
