@@ -57,3 +57,11 @@ Do not pin a regional spotlight or river-wide event at the geocoder's centroid. 
 **Why:** Boston's river-wide regatta resolved to a remote river segment, and “Greater Boston” resolved to a location unrelated to the volunteer spotlight. Both passed the metro radius check.
 
 **How to apply:** Audit place identity as well as city bounds after geocoding; a successfully returned coordinate is not proof of a correct meeting point.
+
+## Los Angeles geocoding queries
+
+For Los Angeles, long API-supplied venue strings may return no Nominatim result even when the venue is real. A simplified venue name or verified street address with a California/Los Angeles qualifier can resolve it. Check the returned place identity; do not substitute a campus centroid or nearby business for a named building.
+
+**Why:** In the October 2026 LA edition, simplified queries resolved several venues that full event strings did not, while one campus-address query matched a nearby business.
+
+**How to apply:** For `la` venues, retry with a concise venue name or verified address plus Los Angeles/California, then confirm the result is the intended place and within the city's radius. Leave the pin unset when the specific venue cannot be verified.
