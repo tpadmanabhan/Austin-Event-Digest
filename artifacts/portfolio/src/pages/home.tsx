@@ -93,6 +93,10 @@ export default function Home() {
               <Terminal className="w-4 h-4 text-primary" />
               Full-Stack TypeScript
             </motion.div>
+            <motion.div variants={fadeIn} className="px-4 py-2 border border-border bg-card text-foreground flex items-center gap-2">
+              <Languages className="w-4 h-4 text-primary" />
+              Japanese UI Localization
+            </motion.div>
           </motion.div>
         </section>
 
@@ -181,10 +185,10 @@ export default function Home() {
                 <div>
                   <h4 className="text-xl font-medium text-foreground flex items-center gap-3 mb-2">
                     <Languages className="w-5 h-5 text-primary" />
-                    Internationalization Pipeline
+                    Japanese Product Localization
                   </h4>
                   <p className="text-muted-foreground">
-                    Built a localized experience for tokyo.eventcarpooling.com featuring a Japanese translation pipeline with PostgreSQL caching for rapid, cost-effective rendering.
+                    Built cached Japanese translations for Tokyo event digests, then localized EventCarpooling’s platform homepage, city directory, accessibility labels and city-request dialog. Verified the interactive language toggle and responsive layout on desktop and mobile.
                   </p>
                 </div>
               </div>
