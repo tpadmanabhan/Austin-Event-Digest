@@ -95,9 +95,10 @@ export function eventSchema(event, origin) {
   };
 }
 
-const PLATFORM_CITY_ORDER = ["boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
-const NEW_CITY_SLUGS = new Set(["atlanta", "sanfrancisco", "austin", "sacramento", "miami", "boston"]);
+const PLATFORM_CITY_ORDER = ["la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
+const NEW_CITY_SLUGS = new Set(["la", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "boston"]);
 const CITY_ETHICS_RESOURCES = {
+  la: { url: "https://ita.lacity.gov/news/ita-publishes-ai-safety-checklist", title: "L.A. A.I. Safety Checklist" },
   boston: { url: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", title: "Boston’s generative AI policy" },
   sanfrancisco: { url: "https://hai.stanford.edu/ai-index/2026-ai-index-report", title: "Stanford HAI AI Index 2026" },
   austin: { url: "https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/", title: "AI Doesn’t Solve This" },

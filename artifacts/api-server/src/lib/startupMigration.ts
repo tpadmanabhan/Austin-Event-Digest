@@ -1068,6 +1068,29 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Houston tenant seed failed (non-fatal)");
   }
 
+  // Los Angeles uses the explicit "la" slug for la.eventcarpooling.com.
+  // Do not invent an admin contact; hash only the configured shared password.
+  try {
+    const [existing] = await db.select({ id: tenantsTable.id }).from(tenantsTable)
+      .where(eq(tenantsTable.slug, "la")).limit(1);
+    if (!existing) {
+      const configuredPassword = process.env.ADMIN_PASSWORD;
+      const passwordHash = configuredPassword && configuredPassword.trim().length >= 12
+        ? await hashPassword(configuredPassword) : null;
+      await db.execute(sql`
+        INSERT INTO tenants (slug, name, city, accent_color, categories, digest_title,
+          is_active, email_verified, password_hash)
+        VALUES ('la', 'Los Angeles Events', 'Los Angeles, CA', '#0E7490',
+          '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb, 'Los Angeles Events',
+          true, false, ${passwordHash})
+        ON CONFLICT (slug) DO NOTHING
+      `);
+    }
+    logger.info("Los Angeles tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "Los Angeles tenant seed failed (non-fatal)");
+  }
+
   // New cities start without invented contacts or subscribers. Only a configured
   // shared password is hashed; no existing tenant or sent edition is overwritten.
   try {

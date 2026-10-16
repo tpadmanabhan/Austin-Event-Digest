@@ -562,6 +562,7 @@ const TENANT_CONFIGS: TenantConfig[] = [
   { slug: "sanfrancisco", tz: "America/Los_Angeles", tmCity: "San Francisco, CA" },
   { slug: "miami", tz: "America/New_York", tmCity: "Miami, FL" },
   { slug: "boston", tz: "America/New_York", tmCity: "Boston, MA" },
+  { slug: "la", tz: "America/Los_Angeles", tmCity: "Los Angeles, CA" },
 ];
 
 // ── Ticketmaster fetch (server-side, direct env access) ───────────────────────

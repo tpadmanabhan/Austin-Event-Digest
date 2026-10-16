@@ -209,6 +209,7 @@ export const CITY_REQUEST_MODAL_COPY: Record<Lang, {
 };
 
 export const JAPANESE_CITY_COPY: Record<string, { city: string; name: string; alt: string }> = {
+  la: { city: "ロサンゼルス", name: "ロサンゼルスのイベント", alt: "ロサンゼルス近郊、ポイント・デュームから望む太平洋" },
   boston: { city: "ボストン", name: "ボストンのイベント", alt: "ボストンの街並み" },
   atlanta: { city: "アトランタ", name: "アトランタのイベント", alt: "アトランタの街並みのイラスト" },
   sanfrancisco: { city: "サンフランシスコ", name: "サンフランシスコのイベント", alt: "サンフランシスコの湾越しの街並み" },

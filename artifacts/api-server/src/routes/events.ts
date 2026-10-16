@@ -340,8 +340,8 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const _s = req.tenant!.slug;
       const separator = _s === "houston" ? " to " : "–";
       const label = `${weekOf.toLocaleDateString("en-US", opts)}${separator}${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-      const subjectEmoji = _s === "atlanta" ? "🍑" : _s === "houston" ? "⭐" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
-      subject = `${subjectEmoji} ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
+      const subjectEmoji = ["la", "boston", "miami", "sanfrancisco"].includes(_s) ? "" : _s === "atlanta" ? "🍑" : _s === "houston" ? "⭐" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
+      subject = `${subjectEmoji ? `${subjectEmoji} ` : ""}${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
     } else {
       subject = fallback.subject;
     }

@@ -31,6 +31,7 @@ export const MAP_CENTERS: Record<string, CityCenter> = {
   sanfrancisco: { lat: 37.7749, lng: -122.4194 },
   miami: { lat: 25.7617, lng: -80.1918 },
   boston: { lat: 42.3601, lng: -71.0589 },
+  la: { lat: 34.0522, lng: -118.2437 },
 };
 
 export const CITY_LABELS: Record<string, string> = {
@@ -48,6 +49,7 @@ export const CITY_LABELS: Record<string, string> = {
   sanfrancisco: "San Francisco",
   miami: "Miami",
   boston: "Boston",
+  la: "Los Angeles",
 };
 
 /**
@@ -72,6 +74,7 @@ export const CITY_MAX_RADIUS_MILES: Record<string, number> = {
   sanfrancisco: 50,
   miami: 50,
   boston: 50,
+  la: 70,
 };
 
 /** Haversine distance in miles between two lat/lng pairs. */

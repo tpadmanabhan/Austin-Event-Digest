@@ -29,6 +29,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     const isAtlanta = citySlug === "atlanta";
     const isHouston = citySlug === "houston";
     const isSF = citySlug === "sanfrancisco";
+    const isLA = citySlug === "la";
     const isHoustonDigest = isHouston && path.startsWith("/digest/");
     const isAtlantaDigest = isAtlanta && path.startsWith("/digest/");
     const title = isCares
@@ -38,6 +39,8 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
       : isAtlanta ? "Atlanta Events — A Local Guide for the Curious | EventCarpooling"
       : isSF && path.startsWith("/digest/") ? "San Francisco Events — Full Edition, October 12–31 | EventCarpooling"
       : isSF ? "San Francisco Events — Fog, Hills, and Plenty to Do | EventCarpooling"
+      : isLA && path.startsWith("/digest/") ? "Los Angeles Events — Full Edition | EventCarpooling"
+      : isLA ? "Los Angeles Events — Pacific Coast, Citywide | EventCarpooling"
       : isHoustonDigest ? "Houston Events — Full Citywide Edition | EventCarpooling"
       : isHouston ? "Houston Events — The Whole City. Your Next Plan. | EventCarpooling"
       : `${tenant.name} | Local Events & Community`;
@@ -49,6 +52,8 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
         ? "Explore real gatherings across Atlanta: tech, arts, sports, civic life and wellness. Browse the weekly local events edition and find your people."
         : isSF
         ? "Explore San Francisco's events edition: tech, arts, sports, civic life and wellness across the city's neighborhoods, October 12–31, 2026."
+        : isLA
+        ? "Explore Los Angeles events across Tech, Arts, Sports, Civics and Wellness, with local organizer links and a city-specific AI ethics reading list."
         : isHouston
         ? "Explore Houston's citywide events edition: real local plans across innovation, art, sports, civic life and wellness, from the bayou to your neighborhood."
         : `Explore curated ${tenant.city} events, local newsletters, venues, and community activities.`;

@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin } from "./public-model.mjs";
 
-const cities = ["austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
+const cities = ["la", "austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
   "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston", "boston", "miami"];
 const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
 const eventId = city => `ev-${String(cities.indexOf(city) + 1).padStart(24, "0")}`;
@@ -98,9 +98,10 @@ test("the platform document is readable and has real city links without scripts 
   assert.match(body, /Raj’s Austin Events/);
   assert.match(body, /https:\/\/austincares\.eventcarpooling\.com/);
   const model = modelOf(body);
-  assert.equal(model.cities[0].slug, "boston");
+  assert.equal(model.cities[0].slug, "la");
   assert.equal(model.cities[0].isNew, true);
-  assert.match(model.cities[0].ethicsUrl, /boston\.gov/);
+  assert.match(model.cities[0].ethicsUrl, /ita\.lacity\.gov/);
+  assert.equal(model.cities[1].slug, "boston");
   assert.match(body, /https:\/\/tokyo\.eventcarpooling\.com\//);
   assert.match(body, /<h1/);
   assert.equal(modelOf(body).kind, "platform");
@@ -167,6 +168,7 @@ test("every city sends its own share image and theme in the initial document", a
     houston: "/images/houston-dusk.jpg",
     sanfrancisco: "/images/sanfrancisco-hero.jpg",
     boston: "/api/storage/public-objects/cities/boston/hero.jpg",
+    la: "https://upload.wikimedia.org/wikipedia/commons/3/33/POINTDUME_CA6.jpg",
     miami: "/api/storage/public-objects/cities/miami/share.jpg",
     tokyo: "https://images.unsplash.com/photo-1480796927426-f609979314bd",
   };
