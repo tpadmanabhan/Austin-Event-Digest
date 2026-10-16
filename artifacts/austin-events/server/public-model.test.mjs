@@ -197,7 +197,7 @@ test("every city sends its own share image and theme in the initial document", a
       }[city];
       if (ethicsTitle && pathname !== "/about") {
         assert.match(body, /AI Ethics/, `${city}${pathname} should include an AI Ethics section`);
-        assert.ok(body.includes(ethicsTitle), `${city}${pathname} should include its local reading; excerpt: ${body.slice(body.indexOf("AI Ethics"), body.indexOf("AI Ethics") + 700)}`);
+        assert.ok(body.includes(ethicsTitle), `${city}${pathname} should include its local reading`);
         assert.match(body, /id="city-ai-ethics"/, `${city}${pathname} should expose the section anchor`);
       }
     }
