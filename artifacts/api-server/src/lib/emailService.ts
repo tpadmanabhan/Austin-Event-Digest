@@ -9,6 +9,7 @@ import { buildSacramentoAiEthicsSection } from "./sacramentoAiEthics";
 import { buildMiamiAiEthicsSection } from "./miamiAiEthics";
 import { buildBostonAiEthicsSection } from "./bostonAiEthics";
 import { buildLaAiEthicsSection } from "./laAiEthics";
+import { buildCityAiEthicsSection } from "./cityAiEthics";
 import { signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -1094,6 +1095,7 @@ export function buildDigestEmailHtml(digest: {
     ${slug === "miami" ? buildMiamiAiEthicsSection() : ""}
     ${slug === "boston" ? buildBostonAiEthicsSection() : ""}
     ${slug === "la" ? buildLaAiEthicsSection() : ""}
+    ${buildCityAiEthicsSection(slug ?? "")}
 
     <!-- Location CTA -->
     ${digest.preferencesUrl ? `

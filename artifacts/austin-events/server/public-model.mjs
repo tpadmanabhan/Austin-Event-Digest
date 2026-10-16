@@ -95,6 +95,8 @@ export function eventSchema(event, origin) {
   };
 }
 
+import cityAiEthicsData from "../../../shared/city-ai-ethics.json" with { type: "json" };
+
 const PLATFORM_CITY_ORDER = ["la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
 const NEW_CITY_SLUGS = new Set(["la", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "boston"]);
 const CITY_ETHICS_RESOURCES = {
@@ -116,11 +118,12 @@ export async function loadPublicModel(site, pathname) {
     canonical: origin + pathname, homeUrl: "/", events: [],
     cities: tenants.map(t => {
       const url = `https://${t.slug}.eventcarpooling.com/`;
-      const ethics = CITY_ETHICS_RESOURCES[t.slug];
+        const ethics = CITY_ETHICS_RESOURCES[t.slug];
+        const localEthics = cityAiEthicsData[t.slug];
       return {
         slug: t.slug, name: t.name || t.city, url, isNew: NEW_CITY_SLUGS.has(t.slug),
-        ethicsUrl: ethics?.url || url,
-        ethicsTitle: ethics?.title || `Explore the ${t.city || t.name} edition for local updates`,
+          ethicsUrl: localEthics ? `${url}#city-ai-ethics` : ethics?.url || url,
+          ethicsTitle: localEthics ? `${localEthics.city} AI Ethics reading list` : ethics?.title || `Explore the ${t.city || t.name} edition for local updates`,
       };
     }).sort((a, b) => {
       const rank = slug => {

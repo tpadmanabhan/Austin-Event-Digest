@@ -187,6 +187,19 @@ test("every city sends its own share image and theme in the initial document", a
         assert.doesNotMatch(image, /\/opengraph\.jpg|\/austin-hero\.png/);
       }
       assert.equal(modelOf(body).citySlug, city);
+      const ethicsTitle = {
+        houston: "Atlas of AI",
+        tokyo: "Tokyo AI Adoption and Use Guidelines",
+        stlouis: "Artificial Intelligence Policy",
+        portland: "responsible use of AI",
+        bulverde: "Data Feminism",
+        dc: "Weapons of Math Destruction",
+      }[city];
+      if (ethicsTitle && pathname !== "/about") {
+        assert.match(body, /AI Ethics/, `${city}${pathname} should include an AI Ethics section`);
+        assert.ok(body.includes(ethicsTitle), `${city}${pathname} should include its local reading; excerpt: ${body.slice(body.indexOf("AI Ethics"), body.indexOf("AI Ethics") + 700)}`);
+        assert.match(body, /id="city-ai-ethics"/, `${city}${pathname} should expose the section anchor`);
+      }
     }
     if (expected[city].startsWith("/images/")) {
       const { response } = await document(host, expected[city]);

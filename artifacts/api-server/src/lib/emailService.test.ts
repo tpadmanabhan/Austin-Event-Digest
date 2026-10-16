@@ -109,7 +109,11 @@ describe("AI Ethics reading section", () => {
       const html = buildDigestEmailHtml(baseDigest, null, null, {
         slug, name: "City Events", city: "City", digestTitle: null,
       });
-      expect(html).not.toContain("AI Ethics");
+      const localEthicsSlugs = new Set(["tokyo", "portland", "bulverde", "stlouis", "dc", "houston"]);
+      if (localEthicsSlugs.has(slug)) expect(html).toContain("AI Ethics");
+      else expect(html).not.toContain("AI Ethics");
+      expect(html).not.toContain("AI Doesn’t Solve This");
+      expect(html).not.toContain("IRL Lifestyle Book of the Week");
       expect(html).not.toContain("Nick Bostrom");
     },
   );
