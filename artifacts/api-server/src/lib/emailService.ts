@@ -530,16 +530,16 @@ export function buildDigestEmailHtml(digest: {
   const cityName = tenant?.city?.split(",")[0] ?? "Austin";
   const greeting = `Hey ${cityName}!`;
   const theme = slug === "la" ? {
-    headerGradient: "linear-gradient(135deg, #12343a 0%, #0E5560 65%, #277d79 100%)",
-    primary: "#0E7490", primaryBtn: "#0E7490", primaryDark: "#12343a",
-    primaryLight: "#f0f8f8", primaryMuted: "#a8d4d8",
-    textOnDark: "#ffffff", textMutedOnDark: "#d6ecee", textStrong: "#ffffff",
-    linkColor: "#0E5560", curatorName: "", curatorUrl: null as string | null,
+    headerGradient: "linear-gradient(135deg, #2d1457 0%, #552583 60%, #7541a8 100%)",
+    primary: "#552583", primaryBtn: "#FDB927", primaryDark: "#2d1457",
+    primaryLight: "#f7f1fc", primaryMuted: "#e6d7f4",
+    textOnDark: "#ffffff", textMutedOnDark: "#efe2fb", textStrong: "#2d1457",
+    linkColor: "#552583", curatorName: "", curatorUrl: null as string | null,
     cityGuideText: "Your October guide to Los Angeles, from Downtown to the Pacific Coast",
     digestDisplayName: tenant?.digestTitle || "Los Angeles Events", headerEmoji: "",
-    eventBtnColor: "#12343a", eventBtnBorder: "#12343a",
-    pillText: "#f0f8f8", pillBorder: "rgba(168,212,216,0.5)",
-    rideBtnBg: "#a8d4d8", rideBtnColor: "#12343a",
+    eventBtnColor: "#552583", eventBtnBorder: "#552583",
+    pillText: "#FDB927", pillBorder: "rgba(253,185,39,0.55)",
+    rideBtnBg: "#FDB927", rideBtnColor: "#2d1457",
   } : slug === "boston" ? {
     headerGradient: "linear-gradient(135deg, #142638 0%, #263e50 65%, #3b5363 100%)",
     primary: "#BD3039", primaryBtn: "#BD3039", primaryDark: "#142638",
@@ -1069,6 +1069,7 @@ export function buildDigestEmailHtml(digest: {
     <!-- Header -->
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
       ${slug === "houston" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/houston-astros.png", digest.siteUrl).toString() : "https://www.mlbstatic.com/team-logos/117.svg")}" alt="Houston Astros logo" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
+      ${slug === "la" ? `<div role="img" aria-label="Los Angeles brand mark" style="display:inline-flex; align-items:center; justify-content:center; width:54px; height:54px; margin:0 auto 12px; border:3px solid rgba(255,255,255,0.65); border-radius:50%; background:#FDB927; color:#552583; font-size:22px; font-weight:900; letter-spacing:-2px; line-height:1;">LA</div>` : ""}
       <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:${theme.textOnDark}; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:${theme.textOnDark};">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
       <div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
         <div style="display:inline-block; background:${theme.primaryBtn}; border-radius:6px; padding:2px 8px;">

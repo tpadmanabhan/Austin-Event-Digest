@@ -30,11 +30,11 @@ export const LA_AI_ETHICS_READINGS = [
 ];
 
 export function buildLaAiEthicsSection(): string {
-  return `<section style="background:#f0f8f8;border:1px solid #c6dfe1;border-radius:16px;padding:24px;margin-bottom:24px;">
-    <p style="color:#0E7490;font-size:12px;">Reading list / Los Angeles</p>
-    <h2 style="color:#12343a;margin:0 0 12px;">AI Ethics</h2>
+  return `<section style="background:#f7f1fc;border:1px solid #e6d7f4;border-top:4px solid #FDB927;border-radius:16px;padding:24px;margin-bottom:24px;">
+    <p style="color:#552583;font-size:12px;">Reading list / Los Angeles</p>
+    <h2 style="color:#2d1457;margin:0 0 12px;">AI Ethics</h2>
     <p style="color:#475569;line-height:1.7;">${LA_AI_ETHICS_INTRO}</p>
     <ol style="color:#475569;line-height:1.7;">${LA_AI_ETHICS_READINGS.map(reading =>
-      `<li style="margin-bottom:12px;"><a href="${reading.href}" style="color:#0E7490;font-weight:bold;">${reading.title}</a> / ${reading.source}<br />${reading.note}</li>`).join("")}</ol>
+      `<li style="margin-bottom:12px;"><a href="${reading.href}" style="color:#552583;font-weight:bold;">${reading.title}</a> / ${reading.source}<br />${reading.note}</li>`).join("")}</ol>
   </section>`;
 }

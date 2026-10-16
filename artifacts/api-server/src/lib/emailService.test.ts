@@ -297,6 +297,26 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).toContain("#1e6e6e");
   });
 
+  it("Los Angeles digest uses its purple-and-gold brand throughout the email", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      subject: "Los Angeles Events — October 16 – October 31, 2026",
+      weekOf: "2026-10-16",
+      siteUrl: "https://la.eventcarpooling.com",
+    }, null, null, {
+      slug: "la", name: "Los Angeles Events", city: "Los Angeles, CA",
+      digestTitle: "Los Angeles Events",
+    });
+
+    expect(html).toContain("aria-label=\"Los Angeles brand mark\"");
+    expect(html).toContain("#552583");
+    expect(html).toContain("#FDB927");
+    expect(html).toContain("Reading list / Los Angeles");
+    expect(html).toContain("October 16 – October 31, 2026");
+    expect(html).not.toContain("#0E7490");
+    expect(html).not.toContain("#12343a");
+  });
+
   it("null tenant slug falls through to the generic theme, not Austin", () => {
     const html = buildDigestEmailHtml(
       baseDigest,
