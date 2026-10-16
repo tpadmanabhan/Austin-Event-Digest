@@ -309,6 +309,10 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     });
 
     expect(html).toContain("aria-label=\"Los Angeles brand mark\"");
+    expect(html).toContain('<table role="presentation" align="center"');
+    expect(html).toContain('valign="middle"');
+    expect(html).toContain("text-align:center; vertical-align:middle;");
+    expect(html).not.toContain("display:inline-flex; align-items:center; justify-content:center;");
     expect(html).toContain("#552583");
     expect(html).toContain("#FDB927");
     expect(html).toContain("Reading list / Los Angeles");
