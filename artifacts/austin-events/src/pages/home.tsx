@@ -21,6 +21,7 @@ import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "@/components/miami-fea
 import { MiamiAiEthicsSection } from "@/components/miami-ai-ethics-section";
 import { BostonAiEthicsSection } from "@/components/boston-ai-ethics-section";
 import { LaAiEthicsSection } from "@/components/la-ai-ethics-section";
+import { CityAiEthicsSection } from "@/components/city-ai-ethics-section";
 import { LA_HERO_IMAGE_URL } from "@/lib/city-share-image";
 
 const SHOW_AUSTIN_CARES = true;
@@ -452,6 +453,11 @@ export default function Home() {
               {isSF && <SfAiEthicsSection className="mb-8 max-w-xl" />}
               {isSacramento && <SacramentoAiEthicsSection className="mb-8 max-w-xl" />}
               {isBoston && <BostonAiEthicsSection className="mb-8 max-w-xl" />}
+              <CityAiEthicsSection
+                slug={tenant.slug}
+                lang={isToky && lang === "ja" ? "ja" : "en"}
+                className="mb-8 max-w-xl"
+              />
 
               <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60 scroll-mt-24">
                 <SubscribeForm />

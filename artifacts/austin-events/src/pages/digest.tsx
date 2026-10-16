@@ -18,6 +18,7 @@ import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "@/components/miami-fea
 import { MiamiAiEthicsSection } from "@/components/miami-ai-ethics-section";
 import { BostonAiEthicsSection } from "@/components/boston-ai-ethics-section";
 import { LaAiEthicsSection } from "@/components/la-ai-ethics-section";
+import { CityAiEthicsSection } from "@/components/city-ai-ethics-section";
 
 // Fallback blocklist used before the API responds or if the fetch fails
 const ADULT_BLOCKED_FALLBACK = [
@@ -489,6 +490,11 @@ export default function DigestView() {
           {isMiami && <MiamiAiEthicsSection className="mt-6" />}
           {isBoston && <BostonAiEthicsSection className="mt-6" />}
           {isLA && <LaAiEthicsSection className="mt-6" />}
+          <CityAiEthicsSection
+            slug={tenant.slug}
+            lang={isToky && lang === "ja" ? "ja" : "en"}
+            className="mt-6"
+          />
         </header>
 
         {/* Translation unavailable banner — shown when Japanese mode fails */}

@@ -1,0 +1,142 @@
+{
+  "houston": {
+    "city": "Houston",
+    "eyebrow": "READING LIST / HOUSTON",
+    "intro": "Houston's heat, flooding, and energy economy make AI's energy footprint, environmental data, and public-service decisions immediate local questions. The city's resilience reporting identifies environmental justice and community engagement as priorities; these readings ask who is represented, protected, and able to challenge automated decisions.",
+    "readings": [
+      {
+        "title": "Resilient Houston: Three-Year Report",
+        "source": "City of Houston",
+        "href": "https://www.houstontx.gov/mayor/Resilient-Houston-Three-Year-Report.pdf",
+        "note": "The report tracks city resilience work, environmental justice, and efforts to measure inequities. It is local context, not an AI policy."
+      },
+      {
+        "title": "Atlas of AI: Power, Politics, and the Planetary Costs of Artificial Intelligence",
+        "source": "Kate Crawford · Yale University Press",
+        "href": "https://yalebooks.yale.edu/book/9780300264630/atlas-of-ai/",
+        "note": "Connects AI to energy, mineral extraction, data labor, and environmental costs—useful questions for an energy-intensive region."
+      }
+    ]
+  },
+  "tokyo": {
+    "city": "Tokyo",
+    "eyebrow": "READING LIST / TOKYO",
+    "intro": "Tokyo's metropolitan AI guidelines give public servants practical direction for adopting AI across agencies and engaging diverse stakeholders. Consider how human responsibility, privacy, explainability, and access for residents using different languages carry through from policy to deployment.",
+    "readings": [
+      {
+        "title": "Tokyo AI Adoption and Use Guidelines",
+        "source": "Tokyo Metropolitan Government · Bureau of Digital Services",
+        "href": "https://www.english.metro.tokyo.lg.jp/w/110-101-010949",
+        "note": "The metropolitan framework covers appropriate AI adoption in government and engagement with diverse stakeholders."
+      },
+      {
+        "title": "AI Ethics",
+        "source": "Mark Coeckelbergh · MIT Press",
+        "href": "https://mitpress.mit.edu/9780262357074/ai-ethics",
+        "note": "An accessible introduction to accountability, values, and the social effects of AI beyond technology hype."
+      }
+    ],
+    "translations": {
+      "ja": {
+        "eyebrow": "読書案内 / 東京",
+        "intro": "東京都のAI利活用ガイドラインは、都庁各局でAIを適切に導入し、多様な関係者と協力するための実践的な指針です。政策を実際の運用につなげる際、人の責任、プライバシー、説明可能性、さまざまな言語を使う住民へのアクセスをどう守るかを考えます。",
+        "readings": [
+          {
+            "title": "Tokyo AI Adoption and Use Guidelines",
+            "source": "東京都 デジタルサービス局",
+            "href": "https://www.english.metro.tokyo.lg.jp/w/110-101-010949",
+            "note": "都庁におけるAIの適切な導入と、多様な関係者との協力に関する指針です。"
+          },
+          {
+            "title": "AI Ethics",
+            "source": "Mark Coeckelbergh · MIT Press",
+            "href": "https://mitpress.mit.edu/9780262357074/ai-ethics",
+            "note": "技術への過度な期待にとどまらず、AIの説明責任、価値観、社会への影響をわかりやすく解説します。"
+          }
+        ]
+      }
+    }
+  },
+  "stlouis": {
+    "city": "St. Louis",
+    "eyebrow": "READING LIST / ST. LOUIS",
+    "intro": "St. Louis City's AI policy connects government use to privacy, cybersecurity, and Missouri's Sunshine Law. Read it alongside a critical look at how automated systems can reproduce racial inequity, and ask how residents can understand, question, and seek remedies for decisions that affect them.",
+    "readings": [
+      {
+        "title": "Artificial Intelligence Policy",
+        "source": "City of St. Louis · Information Technology Services",
+        "href": "https://www.stlouis-mo.gov/government/departments/information-technology/documents/upload/Artificial-Intelligence-Policy-2.pdf",
+        "note": "The city policy addresses staff use of AI tools, privacy, cybersecurity, and compliance with Missouri Sunshine Law."
+      },
+      {
+        "title": "Race After Technology: Abolitionist Tools for the New Jim Code",
+        "source": "Ruha Benjamin",
+        "href": "https://www.ruhabenjamin.com/race-after-technology",
+        "note": "Examines how seemingly neutral technologies can encode and amplify racial hierarchies."
+      }
+    ]
+  },
+  "portland": {
+    "city": "Portland",
+    "eyebrow": "READING LIST / PORTLAND",
+    "intro": "Portland's municipal AI rule aligns the acquisition and use of AI with city values including anti-racism, equity, transparency, and fiscal responsibility. These readings connect those commitments to oversight of automated public services and the people most affected by them.",
+    "readings": [
+      {
+        "title": "The City's approach to responsible use of AI",
+        "source": "City of Portland, Oregon",
+        "href": "https://www.portland.gov/ai/responsible-ai-use",
+        "note": "Explains Portland's safeguards and responsible-use commitments for city staff using AI."
+      },
+      {
+        "title": "Automating Inequality: How High-Tech Tools Profile, Police, and Punish the Poor",
+        "source": "Virginia Eubanks · Macmillan",
+        "href": "https://us.macmillan.com/books/9781250215789/automatinginequality/",
+        "note": "Investigates how automated systems in public programs can deepen surveillance and inequality."
+      }
+    ]
+  },
+  "bulverde": {
+    "city": "Bulverde",
+    "eyebrow": "READING LIST / BULVERDE",
+    "intro": "Bulverde's stormwater program and regional aquifer data make environmental monitoring a concrete local context for ethical AI questions. If automated tools inform water-quality or planning decisions, ask whose measurements are represented, how errors are caught, and whether residents can understand the results. These are applied questions; the city resources below are not an AI policy.",
+    "readings": [
+      {
+        "title": "City of Bulverde Stormwater Management Program 2025–2029",
+        "source": "City of Bulverde",
+        "href": "https://www.bulverdetx.gov/346/City-of-Bulverde-Stormwater-Management-P",
+        "note": "Sets out local measures to reduce runoff pollution and protect creeks and surface water."
+      },
+      {
+        "title": "Environmental Data Portal",
+        "source": "Edwards Aquifer Authority",
+        "href": "https://data.edwardsaquifer.org/",
+        "note": "Provides public access to regional environmental observations used in scientific research and policy decisions."
+      },
+      {
+        "title": "Data Feminism",
+        "source": "Catherine D'Ignazio and Lauren F. Klein · MIT Press",
+        "href": "https://mitpress.mit.edu/9780262044004/data-feminism",
+        "note": "Shows how power and inequality shape data collection and analysis, and offers a framework for asking who is missing."
+      }
+    ]
+  },
+  "dc": {
+    "city": "Washington, DC",
+    "eyebrow": "READING LIST / WASHINGTON, DC",
+    "intro": "The District's AI Values Alignment handbook gives government teams a public framework for responsibility and transparency. As AI is used in public services, residents need to know when it informs decisions, which official remains accountable, and how to question its effects.",
+    "readings": [
+      {
+        "title": "Handbook for AI Values Alignment",
+        "source": "District of Columbia Office of the Chief Technology Officer",
+        "href": "https://techplan.dc.gov/sites/default/files/dc/sites/itstrategicplan/page_content/attachments/Brochure%20for%20Handbook%20for%20AI%20Values%20Alignment%20_06_17_2024.pdf",
+        "note": "The handbook asks agencies to align AI use with District values and keep responsibility for government action clear."
+      },
+      {
+        "title": "Weapons of Math Destruction: How Big Data Increases Inequality and Threatens Democracy",
+        "source": "Cathy O'Neil · Penguin Random House",
+        "href": "https://www.penguinrandomhouse.com/books/241363/weapons-of-math-destruction-by-cathy-oneil/",
+        "note": "Explains how opaque, unaccountable scoring systems can harm people and distort public life."
+      }
+    ]
+  }
+}
