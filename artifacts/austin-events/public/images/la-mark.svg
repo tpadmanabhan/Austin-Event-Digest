@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Los Angeles purple and gold monogram</title>
+  <rect x="3" y="3" width="122" height="122" rx="29" fill="#552583"/>
+  <circle cx="64" cy="64" r="49" fill="none" stroke="#FDB927" stroke-width="2.5"/>
+  <path d="M25 64h78M64 15v98M30 31c15 12 15 54 0 66M98 31c-15 12-15 54 0 66" fill="none" stroke="#FDB927" stroke-opacity=".48" stroke-width="2"/>
+  <text x="64" y="78" fill="#FDB927" font-family="Georgia, 'Times New Roman', serif" font-size="45" font-weight="700" letter-spacing="-5" text-anchor="middle">LA</text>
+</svg>

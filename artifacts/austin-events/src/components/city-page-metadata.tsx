@@ -71,7 +71,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     setMeta('meta[name="twitter:card"]', "summary_large_image");
 
     const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-    if (icon) icon.href = `${import.meta.env.BASE_URL}${isSF ? "images/sf-giants.svg" : isHouston ? "images/houston-astros.svg" : isAtlanta ? "images/atlanta-icon.svg" : isCares ? "austincares-favicon.svg" : "favicon.svg"}`;
+    if (icon) icon.href = `${import.meta.env.BASE_URL}${isLA ? "images/la-mark.svg" : isSF ? "images/sf-giants.svg" : isHouston ? "images/houston-astros.svg" : isAtlanta ? "images/atlanta-icon.svg" : isCares ? "austincares-favicon.svg" : "favicon.svg"}`;
   }, [citySlug, path, tenant.name, tenant.city]);
 
   return null;

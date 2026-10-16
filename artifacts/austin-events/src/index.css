@@ -717,3 +717,86 @@
 @media (max-width: 640px) {
   [data-tenant="boston"] .boston-edition-tag { font-size: 9px; letter-spacing: .07em; }
 }
+
+/* Los Angeles: Lakers purple and gold with warm Pacific-coast paper. Tenant scoped. */
+[data-tenant="la"] {
+  --background: 45 100% 98%;
+  --foreground: 270 34% 14%;
+  --border: 43 30% 84%;
+  --input: 43 30% 84%;
+  --ring: 270 56% 33%;
+  --card: 0 0% 100%;
+  --card-foreground: 270 34% 14%;
+  --card-border: 43 30% 84%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 270 34% 14%;
+  --popover-border: 43 30% 84%;
+  --primary: 270 56% 33%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 43 98% 57%;
+  --secondary-foreground: 270 52% 16%;
+  --muted: 44 42% 92%;
+  --muted-foreground: 270 16% 40%;
+  --accent: 43 92% 82%;
+  --accent-foreground: 270 52% 16%;
+  --sidebar: 45 100% 98%;
+  --sidebar-foreground: 270 34% 14%;
+  --sidebar-border: 43 30% 84%;
+  --sidebar-primary: 270 56% 33%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 44 42% 92%;
+  --sidebar-accent-foreground: 270 34% 14%;
+  --sidebar-ring: 270 56% 33%;
+}
+[data-tenant="la"] .la-home-hero {
+  background:
+    radial-gradient(ellipse at 85% 8%, hsl(43 98% 57% / .18), transparent 42%),
+    linear-gradient(165deg, hsl(45 100% 98%), hsl(43 70% 94%));
+}
+[data-tenant="la"] .la-home-hero h1 { letter-spacing: -.045em; }
+[data-tenant="la"] .la-hero-frame {
+  position: relative;
+  padding: 10px;
+  background: hsl(270 56% 33%);
+  border-radius: 1.5rem;
+  box-shadow: 18px 22px 0 -10px hsl(43 98% 57% / .62), 0 24px 70px hsl(270 34% 14% / .18);
+}
+[data-tenant="la"] .la-hero-frame img {
+  border-radius: 1rem;
+  border: 0;
+  box-shadow: none;
+  object-position: 50% 58%;
+}
+[data-tenant="la"] .la-edition-tag {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  right: 25px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: hsl(45 100% 98%);
+  padding: 12px 15px;
+  background: hsl(270 34% 14% / .88);
+  border: 1px solid hsl(43 98% 57% / .62);
+  border-left: 4px solid hsl(43 98% 57%);
+  border-radius: 9px;
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+[data-tenant="la"] .la-ethics::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 4px;
+  background: linear-gradient(90deg, hsl(270 56% 33%) 0 50%, hsl(43 98% 57%) 50%);
+}
+@media (max-width: 640px) {
+  [data-tenant="la"] .la-edition-tag { font-size: 9px; letter-spacing: .07em; }
+}
