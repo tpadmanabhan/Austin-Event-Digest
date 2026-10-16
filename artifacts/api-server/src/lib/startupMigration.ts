@@ -1071,7 +1071,10 @@ export async function runStartupMigration(): Promise<void> {
   // Los Angeles uses the explicit "la" slug for la.eventcarpooling.com.
   // Do not invent an admin contact; hash only the configured shared password.
   try {
-    const [existing] = await db.select({ id: tenantsTable.id }).from(tenantsTable)
+    const [existing] = await db.select({
+      id: tenantsTable.id,
+      passwordHash: tenantsTable.passwordHash,
+    }).from(tenantsTable)
       .where(eq(tenantsTable.slug, "la")).limit(1);
     if (!existing) {
       const configuredPassword = process.env.ADMIN_PASSWORD;
@@ -1085,6 +1088,17 @@ export async function runStartupMigration(): Promise<void> {
           true, false, ${passwordHash})
         ON CONFLICT (slug) DO NOTHING
       `);
+    } else if (!existing.passwordHash) {
+      const configuredPassword = process.env.ADMIN_PASSWORD;
+      if (configuredPassword && configuredPassword.trim().length >= 12) {
+        const passwordHash = await hashPassword(configuredPassword);
+        await db.execute(sql`
+          UPDATE tenants
+          SET password_hash = ${passwordHash}
+          WHERE slug = 'la' AND password_hash IS NULL
+        `);
+        logger.info("Configured LA admin password from ADMIN_PASSWORD");
+      }
     }
     logger.info("Los Angeles tenant seeded");
   } catch (err) {
