@@ -109,6 +109,7 @@ function PlatformHomeInner() {
           <motion.div className="hero-copy" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
             <div className="hero-kicker"><span className="kicker-rule" /> {copy.heroKicker}</div>
             <h1>{copy.heroTitle}<br /><em>{copy.heroHighlight}</em></h1>
+            <p className="hero-tagline">{copy.heroTagline}</p>
             <p className="hero-description">
               {copy.heroDescription}
             </p>

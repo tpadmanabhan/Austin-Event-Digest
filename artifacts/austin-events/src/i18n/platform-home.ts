@@ -4,6 +4,7 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
   heroKicker: string;
   heroTitle: string;
   heroHighlight: string;
+  heroTagline: string;
   heroDescription: string;
   heroFootnote: string;
   collageLabel: string;
@@ -46,6 +47,7 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
     heroKicker: "A local editor in your inbox",
     heroTitle: "Event Newsletter",
     heroHighlight: "in an Hour.",
+    heroTagline: "For IRL influencers like you—bringing people out of their homes and together.",
     heroDescription: "A simple way to find worthwhile things happening nearby. Browse your city’s edition, or ask us to bring one to yours.",
     heroFootnote: "No account needed. Requests are reviewed by our team.",
     collageLabel: "Views from Boston, Houston, Miami and Sacramento",
@@ -88,6 +90,7 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
     heroKicker: "街の編集者が、あなたの受信箱に",
     heroTitle: "イベントニュース",
     heroHighlight: "1時間でお届け。",
+    heroTagline: "あなたのようなIRLインフルエンサーへ。人々を家から連れ出し、一緒に過ごすきっかけを。",
     heroDescription: "近くで開催される、価値あるイベントを簡単にチェック。各都市のニュースレターを見るか、あなたの街の版づくりをご相談ください。",
     heroFootnote: "アカウントは不要です。リクエストはチームが確認します。",
     collageLabel: "ボストン、ヒューストン、マイアミ、サクラメントの風景",
