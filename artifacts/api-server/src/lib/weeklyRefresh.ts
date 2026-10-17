@@ -572,7 +572,10 @@ const TENANT_CONFIGS: TenantConfig[] = [
 
 // ── Ticketmaster fetch (server-side, direct env access) ───────────────────────
 
-const TM_CLASSIFICATIONS = ["Music", "Arts & Theatre", "Sports", "Family", "Miscellaneous"];
+// Only Music and Sports are reliable Ticketmaster classification values.
+// Query once without a classification for the broader pool; local categories
+// are assigned from event titles and segments after results arrive.
+const TM_CLASSIFICATIONS = ["", "Music", "Sports"];
 
 async function fetchTicketmaster(
   cityStr: string,
@@ -592,12 +595,12 @@ async function fetchTicketmaster(
     const params = new URLSearchParams({
       apikey: apiKey,
       city: cityName,
-      size: "30",
+       size: "50",
       sort: "date,asc",
-      classificationName: cls,
       startDateTime: rangeStart,
       endDateTime:   rangeEnd,
     });
+     if (cls) params.set("classificationName", cls);
     if (stateCode) params.set("stateCode", stateCode);
 
     try {

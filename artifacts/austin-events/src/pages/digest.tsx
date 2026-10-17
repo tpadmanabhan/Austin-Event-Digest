@@ -423,6 +423,7 @@ export default function DigestView() {
 
   const { label: editionDateRange, extended: hasExtendedRange } =
     getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc", isHouston || isToky || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc");
+  const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
     <Layout>

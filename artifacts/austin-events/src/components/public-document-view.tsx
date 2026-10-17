@@ -127,7 +127,6 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Upcoming events · ${model.editionRange}`}</p>
           : model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
         <p className="mt-3 text-lg text-slate-800">{model.intro || model.description}</p>
-        {model.editionRange && <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">Upcoming events</h2>}
         {model.citySlug === "austin" && <AiEthicsSection className="mt-6" />}
         {model.citySlug === "sanfrancisco" && <SfAiEthicsSection className="mt-6" />}
         {model.citySlug === "sacramento" && <SacramentoAiEthicsSection className="mt-6" />}
@@ -148,7 +147,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           </section>
         )}
         {miamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} digestId={model.digestId} className="mt-10" />}
-        <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : "Events this week"}</h2>
+        <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : model.editionRange ? "Upcoming events" : "Events this week"}</h2>
         <EventList events={listEvents} />
         <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
           {model.editionUrl ? <a href={model.editionUrl} className={linkCls}>{`Read the full ${model.cityName || ""} edition`}</a> : null}
