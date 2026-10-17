@@ -651,7 +651,10 @@ export default function Home() {
                 ? upcomingEvents
                 : upcomingEvents.filter((e: any) => getDisplayCategory(e) === categoryFilter);
               const allEventsSorted = [...visibleEvents]
-                .sort((a: any, b: any) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
+                .sort((a: any, b: any) =>
+                  Number(Boolean(b.featured)) - Number(Boolean(a.featured)) ||
+                  parseEventDateForSort(a.date) - parseEventDateForSort(b.date)
+                );
               return (
                 <div className="space-y-8">
                   {categoryFilter === "All" && businessSpotlights.length > 0 && (

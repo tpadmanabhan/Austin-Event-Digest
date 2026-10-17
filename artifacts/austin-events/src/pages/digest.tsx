@@ -694,15 +694,18 @@ export default function DigestView() {
             return Math.round(haversine(userCoords.lat, userCoords.lng, e.lat, e.lng) * 10) / 10;
           };
           // When geo is active: sort all events by distance ascending.
-          // When geo is off: sort all events by date ascending (no featured pinning).
+          // Keep featured events above regular events, then sort within each group.
           const regularEvents = geoActive
             ? [...visibleEvents].sort((a: any, b: any) => {
                 const aDist = (a.lat != null && a.lng != null) ? haversine(userCoords!.lat, userCoords!.lng, a.lat, a.lng) : Infinity;
                 const bDist = (b.lat != null && b.lng != null) ? haversine(userCoords!.lat, userCoords!.lng, b.lat, b.lng) : Infinity;
-                return aDist - bDist;
+                return Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || aDist - bDist;
               })
             : [...visibleEvents]
-                .sort((a, b) => parseEventDateForSort(a.date) - parseEventDateForSort(b.date));
+                .sort((a, b) =>
+                  Number(Boolean(b.featured)) - Number(Boolean(a.featured)) ||
+                  parseEventDateForSort(a.date) - parseEventDateForSort(b.date)
+                );
 
           return (
             <>

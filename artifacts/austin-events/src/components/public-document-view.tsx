@@ -16,7 +16,7 @@ const linkCls = "font-semibold text-green-800 underline underline-offset-2 hover
 
 function EventList({ events, withLinks = true }: { events: PublicEvent[]; withLinks?: boolean }) {
   if (!events.length) return <p className="text-slate-600">No events are listed here yet.</p>;
-  const label = (e: PublicEvent) => (e.isBusinessSpotlight ? "Business spotlight" : e.isPost ? "Community spotlight" : e.category);
+  const label = (e: PublicEvent) => (e.isBusinessSpotlight ? "Business spotlight" : e.isPost ? "Community spotlight" : e.featured ? "Featured event" : e.category);
   return (
     <ul className="space-y-5">
       {events.map((e) => (
@@ -73,8 +73,12 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
   const isMiamiCity = model.citySlug === "miami";
   const miamiBusiness = isMiamiCity ? (model.events ?? []).filter((e) => e.isBusinessSpotlight) : [];
   const miamiCommunity = isMiamiCity ? (model.events ?? []).filter((e) => e.isPost && !e.isBusinessSpotlight) : [];
-  const listEvents = (model.events ?? []).filter((e) =>
-    e !== miamiFeatured && !(isMiamiCity && (e.isBusinessSpotlight || e.isPost)));
+  const listEvents = (model.events ?? [])
+    .filter((e) => e !== miamiFeatured && !(isMiamiCity && (e.isBusinessSpotlight || e.isPost)))
+    .sort((a, b) => {
+      const rank = (e: PublicEvent) => e.isBusinessSpotlight || e.isPost ? 0 : e.featured ? 1 : 2;
+      return rank(a) - rank(b);
+    });
   const eventIsMiamiFeatured = !!event && isMiamiFeaturedEvent(event, model.citySlug);
 
   let body;
