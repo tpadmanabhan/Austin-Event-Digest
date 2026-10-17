@@ -3,6 +3,31 @@ import http from "node:http";
 import https from "node:https";
 
 export const PLATFORM_ORIGIN = "https://eventcarpooling.com";
+const EXTENDED_RANGE_CITIES = new Set([
+  "austin", "atlanta", "houston", "tokyo", "sanfrancisco", "sacramento",
+  "miami", "boston", "la", "stlouis", "portland", "bulverde", "dc",
+]);
+const MONTHS = new Map([
+  ["jan", 0], ["feb", 1], ["mar", 2], ["apr", 3], ["may", 4], ["jun", 5],
+  ["jul", 6], ["aug", 7], ["sep", 8], ["oct", 9], ["nov", 10], ["dec", 11],
+]);
+export function publicEditionRange(citySlug, subject) {
+  if (!EXTENDED_RANGE_CITIES.has(citySlug) || typeof subject !== "string") return undefined;
+  const match = subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s*(?:to|[-–—])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),\s*(\d{4})\s*$/i);
+  if (!match) return undefined;
+  const startMonth = MONTHS.get(match[1].slice(0, 3).toLowerCase());
+  const endMonth = MONTHS.get((match[3] || match[1]).slice(0, 3).toLowerCase());
+  const year = Number(match[5]);
+  if (startMonth === undefined || endMonth === undefined) return undefined;
+  const start = new Date(Date.UTC(year, startMonth, Number(match[2])));
+  const end = new Date(Date.UTC(year, endMonth, Number(match[4])));
+  if (start.getUTCMonth() !== startMonth || start.getUTCDate() !== Number(match[2])
+    || end.getUTCMonth() !== endMonth || end.getUTCDate() !== Number(match[4]) || end <= start) return undefined;
+  const format = date => new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC", month: "long", day: "numeric",
+  }).format(date);
+  return `${format(start)} – ${format(end)}, ${year}`;
+}
 const hash = value => createHash("sha256").update(value).digest("hex").slice(0, 24);
 export const slugify = text => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 90) || "event";
 export const venueIdentity = (city, venue) => `vn-${hash(`${city}\n${venue.trim().toLowerCase()}`)}`;
@@ -168,7 +193,7 @@ export async function loadPublicModel(site, pathname) {
     description: site.slug === "austincares" ? "Explore Austin-area curated offers, community-submitted deals, free services, and map-based local discovery." :
       `Explore curated ${cityName} events, local newsletters, venues, and community activities. Learn about attendance and carpool-interest options where available.`,
     intro: digest?.intro || `Explore local activities in ${cityName}. Subscribe on this city's homepage for new editions.`,
-    weekOf: digest?.weekOf, digestId: digest?.id, events,
+    weekOf: digest?.weekOf, editionRange: publicEditionRange(site.slug, digest?.subject), digestId: digest?.id, events,
     editionUrl: digest ? `/digest/${digest.id}` : undefined,
   };
   if (cityModel.kind === "deals") {

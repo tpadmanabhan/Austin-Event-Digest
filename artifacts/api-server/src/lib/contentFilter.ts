@@ -1,5 +1,5 @@
 /**
- * Adult-content / off-brand event blocklist.
+ * Adult-content event blocklist.
  * Matched case-insensitively against event title and description at ingest time
  * and again at display time as a safety net.
  *
@@ -8,7 +8,6 @@
  *   ADULT_CONTENT_BLOCKLIST_EXTRA="speakeasy,foam party,latex party"
  */
 export const ADULT_CONTENT_BASE_PHRASES: string[] = [
-  "drag queen",
   "burlesque",
   "strip club",
   "stripclub",

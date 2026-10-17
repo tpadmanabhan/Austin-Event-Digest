@@ -128,7 +128,11 @@ export function Layout({ children }: { children: ReactNode }) {
 
               {isToky && (
                 <button
+                  type="button"
                   onClick={() => setLang(lang === "en" ? "ja" : "en")}
+                  aria-label={lang === "ja" ? "Switch to English" : "Switch to Japanese"}
+                  aria-pressed={lang === "ja"}
+                  data-testid="language-toggle"
                   title="Toggle Japanese / English"
                   className="flex items-center gap-1 px-3 py-1 rounded-full border text-xs font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0"
                   style={lang === "ja"

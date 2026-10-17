@@ -29,6 +29,7 @@ export interface PublicDocumentModel {
   intro?: string;
   citySlug?: string;
   weekOf?: string;
+  editionRange?: string;
   digestId?: number;
   events: PublicEvent[];
   event?: PublicEvent;

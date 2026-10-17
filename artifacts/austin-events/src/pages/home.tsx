@@ -126,7 +126,7 @@ export default function Home() {
   const latestIssueRangeMatch = tenant.slug === "austin" || tenant.slug === "atlanta"
     ? latestDigest?.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s+to\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
     : null;
-  const houstonRangeMatch = tenant.slug === "houston" || tenant.slug === "tokyo" || tenant.slug === "sanfrancisco" || tenant.slug === "sacramento" || tenant.slug === "miami" || tenant.slug === "boston" || tenant.slug === "la"
+  const houstonRangeMatch = tenant.slug === "houston" || tenant.slug === "tokyo" || tenant.slug === "sanfrancisco" || tenant.slug === "sacramento" || tenant.slug === "miami" || tenant.slug === "boston" || tenant.slug === "la" || tenant.slug === "stlouis" || tenant.slug === "portland" || tenant.slug === "bulverde" || tenant.slug === "dc"
     ? latestDigest?.subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s*(?:to|[-–—])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),\s*(\d{4})\s*$/i)
     : null;
   const latestIssueRange = houstonRangeMatch
@@ -519,7 +519,7 @@ export default function Home() {
             <div className="max-w-2xl">
               <h2 className="font-serif text-4xl font-bold mb-4">{isBoston ? "The edition, neighborhood by neighborhood." : isSF ? "The city, block by block." : isHouston ? "The city, on your calendar." : jt("Inside the Latest Issue", JA.insideLatestIssue)}</h2>
               <p className="text-muted-foreground text-lg">
-                {isBoston ? "A look inside the Boston edition, October 14 – 31. Filter by category, check the map, and pick a plan in Allston, Eastie, JP or across the river." : isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : tenant.slug === "austin" ? "A look at the upcoming events in this edition." : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
+                {isBoston ? "A look inside the Boston edition, October 14 – 31. Filter by category, check the map, and pick a plan in Allston, Eastie, JP or across the river." : isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : latestIssueRange || tenant.slug === "austin" ? jt("A look at the upcoming events in this edition.", "このエディションの今後のイベントをご覧ください。") : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
               </p>
               {latestIssueRange && (
                 <p className="mt-3 text-sm font-semibold text-primary">Events: {latestIssueRange}</p>
@@ -574,7 +574,7 @@ export default function Home() {
           {showMap && latestDigest?.events && (
             <div className="mb-10">
               <h3 className="font-serif text-xl font-bold mb-4 flex items-center gap-2">
-                 {isBoston ? "Find your way around Boston" : isMiami ? "Find your way around Miami" : isSacramento ? "Find your way around Sacramento" : isSF ? "Find your way around San Francisco" : isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : (isToky || tenant.slug === "austin") && latestIssueRange ? "🗺️ Where this edition's events are happening" : "🗺️ Where this week's events are happening"}
+                 {isBoston ? "Find your way around Boston" : isMiami ? "Find your way around Miami" : isSacramento ? "Find your way around Sacramento" : isSF ? "Find your way around San Francisco" : isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : latestIssueRange ? jt("🗺️ Where this edition's events are happening", "🗺️ このエディションのイベント開催地") : "🗺️ Where this week's events are happening"}
               </h3>
               <EventMap
                 events={latestDigest.events as any[]}
@@ -827,7 +827,7 @@ export default function Home() {
                   ) : businessSpotlights.length === 0 && communityPosts.length === 0 ? (
                     <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-border">
                       <p className="text-4xl mb-3">{isAtlanta || isHouston ? "✦" : CAT_CONFIG[categoryFilter].emoji}</p>
-                      <p className="text-lg font-serif font-bold text-foreground mb-2">{isHouston || tenant.slug === "austin" ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events in this edition` : jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                      <p className="text-lg font-serif font-bold text-foreground mb-2">{latestIssueRange || isHouston || tenant.slug === "austin" ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events in this edition`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                       <p className="text-muted-foreground text-sm">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     </div>
                   ) : null}
@@ -836,7 +836,7 @@ export default function Home() {
             })()
           ) : (
             <div className="text-center py-20 bg-muted/30 rounded-3xl border border-dashed border-border">
-              <p className="text-muted-foreground">{isHouston ? "The next Houston edition is on its way. Check back soon." : tenant.slug === "austin" ? "No upcoming events found for this edition yet." : "No events found for this week yet."}</p>
+              <p className="text-muted-foreground">{latestIssueRange ? jt("No upcoming events found for this edition yet.", "このエディションの今後のイベントはまだありません。") : isHouston ? "The next Houston edition is on its way. Check back soon." : tenant.slug === "austin" ? "No upcoming events found for this edition yet." : "No events found for this week yet."}</p>
             </div>
           )}
         </div>

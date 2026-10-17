@@ -4,7 +4,7 @@ import http from "node:http";
 import net from "node:net";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin } from "./public-model.mjs";
+import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin, publicEditionRange } from "./public-model.mjs";
 
 const cities = ["la", "austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
   "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston", "boston", "miami"];
@@ -86,6 +86,13 @@ test("verified date validation rejects guessed years, impossible days and missin
   assert.equal(validIsoDate("2031-10-12T12:00:00.000Z"), true);
   assert.equal(validIsoDate("2031-10-12"), true);
   assert.equal(eventSchema({ ...fixture("austin").events[0], startDate: undefined }, "https://austin.eventcarpooling.com"), undefined);
+});
+test("trusted extended editions expose their actual date range instead of a week label", () => {
+  for (const city of ["houston", "tokyo", "stlouis", "portland", "bulverde", "dc"]) {
+    assert.equal(publicEditionRange(city, `${city} Events: October 17–31, 2026`), "October 17 – October 31, 2026");
+  }
+  assert.equal(publicEditionRange("houston", "Houston Events: October 17–23, 2026"), "October 17 – October 23, 2026");
+  assert.equal(publicEditionRange("futurecity", "Future Events: October 17–31, 2026"), undefined);
 });
 test("the platform document is readable and has real city links without scripts running", async () => {
   const { response, body } = await document("eventcarpooling.com");

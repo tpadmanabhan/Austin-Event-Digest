@@ -20,7 +20,7 @@ const translationCache = new Map<string, string>();
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
-    try { return (localStorage.getItem("ec-lang") as Lang) ?? "en"; } catch { return "en"; }
+    try { return localStorage.getItem("ec-lang") === "ja" ? "ja" : "en"; } catch { return "en"; }
   });
   const [translationFailed, setTranslationFailed] = useState(false);
   useEffect(() => {

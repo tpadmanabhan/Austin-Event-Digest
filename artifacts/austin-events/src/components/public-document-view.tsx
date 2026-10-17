@@ -123,8 +123,11 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
     body = (
       <>
         <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">{model.title}</h1>
-        {model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
+        {model.editionRange
+          ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Upcoming events · ${model.editionRange}`}</p>
+          : model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
         <p className="mt-3 text-lg text-slate-800">{model.intro || model.description}</p>
+        {model.editionRange && <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">Upcoming events</h2>}
         {model.citySlug === "austin" && <AiEthicsSection className="mt-6" />}
         {model.citySlug === "sanfrancisco" && <SfAiEthicsSection className="mt-6" />}
         {model.citySlug === "sacramento" && <SacramentoAiEthicsSection className="mt-6" />}
