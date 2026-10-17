@@ -123,7 +123,6 @@ export function eventSchema(event, origin) {
 import cityAiEthicsData from "../../../shared/city-ai-ethics.json" with { type: "json" };
 
 const PLATFORM_CITY_ORDER = ["la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
-const NEW_CITY_SLUGS = new Set(["la", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "boston"]);
 const CITY_ETHICS_RESOURCES = {
   la: { url: "https://ita.lacity.gov/news/ita-publishes-ai-safety-checklist", title: "L.A. A.I. Safety Checklist" },
   boston: { url: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", title: "Boston’s generative AI policy" },
@@ -146,7 +145,7 @@ export async function loadPublicModel(site, pathname) {
         const ethics = CITY_ETHICS_RESOURCES[t.slug];
         const localEthics = cityAiEthicsData[t.slug];
       return {
-        slug: t.slug, name: t.name || t.city, url, isNew: NEW_CITY_SLUGS.has(t.slug),
+        slug: t.slug, name: t.name || t.city, url,
           ethicsUrl: localEthics ? `${url}#city-ai-ethics` : ethics?.url || url,
           ethicsTitle: localEthics ? `${localEthics.city} AI Ethics reading list` : ethics?.title || `Explore the ${t.city || t.name} edition for local updates`,
       };

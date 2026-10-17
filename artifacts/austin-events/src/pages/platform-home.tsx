@@ -18,7 +18,6 @@ interface TenantSummary {
 }
 
 const LIVE_CITY_ORDER = ["la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
-const NEW_CITY_SLUGS = ["la", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "boston"];
 const cityUrl = (slug: string) => `https://${slug}.eventcarpooling.com`;
 const publicImage = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
 
@@ -60,11 +59,6 @@ function useTenantList() {
   });
 }
 
-function NewCityBadge() {
-  const { lang } = useLang();
-  return <span className="inline-flex shrink-0 rounded-full bg-[#dcfce7] px-2 py-0.5 text-xs font-bold text-[#166534]">{lang === "ja" ? "新着" : "New"}</span>;
-}
-
 function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
   const reading = ETHICS_RESOURCES[city.slug];
   const { lang } = useLang();
@@ -88,7 +82,6 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
           <span className="city-card-city">{cityName}</span>
           <span className="city-card-name">{displayName}</span>
         </span>
-        {NEW_CITY_SLUGS.includes(city.slug) && <span className="city-card-new"><NewCityBadge /></span>}
         <ExternalLink className="city-card-external" size={17} aria-hidden="true" />
       </a>
       <a className="city-card-reading" href={reading?.href ?? cityUrl(city.slug)} target="_blank" rel="noopener noreferrer">
@@ -162,7 +155,6 @@ function PlatformHomeInner() {
               {copy.customNewsletterEnding}
             </p>
           </div>
-          <div className="directory-key"><NewCityBadge /><span>{copy.recentlyAdded}</span></div>
         </div>
         {isError && (
           <div className="directory-alert" role="status">

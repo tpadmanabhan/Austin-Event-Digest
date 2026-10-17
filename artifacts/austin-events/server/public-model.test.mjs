@@ -106,7 +106,7 @@ test("the platform document is readable and has real city links without scripts 
   assert.match(body, /https:\/\/austincares\.eventcarpooling\.com/);
   const model = modelOf(body);
   assert.equal(model.cities[0].slug, "la");
-  assert.equal(model.cities[0].isNew, true);
+  assert.ok(model.cities.every(city => !("isNew" in city)), "City listings must not advertise New badges");
   assert.match(model.cities[0].ethicsUrl, /ita\.lacity\.gov/);
   assert.equal(model.cities[1].slug, "boston");
   assert.match(body, /https:\/\/tokyo\.eventcarpooling\.com\//);

@@ -34,7 +34,7 @@ export interface PublicDocumentModel {
   events: PublicEvent[];
   event?: PublicEvent;
   venueName?: string;
-  cities: { slug: string; name: string; url: string; isNew?: boolean; ethicsUrl?: string; ethicsTitle?: string }[];
+  cities: { slug: string; name: string; url: string; ethicsUrl?: string; ethicsTitle?: string }[];
   editionUrl?: string;
   homeUrl: string;
   noindex?: boolean;

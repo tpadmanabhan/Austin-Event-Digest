@@ -66,6 +66,14 @@ Ticketmaster coordinates and internal known-venue entries are not sufficient pro
 
 **How to apply:** Verify the venue name and street address against a current trustworthy map. Inspect the returned place type as well: a nearby bus stop is not the museum or theatre. Apply confirmed coordinate repairs without changing unrelated edition fields.
 
+## Retry completion is not pin coverage
+
+Treat a successful geocoding job response or completion log as job status, not proof that missing pins were restored.
+
+**Why:** A Houston retry completed successfully while all six missing regular-event coordinates remained unset.
+
+**How to apply:** Compare stored map-eligible coordinate coverage before and after a retry, then check the actual marker count on both homepage and full edition. Verify unresolved venues independently rather than repeatedly launching the same retry.
+
 ## Los Angeles geocoding queries
 
 For Los Angeles, long API-supplied venue strings may return no Nominatim result even when the venue is real. A simplified venue name or verified street address with a California/Los Angeles qualifier can resolve it. Check the returned place identity; do not substitute a campus centroid or nearby business for a named building.

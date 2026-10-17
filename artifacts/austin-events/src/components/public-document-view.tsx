@@ -170,7 +170,6 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         <ul className="space-y-2">
           {model.cities.map((city) => (
             <li key={city.slug}>
-              {city.isNew && <span className="mr-2 inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-800">New</span>}
               <a href={city.url} className={linkCls}>{publicCityLabel(city)}</a>
             </li>
           ))}
