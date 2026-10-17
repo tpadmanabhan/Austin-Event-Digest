@@ -60,19 +60,13 @@
   "stlouis": {
     "city": "St. Louis",
     "eyebrow": "READING LIST / ST. LOUIS",
-    "intro": "St. Louis City's AI policy connects government use to privacy, cybersecurity, and Missouri's Sunshine Law. Read it alongside a critical look at how automated systems can reproduce racial inequity, and ask how residents can understand, question, and seek remedies for decisions that affect them.",
+    "intro": "St. Louis City's AI policy connects government use to privacy, cybersecurity, and Missouri's Sunshine Law. Its focus on transparency and accountability raises important questions about how residents can understand, question, and seek remedies for decisions that affect them.",
     "readings": [
       {
         "title": "Artificial Intelligence Policy",
         "source": "City of St. Louis · Information Technology Services",
         "href": "https://www.stlouis-mo.gov/government/departments/information-technology/documents/upload/Artificial-Intelligence-Policy-2.pdf",
         "note": "The city policy addresses staff use of AI tools, privacy, cybersecurity, and compliance with Missouri Sunshine Law."
-      },
-      {
-        "title": "Race After Technology: Abolitionist Tools for the New Jim Code",
-        "source": "Ruha Benjamin",
-        "href": "https://www.ruhabenjamin.com/race-after-technology",
-        "note": "Examines how seemingly neutral technologies can encode and amplify racial hierarchies."
       }
     ]
   },
