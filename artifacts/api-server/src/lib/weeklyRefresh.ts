@@ -24,6 +24,11 @@ interface EventItem {
   category: string;
   link: string | null;
   imageUrl: string | null;
+  venueAddress?: string;
+  startDate?: string;
+  timezone?: string;
+  lat?: number;
+  lng?: number;
   source?: string;
   featured?: boolean;
 }
@@ -608,14 +613,18 @@ async function fetchTicketmaster(
           || (ev.dates?.start?.localDate ? `${ev.dates.start.localDate}T19:00:00Z` : undefined);
         if (!startIso) continue;
         const venue = ev._embedded?.venues?.[0];
-        const venueName = [venue?.name, venue?.city?.name || cityName].filter(Boolean).join(", ");
+        const venueName = [venue?.name, venue?.address?.line1, venue?.city?.name || cityName].filter(Boolean).join(", ");
+        const venueLat = Number(venue?.location?.latitude);
+        const venueLng = Number(venue?.location?.longitude);
+        const hasVenueCoordinates = Number.isFinite(venueLat) && venueLat >= -90 && venueLat <= 90
+          && Number.isFinite(venueLng) && venueLng >= -180 && venueLng <= 180;
         const image = ev.images?.find((i: any) => i.ratio === "16_9" && (i.width || 0) > 500)?.url
           || ev.images?.[0]?.url || null;
         const key = ev.name.toLowerCase().replace(/\s+/g, "").substring(0, 40);
         if (seen.has(key)) continue;
         seen.add(key);
         // Skip adult-content events before they reach the digest
-        if (isAdultContent(ev.name, ev.description || ev.info || "")) continue;
+        if (isAdultContent(ev.name, ev.description || ev.info || "", ev.ageRestrictions)) continue;
         const isFeatured = startIso >= nextWeekIso;
         allEvents.push({
           title:       ev.name.trim(),
@@ -626,6 +635,10 @@ async function fetchTicketmaster(
           link:        ev.url || null,
           imageUrl:    image,
           source:      "Ticketmaster",
+          ...(venue?.address?.line1 ? { venueAddress: venue.address.line1 } : {}),
+          ...(ev.dates?.start?.dateTime ? { startDate: ev.dates.start.dateTime } : {}),
+          timezone:    tz,
+          ...(hasVenueCoordinates ? { lat: venueLat, lng: venueLng } : {}),
           ...(isFeatured ? { featured: true } : {}),
         });
       }

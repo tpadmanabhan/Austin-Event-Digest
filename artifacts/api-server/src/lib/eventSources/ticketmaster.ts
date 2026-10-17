@@ -25,10 +25,17 @@ interface TmEvent {
   description?: string;
   info?: string;
   pleaseNote?: string;
+  ageRestrictions?: { legalAgeEnforced?: boolean; text?: string };
   images?: Array<{ ratio?: string; url: string; width?: number; height?: number }>;
   classifications?: Array<{ segment?: { name?: string }; genre?: { name?: string } }>;
   _embedded?: {
-    venues?: Array<{ name?: string; city?: { name?: string }; address?: { line1?: string }; state?: { stateCode?: string } }>;
+    venues?: Array<{
+      name?: string;
+      city?: { name?: string };
+      address?: { line1?: string };
+      state?: { stateCode?: string };
+      location?: { latitude?: string; longitude?: string };
+    }>;
   };
 }
 
@@ -110,7 +117,7 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
     if (isAtlanta && localDate) {
       if (localDate < query.weekOf.toISOString().slice(0, 10) || localDate >= weekEnd.toISOString().slice(0, 10)) continue;
     } else if (!isWithinDateRange(startIso, query.weekOf, query.weekEnd)) continue;
-    if (isAdultContent(ev.name, ev.description || ev.info || "")) continue;
+    if (isAdultContent(ev.name, ev.description || ev.info || "", ev.ageRestrictions)) continue;
 
     // Include the street address when Ticketmaster provides one — a name-only
     // string ("Dante's, Portland") frequently geocodes to a same-named venue
@@ -119,6 +126,10 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
     const venueName = venue
       ? [venue.name, venue.address?.line1, venue.city?.name || cityName].filter(Boolean).join(", ")
       : cityName;
+    const venueLat = Number(venue?.location?.latitude);
+    const venueLng = Number(venue?.location?.longitude);
+    const hasVenueCoordinates = Number.isFinite(venueLat) && venueLat >= -90 && venueLat <= 90
+      && Number.isFinite(venueLng) && venueLng >= -180 && venueLng <= 180;
 
     // Prefer 16:9 wide images
     const image = ev.images?.find(i => i.ratio === "16_9" && (i.width || 0) > 500)?.url
@@ -136,6 +147,9 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
       link: ev.url || null,
       imageUrl: image,
       source: "Ticketmaster",
+      ...(venue?.address?.line1 ? { venueAddress: venue.address.line1 } : {}),
+      ...(hasVenueCoordinates ? { lat: venueLat, lng: venueLng } : {}),
+      timezone,
       ...(!ev.dates?.start?.dateTBA && !ev.dates?.start?.dateTBD ?
         ev.dates?.start?.dateTime && !ev.dates.start.timeTBA ? { startDate: ev.dates.start.dateTime } :
         ev.dates?.start?.localDate ? { startDate: ev.dates.start.localDate } : {} : {}),

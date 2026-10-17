@@ -10,4 +10,12 @@ describe("adult-content event filter", () => {
     expect(isAdultContent("Adult cabaret", "An 18+ performance")).toBe(true);
     expect(isAdultContent("A burlesque show", "Late-night adult entertainment")).toBe(true);
   });
+
+  it("blocks age-restricted listings even when their titles are neutral", () => {
+    expect(isAdultContent("A concert", "Live music", { legalAgeEnforced: true })).toBe(true);
+    expect(isAdultContent("A concert", "Live music", { text: "18+" })).toBe(true);
+    expect(isAdultContent("A concert", "Live music", { text: "All ages" })).toBe(false);
+    expect(isAdultContent("Crystal Castles Night - Ages 18+")).toBe(true);
+    expect(isAdultContent("Emo Nite - 21+")).toBe(true);
+  });
 });
