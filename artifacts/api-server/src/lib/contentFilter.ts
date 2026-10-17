@@ -17,6 +17,7 @@ export const ADULT_CONTENT_BASE_PHRASES: string[] = [
   "adult entertainment",
   "adult show",
   "adult cabaret",
+  "adult themes",
   "lingerie party",
   "erotic",
   "nude",
@@ -57,6 +58,6 @@ export function isAdultContent(
   if (typeof ageRestriction === "object" && ageRestriction?.legalAgeEnforced === true) return true;
   const ageText = typeof ageRestriction === "string" ? ageRestriction : ageRestriction?.text ?? "";
   const text = `${title} ${description ?? ""}`.toLowerCase();
-  if (/(?:^|[^\w])(?:18|21)\+(?:$|[^\w])|\badults?\s+only\b|\blegal age enforced\b/i.test(`${text} ${ageText}`)) return true;
+  if (/(?:^|[^\d])(?:18|21)(?:\s*\+|\s+(?:(?:years?|yrs?)\s+)?(?:and\s+(?:over|older)|or\s+older))(?=$|[^\w])|\badults?\s+only\b|\blegal age enforced\b/i.test(`${text} ${ageText}`)) return true;
   return getBlocklist().some(phrase => text.includes(phrase.toLowerCase()));
 }

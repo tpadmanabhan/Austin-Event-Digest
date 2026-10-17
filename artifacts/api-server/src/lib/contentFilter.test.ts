@@ -17,5 +17,8 @@ describe("adult-content event filter", () => {
     expect(isAdultContent("A concert", "Live music", { text: "All ages" })).toBe(false);
     expect(isAdultContent("Crystal Castles Night - Ages 18+")).toBe(true);
     expect(isAdultContent("Emo Nite - 21+")).toBe(true);
+    expect(isAdultContent("Digable Planets", "21 and Over")).toBe(true);
+    expect(isAdultContent("A concert", "For guests 18 years and older")).toBe(true);
+    expect(isAdultContent("Ish Ensemble", "Suggested21+ after 9PM")).toBe(true);
   });
 });
