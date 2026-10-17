@@ -653,8 +653,8 @@ export default function DigestView() {
 
         {(() => {
           const isAdult = (e: any) => { const t = `${e.title ?? ""} ${e.description ?? ""}`.toLowerCase(); return adultBlocklist.some(p => t.includes(p.toLowerCase())); };
-          const communityPosts = digest.events.filter((e: any) => e.isPost === true && !isAdult(e));
-          const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true && !isAdult(e));
+          const communityPosts = digest.events.filter((e: any) => e.isPost === true && !isAdult(e)).map(translateEvent);
+          const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true && !isAdult(e)).map(translateEvent);
           const staleCount = digest.events.filter((e: any) =>
             !e.isPost &&
             !e.isBusinessSpotlight &&
@@ -771,7 +771,7 @@ export default function DigestView() {
                   <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
                     <span className="w-8 h-1 bg-sky-500 rounded-full"></span>
                     <Trophy className="w-6 h-6 text-sky-500" />
-                    Business Spotlight
+                    {jt("Business Spotlight", JA.businessSpotlight)}
                   </h2>
                   <div className="flex flex-col gap-6">
                     {businessSpotlights.map((biz: any, bi: number) => (
@@ -791,7 +791,7 @@ export default function DigestView() {
                         )}
                         <div className="px-4 py-2 bg-sky-500 flex items-center gap-2">
                           <Trophy className="w-3 h-3 text-white" />
-                          <span className="text-xs font-bold text-white tracking-widest uppercase">Business Spotlight</span>
+                          <span className="text-xs font-bold text-white tracking-widest uppercase">{jt("Business Spotlight", JA.businessSpotlight)}</span>
                         </div>
                         <div className="p-6 sm:p-8">
                           <h3 className="font-serif text-xl font-bold text-foreground mb-3">{biz.title}</h3>
@@ -807,7 +807,7 @@ export default function DigestView() {
                                 className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
                                 style={{ background: "linear-gradient(135deg, #0284c7, #38bdf8)", boxShadow: "0 4px 14px rgba(2,132,199,0.35)" }}
                               >
-                                Visit Website <ExternalLink className="w-3.5 h-3.5" />
+                                {jt("Visit Website", JA.visitWebsite)} <ExternalLink className="w-3.5 h-3.5" />
                               </a>
                             </div>
                           )}
@@ -823,7 +823,7 @@ export default function DigestView() {
                   <h2 className="font-serif text-3xl font-bold mb-8 flex items-center gap-3">
                     <span className="w-8 h-1 bg-green-500 rounded-full"></span>
                     <Leaf className="w-6 h-6 text-green-500" />
-                    Community Spotlight
+                    {jt("Community Spotlight", JA.communitySpotlight)}
                   </h2>
                   <div className="flex flex-col gap-6">
                     {communityPosts.map((post: any, pi: number) => (
@@ -843,7 +843,7 @@ export default function DigestView() {
                         )}
                         <div className={`px-4 py-2 flex items-center gap-2 ${isStLouis ? "bg-red-700" : "bg-green-600"}`}>
                           <Leaf className="w-3 h-3 text-white" />
-                          <span className="text-xs font-bold text-white tracking-widest uppercase">Community Spotlight</span>
+                          <span className="text-xs font-bold text-white tracking-widest uppercase">{jt("Community Spotlight", JA.communitySpotlight)}</span>
                         </div>
                         <div className="p-6 sm:p-8">
                           <h3 className="font-serif text-xl font-bold text-foreground mb-3">{post.title}</h3>
@@ -853,7 +853,7 @@ export default function DigestView() {
                           {post.deadline && (
                             <div className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold mb-4 ${isStLouis ? "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200" : "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200"}`}>
                               <Calendar className="w-3.5 h-3.5" />
-                              Apply by {post.deadline}
+                              {jt(`Apply by ${post.deadline}`, JA.applyBy(post.deadline))}
                             </div>
                           )}
                           {post.link && (
@@ -865,7 +865,7 @@ export default function DigestView() {
                                 className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
                                 style={{ background: "linear-gradient(135deg, #16a34a, #22c55e)", boxShadow: "0 4px 14px rgba(22,163,74,0.35)" }}
                               >
-                                {tenant.slug === "austin" ? "Register" : "Apply Now"} <ExternalLink className="w-3.5 h-3.5" />
+                                {tenant.slug === "austin" ? "Register" : jt("Apply Now", JA.applyNow)} <ExternalLink className="w-3.5 h-3.5" />
                               </a>
                             </div>
                           )}

@@ -58,6 +58,14 @@ Do not pin a regional spotlight or river-wide event at the geocoder's centroid. 
 
 **How to apply:** Audit place identity as well as city bounds after geocoding; a successfully returned coordinate is not proof of a correct meeting point.
 
+## Venue-level errors inside the right city
+
+Ticketmaster coordinates and internal known-venue entries are not sufficient proof of the correct building, even when both pass city bounds.
+
+**Why:** A venue audit found several Ticketmaster pins hundreds of metres or kilometres from the named address, and some internal lookup coordinates also disagreed with current map place identities.
+
+**How to apply:** Verify the venue name and street address against a current trustworthy map. Inspect the returned place type as well: a nearby bus stop is not the museum or theatre. Apply confirmed coordinate repairs without changing unrelated edition fields.
+
 ## Los Angeles geocoding queries
 
 For Los Angeles, long API-supplied venue strings may return no Nominatim result even when the venue is real. A simplified venue name or verified street address with a California/Los Angeles qualifier can resolve it. Check the returned place identity; do not substitute a campus centroid or nearby business for a named building.

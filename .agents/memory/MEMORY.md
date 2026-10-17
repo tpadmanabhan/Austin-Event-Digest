@@ -20,7 +20,7 @@
 - [Carry-forward featured events](carry-forward-featured.md) — generate endpoint now auto-carries featured events from previous digest; live events win on title+date collision
 - [Email imageUrl absolute URL](email-imageurl-absolute.md) — relative paths (/api/storage/...) silently fail in email clients; always store and PATCH absolute https:// URLs
 - [City branding bleed](city-branding-bleed.md) — "Happy Sunday Austin" / Gmail 🤠 intro leaked into all cities; fixed in generateSampleDigest + events.ts; always audit intros before first send
-- [Geocoding drift](geocoding-drift.md) — venue name–only strings geocode to same-named venues in other cities; re-geocode alone won't fix it; must use full street address + hardcode coords
+- [Geocoding drift](geocoding-drift.md) — city bounds cannot validate Ticketmaster or cached pins; verify full addresses and place identities before coordinate repairs.
 - [New city email map checklist](new-city-email-map.md) — new city slug must be in MAP_CENTERS + CITY_LABELS in buildStaticMapSection() or the map is silently dropped from emails
 - [Spotlight endpoint format](spotlight-endpoint.md) — POST /digest/:id/spotlight takes {url, type, title, description}; skill doc's {businessSpotlight,communitySpotlight} shape is wrong
 - [Managed city tenants](managed-city-tenants.md) — brushycreek/bulverde/portland/sacramento don't auto-seed in dev; must INSERT manually; includes dev IDs + Aug 16-22 digest IDs
