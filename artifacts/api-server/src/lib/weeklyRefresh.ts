@@ -627,7 +627,8 @@ async function fetchTicketmaster(
         if (seen.has(key)) continue;
         seen.add(key);
         // Skip adult-content events before they reach the digest
-        if (isAdultContent(ev.name, ev.description || ev.info || "", ev.ageRestrictions)) continue;
+        const adultScreeningText = [ev.description, ev.info, ev.pleaseNote].filter(Boolean).join(" ");
+        if (isAdultContent(ev.name, adultScreeningText, ev.ageRestrictions)) continue;
         const isFeatured = startIso >= nextWeekIso;
         allEvents.push({
           title:       ev.name.trim(),

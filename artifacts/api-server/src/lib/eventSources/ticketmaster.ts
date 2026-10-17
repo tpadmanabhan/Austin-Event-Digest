@@ -117,7 +117,8 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
     if (isAtlanta && localDate) {
       if (localDate < query.weekOf.toISOString().slice(0, 10) || localDate >= weekEnd.toISOString().slice(0, 10)) continue;
     } else if (!isWithinDateRange(startIso, query.weekOf, query.weekEnd)) continue;
-    if (isAdultContent(ev.name, ev.description || ev.info || "", ev.ageRestrictions)) continue;
+    const adultScreeningText = [ev.description, ev.info, ev.pleaseNote].filter(Boolean).join(" ");
+    if (isAdultContent(ev.name, adultScreeningText, ev.ageRestrictions)) continue;
 
     // Include the street address when Ticketmaster provides one — a name-only
     // string ("Dante's, Portland") frequently geocodes to a same-named venue
