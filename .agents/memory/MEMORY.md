@@ -45,3 +45,4 @@
 - [Publication readiness](publication-readiness.md) — reproduce artifact build context; verify dynamic newsletter content in saved data and rendered output.
 - [Platform landing priorities](platform-landing-priorities.md) — concise one-hour newsletter, cities, deals, local AI Ethics, city requests, scenic photos, and readable public HTML.
 - [City provisioning policy](city-provisioning-policy.md) — manual review stays separate from account creation; root routing and city admin credentials are not platform approval.
+- [Workspace send runner restarts](workspace-send-runner-restarts.md) — a restart can kill the process and erase its log; verify production send metadata before any re-arm.
