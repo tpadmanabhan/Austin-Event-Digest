@@ -18,6 +18,11 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
             Rebuilding EventCarpooling.com for a better user experience
           </a>{" "}— I’m improving the site so finding local events feels clearer and easier.
+          {" "}<a href="https://eventcarpooling.com/"
+            target="_blank" rel="noopener noreferrer"
+            className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
+            Want an event page for your city?
+          </a>{" "}— Make a request; customization is also considered for each city.
         </li>
         <li>
           <a href="https://www.theatlantic.com/health/2026/10/community-builders/688947/"
@@ -32,13 +37,6 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
             Spurs² Hackathon @ UT Austin
           </a>{" "}— I’m participating in a hackathon with the San Antonio Spurs and partners to build AI-powered sports media tools.
-        </li>
-        <li>
-          <a href="https://eventcarpooling.com/"
-            target="_blank" rel="noopener noreferrer"
-            className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
-            Want an event page for your city?
-          </a>{" "}— Make a request; customization is also considered for each city.
         </li>
         <li>
           <strong>Food for thought: Are destination websites okay with mass-scale data scraping by AI personal assistants?</strong>{" "}

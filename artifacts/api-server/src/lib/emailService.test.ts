@@ -85,22 +85,23 @@ describe("AI Ethics reading section", () => {
     expect(html).not.toContain("AI Doesn’t Solve This");
   });
 
-  it("renders Austin's five new AI Ethics items in order and removes the old readings", () => {
+  it("combines Austin's rebuild and city request, then renders the remaining AI Ethics items in order", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
     });
     expect(html).toContain("AI Ethics");
-    const requestedLinks = [
-      "https://eventcarpooling.com/",
+    const requestedItems = [
+      "Rebuilding EventCarpooling.com for a better user experience",
+      "Want an event page for your city?",
       "https://www.theatlantic.com/health/2026/10/community-builders/688947/",
       "https://luma.com/i1m74hz4",
-      "Want an event page for your city?",
       "Food for thought: Are destination websites okay with mass-scale data scraping by AI personal assistants?",
       "https://www.siliconvalley.com/2026/10/16/meta-updates-data-scraping-policy-following-criticism/",
     ];
-    const requestedPositions = requestedLinks.map(value => html.indexOf(value));
+    const requestedPositions = requestedItems.map(value => html.indexOf(value));
     expect(requestedPositions.every(position => position >= 0)).toBe(true);
     expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
+    expect(html).toMatch(/<a href="https:\/\/eventcarpooling\.com\/"[^>]*>Want an event page for your city\?<\/a> — Make a request; customization is also considered for each city\./);
     expect(html).toContain("customization is also considered for each city");
     expect(html).toContain("Meta updates data-scraping policy following criticism");
     expect(html).toContain("The revised terms leave questions about how business websites can control automated access to their content.");
