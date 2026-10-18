@@ -85,17 +85,25 @@ describe("AI Ethics reading section", () => {
     expect(html).not.toContain("AI Doesn’t Solve This");
   });
 
-  it("appears below Austin's introduction with the four current resources, replacing the old readings", () => {
+  it("renders Austin's four new AI Ethics items in order and removes the old readings", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
     });
     expect(html).toContain("AI Ethics");
-    expect(html).toContain("AI Doesn’t Solve This");
-    expect(html).toContain("https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/");
-    expect(html).toContain('href="https://podcasts.apple.com/us/podcast/10-happier-with-dan-harris/id1087147821?i=1000793503590"');
-    expect(html).toContain('href="https://podcasts.apple.com/us/podcast/chasing-life-with-dr-sanjay-gupta/id1501029683?i=1000791424717"');
-    expect(html).toContain('href="https://www.amazon.com/Wisdom-Bullfrog-Leadership-Made-Simple/dp/1538707942"');
-    expect(html).toContain("IRL Lifestyle Book of the Week");
+    const requestedLinks = [
+      "https://eventcarpooling.com/",
+      "https://www.theatlantic.com/health/2026/10/community-builders/688947/",
+      "https://luma.com/i1m74hz4",
+      "Want an event page for your city?",
+    ];
+    const requestedPositions = requestedLinks.map(value => html.indexOf(value));
+    expect(requestedPositions.every(position => position >= 0)).toBe(true);
+    expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
+    expect(html).toContain("customization is also considered for each city");
+    expect(html).not.toContain("AI Doesn’t Solve This");
+    expect(html).not.toContain("10% Happier with Dan Harris");
+    expect(html).not.toContain("Chasing Life with Dr. Sanjay Gupta");
+    expect(html).not.toContain("The Wisdom of the Bullfrog");
     expect(html).not.toContain("Nick Bostrom");
     expect(html).not.toContain("404media.co");
     expect(html).not.toContain("are-we-trading-our-soul-for-convenience");
