@@ -85,7 +85,7 @@ describe("AI Ethics reading section", () => {
     expect(html).not.toContain("AI Doesn’t Solve This");
   });
 
-  it("renders Austin's four new AI Ethics items in order and removes the old readings", () => {
+  it("renders Austin's five new AI Ethics items in order and removes the old readings", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
     });
@@ -95,11 +95,15 @@ describe("AI Ethics reading section", () => {
       "https://www.theatlantic.com/health/2026/10/community-builders/688947/",
       "https://luma.com/i1m74hz4",
       "Want an event page for your city?",
+      "Food for thought: Are destination websites okay with mass-scale data scraping by AI personal assistants?",
+      "https://www.siliconvalley.com/2026/10/16/meta-updates-data-scraping-policy-following-criticism/",
     ];
     const requestedPositions = requestedLinks.map(value => html.indexOf(value));
     expect(requestedPositions.every(position => position >= 0)).toBe(true);
     expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
     expect(html).toContain("customization is also considered for each city");
+    expect(html).toContain("Meta updates data-scraping policy following criticism");
+    expect(html).toContain("The revised terms leave questions about how business websites can control automated access to their content.");
     expect(html).not.toContain("AI Doesn’t Solve This");
     expect(html).not.toContain("10% Happier with Dan Harris");
     expect(html).not.toContain("Chasing Life with Dr. Sanjay Gupta");

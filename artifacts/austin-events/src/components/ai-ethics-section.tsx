@@ -8,7 +8,8 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
       <p className="text-sm leading-7 text-slate-600">
         Responsible technology should make digital experiences easier to use, support real-world
         connection, and be built around the people it serves. This week, I’m connecting those
-        ideas to my website rebuild, a story about community builders, and a sports-tech hackathon.
+        ideas to my website rebuild, a story about community builders, a sports-tech hackathon,
+        and questions about AI systems accessing website content.
       </p>
       <ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-slate-600">
         <li>
@@ -38,6 +39,14 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
             Want an event page for your city?
           </a>{" "}— Make a request; customization is also considered for each city.
+        </li>
+        <li>
+          <strong>Food for thought: Are destination websites okay with mass-scale data scraping by AI personal assistants?</strong>{" "}
+          — <a href="https://www.siliconvalley.com/2026/10/16/meta-updates-data-scraping-policy-following-criticism/"
+            target="_blank" rel="noopener noreferrer"
+            className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
+            Meta updates data-scraping policy following criticism
+          </a>{" "}— The revised terms leave questions about how business websites can control automated access to their content.
         </li>
       </ul>
     </section>
