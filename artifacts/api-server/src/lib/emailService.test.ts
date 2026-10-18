@@ -97,6 +97,7 @@ describe("AI Ethics reading section", () => {
       "https://luma.com/i1m74hz4",
       "Food for thought: Are destination websites okay with mass-scale data scraping by AI personal assistants?",
       "https://www.siliconvalley.com/2026/10/16/meta-updates-data-scraping-policy-following-criticism/",
+      "https://www.theverge.com/ai-artificial-intelligence/1013195/ai-agents-blocked-web",
     ];
     const requestedPositions = requestedItems.map(value => html.indexOf(value));
     expect(requestedPositions.every(position => position >= 0)).toBe(true);
@@ -105,6 +106,8 @@ describe("AI Ethics reading section", () => {
     expect(html).toContain("customization is also considered for each city");
     expect(html).toContain("Meta updates data-scraping policy following criticism");
     expect(html).toContain("The revised terms leave questions about how business websites can control automated access to their content.");
+    expect(html).toContain("Websites are closing their doors to AI agents");
+    expect(html).toContain("The report shows that sites are blocking agents over licensing, control, and security concerns, so agents’ ability to act for users depends on website permission.");
     expect(html).not.toContain("AI Doesn’t Solve This");
     expect(html).not.toContain("10% Happier with Dan Harris");
     expect(html).not.toContain("Chasing Life with Dr. Sanjay Gupta");

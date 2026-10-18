@@ -45,6 +45,11 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
             Meta updates data-scraping policy following criticism
           </a>{" "}— The revised terms leave questions about how business websites can control automated access to their content.
+          {" "}<a href="https://www.theverge.com/ai-artificial-intelligence/1013195/ai-agents-blocked-web"
+            target="_blank" rel="noopener noreferrer"
+            className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
+            Websites are closing their doors to AI agents
+          </a>{" "}— The report shows that sites are blocking agents over licensing, control, and security concerns, so agents’ ability to act for users depends on website permission.
         </li>
       </ul>
     </section>
