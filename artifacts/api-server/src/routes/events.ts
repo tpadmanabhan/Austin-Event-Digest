@@ -1307,6 +1307,15 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
  * - Regular events with coords beyond the radius go into alsoNearby.
  * - distanceMi (rounded to 1 decimal) is attached to every regular event.
  */
+type RecipientWithLocation = {
+  email: string;
+  name: string | null;
+  anchorLat: number | null;
+  anchorLng: number | null;
+  radiusMiles: number;
+  walkableOnly: boolean;
+};
+
 function personalizeEventsForSubscriber(
   events: any[],
   anchorLat: number,
@@ -1339,6 +1348,20 @@ function personalizeEventsForSubscriber(
   return { mainEvents: [...passThrough, ...within], alsoNearby: beyond };
 }
 
+export function selectRecipientDigestEvents(
+  events: any[],
+  recipient: RecipientWithLocation,
+  isAustin: boolean,
+  personalizeByLocation = true,
+): { mainEvents: any[]; alsoNearby: any[] } {
+  if (!isAustin || !personalizeByLocation || recipient.anchorLat == null || recipient.anchorLng == null) {
+    return { mainEvents: events, alsoNearby: [] };
+  }
+
+  const effectiveRadius = recipient.walkableOnly ? 1 : recipient.radiusMiles;
+  return personalizeEventsForSubscriber(events, recipient.anchorLat, recipient.anchorLng, effectiveRadius);
+}
+
 router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
   const id = parseInt(req.params["id"] as string, 10);
   if (isNaN(id)) { res.status(400).json({ error: "invalid_request" }); return; }
@@ -1366,7 +1389,7 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
     return;
   }
 
-  const { digestId, testEmail, confirm } = parseResult.data;
+  const { digestId, testEmail, confirm, personalizeByLocation = true } = parseResult.data;
 
   // Safety guard: a full subscriber send requires explicit opt-in.
   // Without testEmail OR confirm:true, reject the request immediately so that
@@ -1392,14 +1415,6 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
       return;
     }
 
-    type RecipientWithLocation = {
-      email: string;
-      name: string | null;
-      anchorLat: number | null;
-      anchorLng: number | null;
-      radiusMiles: number;
-      walkableOnly: boolean;
-    };
     let recipients: RecipientWithLocation[] = [];
     // Always use the tenant's canonical subdomain for RSVP/unsubscribe links in emails.
     // This is the only reliable approach — header-based inference can return the platform
@@ -1441,20 +1456,12 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
     const isAustin = req.tenant?.slug === "austin";
 
     for (const recipient of recipients) {
-      let recipientEvents: any[] = emailEvents;
-      let alsoNearby: any[] = [];
-
-      if (isAustin && recipient.anchorLat != null && recipient.anchorLng != null) {
-        const effectiveRadius = recipient.walkableOnly ? 1 : recipient.radiusMiles;
-        const personalized = personalizeEventsForSubscriber(
-          emailEvents,
-          recipient.anchorLat,
-          recipient.anchorLng,
-          effectiveRadius,
-        );
-        recipientEvents = personalized.mainEvents;
-        alsoNearby = personalized.alsoNearby;
-      }
+      const { mainEvents: recipientEvents, alsoNearby } = selectRecipientDigestEvents(
+        emailEvents,
+        recipient,
+        isAustin,
+        personalizeByLocation,
+      );
 
       const prefToken = isAustin ? signSubscriberToken(recipient.email) : null;
       const preferencesUrl = prefToken

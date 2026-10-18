@@ -603,6 +603,9 @@ components:
         confirm:
           type: boolean
           description: Must be true to trigger a full subscriber send (safety guard)
+        personalizeByLocation:
+          type: boolean
+          description: When false, sends the same event order to all recipients instead of applying Austin saved-location personalization. Defaults to true.
       required:
         - digestId
 

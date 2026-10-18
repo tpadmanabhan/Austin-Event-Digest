@@ -287,6 +287,12 @@ export const SendDigestBody = zod.object({
     .boolean()
     .optional()
     .describe("Must be true to trigger a full subscriber send (safety guard)"),
+  personalizeByLocation: zod
+    .boolean()
+    .optional()
+    .describe(
+      "When false, sends the same event order to all recipients instead of applying Austin saved-location personalization. Defaults to true.",
+    ),
 });
 
 export const SendDigestResponse = zod.object({

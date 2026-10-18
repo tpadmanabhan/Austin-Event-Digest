@@ -12,4 +12,6 @@ export interface SendDigestRequest {
   testEmail?: string;
   /** Must be true to trigger a full subscriber send (safety guard) */
   confirm?: boolean;
+  /** When false, sends the same event order to all recipients instead of applying Austin saved-location personalization. Defaults to true. */
+  personalizeByLocation?: boolean;
 }
