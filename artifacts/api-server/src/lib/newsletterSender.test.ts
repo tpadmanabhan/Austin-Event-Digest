@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const sendMail = vi.hoisted(() => vi.fn().mockResolvedValue({ messageId: "test-message" }));
+const createTransport = vi.hoisted(() => vi.fn(() => ({ sendMail })));
 vi.mock("nodemailer", () => ({
-  default: { createTransport: vi.fn(() => ({ sendMail })) },
+  default: { createTransport },
 }));
 vi.mock("openai", () => ({ default: class OpenAI {} }));
 vi.mock("./logger", () => ({
@@ -12,9 +13,12 @@ vi.mock("./logger", () => ({
 beforeEach(() => {
   vi.resetModules();
   sendMail.mockClear();
-  vi.stubEnv("RESEND_API_KEY", "");
+  createTransport.mockClear();
+  vi.stubEnv("TITAN_SMTP_HOST", "smtp.titan.email");
+  vi.stubEnv("TITAN_SMTP_PORT", "465");
+  vi.stubEnv("TITAN_SMTP_USER", "raj@eventcarpooling.com");
+  vi.stubEnv("TITAN_SMTP_PASSWORD", "test-only-password");
   vi.stubEnv("GMAIL_USER", "aiimplementationclubaustin@gmail.com");
-  vi.stubEnv("GMAIL_APP_PASSWORD", "test-only-password");
   vi.stubEnv("FROM_NAME", "Raj's Austin Events");
 });
 afterEach(() => {
@@ -65,20 +69,20 @@ describe("newsletter sender identity", () => {
       .toBe("Raj's Austin Events — No Reply <raj@eventcarpooling.com>");
   });
 
-  it("preserves newsletter reply routing for the alternate email provider", async () => {
-    vi.stubEnv("RESEND_API_KEY", "test-only-key");
-    vi.stubEnv("FROM_EMAIL", "verified@example.com");
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true, json: async () => ({ id: "test-message" }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+  it("uses Titan SMTP and preserves newsletter reply routing", async () => {
     const { sendNewsletterEmail } = await import("./emailService");
     await sendNewsletterEmail({ ...edition, fromName: "Austin Cares" });
-    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.from).toBe("Austin Cares — No Reply <raj@eventcarpooling.com>");
-    expect(body.reply_to).toBe("raj@customersuccessforgood.com");
-    expect(body.to).toEqual([edition.to]);
-    expect(sendMail).not.toHaveBeenCalled();
+    expect(createTransport).toHaveBeenCalledWith({
+      host: "smtp.titan.email",
+      port: 465,
+      secure: true,
+      auth: { user: "raj@eventcarpooling.com", pass: "test-only-password" },
+    });
+    expect(sendMail.mock.calls[0][0]).toMatchObject({
+      from: "Austin Cares — No Reply <raj@eventcarpooling.com>",
+      replyTo: "raj@customersuccessforgood.com",
+      to: edition.to,
+    });
   });
 
   it("leaves transactional email sender names and participant reply targets unchanged", async () => {
@@ -87,8 +91,18 @@ describe("newsletter sender identity", () => {
       ...edition, fromName: "Carpool Organizer", replyTo: "participant@example.com",
     });
     expect(sendMail.mock.calls[0][0]).toMatchObject({
-      from: "Carpool Organizer <aiimplementationclubaustin@gmail.com>",
+      from: "Carpool Organizer <raj@eventcarpooling.com>",
       replyTo: "participant@example.com",
     });
+  });
+
+  it("fails closed instead of falling back to the Gmail sender when Titan is unconfigured", async () => {
+    vi.stubEnv("TITAN_SMTP_PASSWORD", "");
+    const { sendEmail } = await import("./emailService");
+    await expect(sendEmail(edition)).resolves.toMatchObject({
+      success: false,
+      error: "Titan SMTP is not configured",
+    });
+    expect(sendMail).not.toHaveBeenCalled();
   });
 });

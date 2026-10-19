@@ -12,12 +12,12 @@ import { buildLaAiEthicsSection } from "./laAiEthics";
 import { buildCityAiEthicsSection } from "./cityAiEthics";
 import { signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
 const FROM_NAME = process.env.FROM_NAME || "Raj's Austin Events";
 const NEWSLETTER_FROM_EMAIL = "raj@eventcarpooling.com";
-const GMAIL_USER = process.env.GMAIL_USER;
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
+const TITAN_SMTP_HOST = process.env.TITAN_SMTP_HOST?.trim() || "smtp.titan.email";
+const TITAN_SMTP_PORT = Number(process.env.TITAN_SMTP_PORT || "465");
+const TITAN_SMTP_USER = process.env.TITAN_SMTP_USER?.trim();
+const TITAN_SMTP_PASSWORD = process.env.TITAN_SMTP_PASSWORD;
 
 interface SendEmailOptions {
   to: string | string[];
@@ -41,10 +41,9 @@ interface SendEmailResult {
   error?: string;
 }
 
-// Edition emails use the newsletter sender alias and keep human replies routed
-// separately. With Gmail SMTP, this address must be a verified Send As alias.
-// Do not apply this policy to transactional emails: carpool notifications have
-// their own sender and reply targets.
+// Edition emails use the newsletter sender address and keep human replies routed
+// separately. Do not apply the reply policy to transactional email: carpool
+// notifications have their own reply targets.
 export async function sendNewsletterEmail(
   options: Omit<SendEmailOptions, "replyTo">,
 ): Promise<SendEmailResult> {
@@ -57,62 +56,28 @@ export async function sendNewsletterEmail(
 }
 
 export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
-  // Prefer Resend if configured; otherwise fall back to Gmail SMTP
-  if (RESEND_API_KEY) {
-    try {
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: `${options.fromName || FROM_NAME} <${options.fromEmail || FROM_EMAIL}>`,
-          to: Array.isArray(options.to) ? options.to : [options.to],
-          subject: options.subject,
-          html: options.html,
-          text: options.text,
-          reply_to: options.replyTo,
-          headers: options.headers,
-          ...(options.attachments?.length ? {
-            attachments: options.attachments.map(attachment => ({
-              filename: attachment.filename,
-              content: attachment.content.toString("base64"),
-            })),
-          } : {}),
-        }),
-      });
-
-      const data = await response.json() as { id?: string; message?: string };
-
-      if (!response.ok) {
-        logger.error({ status: response.status, data }, "Resend API error");
-        return { success: false, error: data.message || "Failed to send email" };
-      }
-
-      return { success: true, id: data.id };
-    } catch (err) {
-      logger.error({ err }, "Error sending email via Resend");
-      return { success: false, error: "Network error sending email" };
-    }
+  if (!TITAN_SMTP_USER || !TITAN_SMTP_PASSWORD) {
+    logger.warn("Titan SMTP is not configured (TITAN_SMTP_USER and TITAN_SMTP_PASSWORD are required)");
+    return { success: false, error: "Titan SMTP is not configured" };
   }
-
-  // Fall back to Gmail SMTP
-  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
-    logger.warn("No email provider configured (RESEND_API_KEY or GMAIL_USER/GMAIL_APP_PASSWORD required)");
-    return { success: false, error: "Email service not configured" };
+  if (!Number.isInteger(TITAN_SMTP_PORT) || TITAN_SMTP_PORT < 1 || TITAN_SMTP_PORT > 65535) {
+    logger.error({ port: TITAN_SMTP_PORT }, "Invalid Titan SMTP port");
+    return { success: false, error: "Titan SMTP port is invalid" };
   }
 
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+      host: TITAN_SMTP_HOST,
+      port: TITAN_SMTP_PORT,
+      secure: TITAN_SMTP_PORT === 465,
+      ...(TITAN_SMTP_PORT === 587 ? { requireTLS: true } : {}),
+      auth: { user: TITAN_SMTP_USER, pass: TITAN_SMTP_PASSWORD },
     });
 
     const recipients = Array.isArray(options.to) ? options.to.join(", ") : options.to;
 
     await transporter.sendMail({
-      from: `${options.fromName || FROM_NAME} <${options.fromEmail || GMAIL_USER}>`,
+      from: `${options.fromName || FROM_NAME} <${options.fromEmail || TITAN_SMTP_USER}>`,
       to: recipients,
       subject: options.subject,
       html: options.html,
@@ -122,10 +87,10 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
       ...(options.attachments?.length ? { attachments: options.attachments } : {}),
     });
 
-    logger.info({ to: options.to }, "Email sent via Gmail SMTP");
+    logger.info({ to: options.to }, "Email sent via Titan SMTP");
     return { success: true };
   } catch (err: any) {
-    logger.error({ err }, "Error sending email via Gmail SMTP");
+    logger.error({ err }, "Error sending email via Titan SMTP");
     return { success: false, error: err?.message || "Failed to send email" };
   }
 }

@@ -1,10 +1,10 @@
 ---
 name: Newsletter sender choice
-description: Use the chosen newsletter sender alias for editions and route human replies separately.
+description: Use Titan SMTP for outbound mail while keeping Gmail credentials dedicated to inbox reading.
 ---
 
-Use the selected sender alias in the From header for newsletter editions and test sends, with a city-specific “No Reply” display label and the designated support reply mailbox. Keep this separate from transactional email sender and reply rules.
+Send outbound app email through Titan SMTP using the Titan mailbox as the authenticated sender. Keep the Gmail credentials separate for incoming newsletter parsing. Newsletter editions use the selected sender address with a city-specific “No Reply” display label and support Reply-To; transactional emails keep their individual reply targets.
 
-**Why:** The user chose the visible project sender address for newsletter editions while keeping replies routed to support.
+**Why:** The user chose Titan for outgoing delivery so the old Gmail mailbox does not appear as the sender, while the existing Gmail inbox remains needed for newsletter intake.
 
-**How to apply:** Apply the selected sender alias and support Reply-To only through the shared newsletter send path. With Gmail SMTP, the From address must be a verified Send As alias; the connected OAuth integration can list aliases but cannot create or verify them. Do not send until delivered headers confirm the From address. Do not change transactional email behavior.
+**How to apply:** Configure outgoing Titan SMTP independently from Gmail IMAP credentials. Do not fall back to Gmail when Titan is not configured. Use the support Reply-To only for newsletters and preserve transactional reply targets. Confirm actual From and Reply-To headers before sending editions.

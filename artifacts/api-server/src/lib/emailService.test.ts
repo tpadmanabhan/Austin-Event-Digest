@@ -19,15 +19,17 @@ import {
 
 // ---------------------------------------------------------------------------
 // Environment + nodemailer setup (hoisted so they run before module imports).
-// Sets GMAIL_USER so emailService.ts picks up the Gmail path at module-init
-// time, then intercepts nodemailer so no real SMTP connection is made.
+// Sets Titan's outgoing mailbox so no real SMTP connection is made.
 // ---------------------------------------------------------------------------
 const mockSendMail = vi.hoisted(() => vi.fn().mockResolvedValue({ messageId: "test-msg" }));
 const mockCreateTransport = vi.hoisted(() => vi.fn(() => ({ sendMail: mockSendMail })));
 
-// Set env before emailService.ts is imported so its module-level GMAIL_USER const is populated.
+// Set env before emailService.ts is imported so its module-level Titan settings are populated.
 vi.hoisted(() => {
-  process.env["GMAIL_USER"] = "test-user@gmail.com";
+  process.env["TITAN_SMTP_HOST"] = "smtp.titan.email";
+  process.env["TITAN_SMTP_PORT"] = "465";
+  process.env["TITAN_SMTP_USER"] = "raj@eventcarpooling.com";
+  process.env["TITAN_SMTP_PASSWORD"] = "test-only-password";
 });
 
 vi.mock("nodemailer", () => ({
@@ -404,7 +406,7 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
 
   it("sendWelcomeEmail uses the tenant display name as fromName, not Austin default", async () => {
     // mockSendMail is set up via vi.hoisted + vi.mock("nodemailer") above.
-    // GMAIL_USER is also set via vi.hoisted so emailService.ts activates the Gmail path.
+    // Titan SMTP settings are set via vi.hoisted so no real SMTP connection is made.
     mockSendMail.mockClear();
 
     const portlandTenant = { slug: "portland", name: "Portland Events", city: "Portland, OR", digestTitle: null };
@@ -415,6 +417,7 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
     // The "from" field is formatted as "Display Name <addr>" — check display name
     expect(callArg.from).toContain("Portland Events");
     expect(callArg.from).not.toContain("Austin");
+    expect(callArg.from).toBe("Portland Events <raj@eventcarpooling.com>");
   });
 
   it("admin test-welcome for a non-Austin city (e.g. Portland) produces neutral branding, not 🤠", () => {

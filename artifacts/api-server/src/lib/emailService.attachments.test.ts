@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const sendMail = vi.hoisted(() => vi.fn().mockResolvedValue({ messageId: "test-message" }));
+const createTransport = vi.hoisted(() => vi.fn(() => ({ sendMail })));
 vi.mock("nodemailer", () => ({
-  default: { createTransport: vi.fn(() => ({ sendMail })) },
+  default: { createTransport },
 }));
 vi.mock("openai", () => ({ default: class OpenAI {} }));
 vi.mock("./logger", () => ({
@@ -12,9 +13,11 @@ vi.mock("./logger", () => ({
 beforeEach(() => {
   vi.resetModules();
   sendMail.mockClear();
-  vi.stubEnv("RESEND_API_KEY", "");
-  vi.stubEnv("GMAIL_USER", "sender@example.com");
-  vi.stubEnv("GMAIL_APP_PASSWORD", "test-only-password");
+  createTransport.mockClear();
+  vi.stubEnv("TITAN_SMTP_HOST", "smtp.titan.email");
+  vi.stubEnv("TITAN_SMTP_PORT", "465");
+  vi.stubEnv("TITAN_SMTP_USER", "raj@eventcarpooling.com");
+  vi.stubEnv("TITAN_SMTP_PASSWORD", "test-only-password");
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -44,25 +47,16 @@ describe("sendEmail attachments", () => {
     expect(sent).not.toHaveProperty("bcc");
   });
 
-  it("encodes attachments for Resend without adding recipients", async () => {
-    vi.stubEnv("RESEND_API_KEY", "test-only-resend-key");
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ id: "test-message" }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+  it("uses the configured Titan SMTP mailbox for outbound sender identity", async () => {
     const { sendEmail } = await import("./emailService");
-    expect(await sendEmail({ ...message, attachments: [attachment] }))
-      .toEqual({ success: true, id: "test-message" });
-    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.to).toEqual([message.to]);
-    expect(body.attachments).toEqual([{
-      filename: attachment.filename,
-      content: attachment.content.toString("base64"),
-    }]);
-    expect(body).not.toHaveProperty("cc");
-    expect(body).not.toHaveProperty("bcc");
-    expect(sendMail).not.toHaveBeenCalled();
+    await sendEmail(message);
+    expect(createTransport).toHaveBeenCalledWith({
+      host: "smtp.titan.email",
+      port: 465,
+      secure: true,
+      auth: { user: "raj@eventcarpooling.com", pass: "test-only-password" },
+    });
+    expect(sendMail.mock.calls[0][0].from).toBe("Raj's Austin Events <raj@eventcarpooling.com>");
   });
 
   it("leaves ordinary email requests unchanged", async () => {
