@@ -310,7 +310,7 @@ The current handler requires `confirm: true` when `testEmail` is absent; check t
 
 ### Newsletter sender and delivery checks
 
-Edition emails, including single-address drafts, use `sendNewsletterEmail`: keep the configured Gmail mailbox, append `— No Reply` to the tenant sender display name, and set `Reply-To` to `raj@customersuccessforgood.com`. Do not substitute an unverified no-reply mailbox or apply this policy to transactional/carpool emails, which have their own reply targets. The display name and Reply-To are email headers, not preview-body text; inspect the sending helper or actual message headers rather than searching preview HTML for them.
+Edition emails, including single-address drafts, use `sendNewsletterEmail` over Titan SMTP with `raj@eventcarpooling.com` as the From address. Append `— No Reply` to the tenant sender display name and omit the `Reply-To` header so replies go to the From address. Do not apply this policy to transactional/carpool emails, which have their own reply targets. The display name and From address are email headers, not preview-body text; inspect the sending helper or actual message headers rather than searching preview HTML for them.
 
 For a draft, verify provider acceptance in the send logs as well as the API response: the handler's `success: true` alone does not prove the individual message was accepted. For broadcasts, inspect delivered/failed counts; an overall successful response can still contain recipient failures. Report provider acceptance, not guaranteed inbox delivery.
 

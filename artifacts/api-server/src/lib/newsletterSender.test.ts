@@ -41,11 +41,11 @@ describe("newsletter sender identity", () => {
       expect(sendMail).toHaveBeenCalledOnce();
       expect(sendMail.mock.calls[0][0]).toMatchObject({
         from: `${fromName} — No Reply <raj@eventcarpooling.com>`,
-        replyTo: "raj@customersuccessforgood.com",
         to: edition.to,
         subject: edition.subject,
         html: edition.html,
       });
+      expect(sendMail.mock.calls[0][0]).not.toHaveProperty("replyTo");
     },
   );
 
@@ -56,8 +56,8 @@ describe("newsletter sender identity", () => {
     });
     const sent = sendMail.mock.calls[0][0];
     expect(sent.to).toBe("draft@example.com");
-    expect(sent.replyTo).toBe("raj@customersuccessforgood.com");
     expect(sent.from).toBe("Austin Cares — No Reply <raj@eventcarpooling.com>");
+    expect(sent).not.toHaveProperty("replyTo");
     expect(sent).not.toHaveProperty("cc");
     expect(sent).not.toHaveProperty("bcc");
   });
@@ -69,7 +69,7 @@ describe("newsletter sender identity", () => {
       .toBe("Raj's Austin Events — No Reply <raj@eventcarpooling.com>");
   });
 
-  it("uses Titan SMTP and preserves newsletter reply routing", async () => {
+  it("uses Titan SMTP and leaves newsletter replies addressed to the From mailbox", async () => {
     const { sendNewsletterEmail } = await import("./emailService");
     await sendNewsletterEmail({ ...edition, fromName: "Austin Cares" });
     expect(createTransport).toHaveBeenCalledWith({
@@ -80,9 +80,9 @@ describe("newsletter sender identity", () => {
     });
     expect(sendMail.mock.calls[0][0]).toMatchObject({
       from: "Austin Cares — No Reply <raj@eventcarpooling.com>",
-      replyTo: "raj@customersuccessforgood.com",
       to: edition.to,
     });
+    expect(sendMail.mock.calls[0][0]).not.toHaveProperty("replyTo");
   });
 
   it("leaves transactional email sender names and participant reply targets unchanged", async () => {

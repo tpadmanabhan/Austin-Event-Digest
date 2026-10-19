@@ -41,9 +41,8 @@ interface SendEmailResult {
   error?: string;
 }
 
-// Edition emails use the newsletter sender address and keep human replies routed
-// separately. Do not apply the reply policy to transactional email: carpool
-// notifications have their own reply targets.
+// Edition emails omit Reply-To so responses go to the visible From address.
+// Transactional emails can specify their own reply targets.
 export async function sendNewsletterEmail(
   options: Omit<SendEmailOptions, "replyTo">,
 ): Promise<SendEmailResult> {
@@ -51,7 +50,6 @@ export async function sendNewsletterEmail(
     ...options,
     fromName: `${options.fromName?.trim() || FROM_NAME} — No Reply`,
     fromEmail: NEWSLETTER_FROM_EMAIL,
-    replyTo: "raj@customersuccessforgood.com",
   });
 }
 
@@ -82,7 +80,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
       subject: options.subject,
       html: options.html,
       text: options.text,
-      replyTo: options.replyTo,
+      ...(options.replyTo ? { replyTo: options.replyTo } : {}),
       headers: options.headers,
       ...(options.attachments?.length ? { attachments: options.attachments } : {}),
     });
