@@ -15,6 +15,7 @@ import { signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
 const FROM_NAME = process.env.FROM_NAME || "Raj's Austin Events";
+const NEWSLETTER_FROM_EMAIL = "raj@eventcarpooling.com";
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 
@@ -25,6 +26,7 @@ interface SendEmailOptions {
   text?: string;
   replyTo?: string;
   fromName?: string;
+  fromEmail?: string;
   headers?: Record<string, string>;
   attachments?: Array<{
     filename: string;
@@ -39,15 +41,16 @@ interface SendEmailResult {
   error?: string;
 }
 
-// Edition emails keep the authenticated sender mailbox, but distinguish the
+// Edition emails use the verified newsletter sender alias and distinguish the
 // automated sender from the human who handles replies. Do not apply this policy
-// to transactional emails: carpool notifications have their own reply targets.
+// to transactional emails: carpool notifications have their own sender and reply targets.
 export async function sendNewsletterEmail(
   options: Omit<SendEmailOptions, "replyTo">,
 ): Promise<SendEmailResult> {
   return sendEmail({
     ...options,
     fromName: `${options.fromName?.trim() || FROM_NAME} — No Reply`,
+    fromEmail: NEWSLETTER_FROM_EMAIL,
     replyTo: "raj@customersuccessforgood.com",
   });
 }
@@ -63,7 +66,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: `${options.fromName || FROM_NAME} <${FROM_EMAIL}>`,
+          from: `${options.fromName || FROM_NAME} <${options.fromEmail || FROM_EMAIL}>`,
           to: Array.isArray(options.to) ? options.to : [options.to],
           subject: options.subject,
           html: options.html,
@@ -108,7 +111,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     const recipients = Array.isArray(options.to) ? options.to.join(", ") : options.to;
 
     await transporter.sendMail({
-      from: `${options.fromName || FROM_NAME} <${GMAIL_USER}>`,
+      from: `${options.fromName || FROM_NAME} <${options.fromEmail || GMAIL_USER}>`,
       to: recipients,
       subject: options.subject,
       html: options.html,

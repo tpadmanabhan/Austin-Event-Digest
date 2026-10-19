@@ -1,10 +1,10 @@
 ---
 name: Newsletter sender choice
-description: The user chose Gmail with a No Reply label rather than setting up a new sending address.
+description: Use the verified newsletter sender alias with a No Reply display label while keeping human replies separate.
 ---
 
-Keep Gmail as the newsletter sending provider and use a “No Reply” sender label rather than replacing the mailbox with an unverified address.
+Use the verified project sender address in the From header for newsletter editions and test sends, with a “No Reply” display label and the designated human reply mailbox. Keep this separate from transactional email sender and reply rules.
 
-**Why:** The user explicitly chose this option over setting up and verifying a real no-reply address.
+**Why:** The user wants the authenticated Gmail mailbox hidden from newsletter recipients and supplied a verified sender alias; human replies should continue to route separately.
 
-**How to apply:** Preserve this choice for newsletter editions, including drafts. Do not expand it to transactional messages or switch providers merely to obtain a no-reply-looking address.
+**How to apply:** Apply the sender alias and No Reply label only through the shared newsletter send path. Do not change transactional email behavior or provider configuration.
