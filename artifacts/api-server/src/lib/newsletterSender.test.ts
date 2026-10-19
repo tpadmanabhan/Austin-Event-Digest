@@ -30,13 +30,13 @@ const edition = {
 
 describe("newsletter sender identity", () => {
   it.each(["Raj's Austin Events", "Austin Cares", "Portland Events", "東京イベント"])(
-    "uses the generic newsletter sender and labels %s as No Reply",
+    "uses the newsletter sender and labels %s as No Reply",
     async (fromName) => {
       const { sendNewsletterEmail } = await import("./emailService");
       expect(await sendNewsletterEmail({ ...edition, fromName })).toEqual({ success: true });
       expect(sendMail).toHaveBeenCalledOnce();
       expect(sendMail.mock.calls[0][0]).toMatchObject({
-        from: `${fromName} — No Reply <no-reply@eventcarpooling.com>`,
+        from: `${fromName} — No Reply <raj@eventcarpooling.com>`,
         replyTo: "raj@customersuccessforgood.com",
         to: edition.to,
         subject: edition.subject,
@@ -53,7 +53,7 @@ describe("newsletter sender identity", () => {
     const sent = sendMail.mock.calls[0][0];
     expect(sent.to).toBe("draft@example.com");
     expect(sent.replyTo).toBe("raj@customersuccessforgood.com");
-    expect(sent.from).toBe("Austin Cares — No Reply <no-reply@eventcarpooling.com>");
+    expect(sent.from).toBe("Austin Cares — No Reply <raj@eventcarpooling.com>");
     expect(sent).not.toHaveProperty("cc");
     expect(sent).not.toHaveProperty("bcc");
   });
@@ -62,7 +62,7 @@ describe("newsletter sender identity", () => {
     const { sendNewsletterEmail } = await import("./emailService");
     await sendNewsletterEmail(edition);
     expect(sendMail.mock.calls[0][0].from)
-      .toBe("Raj's Austin Events — No Reply <no-reply@eventcarpooling.com>");
+      .toBe("Raj's Austin Events — No Reply <raj@eventcarpooling.com>");
   });
 
   it("preserves newsletter reply routing for the alternate email provider", async () => {
@@ -75,7 +75,7 @@ describe("newsletter sender identity", () => {
     const { sendNewsletterEmail } = await import("./emailService");
     await sendNewsletterEmail({ ...edition, fromName: "Austin Cares" });
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.from).toBe("Austin Cares — No Reply <no-reply@eventcarpooling.com>");
+    expect(body.from).toBe("Austin Cares — No Reply <raj@eventcarpooling.com>");
     expect(body.reply_to).toBe("raj@customersuccessforgood.com");
     expect(body.to).toEqual([edition.to]);
     expect(sendMail).not.toHaveBeenCalled();

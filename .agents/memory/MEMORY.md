@@ -33,7 +33,7 @@
 - [Austin curator attendance](austin-curator-attendance.md) — "most Special events" is qualified factual copy, not a guarantee of attendance at every Special event.
 - [Git provider authentication](git-provider-auth.md) — public fetch and healthy connection metadata do not prove push credentials work; preserve commits when synchronization is blocked.
 - [Package installation side effects](package-installation-side-effects.md) — failed installs may still alter workspace configuration; prefer existing tools for report exports.
-- [Newsletter sender choice](newsletter-sender-choice.md) — use a generic no-reply From for editions, route replies to support, and verify the sender with the provider.
+- [Newsletter sender choice](newsletter-sender-choice.md) — use the selected newsletter From alias, route replies to support, and verify the sender before sending.
 - [Scoped event corrections](scoped-event-corrections.md) — user chose link-only editing over rewriting whole editions, even when publishing was required first.
 - [Spock city-building defaults](spock-city-building-defaults.md) — latest formatting, autonomous spotlights, fresh AI Ethics readings, and city-specific visual themes.
 - [Trust and ethics vision](eventcarpooling-trust-vision.md) — trusted event influencers, subscriptions, delegated admins, and ethical AI instruction; Instinct means the assistant app.
