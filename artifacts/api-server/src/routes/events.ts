@@ -1489,6 +1489,7 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
         subject: digest.subject,
         html,
         fromName: req.tenant?.name || undefined,
+        tenantSlug: req.tenant?.slug,
       });
 
       if (result.success) {

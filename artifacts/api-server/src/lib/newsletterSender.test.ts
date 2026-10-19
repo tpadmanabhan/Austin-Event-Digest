@@ -42,7 +42,7 @@ describe("newsletter sender identity", () => {
       expect(sendMail.mock.calls[0][0]).toMatchObject({
         from: `${fromName} — No Reply <raj@eventcarpooling.com>`,
         to: edition.to,
-        subject: edition.subject,
+        subject: `${edition.subject} — Upcoming Events`,
         html: edition.html,
       });
       expect(sendMail.mock.calls[0][0]).not.toHaveProperty("replyTo");
@@ -52,10 +52,11 @@ describe("newsletter sender identity", () => {
   it("applies the same policy to a single-recipient draft", async () => {
     const { sendNewsletterEmail } = await import("./emailService");
     await sendNewsletterEmail({
-      ...edition, to: "draft@example.com", fromName: "Austin Cares",
+      ...edition, to: "draft@example.com", fromName: "Austin Cares", tenantSlug: "austincares",
     });
     const sent = sendMail.mock.calls[0][0];
     expect(sent.to).toBe("draft@example.com");
+    expect(sent.subject).toBe(`${edition.subject} — Upcoming Deals`);
     expect(sent.from).toBe("Austin Cares — No Reply <raj@eventcarpooling.com>");
     expect(sent).not.toHaveProperty("replyTo");
     expect(sent).not.toHaveProperty("cc");
@@ -67,6 +68,7 @@ describe("newsletter sender identity", () => {
     await sendNewsletterEmail(edition);
     expect(sendMail.mock.calls[0][0].from)
       .toBe("Raj's Austin Events — No Reply <raj@eventcarpooling.com>");
+    expect(sendMail.mock.calls[0][0].subject).toBe(`${edition.subject} — Upcoming Events`);
   });
 
   it("uses Titan SMTP and leaves newsletter replies addressed to the From mailbox", async () => {
@@ -83,6 +85,18 @@ describe("newsletter sender identity", () => {
       to: edition.to,
     });
     expect(sendMail.mock.calls[0][0]).not.toHaveProperty("replyTo");
+  });
+
+  it.each([
+    ["San Francisco Events — October 12 – October 31, 2026", "sanfrancisco", "San Francisco Events — Upcoming Events"],
+    ["🌲 Portland Events — Week of October 12–18, 2026", "portland", "🌲 Portland Events — Upcoming Events"],
+    ["🍑 Atlanta Events: October 1 to October 10, 2026", "atlanta", "🍑 Atlanta Events — Upcoming Events"],
+    ["Austin Events — Week of 10/12/2026 – 10/18/2026", "austin", "Austin Events — Upcoming Events"],
+    ["San Francisco Events — Upcoming Events", "sanfrancisco", "San Francisco Events — Upcoming Events"],
+    ["🏷️ Austin Cares Weekly Deals — Week of October 12–18, 2026", "austincares", "🏷️ Austin Cares Weekly Deals — Upcoming Deals"],
+  ])("removes the date range from city newsletter subjects", async (subject, tenantSlug, expected) => {
+    const { formatCityNewsletterSubject } = await import("./emailService");
+    expect(formatCityNewsletterSubject(subject, tenantSlug)).toBe(expected);
   });
 
   it("leaves transactional email sender names and participant reply targets unchanged", async () => {

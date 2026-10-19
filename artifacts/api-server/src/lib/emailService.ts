@@ -41,13 +41,35 @@ interface SendEmailResult {
   error?: string;
 }
 
+const MONTH_NAME_PATTERN =
+  "(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)";
+const NEWSLETTER_DATE_SUFFIX = new RegExp(
+  `\\s*(?:[—–-]|:)\\s*(?:week\\s+of\\s*:?[ \\t]*)?(?:${MONTH_NAME_PATTERN}\\.?\\s+\\d{1,2}\\b|\\d{1,2}[/-]\\d{1,2}(?:[/-]\\d{2,4})?\\b|\\d{4}-\\d{2}-\\d{2}\\b).*$`,
+  "i",
+);
+
+export function formatCityNewsletterSubject(subject: string, tenantSlug?: string): string {
+  const label = tenantSlug === "austincares" ? "Upcoming Deals" : "Upcoming Events";
+  const trimmed = subject.trim();
+  if (!trimmed) return label;
+
+  const existingLabel = trimmed.match(/\s+[—–-]\s+Upcoming (?:Events|Deals)\s*$/i);
+  const title = existingLabel
+    ? trimmed.slice(0, existingLabel.index).trim()
+    : trimmed.replace(NEWSLETTER_DATE_SUFFIX, "").trim();
+
+  return `${title || trimmed} — ${label}`;
+}
+
 // Edition emails omit Reply-To so responses go to the visible From address.
 // Transactional emails can specify their own reply targets.
 export async function sendNewsletterEmail(
-  options: Omit<SendEmailOptions, "replyTo">,
+  options: Omit<SendEmailOptions, "replyTo"> & { tenantSlug?: string },
 ): Promise<SendEmailResult> {
+  const { tenantSlug, ...emailOptions } = options;
   return sendEmail({
-    ...options,
+    ...emailOptions,
+    subject: formatCityNewsletterSubject(options.subject, tenantSlug),
     fromName: `${options.fromName?.trim() || FROM_NAME} — No Reply`,
     fromEmail: NEWSLETTER_FROM_EMAIL,
   });
