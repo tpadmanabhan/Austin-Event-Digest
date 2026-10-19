@@ -15,7 +15,7 @@ import { signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "newsletter@rajsaustinevents.com";
 const FROM_NAME = process.env.FROM_NAME || "Raj's Austin Events";
-const NEWSLETTER_FROM_EMAIL = "raj@eventcarpooling.com";
+const NEWSLETTER_FROM_EMAIL = "no-reply@eventcarpooling.com";
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 
@@ -41,9 +41,10 @@ interface SendEmailResult {
   error?: string;
 }
 
-// Edition emails use the verified newsletter sender alias and distinguish the
-// automated sender from the human who handles replies. Do not apply this policy
-// to transactional emails: carpool notifications have their own sender and reply targets.
+// Edition emails use a generic no-reply sender and keep human replies routed
+// separately. With Gmail SMTP, this address must be a verified Send As alias.
+// Do not apply this policy to transactional emails: carpool notifications have
+// their own sender and reply targets.
 export async function sendNewsletterEmail(
   options: Omit<SendEmailOptions, "replyTo">,
 ): Promise<SendEmailResult> {
