@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import net from "node:net";
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin, publicEditionRange } from "./public-model.mjs";
 
@@ -68,6 +69,23 @@ async function document(host, pathname = "/", userAgent = "ordinary-browser") {
   return { response, body: await response.text() };
 }
 const modelOf = body => JSON.parse(body.match(/<script id="public-document" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+
+test("Austin community spotlight links say Visit on both pages and retain city-specific behavior", () => {
+  for (const page of ["home.tsx", "digest.tsx"]) {
+    const source = readFileSync(new URL(`../src/pages/${page}`, import.meta.url), "utf8");
+    const cta = '{tenant.slug === "austin" ? "Visit" : jt("Apply Now", JA.applyNow)}';
+    const ctaIndex = source.indexOf(cta);
+    assert.notEqual(ctaIndex, -1, `${page} should use the Austin-only Visit label`);
+
+    const anchorStart = source.lastIndexOf("<a", ctaIndex);
+    const anchorEnd = source.indexOf("</a>", ctaIndex);
+    assert.ok(anchorStart >= 0 && anchorEnd > ctaIndex, `${page} should render the CTA in a link`);
+    const anchor = source.slice(anchorStart, anchorEnd);
+    assert.match(anchor, /target="_blank"/);
+    assert.match(anchor, /rel="noopener noreferrer"/);
+    assert.match(source.slice(ctaIndex, ctaIndex + cta.length), /jt\("Apply Now", JA\.applyNow\)/);
+  }
+});
 
 test("host resolution never defaults an unknown production host to Austin", () => {
   assert.equal(resolveSite("unrelated.example", false), null);
