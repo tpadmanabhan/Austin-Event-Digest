@@ -208,6 +208,44 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 </html>`;
   }
 
+  // Osaka follows Tokyo's Japanese-language subscriber welcome flow, with
+  // Osaka's own teal branding and tenant-specific unsubscribe URL.
+  if (tenant?.slug === "osaka") {
+    const osakaDigestName = tenant.digestTitle || "大阪イベント週刊ガイド";
+    const osakaUnsubUrl = subscriberEmail
+      ? `${siteUrl}/unsubscribe?email=${encodeURIComponent(subscriberEmail)}&lang=ja`
+      : `${siteUrl}/unsubscribe?lang=ja`;
+    return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登録完了！${escapeHtml(osakaDigestName)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f7f5;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic','Meiryo',sans-serif;">
+  <div style="max-width:580px;margin:0 auto;padding:32px 16px;">
+    <div style="background:linear-gradient(135deg,#10282a 0%,#0D5659 55%,#1B8A83 100%);border-radius:20px;padding:40px 32px 32px;margin-bottom:20px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:8px;line-height:1;">🏯</div>
+      <h1 style="margin:0 0 6px;color:#eaf7f4;font-size:28px;font-weight:800;letter-spacing:-0.5px;">${escapeHtml(osakaDigestName)}</h1>
+      <p style="margin:0;color:#b7ddd6;font-size:14px;letter-spacing:0.5px;">週刊イベントガイド · 大阪</p>
+    </div>
+    <div style="background:#ffffff;border:1px solid #cce5df;border-radius:16px;padding:32px;margin-bottom:16px;">
+      <p style="margin:0 0 16px;color:#10282a;font-size:16px;font-weight:700;">大阪のイベントガイドへようこそ！🎉</p>
+      <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.8;">登録が完了しました。毎週、大阪の街で見つけたイベントを厳選してお届けします。</p>
+      <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.8;">音楽やアート、地域の集まり、テックイベントなど、次のお出かけに役立つ情報をお楽しみください。</p>
+      <div style="text-align:center;">
+        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#0D7377;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;">今週のイベントを見る →</a>
+      </div>
+    </div>
+    <div style="text-align:center;padding:4px 0 16px;">
+      <p style="margin:0 0 6px;color:#78716c;font-size:13px;">大阪の街から、今週のいい予定を。 ❤️</p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">osaka.eventcarpooling.com で登録しました — <a href="${escapeHtml(osakaUnsubUrl)}" style="color:#a8a29e;">配信停止はこちら</a></p>
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
   // Per-city header theme for the welcome email
   const isAustin = !tenant?.slug || tenant.slug === "austin";
   const welcomeHeaderGradient = isAustin
@@ -284,16 +322,22 @@ export async function sendWelcomeEmail(to: string, name?: string | null, tenant?
   const html = buildWelcomeEmailHtml(name, tenant, to);
   const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
   const isTokyoTenant = tenant?.slug === "tokyo";
+  const isOsakaTenant = tenant?.slug === "osaka";
   const isAustinTenant = !tenant?.slug || tenant.slug === "austin";
-  const subject = isTokyoTenant
-    ? `登録完了！🗼 ${tenant?.digestTitle || "東京イベント週刊ダイジェスト"}`
+  const japaneseDigestName = isTokyoTenant
+    ? tenant?.digestTitle || "東京イベント週刊ダイジェスト"
+    : isOsakaTenant
+      ? tenant?.digestTitle || "大阪イベント週刊ガイド"
+      : "";
+  const subject = isTokyoTenant || isOsakaTenant
+    ? `登録完了！${isTokyoTenant ? "🗼" : "🏯"} ${japaneseDigestName}`
     : isAustinTenant
       ? `You're in! 🤠 Welcome to ${digestName}`
       : `You're in! Welcome to ${digestName}`;
   // Use the tenant's digest name as the From display name so recipients see
   // "Portland Events" not "Raj's Austin Events" in their inbox.
-  const fromName = isTokyoTenant
-    ? (tenant?.digestTitle || "東京イベント週刊ダイジェスト")
+  const fromName = isTokyoTenant || isOsakaTenant
+    ? japaneseDigestName
     : digestName;
   const result = await sendEmail({
     to,
@@ -451,7 +495,7 @@ function buildStaticMapSection(
 
 /**
  * Translate event titles + descriptions to Japanese using OpenAI gpt-5-nano.
- * Falls back to originals on any error. Used for Tokyo digest emails.
+ * Falls back to originals on any error. Used for Japanese-city digest emails.
  */
 const _emailOpenAI = new OpenAI({
   baseURL: process.env["AI_INTEGRATIONS_OPENAI_BASE_URL"],
@@ -460,7 +504,7 @@ const _emailOpenAI = new OpenAI({
 
 /**
  * Translate event titles + descriptions to Japanese using OpenAI gpt-5-nano.
- * Falls back to originals on any error. Used for Tokyo digest emails.
+ * Falls back to originals on any error. Used for Japanese-city digest emails.
  */
 export async function translateEventsForEmail(events: DigestEventItem[]): Promise<DigestEventItem[]> {
   if (!events.length) return events;
@@ -480,8 +524,15 @@ export async function translateEventsForEmail(events: DigestEventItem[]): Promis
     });
 
     const content = completion.choices?.[0]?.message?.content ?? "";
-    const lines = content.split("\n").filter((l: string) => /^\d+\./.test(l.trim()));
-    const translations = lines.map((l: string) => l.replace(/^\d+\.\s*/, "").trim());
+    const translations: string[] = [];
+    for (const line of content.split(/\r?\n/)) {
+      const match = line.match(/^(\d+)\.\s*(.*)$/);
+      if (!match) continue;
+      const index = Number(match[1]) - 1;
+      if (index >= 0 && index < all.length && !translations[index]) {
+        translations[index] = match[2].trim();
+      }
+    }
     const mid = titles.length;
     return events.map((e, i) => ({
       ...e,

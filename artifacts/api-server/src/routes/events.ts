@@ -1452,12 +1452,17 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
 
     // Only include upcoming events in the email (filter out past events)
     const emailEvents = filterStaleEvents((digest.events as any[]) || []);
+    // Japanese-city newsletters translate the shared event list once per send,
+    // rather than repeating the same OpenAI request for every recipient.
+    const eventsForEmail = ["tokyo", "osaka"].includes(req.tenant?.slug ?? "")
+      ? await translateEventsForEmail(emailEvents)
+      : emailEvents;
 
     const isAustin = req.tenant?.slug === "austin";
 
     for (const recipient of recipients) {
       const { mainEvents: recipientEvents, alsoNearby } = selectRecipientDigestEvents(
-        emailEvents,
+        eventsForEmail,
         recipient,
         isAustin,
         personalizeByLocation,
@@ -1468,16 +1473,11 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
         ? `${siteUrl}/preferences?email=${encodeURIComponent(recipient.email)}&token=${prefToken}`
         : null;
 
-      // For Tokyo: translate event titles + descriptions to Japanese before emailing
-      const eventsForEmail = req.tenant?.slug === "tokyo"
-        ? await translateEventsForEmail(recipientEvents)
-        : recipientEvents;
-
       const html = buildDigestEmailHtml({
         subject: digest.subject,
         intro: digest.intro,
         weekOf: digest.weekOf,
-        events: eventsForEmail,
+        events: recipientEvents,
         digestId: digest.id,
         siteUrl,
         preferencesUrl,

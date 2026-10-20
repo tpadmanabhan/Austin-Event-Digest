@@ -71,9 +71,35 @@ const MONTH_MAP: Record<string, number> = {
   Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
 };
 
-function isEventTodayOrLater(dateStr: string): boolean {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+function isEventTodayOrLater(dateStr: string, event?: any): boolean {
+  const dateKeyInTimezone = (date: Date, timezone?: string): string => {
+    if (timezone) {
+      try {
+        const parts = new Intl.DateTimeFormat("en-US", {
+          timeZone: timezone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).formatToParts(date);
+        const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+        return `${values.year}-${values.month}-${values.day}`;
+      } catch {
+        // Invalid timezone labels fall back to the viewer's local calendar day.
+      }
+    }
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  };
+
+  const todayKey = dateKeyInTimezone(new Date(), event?.timezone);
+  if (event?.endDate) {
+    const rawEndDate = String(event.endDate);
+    const endDateKey = /^\d{4}-\d{2}-\d{2}$/.test(rawEndDate)
+      ? rawEndDate
+      : dateKeyInTimezone(new Date(rawEndDate), event?.timezone);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(endDateKey)) return endDateKey >= todayKey;
+  }
+
+  const today = new Date(`${todayKey}T00:00:00`);
   const match = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
   if (!match) return true;
   const key = match[1].substring(0, 3);
@@ -682,7 +708,7 @@ export default function Home() {
                 !isMiamiFeaturedEvent(e, tenant.slug) &&
                 !e.isPost &&
                 !e.isBusinessSpotlight &&
-                isEventTodayOrLater(e.date)
+                isEventTodayOrLater(e.date, e)
               );
               const visibleEvents = categoryFilter === "All"
                 ? upcomingEvents

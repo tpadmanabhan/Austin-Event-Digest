@@ -14,7 +14,7 @@
 - [Brushy Creek admin auth](brushycreek-admin-auth.md) — use email-based HMAC token (not password-hash token) for brushycreek admin API calls
 - [Draft send field name](stlouis-send-draft.md) — use `testEmail` (not `draftEmail`/`isDraft`) in POST /api/events/digest/send to avoid accidental full subscriber sends
 - [Tokyo translation cache](translation-cache.md) — DB cache for translations; `ANY(${array})` broken in drizzle sql; single batched frontend call; pre-warm on digest import
-- [Stale event filtering](stale-event-filtering.md) — verify page, preview and send inclusion; retain verified future years and final local days; featured events still expire.
+- [Stale event filtering](stale-event-filtering.md) — client filters must retain active listings through endDate in the event timezone, but never exempt expired featured events.
 - [Ticketmaster classification](ticketmaster-classification.md) — only Music/Sports are reliable TM classificationNames; Arts & Theatre/Miscellaneous return 0; others query broadly
 - [Tokyo production auth](tokyo-prod-auth.md) — null password_hash in prod; use email-based HMAC (tenant ID 8), NOT password-hash pattern
 - [Carry-forward featured events](carry-forward-featured.md) — generate endpoint now auto-carries featured events from previous digest; live events win on title+date collision

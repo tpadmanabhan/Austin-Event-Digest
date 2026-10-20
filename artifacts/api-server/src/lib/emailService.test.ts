@@ -15,6 +15,7 @@ import {
   buildDigestEmailHtml,
   buildWelcomeEmailHtml,
   sendWelcomeEmail,
+  translateEventsForEmail,
 } from "./emailService";
 
 // ---------------------------------------------------------------------------
@@ -23,6 +24,7 @@ import {
 // ---------------------------------------------------------------------------
 const mockSendMail = vi.hoisted(() => vi.fn().mockResolvedValue({ messageId: "test-msg" }));
 const mockCreateTransport = vi.hoisted(() => vi.fn(() => ({ sendMail: mockSendMail })));
+const mockOpenAIComplete = vi.hoisted(() => vi.fn());
 
 // Set env before emailService.ts is imported so its module-level Titan settings are populated.
 vi.hoisted(() => {
@@ -30,11 +32,18 @@ vi.hoisted(() => {
   process.env["TITAN_SMTP_PORT"] = "465";
   process.env["TITAN_SMTP_USER"] = "raj@eventcarpooling.com";
   process.env["TITAN_SMTP_PASSWORD"] = "test-only-password";
+  process.env["AI_INTEGRATIONS_OPENAI_API_KEY"] = "test-only-openai-key";
 });
 
 vi.mock("nodemailer", () => ({
   default: { createTransport: mockCreateTransport },
   createTransport: mockCreateTransport,
+}));
+
+vi.mock("openai", () => ({
+  default: class MockOpenAI {
+    chat = { completions: { create: mockOpenAIComplete } };
+  },
 }));
 
 // Minimal digest fixture shared across tests
@@ -212,6 +221,67 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).toContain("🗼");
     expect(html).not.toContain("🤠");
     expect(html).toContain("#1B5EA8");       // Tokyo blue
+  });
+
+  it("Osaka digest keeps its teal branding and local AI Ethics reading list", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      siteUrl: "https://osaka.eventcarpooling.com",
+      events: [{
+        title: "大阪のイベント",
+        date: "Friday, October 30, 2026",
+        venue: "Osaka",
+        description: "大阪で開催されるイベントです。",
+        category: "Tech",
+      }],
+    }, null, null, {
+      slug: "osaka", name: "Osaka Events", city: "Osaka, Japan",
+      digestTitle: "Osaka Events",
+    });
+
+    expect(html).toContain("#0D7377");
+    expect(html).toContain("大阪のイベント");
+    expect(html).toContain("Osaka City AI Utilization Basic Policy");
+    expect(html).toContain("Osaka City");
+    expect(html).not.toContain("🤠");
+    expect(html).not.toContain("Happy Sunday, Austin");
+  });
+
+  it("translates Japanese-city email events without shifting missing translations", async () => {
+    mockOpenAIComplete.mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: "1. 大阪のイベント\n3. 大阪で開催されます。\n4. 参加方法をご確認ください。",
+        },
+      }],
+    });
+    const events = [
+      {
+        title: "Osaka Event",
+        date: "October 30, 2026",
+        venue: "Osaka",
+        description: "An event in Osaka.",
+        category: "Arts",
+        link: "https://example.org/event",
+      },
+      {
+        title: "Local Workshop",
+        date: "October 31, 2026",
+        venue: "Osaka",
+        description: "Check registration details.",
+        category: "Tech",
+      },
+    ];
+
+    const translated = await translateEventsForEmail(events);
+
+    expect(mockOpenAIComplete).toHaveBeenCalledOnce();
+    expect(translated.map(event => event.title)).toEqual(["大阪のイベント", "Local Workshop"]);
+    expect(translated.map(event => event.description)).toEqual([
+      "大阪で開催されます。",
+      "参加方法をご確認ください。",
+    ]);
+    expect(translated[0]?.link).toBe("https://example.org/event");
   });
 
   it("Atlanta digest uses Atlanta branding and Eastern event times", () => {
@@ -404,6 +474,22 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
     expect(html).toContain("登録完了");
   });
 
+  it("Osaka welcome email uses Japanese copy, Osaka branding, and Japanese unsubscribe link", () => {
+    const html = buildWelcomeEmailHtml(
+      null,
+      { slug: "osaka", name: "Osaka Events", city: "Osaka, Japan", digestTitle: null },
+      "sub@example.com"
+    );
+
+    expect(html).toContain('<html lang="ja">');
+    expect(html).toContain("🏯");
+    expect(html).toContain("大阪のイベントガイドへようこそ");
+    expect(html).toContain("#0D7377");
+    expect(html).toContain("unsubscribe?email=sub%40example.com&amp;lang=ja");
+    expect(html).not.toContain("You're officially on the list");
+    expect(html).not.toContain("🤠");
+  });
+
   it("sendWelcomeEmail uses the tenant display name as fromName, not Austin default", async () => {
     // mockSendMail is set up via vi.hoisted + vi.mock("nodemailer") above.
     // Titan SMTP settings are set via vi.hoisted so no real SMTP connection is made.
@@ -418,6 +504,19 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
     expect(callArg.from).toContain("Portland Events");
     expect(callArg.from).not.toContain("Austin");
     expect(callArg.from).toBe("Portland Events <raj@eventcarpooling.com>");
+  });
+
+  it("sendWelcomeEmail uses Osaka's Japanese subject and display name", async () => {
+    mockSendMail.mockClear();
+    await sendWelcomeEmail("sub@example.com", null, {
+      slug: "osaka", name: "Osaka Events", city: "Osaka, Japan", digestTitle: null,
+    });
+
+    expect(mockSendMail).toHaveBeenCalledOnce();
+    const callArg = mockSendMail.mock.calls[0][0] as { subject?: string; from?: string };
+    expect(callArg.subject).toContain("登録完了");
+    expect(callArg.subject).toContain("🏯");
+    expect(callArg.from).toContain("大阪イベント週刊ガイド");
   });
 
   it("admin test-welcome for a non-Austin city (e.g. Portland) produces neutral branding, not 🤠", () => {

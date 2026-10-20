@@ -77,14 +77,41 @@ const WEEKDAY_MAP: Record<string, number> = {
  * that recurring events stored without a full date are filtered correctly.
  */
 function isEventTodayOrLater(dateStr: string, event?: any, weekOf?: string): boolean {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const dateKeyInTimezone = (date: Date, timezone?: string): string => {
+    if (timezone) {
+      try {
+        const parts = new Intl.DateTimeFormat("en-US", {
+          timeZone: timezone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).formatToParts(date);
+        const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+        return `${values.year}-${values.month}-${values.day}`;
+      } catch {
+        // Invalid timezone labels fall back to the viewer's local calendar day.
+      }
+    }
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  };
+
+  const todayKey = dateKeyInTimezone(new Date(), event?.timezone);
 
   if (event?.dailyUntil) {
-    const until = new Date(event.dailyUntil + "T00:00:00");
-    return until >= today;
+    const dailyUntil = String(event.dailyUntil);
+    const untilDate = /^\d{4}-\d{2}-\d{2}$/.test(dailyUntil) ? dailyUntil : dateKeyInTimezone(new Date(dailyUntil), event?.timezone);
+    return untilDate >= todayKey;
   }
 
+  if (event?.endDate) {
+    const rawEndDate = String(event.endDate);
+    const endDateKey = /^\d{4}-\d{2}-\d{2}$/.test(rawEndDate)
+      ? rawEndDate
+      : dateKeyInTimezone(new Date(rawEndDate), event?.timezone);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(endDateKey)) return endDateKey >= todayKey;
+  }
+
+  const today = new Date(`${todayKey}T00:00:00`);
   const anchor = weekOf ? new Date(weekOf.substring(0, 10) + "T00:00:00") : today;
 
   // ── Month-based dates ("Aug 14", "Sunday, Aug 14 at 7pm", etc.) ──────────
@@ -199,6 +226,28 @@ function getEditionDateRange(weekOf: string, subject: string, allowExtendedRange
   ) return weekly;
 
   return { label: `${format(subjectStart, "MMMM d")} – ${format(end, "MMMM d, yyyy")}`, extended: true };
+}
+
+function formatJapaneseEditionDateRange(range: string): string {
+  const monthNumber = (monthName: string) => {
+    const month = MONTH_MAP[monthName.slice(0, 3).replace(/^./, character => character.toUpperCase())];
+    return month === undefined ? null : month + 1;
+  };
+
+  const fullRange = range.match(/^([A-Za-z]+)\s+(\d{1,2})\s*[–—-]\s*([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})$/);
+  if (fullRange) {
+    const startMonth = monthNumber(fullRange[1]);
+    const endMonth = monthNumber(fullRange[3]);
+    if (startMonth && endMonth) return `${fullRange[5]}年${startMonth}月${Number(fullRange[2])}日〜${endMonth}月${Number(fullRange[4])}日`;
+  }
+
+  const sameMonthRange = range.match(/^([A-Za-z]+)\s+(\d{1,2})\s*[–—-]\s*(\d{1,2}),\s*(\d{4})$/);
+  if (sameMonthRange) {
+    const month = monthNumber(sameMonthRange[1]);
+    if (month) return `${sameMonthRange[4]}年${month}月${Number(sameMonthRange[2])}日〜${Number(sameMonthRange[3])}日`;
+  }
+
+  return range;
 }
 
 type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";
@@ -443,6 +492,9 @@ export default function DigestView() {
 
   const { label: editionDateRange, extended: hasExtendedRange } =
       getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc", isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc");
+  const displayEditionDateRange = isOsaka && lang === "ja"
+    ? formatJapaneseEditionDateRange(editionDateRange)
+    : editionDateRange;
   const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
@@ -471,7 +523,7 @@ export default function DigestView() {
           {isHouston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Houston / The citywide edition</div>}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             {!isAustinCares && <Calendar className="w-4 h-4" />}
-            <span>{isAustinCares ? "Weekly Deals" : `Events: ${editionDateRange}`}</span>
+            <span>{isAustinCares ? "Weekly Deals" : `${isOsaka && lang === "ja" ? "イベント" : "Events"}: ${displayEditionDateRange}`}</span>
           </div>
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
@@ -482,7 +534,7 @@ export default function DigestView() {
                const titleBase = tenant.slug === "austin" && /upcoming events/i.test(digest.subject)
                  ? "Upcoming Events"
                  : tenant.digestTitle || `${cityShortName} Events`;
-               return isOsaka && lang === "ja" ? `大阪のイベント：${editionDateRange}` : `${emoji}${titleBase}: ${editionDateRange}`;
+               return isOsaka && lang === "ja" ? `大阪のイベント：${displayEditionDateRange}` : `${emoji}${titleBase}: ${displayEditionDateRange}`;
             })()}
           </h1>
           

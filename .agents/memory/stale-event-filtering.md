@@ -37,3 +37,11 @@ Past events are stripped inside `filterStaleEvents()`, called from `digestToApi(
 |-------|-------|-------|
 | API response | `filterStaleEvents()` in `digestToApi()` | All digests, all cities, every request |
 | Nightly job (2 AM) | `scheduleDailyCleanup()` in `dailyCleanup.ts` | Unsent digests only (`sentCount === 0`) |
+
+## Client filtering and ongoing events
+
+The public home and digest pages apply their own filter to event cards and map pins after the API response. For a multi-day or ongoing listing, keep it visible through the final calendar day in `event.timezone`; do not decide from the start date alone or the viewer's local timezone.
+
+**Why:** Osaka's first edition initially hid active exhibitions and seasonal listings that had started before the edition window. A browser outside Japan can also cross the event's final-day boundary at a different time.
+
+**How to apply:** When changing date filtering, check the home page, digest page, and map count with ongoing events, and verify both the first and final local event dates.
