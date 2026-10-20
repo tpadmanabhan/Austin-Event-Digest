@@ -261,6 +261,8 @@ export default function DigestView() {
   const isAtlanta = tenant.slug === "atlanta";
   const isHouston = tenant.slug === "houston";
   const isToky = tenant.slug === "tokyo";
+  const isOsaka = tenant.slug === "osaka";
+  const isJapaneseEdition = isToky || isOsaka;
   const isStLouis = tenant.slug === "stlouis";
   const isSF = tenant.slug === "sanfrancisco";
   const isSacramento = tenant.slug === "sacramento";
@@ -270,6 +272,7 @@ export default function DigestView() {
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
+  const [translatedIntros, setTranslatedIntros] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState(false);
 
   const { data: latestData, isLoading: loadingLatest } = useLatestDigest();
@@ -293,6 +296,7 @@ export default function DigestView() {
     stlouis:     [38.627, -90.197],
     tokyo:       [35.676,  139.650],
     dc:          [38.907,  -77.037],
+    osaka:       [34.6937, 135.5023],
   };
   const isLocationEnabled = tenant.slug in MAP_CENTERS;
   const showMap = tenant.slug in MAP_CENTERS;
@@ -353,17 +357,20 @@ export default function DigestView() {
     } catch {}
   }, [geoStatus, userCoords, GEO_KEY, isLocationEnabled]);
 
-  // EN/JA translation for Tokyo
+  // EN/JA translation for Tokyo and Osaka
   useEffect(() => {
-    if (!isToky || lang !== "ja") return;
+    if (!isJapaneseEdition || lang !== "ja") return;
     const events: any[] = (isLatest ? latestData?.digest?.events : allData?.digests?.find((d: any) => String(d.id) === idStr)?.events) ?? [];
     const untranslated = events.filter(e => e?.title && !translatedMap.has(e.title));
-    if (!untranslated.length) return;
+    const intro = isLatest ? latestData?.digest?.intro : allData?.digests?.find((d: any) => String(d.id) === idStr)?.intro;
+    const introKey = isLatest ? `latest-${latestData?.digest?.id ?? ""}` : `digest-${idStr ?? ""}`;
+    const needsIntro = isOsaka && !!intro && !translatedIntros[introKey];
+    if (!untranslated.length && !needsIntro) return;
     setTranslating(true);
     const titles = untranslated.map(e => e.title || "");
     const descs = untranslated.map(e => e.description || "");
-    // Single batched call: titles first, then descriptions — avoids concurrent request failures
-    translate([...titles, ...descs])
+    // Keep event fields and the edition introduction in one existing translation request.
+    translate([...titles, ...descs, ...(needsIntro ? [intro!] : [])])
       .then(tAll => {
         const tTitles = tAll.slice(0, titles.length);
         const tDescs  = tAll.slice(titles.length);
@@ -374,10 +381,11 @@ export default function DigestView() {
           });
           return next;
         });
+        if (needsIntro) setTranslatedIntros(prev => ({ ...prev, [introKey]: tAll[titles.length + descs.length] || intro! }));
       })
       .finally(() => setTranslating(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang, isToky, latestData, allData, isLatest, idStr]);
+  }, [lang, isJapaneseEdition, latestData, allData, isLatest, idStr, translatedIntros]);
 
   let digest = null;
   if (isLatest && latestData?.digest) {
@@ -387,15 +395,27 @@ export default function DigestView() {
   }
 
   const translateEvent = (event: any) => {
-    if (!isToky || lang !== "ja") return event;
+    if (!isJapaneseEdition || lang !== "ja") return event;
     const t = translatedMap.get(event.title);
     return t ? { ...event, ...t } : event;
   };
 
   // Japanese helper
-  const jt = (en: string, ja: string) => (isToky && lang === "ja") ? ja : en;
+  const osakaDigestCopy: Record<string, string> = {
+    "Back to all editions": "すべての号に戻る",
+    "Business Spotlight": "地域のお店",
+    "Community Spotlight": "地域の活動",
+    "Visit Website": "公式サイトを見る",
+    "Apply Now": "詳細を見る",
+    "Upcoming Events": "これからのイベント",
+    "Events — Nearest First": "イベント — 近い順",
+    "This week on the map": "今週のイベントマップ",
+    "Upcoming events on the map": "これからのイベントマップ",
+    "Don't miss the next one": "次の号もお楽しみに",
+  };
+  const jt = (en: string, ja: string) => (isJapaneseEdition && lang === "ja") ? (isOsaka ? (osakaDigestCopy[en] ?? ja) : ja) : en;
   const JA_CAT: Record<string, string> = { All: JA.catAll, Tech: JA.catTech, Arts: JA.catArts, Sports: JA.catSports, Civics: JA.catCivics, Wellness: JA.catWellness };
-  const catLabel = (cat: string) => (isToky && lang === "ja") ? (JA_CAT[cat] ?? cat) : (CAT_CONFIG[cat as keyof typeof CAT_CONFIG]?.label ?? cat);
+  const catLabel = (cat: string) => (isJapaneseEdition && lang === "ja") ? (JA_CAT[cat] ?? cat) : (CAT_CONFIG[cat as keyof typeof CAT_CONFIG]?.label ?? cat);
 
   if (isLoading) {
     return (
@@ -422,7 +442,7 @@ export default function DigestView() {
   }
 
   const { label: editionDateRange, extended: hasExtendedRange } =
-    getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isToky || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc", isHouston || isToky || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc");
+      getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc", isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc");
   const isExtendedAustinEdition = hasExtendedRange && tenant.slug === "austin";
 
   return (
@@ -444,6 +464,7 @@ export default function DigestView() {
         <header className="mb-16">
           {isBoston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Boston / The Charles River edition</div>}
           {isLA && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Los Angeles / The Pacific Coast edition</div>}
+          {isOsaka && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" />{lang === "ja" ? "大阪 / 街のイベントガイド" : "Osaka / The citywide field guide"}</div>}
           {isMiami && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Miami / The bayfront edition</div>}
           {isSacramento && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Sacramento / The full edition</div>}
           {isSF && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> San Francisco / The full edition</div>}
@@ -455,19 +476,21 @@ export default function DigestView() {
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
             {(() => {
-               const emojiMatch = isHouston || isSF || isMiami || isBoston || isLA ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
-               const emoji = emojiMatch ? emojiMatch[1] : "";
+              const emojiMatch = isHouston || isSF || isMiami || isBoston || isLA || isOsaka ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
+              const emoji = emojiMatch ? emojiMatch[1] : "";
               if (isAustinCares) return `${emoji}Austin Cares Weekly Deals`;
                const titleBase = tenant.slug === "austin" && /upcoming events/i.test(digest.subject)
                  ? "Upcoming Events"
                  : tenant.digestTitle || `${cityShortName} Events`;
-              return `${emoji}${titleBase}: ${editionDateRange}`;
+               return isOsaka && lang === "ja" ? `大阪のイベント：${editionDateRange}` : `${emoji}${titleBase}: ${editionDateRange}`;
             })()}
           </h1>
           
           <div className="prose prose-lg prose-p:text-muted-foreground prose-p:leading-relaxed max-w-none bg-card p-8 rounded-3xl border border-border shadow-sm">
             <p className="whitespace-pre-wrap">
-              {digest.intro.split(/(zodiac signs)/i).map((part, i) =>
+              {(isJapaneseEdition && lang === "ja" && isOsaka
+                ? (translatedIntros[isLatest ? `latest-${digest.id}` : `digest-${idStr}`] || digest.intro)
+                : digest.intro).split(/(zodiac signs)/i).map((part, i) =>
                 /zodiac signs/i.test(part) ? (
                   <a key={i} href="https://www.astrology.com/zodiac-signs" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-70 transition-opacity">{part}</a>
                 ) : part
@@ -492,16 +515,22 @@ export default function DigestView() {
           {isLA && <LaAiEthicsSection className="mt-6" />}
           <CityAiEthicsSection
             slug={tenant.slug}
-            lang={isToky && lang === "ja" ? "ja" : "en"}
+            lang={isJapaneseEdition && lang === "ja" ? "ja" : "en"}
             className="mt-6"
           />
         </header>
 
         {/* Translation unavailable banner — shown when Japanese mode fails */}
-        {isToky && lang === "ja" && translationFailed && (
+        {isJapaneseEdition && lang === "ja" && translationFailed && (
           <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
-            <span>⚠️</span>
-            <span>Translation unavailable — showing English</span>
+            {isOsaka ? (
+              <span>翻訳を利用できません。英語で表示しています。</span>
+            ) : (
+              <>
+                <span>⚠️</span>
+                <span>Translation unavailable — showing English</span>
+              </>
+            )}
           </div>
         )}
 
@@ -550,9 +579,9 @@ export default function DigestView() {
                   {geoStatus === "loading" ? (
                     <><Loader2 className="w-3.5 h-3.5 animate-spin" />Getting location…</>
                   ) : geoStatus === "active" ? (
-                      <>{isAtlanta || isHouston || isSF || isBoston || isLA ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
+                      <>{isOsaka && lang === "ja" ? "距離順 ×" : isAtlanta || isHouston || isSF || isBoston || isLA ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
                   ) : (
-                      <>{isAtlanta || isHouston || isSF || isBoston || isLA ? "Nearest first" : "📍 Nearest first"}</>
+                      <>{isOsaka && lang === "ja" ? "近い順" : isAtlanta || isHouston || isSF || isBoston || isLA ? "Nearest first" : "📍 Nearest first"}</>
                   )}
                 </button>
                 {geoStatus === "denied" && (
@@ -714,7 +743,7 @@ export default function DigestView() {
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-6 flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {isHouston ? "Across Houston, on the map" : isAtlanta && !hasExtendedRange ? "Around Atlanta this week" : hasExtendedRange ? jt("🗺️ Upcoming events on the map", "🗺️ 今後のイベントマップ") : "🗺️ This week on the map"}
+                    {isOsaka ? (lang === "ja" ? "大阪のイベントマップ" : "Events across Osaka") : isHouston ? "Across Houston, on the map" : isAtlanta && !hasExtendedRange ? "Around Atlanta this week" : hasExtendedRange ? jt("🗺️ Upcoming events on the map", "🗺️ 今後のイベントマップ") : "🗺️ This week on the map"}
                   </h2>
                   <EventMap
                     events={upcomingEvents}
@@ -916,7 +945,7 @@ export default function DigestView() {
                   <div className={geoActive ? "flex flex-col gap-6" : "grid sm:grid-cols-2 gap-8"}>
                     {regularEvents.map((event: any, i: number) => (
                       <div key={i} style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
-                        <EventCard event={translateEvent(event)} digestId={digest.id} distanceMiles={getDistanceMiles(event)} translating={isToky && lang === "ja" && translating} />
+                        <EventCard event={translateEvent(event)} digestId={digest.id} distanceMiles={getDistanceMiles(event)} translating={isJapaneseEdition && lang === "ja" && translating} />
                       </div>
                     ))}
                   </div>
@@ -979,7 +1008,9 @@ export default function DigestView() {
             <p className="text-secondary-foreground/80 mb-8 max-w-lg mx-auto text-lg text-center">
               {isExtendedAustinEdition || isHouston
                 ? `Get upcoming ${cityShortName} events delivered straight to your inbox.`
-                : jt(`Get next week's best ${cityShortName} events delivered straight to your inbox.`, JA.subscribeSubtext(cityShortName))}
+                : isOsaka && lang === "ja"
+                  ? "大阪で見つけた来週のイベントを、メールでお届けします。"
+                  : jt(`Get next week's best ${cityShortName} events delivered straight to your inbox.`, JA.subscribeSubtext(cityShortName))}
             </p>
             <div className="max-w-xl mx-auto bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60">
               <SubscribeForm />

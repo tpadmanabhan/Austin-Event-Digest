@@ -65,6 +65,8 @@ const CITY_GEO: Record<string, CityGeo> = {
   // International cities
   "Tokyo":        { lat: 35.6762, lon: 139.6503, timezone: "Asia/Tokyo", slug: "tokyo-jp" },
   "Tokyo, Japan": { lat: 35.6762, lon: 139.6503, timezone: "Asia/Tokyo", slug: "tokyo-jp" },
+  "Osaka":        { lat: 34.6937, lon: 135.5023, timezone: "Asia/Tokyo", slug: "osaka-jp" },
+  "Osaka, Japan": { lat: 34.6937, lon: 135.5023, timezone: "Asia/Tokyo", slug: "osaka-jp" },
 };
 
 /** Derive a reasonable US timezone from longitude when we can't look it up. */

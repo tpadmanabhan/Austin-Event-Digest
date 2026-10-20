@@ -57,6 +57,45 @@
       }
     }
   },
+  "osaka": {
+    "city": "Osaka",
+    "eyebrow": "READING LIST / OSAKA",
+    "intro": "Osaka City's AI utilization basic policy frames AI as a partner to public employees while emphasizing human oversight, citizen benefit, privacy, fairness, and safety. Research from the University of Osaka's ELSI Center adds questions about how people value AI in healthcare. Together, these sources connect local public services, Osaka's research community, and everyday trust in automated decisions.",
+    "readings": [
+      {
+        "title": "Osaka City AI Utilization Basic Policy",
+        "source": "City of Osaka",
+        "href": "https://www.city.osaka.lg.jp/ictsenryakushitsu/page/0000675810.html",
+        "note": "Sets out 11 principles for responsible municipal AI use, including human oversight, fairness, privacy, and security."
+      },
+      {
+        "title": "Design of a Q-sort method for evaluating people's values regarding the introduction of AI into healthcare (ELSI NOTE 67)",
+        "source": "The University of Osaka Research Center on Ethical, Legal and Social Issues",
+        "href": "https://elsi.osaka-u.ac.jp/en/research/513",
+        "note": "Research from Osaka's ELSI Center on how people's values can inform decisions about introducing AI into healthcare."
+      }
+    ],
+    "translations": {
+      "ja": {
+        "eyebrow": "大阪のリーディングリスト",
+        "intro": "大阪市のAI活用基本方針は、AIを職員との共創パートナーとして位置付けながら、人による監督、市民の便益、プライバシー、公平性、安全性を重視しています。大阪大学ELSIセンターの研究は、医療AIに対する人々の価値観を考える視点を加えます。これらの資料は、地域の公共サービス、大阪の研究コミュニティ、自動化された判断への日常的な信頼を結び付けます。",
+        "readings": [
+          {
+            "title": "大阪市AI活用基本方針",
+            "source": "大阪市",
+            "href": "https://www.city.osaka.lg.jp/ictsenryakushitsu/page/0000675810.html",
+            "note": "人による監督、公平性、プライバシー、セキュリティなど、自治体でAIを適切に活用するための11の原則を示しています。"
+          },
+          {
+            "title": "医療へのAI導入に対する人々の価値観を評価するQソート法の設計（ELSI NOTE 67）",
+            "source": "大阪大学 社会技術共創研究センター（ELSIセンター）",
+            "href": "https://elsi.osaka-u.ac.jp/en/research/513",
+            "note": "医療AIの導入を検討する際、人々の価値観をどのように捉えられるかを扱う大阪大学の研究です。"
+          }
+        ]
+      }
+    }
+  },
   "stlouis": {
     "city": "St. Louis",
     "eyebrow": "READING LIST / ST. LOUIS",

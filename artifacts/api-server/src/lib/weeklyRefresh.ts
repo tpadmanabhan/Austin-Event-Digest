@@ -561,6 +561,7 @@ const TENANT_CONFIGS: TenantConfig[] = [
   { slug: "bulverde",    tz: "America/Chicago", tmCity: "San Antonio, TX" },
   { slug: "stlouis",     tz: "America/Chicago" },
   { slug: "tokyo",       tz: "Asia/Tokyo", tmCity: "Tokyo" },
+  { slug: "osaka",       tz: "Asia/Tokyo", tmCity: "Osaka" },
   { slug: "dc",          tz: "America/New_York", tmCity: "Washington, DC" },
   { slug: "atlanta",     tz: "America/New_York", tmCity: "Atlanta, GA" },
   { slug: "houston",     tz: "America/Chicago", tmCity: "Houston, TX" },

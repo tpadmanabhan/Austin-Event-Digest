@@ -1,6 +1,6 @@
 /**
- * Pre-warms the server-side translation_cache table for Tokyo event cards.
- * Called fire-and-forget after a Tokyo digest is imported/generated so the
+ * Pre-warms the server-side translation_cache table for Japanese city event cards.
+ * Called fire-and-forget after a Tokyo or Osaka digest is imported/generated so the
  * first page load is instant rather than waiting on the OpenAI API.
  */
 import OpenAI from "openai";

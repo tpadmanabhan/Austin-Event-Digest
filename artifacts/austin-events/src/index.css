@@ -496,6 +496,57 @@
   --sidebar-ring: 224 73% 48%;
 }
 
+/* Osaka: Dotonbori night indigo, lantern amber, and warm street-paper. */
+[data-tenant="osaka"] {
+  --background: 37 43% 96%;
+  --foreground: 223 36% 15%;
+  --border: 34 27% 82%;
+  --input: 34 27% 82%;
+  --ring: 24 77% 48%;
+  --card: 39 53% 99%;
+  --card-foreground: 223 36% 15%;
+  --card-border: 34 27% 82%;
+  --popover: 39 53% 99%;
+  --popover-foreground: 223 36% 15%;
+  --popover-border: 34 27% 82%;
+  --primary: 24 77% 43%;
+  --primary-foreground: 39 53% 99%;
+  --secondary: 222 42% 20%;
+  --secondary-foreground: 39 53% 99%;
+  --muted: 35 29% 90%;
+  --muted-foreground: 221 17% 39%;
+  --accent: 43 78% 58%;
+  --accent-foreground: 223 36% 15%;
+  --sidebar: 37 43% 96%;
+  --sidebar-foreground: 223 36% 15%;
+  --sidebar-border: 34 27% 82%;
+  --sidebar-primary: 24 77% 43%;
+  --sidebar-primary-foreground: 39 53% 99%;
+  --sidebar-accent: 35 29% 90%;
+  --sidebar-accent-foreground: 223 36% 15%;
+  --sidebar-ring: 24 77% 43%;
+}
+[data-tenant="osaka"] .osaka-home-hero {
+  background:
+    radial-gradient(ellipse at 84% 9%, hsl(43 78% 58% / .2), transparent 42%),
+    linear-gradient(160deg, hsl(37 43% 96%), hsl(34 41% 91%));
+}
+[data-tenant="osaka"] .osaka-home-hero h1 { letter-spacing: -.045em; }
+[data-tenant="osaka"] .osaka-hero-frame {
+  position: relative;
+  padding: 10px;
+  background: hsl(222 42% 20%);
+  border-radius: 1.5rem;
+  box-shadow: 18px 22px 0 -10px hsl(24 77% 43% / .42), 0 24px 70px hsl(223 36% 15% / .18);
+  overflow: hidden;
+}
+[data-tenant="osaka"] .osaka-hero-frame img {
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: none;
+  object-position: center 57%;
+}
+
 @layer base {
   * {
     @apply border-border;

@@ -21,8 +21,17 @@ export function SubscribeForm() {
   const tenant = useTenant();
   const isAustin = tenant.slug === "austin" || tenant.slug === "brushycreek";
   const isToky = tenant.slug === "tokyo";
+  const isOsaka = tenant.slug === "osaka";
   const { lang } = useLanguage();
-  const jt = (en: string, ja: string) => (isToky && lang === "ja") ? ja : en;
+  const isJapaneseEdition = isToky || isOsaka;
+  const osakaCopy: Record<string, string> = {
+    "You're on the list!": "登録が完了しました。",
+    "Get ready for your first digest this Sunday.": "次回の大阪イベントガイドをお楽しみに。",
+    "Get the weekly newsletter": "大阪の週刊イベントガイドを受け取る",
+    "Subscribe for Free": "無料で登録する",
+    "No spam. Unsubscribe anytime.": "配信はいつでも停止できます。",
+  };
+  const jt = (en: string, ja: string) => (isJapaneseEdition && lang === "ja") ? (isOsaka ? (osakaCopy[en] ?? ja) : ja) : en;
   const [subscribed, setSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -58,30 +67,30 @@ export function SubscribeForm() {
         const alreadySubscribed = data.message?.toLowerCase().includes("already subscribed");
         if (alreadySubscribed) {
           toast({
-            title: "Already subscribed!",
-            description: "That email is already on the list.",
+            title: isOsaka && lang === "ja" ? "登録済みです" : "Already subscribed!",
+            description: isOsaka && lang === "ja" ? "このメールアドレスはすでに登録されています。" : "That email is already on the list.",
           });
         } else {
           setSubscribed(true);
           form.reset();
           toast({
-            title: "You're on the list! 🎉",
-            description: "Keep an eye on your inbox this Sunday.",
+            title: isOsaka && lang === "ja" ? "登録が完了しました" : "You're on the list!",
+            description: isOsaka && lang === "ja" ? "次回の大阪イベントガイドをお楽しみに。" : "Keep an eye on your inbox this Sunday.",
           });
         }
       } else {
         toast({
           variant: "destructive",
-          title: "Uh oh!",
-          description: data.message || "Failed to subscribe. Please try again.",
+          title: isOsaka && lang === "ja" ? "登録できませんでした" : "Uh oh!",
+          description: isOsaka && lang === "ja" ? "しばらくしてからもう一度お試しください。" : data.message || "Failed to subscribe. Please try again.",
         });
         setCaptchaToken(null);
       }
     } catch {
       toast({
         variant: "destructive",
-        title: "Uh oh!",
-        description: "Failed to subscribe. Please try again.",
+          title: isOsaka && lang === "ja" ? "登録できませんでした" : "Uh oh!",
+          description: isOsaka && lang === "ja" ? "しばらくしてからもう一度お試しください。" : "Failed to subscribe. Please try again.",
       });
       setCaptchaToken(null);
     } finally {

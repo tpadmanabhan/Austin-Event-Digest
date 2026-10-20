@@ -340,7 +340,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const _s = req.tenant!.slug;
       const separator = _s === "houston" ? " to " : "–";
       const label = `${weekOf.toLocaleDateString("en-US", opts)}${separator}${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-      const subjectEmoji = ["la", "boston", "miami", "sanfrancisco"].includes(_s) ? "" : _s === "atlanta" ? "🍑" : _s === "houston" ? "⭐" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
+      const subjectEmoji = ["la", "boston", "miami", "sanfrancisco", "osaka"].includes(_s) ? "" : _s === "atlanta" ? "🍑" : _s === "houston" ? "⭐" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
       subject = `${subjectEmoji ? `${subjectEmoji} ` : ""}${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
     } else {
       subject = fallback.subject;
@@ -1272,9 +1272,9 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
     // Geocode venue coordinates in the background (fire-and-forget)
     geocodeAndPatchDigest(digest.id, taggedImportEvents as Array<Record<string, unknown>>, req.tenant!.slug).catch(() => {});
 
-    // Pre-translate event titles + descriptions for Tokyo so first page
+    // Pre-translate event titles + descriptions for Japanese city pages so first page
     // load is instant instead of waiting on OpenAI (fire-and-forget)
-    if (req.tenant!.slug === "tokyo") {
+    if (req.tenant!.slug === "tokyo" || req.tenant!.slug === "osaka") {
       prewarmTranslationCache(taggedImportEvents as EventItem[]).catch(() => {});
     }
   } catch (err) {

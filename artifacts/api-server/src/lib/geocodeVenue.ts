@@ -40,9 +40,8 @@ export function containsCJK(text: string): boolean {
  *   - Taipei, Taiwan    (25.0 N, 121 E)  — both out of range ✗
  *   - Beijing, China    (39.9 N, 116 E)  — lng 116 < 138.5  ✗
  *
- * If Tokyo events are ever supplemented with venues in other Japanese cities
- * (Osaka, Kyoto, etc.) this function will need to be widened or replaced with
- * a proper Japan national bounding box.
+ * Other Japanese cities must use their own city-bound validation instead of
+ * this Tokyo-specific regional check.
  */
 export function isInTokyoRegion(lat: number, lng: number): boolean {
   return lat >= 35.0 && lat <= 36.5 && lng >= 138.5 && lng <= 140.5;
@@ -99,8 +98,9 @@ async function cacheDelete(venue: string): Promise<void> {
  * Nominatim result from before geographic validation existed) and should be
  * deleted and re-geocoded.
  */
-function isCJKCacheValid(lat: number | null, lng: number | null): boolean {
+function isCJKCacheValid(lat: number | null, lng: number | null, citySlug?: string): boolean {
   if (lat === null || lng === null) return false;         // previously unresolvable — retry with Photon
+  if (citySlug === "osaka") return isWithinCityBounds("osaka", lat, lng);
   if (!isInTokyoRegion(lat, lng)) return false;          // foreign match — stale bad result
   return true;
 }
@@ -221,40 +221,47 @@ async function photonQuery(query: string): Promise<{ lat: number; lng: number } 
 /**
  * Geocode a Japanese/CJK venue name.
  *
- * Strategy (each result is validated against the Tokyo regional bounding box
- * before being accepted, so same-named venues in Seoul, Taipei, etc. cannot
- * silently win):
+ * Strategy (each result is validated against the selected city's bounds before
+ * being accepted, so same-named venues elsewhere cannot silently win):
  *  1. Nominatim — exact query
- *  2. Nominatim with ", Tokyo, Japan" appended (helps bare venue names)
+ *  2. Nominatim with the tenant's city suffix (helps bare venue names)
  *  3. Photon   — exact query          (better Japanese OSM coverage)
- *  4. Photon   with ", Tokyo, Japan" appended
+ *  4. Photon   with the tenant's city suffix
  */
-export async function geocodeJapanese(venue: string): Promise<{ lat: number; lng: number } | null> {
-  const hasTokyo = /tokyo|japan/i.test(venue);
+export async function geocodeJapanese(
+  venue: string,
+  citySlug: "tokyo" | "osaka" = "tokyo",
+): Promise<{ lat: number; lng: number } | null> {
+  const cityHint = CITY_GEOCODE_HINTS[citySlug] || "Tokyo, Japan";
+  const hasCityName = new RegExp(citySlug, "i").test(venue);
+  const isInCityRegion = (point: { lat: number; lng: number }) =>
+    citySlug === "tokyo"
+      ? isInTokyoRegion(point.lat, point.lng)
+      : isWithinCityBounds(citySlug, point.lat, point.lng);
 
-  // 1. Nominatim — exact query, validate against Tokyo bbox
+  // 1. Nominatim — exact query, validate against the selected Japanese city
   const nom1 = await nominatimQuery(venue);
-  if (nom1 && isInTokyoRegion(nom1.lat, nom1.lng)) return nom1;
+  if (nom1 && isInCityRegion(nom1)) return nom1;
 
   await sleep(1100);
 
-  // 2. Nominatim with Tokyo, Japan suffix
-  if (!hasTokyo) {
-    const nom2 = await nominatimQuery(`${venue}, Tokyo, Japan`);
-    if (nom2 && isInTokyoRegion(nom2.lat, nom2.lng)) return nom2;
+  // 2. Nominatim with the tenant's Japan location suffix
+  if (!hasCityName) {
+    const nom2 = await nominatimQuery(`${venue}, ${cityHint}`);
+    if (nom2 && isInCityRegion(nom2)) return nom2;
     await sleep(1100);
   }
 
-  // 3. Photon — exact query, validate against Tokyo bbox
+  // 3. Photon — exact query, validate against the selected Japanese city
   const photon1 = await photonQuery(venue);
-  if (photon1 && isInTokyoRegion(photon1.lat, photon1.lng)) return photon1;
+  if (photon1 && isInCityRegion(photon1)) return photon1;
 
   await sleep(1100);
 
-  // 4. Photon with Tokyo, Japan suffix
-  if (!hasTokyo) {
-    const photon2 = await photonQuery(`${venue}, Tokyo, Japan`);
-    if (photon2 && isInTokyoRegion(photon2.lat, photon2.lng)) return photon2;
+  // 4. Photon with the tenant's Japan location suffix
+  if (!hasCityName) {
+    const photon2 = await photonQuery(`${venue}, ${cityHint}`);
+    if (photon2 && isInCityRegion(photon2)) return photon2;
   }
 
   return null;
@@ -269,9 +276,8 @@ export async function geocodeJapanese(venue: string): Promise<{ lat: number; lng
  * miss and stores the result (including null for unresolvable venues).
  *
  * For CJK (Japanese) venues, uses an enhanced multi-provider strategy and
- * validates every result against the Tokyo regional bbox. Stale cache entries
- * (null — pre-Photon failures, or foreign coords — bad Nominatim matches) are
- * deleted and retried transparently.
+ * validates against the selected Japanese city's region. Stale cache entries
+ * are deleted and retried transparently.
  *
  * When `citySlug` is provided the returned coordinates are additionally
  * validated against that city's bounding radius.  If the geocoder returns a
@@ -298,7 +304,7 @@ export async function geocodeVenue(
   const cached = await cacheGet(clean);
   if (cached.found) {
     if (containsCJK(clean)) {
-      if (isCJKCacheValid(cached.lat, cached.lng)) {
+      if (isCJKCacheValid(cached.lat, cached.lng, citySlug)) {
         // CJK cache valid — still check city bounds before returning
         if (cached.lat != null && cached.lng != null && citySlug && !isWithinCityBounds(citySlug, cached.lat, cached.lng)) {
           logger.warn({ venue: clean, citySlug, lat: cached.lat, lng: cached.lng }, "Cached CJK geocode rejected — outside city bounds");
@@ -321,7 +327,8 @@ export async function geocodeVenue(
 
   let coords: { lat: number; lng: number } | null;
   if (containsCJK(clean)) {
-    coords = await geocodeJapanese(clean);
+    const japaneseCity = citySlug === "osaka" ? "osaka" : "tokyo";
+    coords = await geocodeJapanese(clean, japaneseCity);
   } else {
     coords = await geocodeWithCityHint(clean, citySlug);
   }
@@ -395,7 +402,7 @@ export async function geocodeEvents(
       const cached = await cacheGet(venue);
       if (cached.found) {
         if (containsCJK(venue)) {
-          if (isCJKCacheValid(cached.lat, cached.lng)) {
+          if (isCJKCacheValid(cached.lat, cached.lng, citySlug)) {
             // Valid cached CJK coords — check city bounds before using
             let lat = cached.lat;
             let lng = cached.lng;
@@ -433,7 +440,8 @@ export async function geocodeEvents(
       if (containsCJK(venue)) {
         // geocodeJapanese has its own internal sleeps — reset the outer delay flag
         needsDelay = false;
-        coords = await geocodeJapanese(venue);
+        const japaneseCity = citySlug === "osaka" ? "osaka" : "tokyo";
+        coords = await geocodeJapanese(venue, japaneseCity);
         needsDelay = true;
       } else {
         coords = await geocodeWithCityHint(venue, citySlug);

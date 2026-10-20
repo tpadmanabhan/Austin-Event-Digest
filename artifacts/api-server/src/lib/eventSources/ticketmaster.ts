@@ -78,7 +78,7 @@ async function fetchTicketmasterEvents(query: SourceQuery): Promise<EventItem[]>
   if (classification) params.set("classificationName", classification);
 
   // For small/international cities, use lat/lng radius instead of city name
-  const useLatLng = geo && (cityName === "Brushy Creek" || cityName === "Bulverde" || cityName === "Austin Cares" || cityName === "Tokyo");
+  const useLatLng = geo && (cityName === "Brushy Creek" || cityName === "Bulverde" || cityName === "Austin Cares" || cityName === "Tokyo" || cityName === "Osaka");
   if (useLatLng && geo) {
     params.delete("city");
     params.delete("stateCode");

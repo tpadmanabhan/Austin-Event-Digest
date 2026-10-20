@@ -225,4 +225,5 @@ export const JAPANESE_CITY_COPY: Record<string, { city: string; name: string; al
   portland: { city: "ポートランド", name: "ポートランドのイベント", alt: "ウィラメット川に映るポートランドのスカイライン" },
   bulverde: { city: "ブルベルデ", name: "ブルベルデのイベント", alt: "テキサス・ヒルカントリーの風景" },
   dc: { city: "ワシントンD.C.", name: "ワシントンD.C.のイベント", alt: "ワシントンD.C.の街並み" },
+  osaka: { city: "大阪", name: "大阪のイベント", alt: "夜の道頓堀と大阪の街の灯り" },
 };

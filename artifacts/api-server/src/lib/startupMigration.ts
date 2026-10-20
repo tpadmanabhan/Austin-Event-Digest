@@ -948,6 +948,22 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Tokyo tenant seed failed (non-fatal)");
   }
 
+  // Osaka was explicitly approved as a public city edition. Keep it public,
+  // but do not invent an administrator contact or credentials.
+  try {
+    await db.execute(sql`
+      INSERT INTO tenants (slug, name, city, accent_color, categories, digest_title,
+        is_active, email_verified)
+      VALUES ('osaka', 'Osaka Events', 'Osaka, Japan', '#0D7377',
+        '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb, 'Osaka Events',
+        true, true)
+      ON CONFLICT (slug) DO NOTHING
+    `);
+    logger.info("Osaka tenant seeded");
+  } catch (err) {
+    logger.warn({ err }, "Osaka tenant seed failed (non-fatal)");
+  }
+
   // Seed DC tenant (idempotent)
   try {
     await db.execute(sql`

@@ -19,6 +19,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const isAtlanta = tenant.slug === "atlanta";
   const isHouston = tenant.slug === "houston";
   const isToky = tenant.slug === "tokyo";
+  const isOsaka = tenant.slug === "osaka";
   const isSF = tenant.slug === "sanfrancisco";
   const isMiami = tenant.slug === "miami";
   const isBoston = tenant.slug === "boston";
@@ -32,8 +33,8 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className={`flex items-center justify-between ${(isAustinCares || isBulverde) ? "h-20" : "h-14"}`}>
             <Link href="/" className="flex items-center gap-2 group">
               <div
-                 className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : isAtlanta || isHouston || isSF || isMiami || isBoston || isLA ? "h-11 w-11" : isStLouis || isToky ? "h-10 w-10" : "h-8 w-8"}`}
-                 style={isMiami || isBoston || isLA ? undefined : isAtlanta || isHouston || isSF || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : isToky ? { background: "linear-gradient(135deg, #0A2548, #1B5EA8)", boxShadow: "0 4px 12px rgba(27,94,168,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)", boxShadow: "0 4px 12px rgba(29,78,216,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
+                 className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : isAtlanta || isHouston || isSF || isMiami || isBoston || isLA ? "h-11 w-11" : isStLouis || isToky || isOsaka ? "h-10 w-10" : "h-8 w-8"}`}
+                 style={isMiami || isBoston || isLA ? undefined : isAtlanta || isHouston || isSF || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : isOsaka ? { background: "#913f2b", boxShadow: "0 4px 12px rgba(145,63,43,0.28)" } : isToky ? { background: "linear-gradient(135deg, #0A2548, #1B5EA8)", boxShadow: "0 4px 12px rgba(27,94,168,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)", boxShadow: "0 4px 12px rgba(29,78,216,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
                  {isBoston ? (
                    <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/boston/mark.svg`} alt="Boston B monogram over the Charles" className="h-full w-full object-contain" />
@@ -91,6 +92,8 @@ export function Layout({ children }: { children: ReactNode }) {
                   />
                 ) : isToky ? (
                   <span style={{ fontFamily: '"Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif', fontSize: "13px", fontWeight: 700, color: "#fff", letterSpacing: "-0.5px", lineHeight: 1 }}>東京</span>
+                ) : isOsaka ? (
+                  <span style={{ fontFamily: '"Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif', fontSize: "13px", fontWeight: 700, color: "#fff", letterSpacing: "-0.5px", lineHeight: 1 }}>大阪</span>
                 ) : tenant.slug === "dc" ? (
                   <span style={{ fontSize: "22px", lineHeight: 1 }}>🦅</span>
                 ) : (
@@ -100,7 +103,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
                   <span className="font-serif text-sm font-bold leading-none tracking-tight text-foreground">
-                    {tenant.name}
+                    {isOsaka && lang === "ja" ? "大阪のイベント" : tenant.name}
                   </span>
                   <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/30 px-2 py-0.5 leading-none">
                     <span className="text-[10px] italic text-primary" style={{ fontFamily: '"DM Serif Display", serif', letterSpacing: '0.01em' }}>
@@ -112,7 +115,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
-                    {isLA ? "From the Pacific to your neighborhood." : isBoston ? "Both banks. Your next plan." : isMiami ? "Bayfront plans, in every language" : isSF ? "Fog, hills, and plenty to do." : isHouston ? "The whole city. Your next plan." : isAtlanta ? "Citywide, one good plan at a time." : isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : isToky ? "Tokyo Never Sleeps • 東京のイベント" : tenant.slug === "dc" ? "District of Possibilities" : "Make Austin Weird Again"}
+                    {isOsaka ? (lang === "ja" ? "大阪の街から、今週のいい予定を。" : "Good plans, found across Osaka.") : isLA ? "From the Pacific to your neighborhood." : isBoston ? "Both banks. Your next plan." : isMiami ? "Bayfront plans, in every language" : isSF ? "Fog, hills, and plenty to do." : isHouston ? "The whole city. Your next plan." : isAtlanta ? "Citywide, one good plan at a time." : isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : isToky ? "Tokyo Never Sleeps • 東京のイベント" : tenant.slug === "dc" ? "District of Possibilities" : "Make Austin Weird Again"}
                 </span>
               </div>
             </Link>
@@ -126,7 +129,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 {muted ? <VolumeX className="w-3 h-3" /> : <Music className="w-3 h-3" />}
               </button>
 
-              {isToky && (
+              {(isToky || isOsaka) && (
                 <button
                   type="button"
                   onClick={() => setLang(lang === "en" ? "ja" : "en")}
@@ -158,7 +161,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 className="hidden sm:inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0"
               >
                 <Mail className="w-3 h-3" />
-                {isToky && lang === "ja" ? JA.subscribe : "Subscribe"}
+                {(isToky || isOsaka) && lang === "ja" ? "登録" : "Subscribe"}
               </a>
             </nav>
           </div>

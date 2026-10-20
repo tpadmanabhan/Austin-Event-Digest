@@ -37,6 +37,18 @@ const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
   Wellness:{ label: "Wellness",   emoji: "🧘" },
 };
 
+const OSAKA_UI: Record<string, string> = {
+  "Back to all editions": "すべての号に戻る",
+  "Inside the Latest Issue": "最新号をひらく",
+  "Read full edition": "今週の全号を読む",
+  "Where this week's events are happening": "今週のイベント開催地",
+  "Where this edition's events are happening": "この号のイベント開催地",
+  "Business Spotlight": "地域のお店",
+  "Community Spotlight": "地域の活動",
+  "Visit Website": "公式サイトを見る",
+  "Apply Now": "詳細を見る",
+};
+
 function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" {
   const cat = (event.category || "").toLowerCase().trim();
   // Handle both new single-word values and legacy multi-word stored values
@@ -148,11 +160,13 @@ export default function Home() {
   const isBoston = tenant.slug === "boston";
   const isLA = tenant.slug === "la";
   const { lang, translate, translationFailed } = useLanguage();
+  const isOsaka = tenant.slug === "osaka";
+  const isJapaneseEdition = isToky || isOsaka;
   const [homeTranslatedMap, setHomeTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
   const [homeTranslating, setHomeTranslating] = useState(false);
 
   useEffect(() => {
-    if (!isToky || lang !== "ja") return;
+    if (!isJapaneseEdition || lang !== "ja") return;
     const events: any[] = latestDigest?.events ?? [];
     const untranslated = events.filter((e: any) => e?.title && !homeTranslatedMap.has(e.title));
     if (!untranslated.length) return;
@@ -172,18 +186,18 @@ export default function Home() {
       });
     }).finally(() => setHomeTranslating(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang, isToky, latestDigest]);
+  }, [lang, isJapaneseEdition, latestDigest]);
 
   const translateEvent = (event: any) => {
-    if (!isToky || lang !== "ja") return event;
+    if (!isJapaneseEdition || lang !== "ja") return event;
     const t = homeTranslatedMap.get(event.title);
     return t ? { ...event, ...t } : event;
   };
 
   // Japanese helper: returns JA string when Tokyo+ja, else English
-  const jt = (en: string, ja: string) => (isToky && lang === "ja") ? ja : en;
+  const jt = (en: string, ja: string) => (isJapaneseEdition && lang === "ja") ? (isOsaka ? (OSAKA_UI[en] ?? ja) : ja) : en;
   const JA_CAT: Record<string, string> = { All: JA.catAll, Tech: JA.catTech, Arts: JA.catArts, Sports: JA.catSports, Civics: JA.catCivics, Wellness: JA.catWellness };
-  const catLabel = (cat: string) => (isToky && lang === "ja") ? (JA_CAT[cat] ?? cat) : (CAT_CONFIG[cat as keyof typeof CAT_CONFIG]?.label ?? cat);
+  const catLabel = (cat: string) => (isJapaneseEdition && lang === "ja") ? (JA_CAT[cat] ?? cat) : (CAT_CONFIG[cat as keyof typeof CAT_CONFIG]?.label ?? cat);
 
   const MAP_CENTERS: Record<string, [number, number]> = {
     atlanta:     [33.749, -84.388],
@@ -200,6 +214,7 @@ export default function Home() {
     la:          [34.0522, -118.2437],
     stlouis:     [38.627, -90.197],
     tokyo:       [35.676,  139.650],
+    osaka:       [34.6937, 135.5023],
     dc:          [38.907, -77.037],
   };
   const showMap = tenant.slug in MAP_CENTERS;
@@ -229,6 +244,8 @@ export default function Home() {
                 : "austin-hero.png";
   const heroSrc = isLA
     ? LA_HERO_IMAGE_URL
+    : isOsaka
+    ? `${import.meta.env.BASE_URL}images/osaka-hero.jpg`
     : isBoston
     ? `${import.meta.env.BASE_URL}api/storage/public-objects/cities/boston/hero.jpg?v=photo-20261014`
     : isToky
@@ -266,6 +283,8 @@ export default function Home() {
                 ? "Washington DC monuments with American flag at twilight"
                 : isToky
                   ? "Tokyo skyline with Tokyo Skytree at dusk"
+                  : isOsaka
+                    ? "Dotonbori canal and illuminated buildings in Osaka at night"
                   : "Austin Texas stylized illustration";
 
   return (
@@ -341,7 +360,7 @@ export default function Home() {
       </div>}
 
       {/* HERO SECTION */}
-      <section className={`relative overflow-hidden bg-background py-6 sm:py-10 ${isHouston ? "houston-home-hero sm:py-16 lg:py-20" : isSF ? "sf-home-hero sm:py-16 lg:py-20" : isMiami ? "miami-home-hero sm:py-16 lg:py-20" : isBoston ? "boston-home-hero sm:py-16 lg:py-20" : isLA ? "la-home-hero sm:py-16 lg:py-20" : ""}`}>
+      <section className={`relative overflow-hidden bg-background py-6 sm:py-10 ${isOsaka ? "osaka-home-hero sm:py-16 lg:py-20" : isHouston ? "houston-home-hero sm:py-16 lg:py-20" : isSF ? "sf-home-hero sm:py-16 lg:py-20" : isMiami ? "miami-home-hero sm:py-16 lg:py-20" : isBoston ? "boston-home-hero sm:py-16 lg:py-20" : isLA ? "la-home-hero sm:py-16 lg:py-20" : ""}`}>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary)_0%,transparent_40%)] opacity-5" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -355,11 +374,11 @@ export default function Home() {
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4 border border-secondary/20">
                 <Sparkles className="w-4 h-4" />
-                <span>{isLA ? "LOS ANGELES / PACIFIC COAST EDITION" : isBoston ? "BOSTON / CHARLES RIVER EDITION" : isMiami ? "MIAMI / BAYFRONT EDITION" : isSacramento ? "SACRAMENTO / CAPITAL CITY EDITION" : isSF ? "SAN FRANCISCO / FOG CITY EDITION" : isHouston ? "HOUSTON / CITYWIDE FIELD GUIDE" : isAtlanta ? "Citywide, one good plan at a time." : jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
+          <span>{isOsaka ? (lang === "ja" ? "大阪 / 街のイベントガイド" : "OSAKA / THE CITYWIDE FIELD GUIDE") : isLA ? "LOS ANGELES / PACIFIC COAST EDITION" : isBoston ? "BOSTON / CHARLES RIVER EDITION" : isMiami ? "MIAMI / BAYFRONT EDITION" : isSacramento ? "SACRAMENTO / CAPITAL CITY EDITION" : isSF ? "SAN FRANCISCO / FOG CITY EDITION" : isHouston ? "HOUSTON / CITYWIDE FIELD GUIDE" : isAtlanta ? "Citywide, one good plan at a time." : jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
               </div>
               
               <h1 className={`text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1] ${isHouston || isSF || isMiami || isBoston || isLA ? "lg:text-[4.5rem]" : ""}`}>
-                {isLA ? "City to the coast." : isBoston ? "Both banks of the river." : isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} <br/>
+                {isOsaka ? (lang === "ja" ? "大阪で、" : "Osaka,") : isLA ? "City to the coast." : isBoston ? "Both banks of the river." : isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} <br/>
                 {isAustinCares ? (
                   <>Start <span className="text-primary italic">helping</span>.</>
                 ) : isLA ? (
@@ -376,6 +395,8 @@ export default function Home() {
                   <>do <span className="text-primary italic">small plans.</span></>
                 ) : isAtlanta ? (
                   <>Go see <span className="text-primary italic">what's happening.</span></>
+                ) : isOsaka ? (
+                  lang === "ja" ? <span className="text-primary italic">今週の楽しみを見つけよう。</span> : <>Find your <span className="text-primary italic">next good plan.</span></>
                 ) : isToky && lang === "ja" ? (
                   <span className="text-primary italic">{JA.startExperiencing(cityShortName)}</span>
                 ) : (
@@ -400,17 +421,23 @@ export default function Home() {
                   ? "Hands-on science, literary afternoons, Warriors basketball, outdoor movement, and community activities. October 12–31 across San Francisco, gathered in one edition."
                   : isHouston
                   ? "From big ideas in the Energy Corridor to art in the Museum District, game nights downtown and mornings along the bayou. Ten days of real things to do, all over H-Town."
+                  : isOsaka
+                  ? lang === "ja"
+                    ? "ライブや展示、まちの集まりまで。大阪各地で今週楽しめるイベントを、主催者の情報とあわせて見つけやすくまとめます。"
+                    : "From live stages and exhibitions to neighborhood gatherings, find worthwhile plans across Osaka, with links back to the people putting them on."
                   : tenant.slug === "austincares"
                   ? `Check out a curated list of volunteer activities, school contests, movie nights, and fun activities for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!`
                   : isToky && lang === "ja"
                   ? JA.heroSubtext
+                  : isOsaka && lang === "ja"
+                  ? "大阪で今週開かれるイベントを、毎週ひとつずつ丁寧に選んでお届けします。気になる予定を見つけて、街へ出かけるきっかけに。"
                   : `Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in ${cityShortName} for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!`}
               </p>
 
               <div className="mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl">
                 <p className="text-foreground/90 leading-relaxed text-base italic whitespace-pre-line">
                   {isAustinCares
-                    ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek 😎"`
+                    ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek."`
                     : isAtlanta
                     ? "From neighborhood conversations to big ideas, Atlanta is better when you show up. Here's your guide to getting out and getting connected."
                     : isLA
@@ -427,6 +454,10 @@ export default function Home() {
                     ? `"Hey St. Louis! Every week I comb through event newsletters and hand-pick the best things happening around the city — from Forest Park to Soulard to the Arch. Here's your curated digest. Let's Go Redbirds! ⚾"`
                     : isToky && lang === "ja"
                     ? JA.curatorQuote
+                    : isOsaka
+                    ? lang === "ja"
+                      ? "大阪の街で今週出会えるイベントを、ひとつずつ確かめて選びました。公式情報も確認しながら、次の予定を気軽に見つけられるガイドです。"
+                      : "A local guide to what is happening across Osaka this week. Each pick points back to its organizer, so you can check the details and make a plan with confidence."
                     : tenant.slug === "austincares"
                     ? `"Hey Austin! I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy Austin 🤠"`
                     : tenant.slug === "austin" && latestDigest?.intro
@@ -455,7 +486,7 @@ export default function Home() {
               {isBoston && <BostonAiEthicsSection className="mb-8 max-w-xl" />}
               <CityAiEthicsSection
                 slug={tenant.slug}
-                lang={isToky && lang === "ja" ? "ja" : "en"}
+                lang={isJapaneseEdition && lang === "ja" ? "ja" : "en"}
                 className="mb-8 max-w-xl"
               />
 
@@ -468,9 +499,9 @@ export default function Home() {
                initial={isBoston || isLA ? false : { opacity: 0, scale: 0.95 }}
                animate={isBoston || isLA ? undefined : { opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-                className={`relative ${(isAustinCares || isBulverde) ? "order-first lg:order-none" : ""} block ${isHouston ? "houston-hero-frame" : isSF ? "sf-hero-frame" : isMiami ? "miami-hero-frame" : isBoston ? "boston-hero-frame" : isLA ? "la-hero-frame" : ""}`}
+                className={`relative ${(isAustinCares || isBulverde) ? "order-first lg:order-none" : ""} block ${isOsaka ? "osaka-hero-frame" : isHouston ? "houston-hero-frame" : isSF ? "sf-hero-frame" : isMiami ? "miami-hero-frame" : isBoston ? "boston-hero-frame" : isLA ? "la-hero-frame" : ""}`}
             >
-               {!isHouston && !isSF && !isMiami && !isBoston && !isLA && <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />}
+               {!isHouston && !isSF && !isMiami && !isBoston && !isLA && !isOsaka && <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />}
               <img 
                 src={heroSrc}
                 alt={heroAlt}
@@ -537,10 +568,16 @@ export default function Home() {
           </div>
 
           {/* Translation unavailable banner — shown when Japanese mode fails */}
-          {isToky && lang === "ja" && translationFailed && (
+          {isJapaneseEdition && lang === "ja" && translationFailed && (
             <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
-              <span>⚠️</span>
-              <span>Translation unavailable — showing English</span>
+              {isOsaka ? (
+                <span>翻訳を利用できません。英語で表示しています。</span>
+              ) : (
+                <>
+                  <span>⚠️</span>
+                  <span>Translation unavailable — showing English</span>
+                </>
+              )}
             </div>
           )}
 
@@ -561,7 +598,7 @@ export default function Home() {
                           : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                       }`}
                     >
-                       <span>{isAtlanta || isHouston || isSF || isBoston ? "·" : cfg.emoji}</span>
+                       <span>{isOsaka ? "·" : isAtlanta || isHouston || isSF || isBoston ? "·" : cfg.emoji}</span>
                       <span>{catLabel(cat)}</span>
                     </button>
                   );
@@ -574,7 +611,7 @@ export default function Home() {
           {showMap && latestDigest?.events && (
             <div className="mb-10">
               <h3 className="font-serif text-xl font-bold mb-4 flex items-center gap-2">
-                 {isBoston ? "Find your way around Boston" : isMiami ? "Find your way around Miami" : isSacramento ? "Find your way around Sacramento" : isSF ? "Find your way around San Francisco" : isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : latestIssueRange ? jt("🗺️ Where this edition's events are happening", "🗺️ このエディションのイベント開催地") : "🗺️ Where this week's events are happening"}
+                 {isOsaka ? (lang === "ja" ? "大阪のイベント開催地" : "Where this edition's events are happening") : isBoston ? "Find your way around Boston" : isMiami ? "Find your way around Miami" : isSacramento ? "Find your way around Sacramento" : isSF ? "Find your way around San Francisco" : isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : latestIssueRange ? jt("🗺️ Where this edition's events are happening", "🗺️ このエディションのイベント開催地") : "🗺️ Where this week's events are happening"}
               </h3>
               <EventMap
                 events={latestDigest.events as any[]}
@@ -817,12 +854,12 @@ export default function Home() {
                               </div>
                               <div className="p-6 sm:p-8">
                                 <div className="max-w-xl">
-                                  <EventCard event={translateEvent(event)} digestId={latestDigest.id} translating={isToky && lang === "ja" && homeTranslating} />
+                                  <EventCard event={translateEvent(event)} digestId={latestDigest.id} translating={isJapaneseEdition && lang === "ja" && homeTranslating} />
                                 </div>
                               </div>
                             </div>
                           ) : (
-                            <EventCard event={translateEvent(event)} digestId={latestDigest.id} translating={isToky && lang === "ja" && homeTranslating} />
+                            <EventCard event={translateEvent(event)} digestId={latestDigest.id} translating={isJapaneseEdition && lang === "ja" && homeTranslating} />
                           )}
                         </motion.div>
                       ))}

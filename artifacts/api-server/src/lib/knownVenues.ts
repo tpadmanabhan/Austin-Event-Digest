@@ -210,5 +210,6 @@ export const CITY_GEOCODE_HINTS: Record<string, string> = {
   sacramento:  "Sacramento, California",
   stlouis:     "St. Louis, Missouri",
   tokyo:       "Tokyo, Japan",
+  osaka:       "Osaka, Japan",
   dc:          "Washington, DC",
 };
