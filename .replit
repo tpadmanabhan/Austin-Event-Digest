@@ -38,6 +38,9 @@ TITAN_SMTP_USER = "raj@eventcarpooling.com"
 DEFAULT_TENANT_SLUG = "miami"
 VITE_TENANT_SLUG = "miami"
 
+[userenv.production]
+OSAKA_ADMIN_EMAIL = "raj@eventcarpooling.com"
+
 [nix]
 channel = "stable-25_05"
 

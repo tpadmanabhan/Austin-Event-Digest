@@ -964,6 +964,27 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Osaka tenant seed failed (non-fatal)");
   }
 
+  // The production-only OSAKA_ADMIN_EMAIL variable configures the designated
+  // Osaka administrator without storing contact details in source code.
+  const osakaAdminEmail = process.env["OSAKA_ADMIN_EMAIL"]?.trim().toLowerCase();
+  if (osakaAdminEmail) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(osakaAdminEmail)) {
+      logger.warn("OSAKA_ADMIN_EMAIL is invalid; Osaka admin email was not changed");
+    } else {
+      try {
+        await db.execute(sql`
+          UPDATE tenants
+          SET admin_email = ${osakaAdminEmail}, is_active = true, email_verified = true
+          WHERE slug = 'osaka'
+            AND (admin_email IS NULL OR admin_email <> ${osakaAdminEmail})
+        `);
+        logger.info("Osaka admin email configured");
+      } catch (err) {
+        logger.warn({ err }, "Osaka admin email migration failed (non-fatal)");
+      }
+    }
+  }
+
   // Seed DC tenant (idempotent)
   try {
     await db.execute(sql`
