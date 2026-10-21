@@ -89,13 +89,13 @@ function Router() {
           <Route path="/" component={MAINTENANCE_MODE ? MaintenancePage : PlatformHome} />
           <Route path="/digest/:id">
             {(params) => {
-              window.location.replace(`https://austin.eventcarpooling.com/digest/${params.id}`);
+              window.location.replace(`https://austin.irl.group/digest/${params.id}`);
               return null;
             }}
           </Route>
           <Route path="/rsvp">
             {() => {
-              window.location.replace(`https://austin.eventcarpooling.com${window.location.pathname}${window.location.search}`);
+              window.location.replace(`https://austin.irl.group${window.location.pathname}${window.location.search}`);
               return null;
             }}
           </Route>

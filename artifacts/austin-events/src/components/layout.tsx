@@ -146,7 +146,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 </button>
               )}
               <a
-                href="https://eventcarpooling.com"
+                href="https://irl.group"
                 className="shrink-0 transition-opacity hover:opacity-80"
               >
                 <img
@@ -251,7 +251,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 © {new Date().getFullYear()} {tenant.name}. {isMiami ? "Curated along Biscayne Bay." : <>Handcrafted in {tenant.city.split(",")[0]}.</>}
               </p>
             </div>
-            <a href="https://eventcarpooling.com" className="opacity-60 hover:opacity-90 transition-opacity">
+            <a href="https://irl.group" className="opacity-60 hover:opacity-90 transition-opacity">
               <img
                 src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
                 alt="Powered by EventCarpooling"

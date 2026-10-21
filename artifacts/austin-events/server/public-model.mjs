@@ -2,7 +2,9 @@ import { createHash } from "node:crypto";
 import http from "node:http";
 import https from "node:https";
 
-export const PLATFORM_ORIGIN = "https://eventcarpooling.com";
+export const PLATFORM_DOMAIN = "irl.group";
+export const LEGACY_DOMAIN = "eventcarpooling.com";
+export const PLATFORM_ORIGIN = `https://${PLATFORM_DOMAIN}`;
 const EXTENDED_RANGE_CITIES = new Set([
   "austin", "atlanta", "houston", "tokyo", "sanfrancisco", "sacramento",
   "miami", "boston", "la", "stlouis", "portland", "bulverde", "dc",
@@ -36,20 +38,30 @@ export const safeUrl = value => {
   catch { return undefined; }
 };
 
+export function legacyRedirectHost(hostname) {
+  const host = hostname.toLowerCase().split(":")[0];
+  if (host === LEGACY_DOMAIN || host === `www.${LEGACY_DOMAIN}`) return PLATFORM_DOMAIN;
+  const suffix = `.${LEGACY_DOMAIN}`;
+  if (!host.endsWith(suffix)) return null;
+  const slug = host.slice(0, -suffix.length);
+  if (!/^[a-z0-9-]+$/.test(slug) || slug === "api") return null;
+  return `${slug}.${PLATFORM_DOMAIN}`;
+}
+
 export function resolveSite(hostname, development = false) {
   const host = hostname.toLowerCase().split(":")[0];
-  if (host === "eventcarpooling.com" || host === "www.eventcarpooling.com") return { slug: null, host: "eventcarpooling.com" };
-  if (host.endsWith(".eventcarpooling.com")) {
-    const slug = host.slice(0, -".eventcarpooling.com".length);
+  if (host === PLATFORM_DOMAIN || host === `www.${PLATFORM_DOMAIN}`) return { slug: null, host: PLATFORM_DOMAIN };
+  if (host.endsWith(`.${PLATFORM_DOMAIN}`)) {
+    const slug = host.slice(0, -`.${PLATFORM_DOMAIN}`.length);
     if (/^[a-z0-9-]+$/.test(slug)) return { slug, host };
     return null;
   }
   if (development && (host === "localhost" || host === "127.0.0.1" || host.endsWith(".replit.dev") || host.endsWith(".repl.co"))) {
     const slug = process.env.VITE_TENANT_SLUG || "austin";
-    return { slug, host: `${slug}.eventcarpooling.com` };
+    return { slug, host: `${slug}.${PLATFORM_DOMAIN}` };
   }
   // The publishing service's alternate root host serves the platform, not a city.
-  if (host.endsWith(".replit.app")) return { slug: null, host: "eventcarpooling.com" };
+  if (host.endsWith(".replit.app")) return { slug: null, host: PLATFORM_DOMAIN };
   return null;
 }
 
@@ -122,7 +134,7 @@ export function eventSchema(event, origin) {
 
 import cityAiEthicsData from "../../../shared/city-ai-ethics.json" with { type: "json" };
 
-const PLATFORM_CITY_ORDER = ["la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
+const PLATFORM_CITY_ORDER = ["la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
 const CITY_ETHICS_RESOURCES = {
   la: { url: "https://ita.lacity.gov/news/ita-publishes-ai-safety-checklist", title: "L.A. A.I. Safety Checklist" },
   boston: { url: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", title: "Boston’s generative AI policy" },
@@ -141,7 +153,7 @@ export async function loadPublicModel(site, pathname) {
     kind: "not-found", title: "Page not found | EventCarpooling", description: "This public page could not be found.",
     canonical: origin + pathname, homeUrl: "/", events: [],
     cities: tenants.map(t => {
-      const url = `https://${t.slug}.eventcarpooling.com/`;
+      const url = `https://${t.slug}.${PLATFORM_DOMAIN}/`;
         const ethics = CITY_ETHICS_RESOURCES[t.slug];
         const localEthics = cityAiEthicsData[t.slug];
       return {

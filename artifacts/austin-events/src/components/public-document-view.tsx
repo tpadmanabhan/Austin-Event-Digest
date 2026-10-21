@@ -168,7 +168,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           Find local events, city newsletters and useful community resources. Browse a city edition or request one for your city; requests are reviewed by our team.
         </p>
         <p className="mt-3 text-slate-700">
-          We can build custom Event Newsletters around your city’s voice and interests—like <a href="https://austin.eventcarpooling.com" className={linkCls}>Raj’s Austin Events</a>.
+          We can build custom Event Newsletters around your city’s voice and interests—like <a href="https://austin.irl.group" className={linkCls}>Raj’s Austin Events</a>.
         </p>
         <h2 id="city-editions" className="mb-3 mt-8 font-serif text-2xl font-bold text-slate-900">City newsletters</h2>
         <ul className="space-y-2">
@@ -179,7 +179,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           ))}
         </ul>
         <p className="mt-4">
-          <a href="https://austincares.eventcarpooling.com" className={linkCls}>Explore AustinCares local deals</a>
+          <a href="https://austincares.irl.group" className={linkCls}>Explore AustinCares local deals</a>
         </p>
         <section aria-labelledby="platform-ai-ethics" className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">

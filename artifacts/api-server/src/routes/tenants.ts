@@ -3,6 +3,7 @@ import { createHmac } from "crypto";
 import { db, tenantsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requirePlatformRoot } from "../middleware/resolveTenant";
+import { publicTenantUrl } from "../lib/publicUrls";
 
 const router: IRouter = Router();
 
@@ -185,7 +186,7 @@ router.get("/tenants/verify", async (req, res) => {
 
   if (!isEmailVerificationEnabled()) {
     // Verification not configured — redirect to admin anyway
-    res.redirect(`https://${slug}.eventcarpooling.com/admin`);
+    res.redirect(`${publicTenantUrl(slug)}/admin`);
     return;
   }
 
@@ -215,7 +216,7 @@ router.get("/tenants/verify", async (req, res) => {
     }
 
     // Redirect to the new city's admin page
-    res.redirect(`https://${slug}.eventcarpooling.com/admin?verified=1`);
+    res.redirect(`${publicTenantUrl(slug)}/admin?verified=1`);
   } catch (err) {
     req.log.error({ err, slug }, "Error verifying tenant email");
     res.status(500).send("Something went wrong. Please try again.");

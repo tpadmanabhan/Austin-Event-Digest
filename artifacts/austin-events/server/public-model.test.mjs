@@ -5,10 +5,10 @@ import net from "node:net";
 import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { resolveSite, eventSchema, validIsoDate, venueIdentity, publicApiOrigin, publicEditionRange } from "./public-model.mjs";
+import { resolveSite, legacyRedirectHost, eventSchema, validIsoDate, venueIdentity, publicApiOrigin, publicEditionRange } from "./public-model.mjs";
 
 const cities = ["la", "austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
-  "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston", "boston", "miami"];
+  "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston", "boston", "miami", "osaka"];
 const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
 const eventId = city => `ev-${String(cities.indexOf(city) + 1).padStart(24, "0")}`;
 const fixture = city => ({
@@ -30,7 +30,7 @@ before(async () => {
     const city = host.split(".")[0];
     res.setHeader("Content-Type", "application/json");
     if (failed) { res.writeHead(500); return res.end('{"error":"test_failure"}'); }
-    if (!cities.includes(city) && host !== "eventcarpooling.com") { res.writeHead(404); return res.end("{}"); }
+    if (!cities.includes(city) && host !== "irl.group") { res.writeHead(404); return res.end("{}"); }
     if (req.url === "/api/tenants/list") return res.end(JSON.stringify({ tenants }));
     if (req.url === "/api/deals/submitted") return res.end(JSON.stringify({ deals: [
       { id: 1, business: "Test approved community offer", deal: "A test offer", locationName: "Test shop", locationAddress: "2 Test Street" },
@@ -65,6 +65,12 @@ after(async () => {
 });
 
 async function document(host, pathname = "/", userAgent = "ordinary-browser") {
+  // Existing page fixtures use the previous hostname; route those requests to
+  // the current host so the assertions keep exercising the page behavior.
+  const currentHost = legacyRedirectHost(host) || host;
+  return rawDocument(currentHost, pathname, userAgent);
+}
+async function rawDocument(host, pathname = "/", userAgent = "ordinary-browser") {
   const response = await fetch(base + pathname, { headers: { Host: host, "X-Forwarded-Host": host, "User-Agent": userAgent }, redirect: "manual" });
   return { response, body: await response.text() };
 }
@@ -89,11 +95,16 @@ test("Austin community spotlight links say Visit on both pages and retain city-s
 
 test("host resolution never defaults an unknown production host to Austin", () => {
   assert.equal(resolveSite("unrelated.example", false), null);
-  assert.equal(resolveSite("tokyo.eventcarpooling.com", false).slug, "tokyo");
-  assert.equal(resolveSite("eventcarpooling.com", false).slug, null);
+  assert.equal(resolveSite("tokyo.irl.group", false).slug, "tokyo");
+  assert.equal(resolveSite("irl.group", false).slug, null);
+  for (const slug of cities) assert.equal(resolveSite(`${slug}.irl.group`, false).slug, slug);
+  assert.equal(legacyRedirectHost("eventcarpooling.com"), "irl.group");
+  assert.equal(legacyRedirectHost("www.eventcarpooling.com"), "irl.group");
+  assert.equal(legacyRedirectHost("tokyo.eventcarpooling.com"), "tokyo.irl.group");
+  assert.equal(legacyRedirectHost("api.eventcarpooling.com"), null);
 });
 test("published API requests never default to the development-only port-80 proxy", () => {
-  assert.equal(publicApiOrigin({ NODE_ENV: "production" }), "https://eventcarpooling.com");
+  assert.equal(publicApiOrigin({ NODE_ENV: "production" }), "https://irl.group");
   assert.equal(publicApiOrigin({ NODE_ENV: "development" }), "http://127.0.0.1:80");
   assert.equal(publicApiOrigin({ NODE_ENV: "production", INTERNAL_API_ORIGIN: "http://127.0.0.1:9000" }), "http://127.0.0.1:9000");
 });
@@ -103,7 +114,7 @@ test("verified date validation rejects guessed years, impossible days and missin
   assert.equal(validIsoDate("2031-10-12T12:00:00"), false);
   assert.equal(validIsoDate("2031-10-12T12:00:00.000Z"), true);
   assert.equal(validIsoDate("2031-10-12"), true);
-  assert.equal(eventSchema({ ...fixture("austin").events[0], startDate: undefined }, "https://austin.eventcarpooling.com"), undefined);
+  assert.equal(eventSchema({ ...fixture("austin").events[0], startDate: undefined }, "https://austin.irl.group"), undefined);
 });
 test("trusted extended editions expose their actual date range instead of a week label", () => {
   for (const city of ["houston", "tokyo", "stlouis", "portland", "bulverde", "dc"]) {
@@ -121,13 +132,15 @@ test("the platform document is readable and has real city links without scripts 
   assert.match(body, /Intelligence with integrity/);
   assert.match(body, /custom Event Newsletters/);
   assert.match(body, /Raj’s Austin Events/);
-  assert.match(body, /https:\/\/austincares\.eventcarpooling\.com/);
+  assert.match(body, /https:\/\/austincares\.irl\.group/);
   const model = modelOf(body);
   assert.equal(model.cities[0].slug, "la");
+  assert.equal(model.cities.length, 16);
+  assert.ok(model.cities.every(city => city.url.startsWith("https://") && city.url.endsWith(".irl.group/")));
   assert.ok(model.cities.every(city => !("isNew" in city)), "City listings must not advertise New badges");
   assert.match(model.cities[0].ethicsUrl, /ita\.lacity\.gov/);
   assert.equal(model.cities[1].slug, "boston");
-  assert.match(body, /https:\/\/tokyo\.eventcarpooling\.com\//);
+  assert.match(body, /https:\/\/tokyo\.irl\.group\//);
   assert.match(body, /<h1/);
   assert.equal(modelOf(body).kind, "platform");
   assert.match(body, /<div id="public-fallback">/);
@@ -174,7 +187,7 @@ test("Austin's Food for Thought articles appear in the public city and edition d
   }
 });
 test("San Francisco shares its Golden Gate image in initial homepage and edition HTML", async () => {
-  const host = "sanfrancisco.eventcarpooling.com";
+  const host = "sanfrancisco.irl.group";
   const image = `https://${host}/images/sanfrancisco-hero.jpg`;
   for (const pathname of ["/", `/digest/${fixture("sanfrancisco").id}`]) {
     const { response, body } = await document(host, pathname, "facebookexternalhit/1.1");
@@ -187,10 +200,10 @@ test("San Francisco shares its Golden Gate image in initial homepage and edition
   const asset = await document(host, "/images/sanfrancisco-hero.jpg");
   assert.equal(asset.response.status, 200);
   assert.match(asset.response.headers.get("content-type"), /^image\/jpeg/);
-  const austin = await document("austin.eventcarpooling.com");
-  assert.match(austin.body, /<meta property="og:image" content="https:\/\/austin\.eventcarpooling\.com\/opengraph\.jpg">/);
+  const austin = await document("austin.irl.group");
+  assert.match(austin.body, /<meta property="og:image" content="https:\/\/austin\.irl\.group\/opengraph\.jpg">/);
 });
-test("every city sends its own share image and theme in the initial document", async () => {
+test("every city sends its configured share image or platform fallback in the initial document", async () => {
   const expected = {
     austin: "/opengraph.jpg",
     austincares: "/images/austin-cares-brand-icon.jpg",
@@ -207,9 +220,10 @@ test("every city sends its own share image and theme in the initial document", a
     la: "https://upload.wikimedia.org/wikipedia/commons/3/33/POINTDUME_CA6.jpg",
     miami: "/api/storage/public-objects/cities/miami/share.jpg",
     tokyo: "https://images.unsplash.com/photo-1480796927426-f609979314bd",
+    osaka: "/eventcarpooling-logo.png",
   };
   for (const city of cities) {
-    const host = `${city}.eventcarpooling.com`;
+    const host = `${city}.irl.group`;
     const paths = city === "austincares" ? ["/", "/full", "/about"] : ["/", `/digest/${fixture(city).id}`, "/about"];
     for (const pathname of paths) {
       const { response, body } = await document(host, pathname, "facebookexternalhit/1.1");
@@ -247,12 +261,12 @@ test("every city sends its own share image and theme in the initial document", a
 test("platform and future city image fallbacks never borrow Austin's preview", async () => {
   const { response, body } = await document("eventcarpooling.com");
   assert.equal(response.status, 200);
-  assert.match(body, /og:image" content="https:\/\/eventcarpooling\.com\/eventcarpooling-logo\.png"/);
+  assert.match(body, /og:image" content="https:\/\/irl\.group\/eventcarpooling-logo\.png"/);
   assert.doesNotMatch(body, /<html[^>]+data-tenant="austin"/);
   const { cityShareImage } = await import("../dist/server/entry-server.js");
-  assert.equal(cityShareImage("futurecity", "https://futurecity.eventcarpooling.com"),
-    "https://futurecity.eventcarpooling.com/eventcarpooling-logo.png");
-  assert.equal(cityShareImage("tokyo", "https://tokyo.eventcarpooling.com").startsWith("https://images.unsplash.com/"), true);
+  assert.equal(cityShareImage("futurecity", "https://futurecity.irl.group"),
+    "https://futurecity.irl.group/eventcarpooling-logo.png");
+  assert.equal(cityShareImage("tokyo", "https://tokyo.irl.group").startsWith("https://images.unsplash.com/"), true);
   assert.equal(cityShareImage("portland", "https://preview.test", "/city-preview/"),
     "https://preview.test/city-preview/images/portland-hero.jpg");
 });
@@ -332,11 +346,23 @@ test("personalized and admin documents are noindex and never disclose query secr
     assert.doesNotMatch(body, /private@|private%40|test-secret/);
   }
 });
-test("legacy redirects preserve exact signed URL input and canonical trailing slash", async () => {
+test("legacy domain permanently redirects root and city hosts while preserving path and query", async () => {
   const query = "?email=reader%2Btag%40example.test&sig=test-signature&title=A%26B";
-  const redirect = await document("eventcarpooling.com", "/rsvp" + query);
-  assert.equal(redirect.response.status, 302);
-  assert.equal(redirect.response.headers.get("location"), "https://austin.eventcarpooling.com/rsvp" + query);
+  const rootRedirect = await rawDocument("eventcarpooling.com", "/rsvp" + query);
+  assert.equal(rootRedirect.response.status, 301);
+  assert.equal(rootRedirect.response.headers.get("location"), "https://irl.group/rsvp" + query);
+  const wwwRedirect = await rawDocument("www.eventcarpooling.com", "/about/?from=old");
+  assert.equal(wwwRedirect.response.status, 301);
+  assert.equal(wwwRedirect.response.headers.get("location"), "https://irl.group/about/?from=old");
+  const cityRedirect = await rawDocument("austin.eventcarpooling.com", "/digest/12?ref=old");
+  assert.equal(cityRedirect.response.status, 301);
+  assert.equal(cityRedirect.response.headers.get("location"), "https://austin.irl.group/digest/12?ref=old");
+  const assetRedirect = await rawDocument("tokyo.eventcarpooling.com", "/assets/app.js?v=2");
+  assert.equal(assetRedirect.response.status, 301);
+  assert.equal(assetRedirect.response.headers.get("location"), "https://tokyo.irl.group/assets/app.js?v=2");
+  const signedRsvp = await document("irl.group", "/rsvp" + query);
+  assert.equal(signedRsvp.response.status, 302);
+  assert.equal(signedRsvp.response.headers.get("location"), "https://austin.irl.group/rsvp" + query);
   const slash = await document("austin.eventcarpooling.com", "/about/");
   assert.equal(slash.response.status, 301);
   assert.equal(slash.response.headers.get("location"), "/about");

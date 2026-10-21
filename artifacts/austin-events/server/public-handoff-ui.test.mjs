@@ -9,9 +9,9 @@ test("public startup never flashes the reader view, retains no-JS content, and r
   const { chromium } = await import(process.env.CITY_REQUEST_PLAYWRIGHT_MODULE);
   const browser = await chromium.launch({
     executablePath: process.env.CITY_REQUEST_CHROMIUM,
-    args: ["--no-sandbox", "--host-resolver-rules=MAP eventcarpooling.com 127.0.0.1"],
+    args: ["--no-sandbox", "--host-resolver-rules=MAP irl.group 127.0.0.1"],
   });
-  const url = process.env.CITY_REQUEST_UI_URL ?? "http://eventcarpooling.com:23822/";
+  const url = process.env.CITY_REQUEST_UI_URL ?? "http://irl.group:23822/";
   const errors = [];
   const createPage = async (javaScriptEnabled = true) => {
     const page = await browser.newPage({ javaScriptEnabled });

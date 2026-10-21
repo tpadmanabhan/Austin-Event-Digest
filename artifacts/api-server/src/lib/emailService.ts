@@ -11,6 +11,7 @@ import { buildBostonAiEthicsSection } from "./bostonAiEthics";
 import { buildLaAiEthicsSection } from "./laAiEthics";
 import { buildCityAiEthicsSection } from "./cityAiEthics";
 import { signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
+import { publicTenantUrl } from "./publicUrls";
 
 const FROM_NAME = process.env.FROM_NAME || "Raj's Austin Events";
 const NEWSLETTER_FROM_EMAIL = "raj@eventcarpooling.com";
@@ -126,7 +127,7 @@ export interface WelcomeEmailTenant {
 export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmailTenant | null, subscriberEmail?: string | null): string {
   const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
   const cityLabel = tenant?.city || "Austin, TX";
-  const siteUrl = tenant?.slug ? `https://${tenant.slug}.eventcarpooling.com` : "https://austin.eventcarpooling.com";
+  const siteUrl = publicTenantUrl(tenant?.slug || "austin");
   // When a tenant is provided, the DB value is authoritative.
   // null/blank = no attribution line. Only fall back to hardcoded text when
   // no tenant is supplied at all (e.g. internal previews).
@@ -200,7 +201,7 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
     <!-- Footer -->
     <div style="text-align:center;padding:4px 0 16px;">
       <p style="margin:0 0 6px;color:#78716c;font-size:13px;">東京のイベント情報をAIでキュレーション ❤️</p>
-      <p style="margin:0;color:#a8a29e;font-size:12px;">${escapeHtml("tokyo.eventcarpooling.com")} で登録しました — <a href="${escapeHtml(tokyoUnsubUrl)}" style="color:#a8a29e;">配信停止はこちら</a></p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">${escapeHtml("tokyo.irl.group")} で登録しました — <a href="${escapeHtml(tokyoUnsubUrl)}" style="color:#a8a29e;">配信停止はこちら</a></p>
     </div>
 
   </div>
@@ -239,7 +240,7 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
     </div>
     <div style="text-align:center;padding:4px 0 16px;">
       <p style="margin:0 0 6px;color:#78716c;font-size:13px;">大阪の街から、今週のいい予定を。 ❤️</p>
-      <p style="margin:0;color:#a8a29e;font-size:12px;">osaka.eventcarpooling.com で登録しました — <a href="${escapeHtml(osakaUnsubUrl)}" style="color:#a8a29e;">配信停止はこちら</a></p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">osaka.irl.group で登録しました — <a href="${escapeHtml(osakaUnsubUrl)}" style="color:#a8a29e;">配信停止はこちら</a></p>
     </div>
   </div>
 </body>
@@ -310,7 +311,7 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
     <!-- Footer -->
     <div style="text-align:center;padding:4px 0 16px;">
       ${curatorLine ? `<p style="margin:0 0 6px;color:#78716c;font-size:13px;">${curatorLine}</p>` : ""}
-      <p style="margin:0;color:#a8a29e;font-size:12px;">You subscribed at ${escapeHtml(tenant?.slug ? `${tenant.slug}.eventcarpooling.com` : "austin.eventcarpooling.com")} — <a href="${escapeHtml(unsubUrl)}" style="color:#a8a29e;">unsubscribe anytime</a></p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">You subscribed at ${escapeHtml(`${tenant?.slug || "austin"}.irl.group`)} — <a href="${escapeHtml(unsubUrl)}" style="color:#a8a29e;">unsubscribe anytime</a></p>
     </div>
 
   </div>
@@ -470,7 +471,7 @@ function buildStaticMapSection(
   if (geocoded.length === 0) return "";
 
   // Self-hosted tile-stitcher — served from our own domain so email clients never block it
-  const baseUrl = siteUrl ?? "https://austin.eventcarpooling.com";
+  const baseUrl = siteUrl ?? publicTenantUrl("austin");
   const markers = geocoded.slice(0, 12);
   const markerParam = markers
     .map((e) => `${e.lat},${e.lng},${e.featured ? "yellow" : "blue"}`)
@@ -1179,7 +1180,7 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0 0 6px; color:#a0d4d4; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ This Week's Deals</p>
       <p style="margin:0 0 10px; color:#ffffff; font-size:19px; font-weight:800; letter-spacing:-0.3px;">Browse the full deals directory</p>
       <p style="margin:0 0 18px; color:#e0f4f4; font-size:13px; line-height:1.6;">See every deal sorted by day — Monday specials, Tuesday discounts, weekend offers — and filter by distance from your spot.</p>
-      <a href="https://austincares.eventcarpooling.com/full" style="display:inline-block; background:#C4502B; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">See this week's deals →</a>
+      <a href="https://austincares.irl.group/full" style="display:inline-block; background:#C4502B; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">See this week's deals →</a>
     </div>` : ""}
 
     <!-- AustinCares Launch Promo (other established city newsletters) -->
@@ -1189,7 +1190,7 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0 0 10px; color:${slug === "austin" ? "#3f392f" : "#ffffff"}; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
       <p style="margin:0 0 6px; color:${slug === "austin" ? "#746959" : "#fde68a"}; font-size:13px; line-height:1.6;">A weekly digest of real, time-boxed discounts — happy hours, Tuesday specials, weekday-only deals — filtered by day and distance. No hunting through Instagram. No expired coupons.</p>
       <p style="margin:0 0 18px; color:${slug === "austin" ? "#8b735d" : "#fca5a5"}; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">Coming to a city near you 🌍</p>
-      <a href="https://austincares.eventcarpooling.com" style="display:inline-block; background:${slug === "austin" ? "#2f855a" : "#C4502B"}; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">Get Weekly Deals →</a>
+      <a href="https://austincares.irl.group" style="display:inline-block; background:${slug === "austin" ? "#2f855a" : "#C4502B"}; color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:13px 32px; border-radius:100px; letter-spacing:-0.1px;">Get Weekly Deals →</a>
     </div>` : ""}
 
     <!-- Tokyo Launch Highlight (Tokyo only) -->
@@ -1329,7 +1330,7 @@ export async function sendNewSubscriberAdminNotification(opts: {
       <p style="margin:0 0 14px; color:#1c1917; font-size:17px; font-weight:700;">📬 ${label}</p>
       ${nameLine}
       <p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Email:</strong> ${opts.subscriberEmail}</p>
-      <p style="margin:0; color:#78716c; font-size:13px;">Subscribed via eventcarpooling.com</p>
+      <p style="margin:0; color:#78716c; font-size:13px;">Subscribed via irl.group</p>
     </div>
   </div>
 </body>
@@ -1573,7 +1574,7 @@ export async function sendFeatureInterestEmails(email: string): Promise<void> {
         We'll reach out as soon as new features are ready for early access. You'll be among the first to know!
       </p>
       <p style="margin:0; color:#78716c; font-size:13px; line-height:1.5;">
-        In the meantime, check out <a href="https://austin.eventcarpooling.com" style="color:#4f46e5; text-decoration:none; font-weight:600;">austin.eventcarpooling.com</a> to see a live example of what we're building.
+        In the meantime, check out <a href="https://austin.irl.group" style="color:#4f46e5; text-decoration:none; font-weight:600;">austin.irl.group</a> to see a live example of what we're building.
       </p>
     </div>
     <p style="text-align:center; color:#a8a29e; font-size:12px; margin:0;">EventCarpooling.com</p>
@@ -1594,7 +1595,7 @@ export async function sendFeatureInterestEmails(email: string): Promise<void> {
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px;">
       <p style="margin:0 0 14px; color:#1c1917; font-size:17px; font-weight:700;">Someone wants feature updates!</p>
       <p style="margin:0 0 6px; color:#44403c; font-size:15px;"><strong>Email:</strong> ${email}</p>
-      <p style="margin:0; color:#78716c; font-size:13px;">Signed up via the feature interest form on austin.eventcarpooling.com</p>
+      <p style="margin:0; color:#78716c; font-size:13px;">Signed up via the feature interest form on austin.irl.group</p>
     </div>
   </div>
 </body>

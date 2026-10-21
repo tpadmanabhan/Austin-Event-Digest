@@ -53,14 +53,14 @@ const baseDigest = {
   weekOf: new Date("2026-08-17"),
   events: [],
   digestId: 1,
-  siteUrl: "https://test.eventcarpooling.com",
+  siteUrl: "https://test.irl.group",
 };
 
 describe("AI Ethics reading section", () => {
   it("renders Sacramento's extended range and new readings in its local theme", () => {
     const html = buildDigestEmailHtml({
       ...baseDigest, subject: "Sacramento Events — October 13 – October 31, 2026",
-      weekOf: "2026-10-13", siteUrl: "https://sacramento.eventcarpooling.com",
+      weekOf: "2026-10-13", siteUrl: "https://sacramento.irl.group",
     }, null, null, {
       slug: "sacramento", name: "Sacramento Events", city: "Sacramento, CA",
       digestTitle: "Sacramento Events",
@@ -79,7 +79,7 @@ describe("AI Ethics reading section", () => {
   it("renders San Francisco's date range, local theme, and fresh readings without Austin copy", () => {
     const html = buildDigestEmailHtml({
       ...baseDigest, subject: "San Francisco Events — October 12 – October 31, 2026",
-      weekOf: "2026-10-12", siteUrl: "https://sanfrancisco.eventcarpooling.com",
+      weekOf: "2026-10-12", siteUrl: "https://sanfrancisco.irl.group",
     }, null, null, {
       slug: "sanfrancisco", name: "San Francisco Events", city: "San Francisco, CA", digestTitle: "San Francisco Events",
     });
@@ -113,7 +113,7 @@ describe("AI Ethics reading section", () => {
     const requestedPositions = requestedItems.map(value => html.indexOf(value));
     expect(requestedPositions.every(position => position >= 0)).toBe(true);
     expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
-    expect(html).toMatch(/<a href="https:\/\/eventcarpooling\.com\/"[^>]*>Want an event page for your city\?<\/a> — Make a request; customization is also considered for each city\./);
+    expect(html).toMatch(/<a href="https:\/\/irl\.group\/"[^>]*>Want an event page for your city\?<\/a> — Make a request; customization is also considered for each city\./);
     expect(html).toContain("customization is also considered for each city");
     expect(html).toContain("Meta updates data-scraping policy following criticism");
     expect(html).toContain("The revised terms leave questions about how business websites can control automated access to their content.");
@@ -226,7 +226,7 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
   it("Osaka digest keeps its teal branding and local AI Ethics reading list", () => {
     const html = buildDigestEmailHtml({
       ...baseDigest,
-      siteUrl: "https://osaka.eventcarpooling.com",
+      siteUrl: "https://osaka.irl.group",
       events: [{
         title: "大阪のイベント",
         date: "Friday, October 30, 2026",
@@ -394,7 +394,7 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
       ...baseDigest,
       subject: "Los Angeles Events — October 16 – October 31, 2026",
       weekOf: "2026-10-16",
-      siteUrl: "https://la.eventcarpooling.com",
+      siteUrl: "https://la.irl.group",
     }, null, null, {
       slug: "la", name: "Los Angeles Events", city: "Los Angeles, CA",
       digestTitle: "Los Angeles Events",
@@ -472,6 +472,7 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
     expect(html).not.toContain("🤠");
     // Japanese text
     expect(html).toContain("登録完了");
+    expect(html).toContain("tokyo.irl.group");
   });
 
   it("Osaka welcome email uses Japanese copy, Osaka branding, and Japanese unsubscribe link", () => {
@@ -486,6 +487,7 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
     expect(html).toContain("大阪のイベントガイドへようこそ");
     expect(html).toContain("#0D7377");
     expect(html).toContain("unsubscribe?email=sub%40example.com&amp;lang=ja");
+    expect(html).toContain("osaka.irl.group");
     expect(html).not.toContain("You're officially on the list");
     expect(html).not.toContain("🤠");
   });

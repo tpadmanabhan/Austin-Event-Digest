@@ -147,14 +147,14 @@ async function main() {
     return;
   }
   const res = await fetch("http://localhost:80/api/events/digest/import", {
-    method: "POST", headers: { Host: `${slug}.eventcarpooling.com`, "X-Tenant-Slug": slug, Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    method: "POST", headers: { Host: `${slug}.irl.group`, "X-Tenant-Slug": slug, Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ weekOf: "2026-10-12", subject, intro, events }),
   });
   if (!res.ok) throw new Error(`Import failed: HTTP ${res.status}`);
   const result = await res.json();
   if (!result.digest?.id || result.digest.events.length !== events.length) throw new Error("Imported edition failed count verification.");
   const preview = await fetch(`http://localhost:80/api/events/digest/${result.digest.id}/preview-email`, {
-    headers: { Host: `${slug}.eventcarpooling.com`, "X-Tenant-Slug": slug, Authorization: `Bearer ${token}` },
+    headers: { Host: `${slug}.irl.group`, "X-Tenant-Slug": slug, Authorization: `Bearer ${token}` },
   });
   if (!preview.ok) throw new Error(`Preview failed: HTTP ${preview.status}`);
   const html = await preview.text();

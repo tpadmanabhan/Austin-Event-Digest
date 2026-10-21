@@ -8,6 +8,7 @@ import { sendRsvpGroupNotification, buildDigestEmailHtml, sendWelcomeEmail, send
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin, adminTokenForHash, adminTokenForEmail } from "../middleware/requireAdmin";
 import { verifyPassword } from "../lib/passwordHash";
+import { publicTenantUrl } from "../lib/publicUrls";
 
 const router: IRouter = Router();
 
@@ -388,7 +389,7 @@ router.get("/digest/:id/preview-html", requireAdmin, async (req, res) => {
       return;
     }
 
-    const siteUrl = `https://${req.tenant!.slug}.eventcarpooling.com`;
+    const siteUrl = publicTenantUrl(req.tenant!.slug);
     const html = buildDigestEmailHtml(
       {
         subject: digest.subject,

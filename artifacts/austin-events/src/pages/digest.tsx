@@ -503,8 +503,8 @@ export default function DigestView() {
       {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && !isLA && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
         <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
-        <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
-          eventcarpooling.com
+        <a href="https://irl.group" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
+          irl.group
         </a>
       </div>}
 
@@ -1040,7 +1040,7 @@ export default function DigestView() {
                   Coming to a city near you 🌍
                 </p>
                 <a
-                  href="https://austincares.eventcarpooling.com"
+                  href="https://austincares.irl.group"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block text-sm font-bold no-underline px-7 py-3 rounded-full transition-opacity hover:opacity-90"

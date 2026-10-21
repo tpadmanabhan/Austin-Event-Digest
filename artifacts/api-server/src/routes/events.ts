@@ -28,6 +28,7 @@ import { isWithinCityBounds } from "../lib/cityBounds";
 import { safeOutboundFetch } from "../lib/safeOutboundFetch";
 import { prewarmTranslationCache } from "../lib/translationPrewarm";
 import { signSubscriberToken } from "../lib/subscriberToken";
+import { publicTenantUrl } from "../lib/publicUrls";
 
 // ---------------------------------------------------------------------------
 // Production tenant auth — email-based HMAC for managed (null-passwordHash) cities
@@ -1369,7 +1370,7 @@ router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
     .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id))).limit(1);
   if (!digest) { res.status(404).json({ error: "not_found" }); return; }
   const tenant = req.tenant!;
-  const siteUrl = `https://${tenant.slug}.eventcarpooling.com`;
+  const siteUrl = publicTenantUrl(tenant.slug);
   const html = buildDigestEmailHtml({
     events: (digest.events as any[]) || [],
     subject: digest.subject,
@@ -1418,8 +1419,8 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
     let recipients: RecipientWithLocation[] = [];
     // Always use the tenant's canonical subdomain for RSVP/unsubscribe links in emails.
     // This is the only reliable approach — header-based inference can return the platform
-    // root domain (eventcarpooling.com) which has no tenant and breaks the carpool flow.
-    const siteUrl = process.env.SITE_URL || `https://${req.tenant!.slug}.eventcarpooling.com`;
+    // root domain (irl.group) has no tenant and breaks the carpool flow.
+    const siteUrl = publicTenantUrl(req.tenant!.slug);
 
     if (testEmail) {
       recipients = [{ email: testEmail, name: null, anchorLat: null, anchorLng: null, radiusMiles: 3, walkableOnly: false }];
@@ -1565,7 +1566,7 @@ router.get("/digest/:id/prod-status", requireAdmin, async (req, res) => {
 
   const localWeekOf = toDateStr(localDigest.weekOf);
   const slug = req.tenant!.slug;
-  const prodUrl = `https://${slug}.eventcarpooling.com`;
+  const prodUrl = publicTenantUrl(slug);
   const canPush = slug in PROD_EMAIL_AUTH;
 
   try {
@@ -1614,7 +1615,7 @@ router.post("/digest/:id/push-to-prod", requireAdmin, async (req, res) => {
   }
 
   const slug = req.tenant!.slug;
-  const prodUrl = `https://${slug}.eventcarpooling.com`;
+  const prodUrl = publicTenantUrl(slug);
 
   // Compute production auth token
   const token = computeProdToken(slug);

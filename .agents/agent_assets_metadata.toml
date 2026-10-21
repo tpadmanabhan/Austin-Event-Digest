@@ -382,3 +382,17 @@ mtime_ms = 1792163390163
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/2c012d41-e716-44f0-a779-dd380cf2b84f/a9e70a14-3adf-4d17-86dc-8b84c892d58b"
 storage_version_token = "1792163399105647"
 content_type = "text/html"
+
+[[outputs]]
+id = "izgNcUYEDGLZVILjIypsZ"
+uri = "file://generated-artifacts/irl-group-domain-cutover-guide.html"
+type = "html"
+title = "EventCarpooling → irl.group domain cutover guide"
+description = "Downloadable, print-ready Cloudflare/Replit checklist with the 16-city host map and the DNS records visible in your WordPress screenshots."
+logical_id = "f47a90ea-643d-48a0-b82c-d38cb2394baa"
+content_hash = "sha256:c1395c2b6fd1c2e576f2e8eec40b8e1ca05a973307cbacfe86855e888152cc90"
+size = 20359
+mtime_ms = 1792602274472
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/f47a90ea-643d-48a0-b82c-d38cb2394baa/c9f8c48b-c8c5-457e-9f61-872ac9873525"
+storage_version_token = "1792602557616374"
+content_type = "text/html"

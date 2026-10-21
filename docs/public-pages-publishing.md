@@ -38,7 +38,7 @@ Use the verified published hosts, including the platform, Austin, another city, 
 
 ## Development browser checks
 
-Default workspace preview selects Austin. For tenant-specific checks, map `eventcarpooling.com` and `*.eventcarpooling.com` to localhost in a dedicated browser and use HTTP through local port 80. Do not navigate to the HTTPS production hosts when verifying local changes.
+Default workspace preview selects Austin. For tenant-specific checks, map `irl.group` and `*.irl.group` to localhost in a dedicated browser and use HTTP through local port 80. Do not navigate to the HTTPS production hosts when verifying local changes.
 
 In development, the public web server forwards both Host and X-Forwarded-Host to the shared port-80 proxy using native HTTP transport. In production it uses the platform's published HTTPS origin: the workspace's `localhost:80` proxy does not exist there. Keep the city Host intact in both cases. An explicit `INTERNAL_API_ORIGIN` is available for controlled tests or a verified alternative router.
 

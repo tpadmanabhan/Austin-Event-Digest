@@ -11,7 +11,7 @@ test("city request form: both buttons, validation, loading, retries, keyboard an
   const { chromium } = await import(process.env.CITY_REQUEST_PLAYWRIGHT_MODULE);
   const browser = await chromium.launch({
     executablePath: process.env.CITY_REQUEST_CHROMIUM,
-    args: ["--no-sandbox", "--host-resolver-rules=MAP eventcarpooling.com 127.0.0.1"],
+    args: ["--no-sandbox", "--host-resolver-rules=MAP irl.group 127.0.0.1"],
   });
   const page = await browser.newPage();
   const errors = [];
@@ -32,7 +32,7 @@ test("city request form: both buttons, validation, loading, retries, keyboard an
   });
 
   try {
-    await page.goto(process.env.CITY_REQUEST_UI_URL ?? "http://eventcarpooling.com:23822/", { waitUntil: "domcontentloaded" });
+    await page.goto(process.env.CITY_REQUEST_UI_URL ?? "http://irl.group:23822/", { waitUntil: "domcontentloaded" });
     const hero = page.getByRole("button", { name: "Launch your city", exact: true });
     const footer = page.getByRole("button", { name: "Request your city", exact: true });
     const dialog = page.getByRole("dialog");

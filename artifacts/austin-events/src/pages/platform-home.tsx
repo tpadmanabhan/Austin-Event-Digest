@@ -18,7 +18,7 @@ interface TenantSummary {
 }
 
 const LIVE_CITY_ORDER = ["osaka", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
-const cityUrl = (slug: string) => `https://${slug}.eventcarpooling.com`;
+const cityUrl = (slug: string) => `https://${slug}.irl.group`;
 const publicImage = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
 
 const CITY_DIRECTORY = [
@@ -154,7 +154,7 @@ function PlatformHomeInner() {
             <p>{copy.directoryDescription}</p>
             <p className="custom-newsletter-note">
               {copy.customNewsletterIntro}
-              <a href="https://austin.eventcarpooling.com" target="_blank" rel="noopener noreferrer">{copy.customNewsletterLink}</a>
+              <a href="https://austin.irl.group" target="_blank" rel="noopener noreferrer">{copy.customNewsletterLink}</a>
               {copy.customNewsletterEnding}
             </p>
           </div>
@@ -186,7 +186,7 @@ function PlatformHomeInner() {
           <div className="spotlight-topline"><span className="spotlight-marker" />{copy.caresEyebrow}</div>
           <h2>{copy.caresTitle}<br /><em>{copy.caresHighlight}</em></h2>
           <p>{copy.caresDescription}</p>
-          <a href="https://austincares.eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="spotlight-link">
+          <a href="https://austincares.irl.group" target="_blank" rel="noopener noreferrer" className="spotlight-link">
             {copy.caresLink} <ArrowRight size={16} aria-hidden="true" />
           </a>
           <span className="spotlight-ornament" aria-hidden="true">AC</span>

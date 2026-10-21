@@ -372,8 +372,8 @@ export default function Home() {
         <span>
           <span className="font-semibold text-primary">Coming Soon:</span>{" "}
           <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
-          <a href="https://eventcarpooling.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
-            eventcarpooling.com
+          <a href="https://irl.group" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
+            irl.group
           </a>
         </span>
         <button
@@ -953,7 +953,7 @@ export default function Home() {
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <a
-                    href="https://austincares.eventcarpooling.com"
+                    href="https://austincares.irl.group"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block text-sm font-bold no-underline px-7 py-3 rounded-full text-center transition-opacity hover:opacity-90"
@@ -962,7 +962,7 @@ export default function Home() {
                     Get Weekly Deals
                   </a>
                   <a
-                    href="https://austincares.eventcarpooling.com/full"
+                    href="https://austincares.irl.group/full"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block text-sm font-bold no-underline px-7 py-3 rounded-full text-center transition-opacity hover:opacity-90"

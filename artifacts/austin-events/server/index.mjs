@@ -2,7 +2,7 @@ import http from "node:http";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { resolveSite, loadPublicModel, sitemap, publicApi, PLATFORM_ORIGIN } from "./public-model.mjs";
+import { resolveSite, legacyRedirectHost, loadPublicModel, sitemap, publicApi, PLATFORM_ORIGIN } from "./public-model.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const production = process.env.NODE_ENV === "production";
@@ -45,7 +45,10 @@ http.createServer(async (req, res) => {
   try {
     const requested = new URL(req.url, "http://public.invalid");
     const pathname = requested.pathname;
+    const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim();
     if (pathname === "/healthz") return send(res, 200, "text/plain", "ok");
+    const legacyHost = legacyRedirectHost(host);
+    if (legacyHost) return send(res, 301, "text/plain", "Moved", { Location: `https://${legacyHost}${req.url}` });
     if (pathname === "/index.html") return send(res, 301, "text/plain", "Moved", { Location: "/" });
     // Assets/Vite requests are handled separately from public document requests.
     if (pathname.startsWith("/assets/") || pathname.includes(".") && !["/robots.txt", "/sitemap.xml", "/sitemap-pages.xml"].includes(pathname) ||
@@ -57,12 +60,11 @@ http.createServer(async (req, res) => {
       try { return send(res, 200, mime[path.extname(asset)] || "application/octet-stream", await fs.readFile(asset), { "Cache-Control": pathname.startsWith("/assets/") ? "public, max-age=31536000, immutable" : "public, max-age=300" }); }
       catch { return send(res, 404, "text/plain", "Not found"); }
     }
-    const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim();
     const site = resolveSite(host, !production);
     if (!site) return send(res, 404, "text/plain", "Unknown site", { "X-Robots-Tag": "noindex" });
-    if (host.split(":")[0] === "www.eventcarpooling.com") return send(res, 301, "text/plain", "Moved", { Location: PLATFORM_ORIGIN + req.url });
+    if (host.split(":")[0] === "www.irl.group") return send(res, 301, "text/plain", "Moved", { Location: PLATFORM_ORIGIN + req.url });
     if (!site.slug && (/^\/digest\/\d+$/.test(pathname) || pathname === "/rsvp")) {
-      return send(res, 302, "text/plain", "Moved", { Location: "https://austin.eventcarpooling.com" + req.url, "X-Robots-Tag": pathname === "/rsvp" ? "noindex" : "all" });
+      return send(res, 302, "text/plain", "Moved", { Location: "https://austin.irl.group" + req.url, "X-Robots-Tag": pathname === "/rsvp" ? "noindex" : "all" });
     }
     if (pathname.length > 1 && pathname.endsWith("/")) return send(res, 301, "text/plain", "Moved", { Location: req.url.replace(/\/(?=\?|$)/, "") });
     if (pathname === "/robots.txt") {

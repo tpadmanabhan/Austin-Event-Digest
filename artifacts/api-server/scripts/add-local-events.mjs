@@ -6,7 +6,7 @@
 
 import { createHmac } from "crypto";
 
-const BASE = "https://{subdomain}.eventcarpooling.com";
+const BASE = "https://{subdomain}.irl.group";
 
 function adminToken(hash) {
   return createHmac("sha256", hash).update("admin-session").digest("hex");
@@ -380,7 +380,7 @@ const LOCAL_EVENTS = {
 // ── Core helpers ──────────────────────────────────────────────────────────────
 
 async function getCurrentEvents(subdomain, token, digestId) {
-  const url = `https://${subdomain}.eventcarpooling.com/api/events/digest/list`;
+  const url = `https://${subdomain}.irl.group/api/events/digest/list`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   const body = await res.json();
   const digests = body.digests ?? (Array.isArray(body) ? body : []);
@@ -389,7 +389,7 @@ async function getCurrentEvents(subdomain, token, digestId) {
 }
 
 async function patchDigest(subdomain, token, digestId, events) {
-  const url = `https://${subdomain}.eventcarpooling.com/api/events/digest/${digestId}/events`;
+  const url = `https://${subdomain}.irl.group/api/events/digest/${digestId}/events`;
   const res = await fetch(url, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -399,7 +399,7 @@ async function patchDigest(subdomain, token, digestId, events) {
 }
 
 async function triggerGeocode(subdomain, token, digestId) {
-  const url = `https://${subdomain}.eventcarpooling.com/api/events/digest/${digestId}/regeocoded`;
+  const url = `https://${subdomain}.irl.group/api/events/digest/${digestId}/regeocoded`;
   await fetch(url, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
 }
 

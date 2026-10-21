@@ -67,7 +67,7 @@ describe("Boston October 14–31 edition", () => {
   });
   it("keeps newsletter branding, readings and personalized RSVP links in parity", () => {
     const html = buildDigestEmailHtml({
-      ...edition, events, siteUrl: "https://boston.eventcarpooling.com",
+      ...edition, events, siteUrl: "https://boston.irl.group",
       digestId: 123, weekOf: edition.weekOf,
     }, "Reviewer", "reviewer@example.com", { slug: "boston", city: "Boston, MA", name: "Boston Events" });
     expect(html).toContain("Hey Boston!");
@@ -78,7 +78,7 @@ describe("Boston October 14–31 edition", () => {
     expect(html).toContain("AI Ethics");
     expect(html).toContain(BOSTON_AI_ETHICS_INTRO);
     expect(html).toContain("/rsvp?w=");
-    expect(html).toContain("https://boston.eventcarpooling.com");
+    expect(html).toContain("https://boston.irl.group");
     expect(html).not.toContain("Hey Austin");
     expect(html).not.toContain("Hey Miami");
     expect(html.replace(/<!--[\s\S]*?-->/g, "")).not.toContain("Coming Soon");

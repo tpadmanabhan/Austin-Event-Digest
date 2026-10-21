@@ -125,7 +125,7 @@ describe("retired public city creation", () => {
       const req = httpRequest(origin + "/api" + path, {
         method: options.body === undefined ? "GET" : "POST",
         headers: {
-          Host: options.host ?? "eventcarpooling.com",
+          Host: options.host ?? "irl.group",
           "Content-Type": "application/json",
           ...options.headers,
         },
@@ -169,6 +169,7 @@ describe("retired public city creation", () => {
   it.each([
     { host: "www.eventcarpooling.com", status: 410 },
     { host: "unrecognized.invalid", status: 410 },
+    { host: "austin.irl.group", status: 403 },
     { host: "austin.eventcarpooling.com", status: 403 },
     { host: "unreviewed.eventcarpooling.com", status: 404 },
     { host: "eventcarpooling.com", status: 410, headers: {
@@ -247,12 +248,12 @@ describe("retired public city creation", () => {
       ["managed", adminTokenForEmail("managed@example.invalid", 2)],
     ]) {
       const response = await request("/test-admin", {
-        host: `${slug}.eventcarpooling.com`, headers: { Authorization: `Bearer ${token}` },
+        host: `${slug}.irl.group`, headers: { Authorization: `Bearer ${token}` },
       });
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual({ authenticated: true });
     }
-    expect((await request("/test-admin", { host: "austin.eventcarpooling.com" })).status).toBe(401);
+    expect((await request("/test-admin", { host: "austin.irl.group" })).status).toBe(401);
     expect(mocks.rows[0]).toEqual(existingCity);
     expect(mocks.update).not.toHaveBeenCalled();
   });
@@ -269,7 +270,7 @@ describe("retired public city creation", () => {
     }));
     const response = await request(`/tenants/verify?slug=pending&token=${token("pending")}`);
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("https://pending.eventcarpooling.com/admin?verified=1");
+    expect(response.headers.get("location")).toBe("https://pending.irl.group/admin?verified=1");
     expect(mocks.rows[2]).toMatchObject({
       isActive: true, emailVerified: true, passwordHash: existingCity.passwordHash,
     });

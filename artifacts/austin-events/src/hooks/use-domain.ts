@@ -1,4 +1,4 @@
-const PLATFORM_DOMAIN = "eventcarpooling.com";
+const PLATFORM_DOMAIN = "irl.group";
 const DEV_DEFAULT_SLUG = (import.meta.env.VITE_TENANT_SLUG as string | undefined) ?? "austin";
 
 export interface DomainInfo {
@@ -16,7 +16,7 @@ export function useDomain(): DomainInfo {
   }
   const hostname = window.location.hostname;
 
-  if (hostname === PLATFORM_DOMAIN) {
+  if (hostname === PLATFORM_DOMAIN || hostname === `www.${PLATFORM_DOMAIN}`) {
     return { isPlatformRoot: true, citySlug: null };
   }
 

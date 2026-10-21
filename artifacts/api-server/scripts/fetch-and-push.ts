@@ -88,7 +88,7 @@ function dedupe(events: EventItem[]): EventItem[] {
 }
 
 async function getCurrentEvents(subdomain: string, token: string, digestId: number): Promise<EventItem[]> {
-  const res = await fetch(`https://${subdomain}.eventcarpooling.com/api/events/digest/list`, {
+  const res = await fetch(`https://${subdomain}.irl.group/api/events/digest/list`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const list = await res.json() as any[];
@@ -133,7 +133,7 @@ async function fetchEventsForCity(tenant: typeof TENANTS[0]): Promise<EventItem[
 }
 
 async function patchDigest(subdomain: string, token: string, digestId: number, events: EventItem[]): Promise<void> {
-  const res = await fetch(`https://${subdomain}.eventcarpooling.com/api/events/digest/${digestId}/events`, {
+  const res = await fetch(`https://${subdomain}.irl.group/api/events/digest/${digestId}/events`, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ events }),

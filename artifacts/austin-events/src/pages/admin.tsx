@@ -849,7 +849,7 @@ export default function AdminDashboard() {
             ) : (
               <a
                 key={city.slug}
-                href={`https://${city.slug}.eventcarpooling.com/admin`}
+                href={`https://${city.slug}.irl.group/admin`}
                 className="px-4 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-card/60 transition-colors"
               >
                 {city.label}
@@ -883,7 +883,7 @@ export default function AdminDashboard() {
                     <Plus className="w-4 h-4" /> Generate first digest
                   </Button>
                   <a
-                    href={`https://${tenant.slug}.eventcarpooling.com`}
+                    href={`https://${tenant.slug}.irl.group`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
@@ -1030,7 +1030,7 @@ export default function AdminDashboard() {
                   <Send className="w-4 h-4" /> Send test email
                 </Button>
                 <a
-                  href={`https://${tenant.slug}.eventcarpooling.com`}
+                  href={`https://${tenant.slug}.irl.group`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:border-green-500/40 transition-all"

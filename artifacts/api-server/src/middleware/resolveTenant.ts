@@ -8,7 +8,7 @@ import { logger } from "../lib/logger";
  * does not apply.  On these hosts the DEFAULT_TENANT_SLUG env var is used instead
  * so a single-host dev workflow routes to the right city without needing a real subdomain.
  *
- * Crucially, the production root domain (eventcarpooling.com) is NOT matched here, so
+ * Crucially, the production root domain (irl.group) is NOT matched here, so
  * DEFAULT_TENANT_SLUG is never active in production.
  */
 function isDevHost(hostname: string): boolean {
@@ -28,8 +28,8 @@ function isDevHost(hostname: string): boolean {
  *    Subdomain extraction is intentionally skipped on these hosts because Replit preview
  *    domains contain long UUID-like slugs that are not real city identifiers.
  * 3. Production hosts — extract the leading subdomain from the Host header.
- *    "austin.eventcarpooling.com" → "austin".
- *    Root domain "eventcarpooling.com" (no subdomain) returns null — platform-only.
+ *    "austin.irl.group" → "austin".
+ *    Root domain "irl.group" (no subdomain) returns null — platform-only.
  */
 function extractSlug(req: Request): string | null {
   // 1. Dev header override — never allowed in production
@@ -48,8 +48,8 @@ function extractSlug(req: Request): string | null {
   }
 
   // 3. Production: extract subdomain.
-  //    "eventcarpooling.com"        → 2 parts → null (root domain, no tenant)
-  //    "austin.eventcarpooling.com" → 3 parts → "austin"
+  //    "irl.group"        → 2 parts → null (root domain, no tenant)
+  //    "austin.irl.group" → 3 parts → "austin"
   const host = req.hostname.split(":")[0];
   const parts = host.split(".");
   if (parts.length >= 3 && parts[0] !== "www" && parts[0] !== "api") {
@@ -110,7 +110,7 @@ export function requireTenant(req: Request, res: Response, next: NextFunction): 
     res.status(404).json({
       error: "not_found",
       message:
-        "This endpoint requires a city subdomain (e.g. austin.eventcarpooling.com/api/...).",
+        "This endpoint requires a city subdomain (e.g. austin.irl.group/api/...).",
     });
     return;
   }
@@ -133,7 +133,7 @@ export function requirePlatformRoot(req: Request, res: Response, next: NextFunct
   if (req.tenant) {
     res.status(403).json({
       error: "forbidden",
-      message: "This endpoint is only available on the platform root domain (eventcarpooling.com).",
+      message: "This endpoint is only available on the platform root domain (irl.group).",
     });
     return;
   }

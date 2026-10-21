@@ -48,7 +48,7 @@ function CityNotFoundPage() {
           We don't have a newsletter for this city yet. Want to launch one?
         </p>
         <a
-          href={`https://eventcarpooling.com#launch`}
+          href={`https://irl.group#launch`}
           className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
         >
           Launch your city →

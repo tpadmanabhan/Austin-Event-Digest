@@ -21,7 +21,7 @@ async function fetchTile(z: number, x: number, y: number): Promise<Buffer | null
   try {
     const url = `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
     const res = await fetch(url, {
-      headers: { "User-Agent": "EventCarpooling/1.0 (eventcarpooling.com)" },
+      headers: { "User-Agent": "EventCarpooling/1.0 (irl.group)" },
       signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return null;

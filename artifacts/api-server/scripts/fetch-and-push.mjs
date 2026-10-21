@@ -332,7 +332,7 @@ async function fetchTicketmaster(tmCity, tz) {
 // ── Production API helpers ────────────────────────────────────────────────────
 async function getCurrentEvents(subdomain, token, digestId) {
   const res = await fetch(
-    `https://${subdomain}.eventcarpooling.com/api/events/digest/list`,
+    `https://${subdomain}.irl.group/api/events/digest/list`,
     { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(12000) }
   );
   const body = await res.json();
@@ -347,7 +347,7 @@ async function patchDigest(subdomain, token, digestId, events) {
     return;
   }
   const res = await fetch(
-    `https://${subdomain}.eventcarpooling.com/api/events/digest/${digestId}/events`,
+    `https://${subdomain}.irl.group/api/events/digest/${digestId}/events`,
     {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -365,7 +365,7 @@ async function triggerGeocode(subdomain, token, digestId) {
   if (DRY_RUN) return;
   try {
     const res = await fetch(
-      `https://${subdomain}.eventcarpooling.com/api/events/digest/${digestId}/regeocoded`,
+      `https://${subdomain}.irl.group/api/events/digest/${digestId}/regeocoded`,
       {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },

@@ -13,12 +13,12 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
       </p>
       <ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-slate-600">
         <li>
-          <a href="https://eventcarpooling.com/"
+          <a href="https://irl.group/"
             target="_blank" rel="noopener noreferrer"
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
             Rebuilding EventCarpooling.com for a better user experience
           </a>{" "}— I’m improving the site so finding local events feels clearer and easier.
-          {" "}<a href="https://eventcarpooling.com/"
+          {" "}<a href="https://irl.group/"
             target="_blank" rel="noopener noreferrer"
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
             Want an event page for your city?

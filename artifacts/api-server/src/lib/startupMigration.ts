@@ -1105,7 +1105,7 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Houston tenant seed failed (non-fatal)");
   }
 
-  // Los Angeles uses the explicit "la" slug for la.eventcarpooling.com.
+  // Los Angeles uses the explicit "la" slug for la.irl.group.
   // Do not invent an admin contact; hash only the configured shared password.
   try {
     const [existing] = await db.select({

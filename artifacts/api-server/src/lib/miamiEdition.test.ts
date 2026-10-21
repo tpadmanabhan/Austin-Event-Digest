@@ -49,7 +49,7 @@ describe("Miami October 14–31 edition", () => {
   });
   it("brands the newsletter for Miami and keeps the verified readings in sync", () => {
     const html = buildDigestEmailHtml({
-      ...edition, events, siteUrl: "https://miami.eventcarpooling.com",
+      ...edition, events, siteUrl: "https://miami.irl.group",
       digestId: 123, weekOf: edition.weekOf,
     }, null, null, { slug: "miami", city: "Miami, FL", name: "Miami Events", digestTitle: "Miami Events" });
     expect(html).toContain("October 14 – October 31, 2026");
@@ -74,7 +74,7 @@ describe("Miami October 14–31 edition", () => {
       startDate: "2027-03-14", endDate: "2027-03-28", timezone: "America/New_York",
     });
     const html = buildDigestEmailHtml({
-      ...edition, events, siteUrl: "https://miami.eventcarpooling.com", digestId: 123,
+      ...edition, events, siteUrl: "https://miami.irl.group", digestId: 123,
     }, null, null, { slug: "miami", city: "Miami, FL", name: "Miami Events" });
     expect(html).toContain("Join Novak, Coco, and me in Miami");
     expect(html).toContain("I’ll be attending");
@@ -89,7 +89,7 @@ describe("Miami October 14–31 edition", () => {
     for (const weekOf of [edition.weekOf, undefined]) {
       const html = buildDigestEmailHtml({
         ...edition, events, digestId: 123, weekOf: weekOf as any,
-        siteUrl: "https://miami.eventcarpooling.com",
+        siteUrl: "https://miami.irl.group",
       }, "Reviewer", "reviewer@example.com", { slug: "miami", city: "Miami, FL" });
       const feature = html.split("<!-- Miami curator-attended feature -->")[1].split("<!-- Featured Events -->")[0];
       expect(feature).toContain("✨ Interested?");

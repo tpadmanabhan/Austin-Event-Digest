@@ -111,7 +111,7 @@ export default function UnsubscribePage() {
                     {isTokyoJa ? (
                       <>いつでも再登録できます —{" "}<Link href="/" className="text-primary hover:underline">{JA.unsubscribeFootnoteLink}</Link></>
                     ) : (
-                      <>You can re-subscribe at any time by visiting{" "}<Link href="/" className="text-primary hover:underline">eventcarpooling.com</Link></>
+                      <>You can re-subscribe at any time by visiting{" "}<Link href="/" className="text-primary hover:underline">irl.group</Link></>
                     )}
                   </p>
                 </>
