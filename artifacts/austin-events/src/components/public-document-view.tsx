@@ -56,7 +56,7 @@ function Faq({ items }: { items: { q: string; a: string }[] }) {
 
 export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
   const { kind, event } = model;
-  const site = model.siteName || (model.citySlug ? "EventCarpooling" : "In Real Life");
+  const site = model.siteName || (model.cityName ? `${model.cityName} Events` : "IRL · In Real Life");
   const subscribe = `${model.homeUrl.replace(/#.*$/, "")}#subscribe`;
   const nav = (
     <nav aria-label="Site navigation" className="border-b border-slate-200 bg-slate-50">
@@ -157,7 +157,6 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           {model.editionUrl ? <a href={model.editionUrl} className={linkCls}>{`Read the full ${model.cityName || ""} edition`}</a> : null}
           <a href={subscribe} className={linkCls}>Subscribe to the newsletter</a>
         </p>
-        <Faq items={[{ q: "Does EventCarpooling arrange rides?", a: "No. Where enabled, digests offer carpool interest links so neighbors can signal interest. Rides are not booked or guaranteed." }]} />
       </>
     );
   } else if (kind === "platform") {

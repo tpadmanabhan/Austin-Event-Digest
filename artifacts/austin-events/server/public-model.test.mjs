@@ -228,7 +228,7 @@ test("every city sends its configured share image or platform fallback in the in
     la: "https://upload.wikimedia.org/wikipedia/commons/3/33/POINTDUME_CA6.jpg",
     miami: "/api/storage/public-objects/cities/miami/share.jpg",
     tokyo: "https://images.unsplash.com/photo-1480796927426-f609979314bd",
-    osaka: "/eventcarpooling-logo.png",
+    osaka: "/images/irl-open-graph.jpg",
   };
   for (const city of cities) {
     const host = `${city}.irl.group`;
@@ -278,10 +278,23 @@ test("platform and future city image fallbacks never borrow Austin's preview", a
   assert.equal(cityShareImage(null, "https://irl.group"),
     "https://irl.group/images/irl-open-graph.jpg");
   assert.equal(cityShareImage("futurecity", "https://futurecity.irl.group"),
-    "https://futurecity.irl.group/eventcarpooling-logo.png");
+    "https://futurecity.irl.group/images/irl-open-graph.jpg");
   assert.equal(cityShareImage("tokyo", "https://tokyo.irl.group").startsWith("https://images.unsplash.com/"), true);
   assert.equal(cityShareImage("portland", "https://preview.test", "/city-preview/"),
     "https://preview.test/city-preview/images/portland-hero.jpg");
+});
+test("all city landing pages and full editions omit carpooling references", async () => {
+  for (const city of cities) {
+    const paths = city === "austincares"
+      ? ["/", "/full"]
+      : ["/", `/digest/${fixture(city).id}`];
+    for (const pathname of paths) {
+      const { response, body } = await document(`${city}.irl.group`, pathname);
+      assert.equal(response.status, 200, `${city}${pathname}`);
+      const visibleHtml = body.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
+      assert.doesNotMatch(visibleHtml, /carpool|eventcarpooling/i, `${city}${pathname}`);
+    }
+  }
 });
 test("edition dates are readable and city labels do not repeat events", async () => {
   for (const pathname of ["/", `/digest/${fixture("austin").id}`]) {

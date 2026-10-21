@@ -203,7 +203,7 @@ export async function loadPublicModel(site, pathname) {
   const cityModel = { ...base, kind: digestMatch ? "digest" : site.slug === "austincares" ? "deals" : "city",
     noindex: false, title: site.slug === "austincares" ? "AustinCares — Local Deals & Free Services" : digestMatch && digest ? digest.subject : `${tenant.name} | Local Events & Community`,
     description: site.slug === "austincares" ? "Explore Austin-area curated offers, community-submitted deals, free services, and map-based local discovery." :
-      `Explore curated ${cityName} events, local newsletters, venues, and community activities. Learn about attendance and carpool-interest options where available.`,
+      `Explore curated ${cityName} events, local newsletters, venues, and community activities.`,
     intro: digest?.intro || `Explore local activities in ${cityName}. Subscribe on this city's homepage for new editions.`,
     weekOf: digest?.weekOf, editionRange: publicEditionRange(site.slug, digest?.subject), digestId: digest?.id, events,
     editionUrl: digest ? `/digest/${digest.id}` : undefined,

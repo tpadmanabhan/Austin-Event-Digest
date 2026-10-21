@@ -502,7 +502,7 @@ export default function DigestView() {
       {/* ANNOUNCEMENT BANNER */}
       {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && !isLA && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
-        <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
+        <span className="text-foreground/80">Build the local events guide for your city or neighborhood:</span>{" "}
         <a href="https://irl.group" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
           irl.group
         </a>

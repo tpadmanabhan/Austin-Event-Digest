@@ -35,14 +35,14 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     const title = isCares
       ? path === "/full" ? "Weekly Deals & Free Services | AustinCares" : "AustinCares — Food Deals & Free Services"
       : isAustin ? "Raj's Austin Events — Weekly Local Events"
-      : isAtlantaDigest ? "Atlanta Events — Full Weekly Edition | EventCarpooling"
-      : isAtlanta ? "Atlanta Events — A Local Guide for the Curious | EventCarpooling"
-      : isSF && path.startsWith("/digest/") ? "San Francisco Events — Full Edition, October 12–31 | EventCarpooling"
-      : isSF ? "San Francisco Events — Fog, Hills, and Plenty to Do | EventCarpooling"
-      : isLA && path.startsWith("/digest/") ? "Los Angeles Events — Full Edition | EventCarpooling"
-      : isLA ? "Los Angeles Events — Pacific Coast, Citywide | EventCarpooling"
-      : isHoustonDigest ? "Houston Events — Full Citywide Edition | EventCarpooling"
-      : isHouston ? "Houston Events — The Whole City. Your Next Plan. | EventCarpooling"
+      : isAtlantaDigest ? "Atlanta Events — Full Weekly Edition | IRL"
+      : isAtlanta ? "Atlanta Events — A Local Guide for the Curious | IRL"
+      : isSF && path.startsWith("/digest/") ? "San Francisco Events — Full Edition, October 12–31 | IRL"
+      : isSF ? "San Francisco Events — Fog, Hills, and Plenty to Do | IRL"
+      : isLA && path.startsWith("/digest/") ? "Los Angeles Events — Full Edition | IRL"
+      : isLA ? "Los Angeles Events — Pacific Coast, Citywide | IRL"
+      : isHoustonDigest ? "Houston Events — Full Citywide Edition | IRL"
+      : isHouston ? "Houston Events — The Whole City. Your Next Plan. | IRL"
       : `${tenant.name} | Local Events & Community`;
     const description = isCares
       ? "Find Austin-area food specials, free neighborhood services, health screenings and community resources, organized by day and location."

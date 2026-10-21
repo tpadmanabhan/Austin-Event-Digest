@@ -16,7 +16,7 @@ export function AiEthicsSection({ className = "" }: { className?: string }) {
           <a href="https://irl.group/"
             target="_blank" rel="noopener noreferrer"
             className="text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
-            Rebuilding EventCarpooling.com for a better user experience
+            Improving the local events guide for a better user experience
           </a>{" "}— I’m improving the site so finding local events feels clearer and easier.
           {" "}<a href="https://irl.group/"
             target="_blank" rel="noopener noreferrer"

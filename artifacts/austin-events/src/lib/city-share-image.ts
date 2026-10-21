@@ -25,7 +25,7 @@ export function cityShareImage(citySlug: string | null, origin: string, basePath
     return new URL(`${basePath.replace(/\/?$/, "/")}images/irl-open-graph.jpg`, origin).href;
   }
   const image = citySlug ? CITY_SHARE_IMAGES[citySlug] : undefined;
-  // New cities without an assigned illustration get the neutral platform logo, not Austin.
-  const path = image ?? "eventcarpooling-logo.png";
+  // New cities without an assigned illustration get the neutral IRL image, not Austin.
+  const path = image ?? "images/irl-open-graph.jpg";
   return new URL(/^https?:\/\//.test(path) ? path : `${basePath.replace(/\/?$/, "/")}${path}`, origin).href;
 }

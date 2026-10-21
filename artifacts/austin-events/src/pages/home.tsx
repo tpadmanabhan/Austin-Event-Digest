@@ -327,7 +327,7 @@ export default function Home() {
               Stay in the loop
             </DialogTitle>
             <DialogDescription>
-              Get notified when new features launch on EventCarpooling.com — carpooling tools, new city editions, and more.
+              Get notified when new features launch on IRL (In Real Life) — new city editions and more.
             </DialogDescription>
           </DialogHeader>
 
@@ -371,7 +371,7 @@ export default function Home() {
       {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && !isLA && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm flex items-center justify-center gap-3 flex-wrap">
         <span>
           <span className="font-semibold text-primary">Coming Soon:</span>{" "}
-          <span className="text-foreground/80">Become the events and carpooling person for your city or neighborhood:</span>{" "}
+          <span className="text-foreground/80">Build the local events guide for your city or neighborhood:</span>{" "}
           <a href="https://irl.group" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
             irl.group
           </a>
@@ -452,12 +452,12 @@ export default function Home() {
                     ? "ライブや展示、まちの集まりまで。大阪各地で今週楽しめるイベントを、主催者の情報とあわせて見つけやすくまとめます。"
                     : "From live stages and exhibitions to neighborhood gatherings, find worthwhile plans across Osaka, with links back to the people putting them on."
                   : tenant.slug === "austincares"
-                  ? `Check out a curated list of volunteer activities, school contests, movie nights, and fun activities for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!`
+                  ? `Check out a curated list of volunteer activities, school contests, movie nights, and fun activities for the week ahead (Sunday–Saturday).`
                   : isToky && lang === "ja"
                   ? JA.heroSubtext
                   : isOsaka && lang === "ja"
                   ? "大阪で今週開かれるイベントを、毎週ひとつずつ丁寧に選んでお届けします。気になる予定を見つけて、街へ出かけるきっかけに。"
-                  : `Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in ${cityShortName} for the week ahead (Sunday–Saturday). Carpooling functionality will be enabled with your trusted network!`}
+                  : `Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in ${cityShortName} for the week ahead (Sunday–Saturday).`}
               </p>
 
               <div className="mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl">

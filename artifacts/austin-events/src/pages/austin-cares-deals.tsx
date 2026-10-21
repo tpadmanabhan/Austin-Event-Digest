@@ -660,7 +660,7 @@ export default function AustinCaresDeals() {
         <div style={{ ...serif, fontWeight: 600, fontSize: 21, letterSpacing: "-0.01em", color: C.char, marginBottom: 6 }}>
           Austin<span style={{ color: C.rust }}>Cares</span>
         </div>
-        <div>Part of the EventCarpooling network — the best local deals, near you.</div>
+        <div>Part of IRL · In Real Life — local deals, right near you.</div>
       </footer>
 
       {/* Responsive override for biz grid */}
