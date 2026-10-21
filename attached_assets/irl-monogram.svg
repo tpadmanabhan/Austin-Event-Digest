@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">IRL — In Real Life</title>
+  <desc id="description">A warm off-white square with a deep green circular badge, white IRL lettering, and an orange sunrise accent.</desc>
+  <rect width="512" height="512" fill="#F8F8F2"/>
+  <circle cx="256" cy="256" r="184" fill="#204B3D"/>
+  <circle cx="374" cy="156" r="12" fill="#F39A4A"/>
+  <text
+    x="256"
+    y="282"
+    text-anchor="middle"
+    fill="#F8F8F2"
+    font-family="DejaVu Sans, Arial, Helvetica, sans-serif"
+    font-size="132"
+    font-weight="700"
+    letter-spacing="-8"
+  >IRL</text>
+  <text
+    x="256"
+    y="344"
+    text-anchor="middle"
+    fill="#F8F8F2"
+    font-family="DejaVu Sans, Arial, Helvetica, sans-serif"
+    font-size="19"
+    font-weight="600"
+    letter-spacing="4"
+  >IN REAL LIFE</text>
+</svg>

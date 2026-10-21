@@ -396,3 +396,31 @@ mtime_ms = 1792602274472
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/f47a90ea-643d-48a0-b82c-d38cb2394baa/c9f8c48b-c8c5-457e-9f61-872ac9873525"
 storage_version_token = "1792602557616374"
 content_type = "text/html"
+
+[[outputs]]
+id = "lviekDCZQGiRheMW4nf9z"
+uri = "file://attached_assets/irl-monogram.png"
+type = "image"
+title = "IRL logo concept — PNG"
+description = "A deep-green circular IRL mark with an orange accent and the words In Real Life."
+logical_id = "b183e016-b8d3-435f-bb8b-013a3dbe79fa"
+content_hash = "sha256:1304db134386ed75886b8fe757bd0173efca0b11e6a5e350d6fe58b64b8a9ed2"
+size = 225398
+mtime_ms = 1792610913042
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/b183e016-b8d3-435f-bb8b-013a3dbe79fa/569b68d5-c6e3-4a22-948f-f8d8ecd9ad65"
+storage_version_token = "1792610929158639"
+content_type = "image/png"
+
+[[outputs]]
+id = "wdrEk1vylR1_6jQ45zJM0"
+uri = "file://attached_assets/irl-monogram.svg"
+type = "image"
+title = "IRL logo concept — SVG"
+description = "Editable vector version of the IRL logo concept."
+logical_id = "7209c10e-7d8b-4a26-a868-66c4c25782e2"
+content_hash = "sha256:acd2e9b08609d57b62d522d281df9ff64ebecb0746b8e2829f849b0e99959b11"
+size = 901
+mtime_ms = 1792610904214
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/7209c10e-7d8b-4a26-a868-66c4c25782e2/ff76c457-f676-4ae2-b909-5795f17a0f68"
+storage_version_token = "1792610929952104"
+content_type = "image/svg+xml"
