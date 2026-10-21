@@ -1,6 +1,6 @@
 const SPOCK_SRC = `${import.meta.env.BASE_URL}images/spock-mascot.png`;
 
-export const SPOCK_ALT = "Spock, the small robot helper for the EventCarpooling team";
+export const SPOCK_ALT = "Spock, the small robot helper for the team";
 
 interface SpockImageProps {
   width?: number;

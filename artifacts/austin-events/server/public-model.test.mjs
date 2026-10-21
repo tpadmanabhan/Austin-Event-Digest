@@ -126,7 +126,7 @@ test("trusted extended editions expose their actual date range instead of a week
 test("the platform document is readable and has real city links without scripts running", async () => {
   const { response, body } = await document("eventcarpooling.com");
   assert.equal(response.status, 200);
-  assert.match(body, /Make room/);
+  assert.match(body, /Make room for the real\./);
   assert.match(body, /Suggest a city/);
   assert.match(body, /Local AI Ethics/);
   assert.match(body, /Intelligence with integrity/);
@@ -269,9 +269,14 @@ test("every city sends its configured share image or platform fallback in the in
 test("platform and future city image fallbacks never borrow Austin's preview", async () => {
   const { response, body } = await document("eventcarpooling.com");
   assert.equal(response.status, 200);
-  assert.match(body, /og:image" content="https:\/\/irl\.group\/eventcarpooling-logo\.png"/);
+  assert.match(body, /og:image" content="https:\/\/irl\.group\/images\/irl-open-graph\.jpg"/);
   assert.doesNotMatch(body, /<html[^>]+data-tenant="austin"/);
+  const ogImage = await document("eventcarpooling.com", "/images/irl-open-graph.jpg");
+  assert.equal(ogImage.response.status, 200);
+  assert.match(ogImage.response.headers.get("content-type"), /^image\/jpeg/);
   const { cityShareImage } = await import("../dist/server/entry-server.js");
+  assert.equal(cityShareImage(null, "https://irl.group"),
+    "https://irl.group/images/irl-open-graph.jpg");
   assert.equal(cityShareImage("futurecity", "https://futurecity.irl.group"),
     "https://futurecity.irl.group/eventcarpooling-logo.png");
   assert.equal(cityShareImage("tokyo", "https://tokyo.irl.group").startsWith("https://images.unsplash.com/"), true);

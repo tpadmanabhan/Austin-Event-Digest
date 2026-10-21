@@ -21,6 +21,9 @@ const CITY_SHARE_IMAGES: Record<string, string> = {
 };
 
 export function cityShareImage(citySlug: string | null, origin: string, basePath = "/") {
+  if (!citySlug) {
+    return new URL(`${basePath.replace(/\/?$/, "/")}images/irl-open-graph.jpg`, origin).href;
+  }
   const image = citySlug ? CITY_SHARE_IMAGES[citySlug] : undefined;
   // New cities without an assigned illustration get the neutral platform logo, not Austin.
   const path = image ?? "eventcarpooling-logo.png";

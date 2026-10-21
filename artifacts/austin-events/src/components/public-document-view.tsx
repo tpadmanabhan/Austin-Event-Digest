@@ -56,7 +56,7 @@ function Faq({ items }: { items: { q: string; a: string }[] }) {
 
 export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
   const { kind, event } = model;
-  const site = model.siteName || "EventCarpooling";
+  const site = model.siteName || (model.citySlug ? "EventCarpooling" : "In Real Life");
   const subscribe = `${model.homeUrl.replace(/#.*$/, "")}#subscribe`;
   const nav = (
     <nav aria-label="Site navigation" className="border-b border-slate-200 bg-slate-50">
@@ -163,12 +163,12 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
   } else if (kind === "platform") {
     body = (
       <>
-        <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">Event Newsletter in an Hour.</h1>
+        <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">Make room for the real.</h1>
         <p className="mt-3 text-lg text-slate-800">
-          Find local events, city newsletters and useful community resources. Browse a city edition or request one for your city; requests are reviewed by our team.
+          Discover worthwhile events, local stories, and city newsletters, and find a good reason to step out into your city.
         </p>
         <p className="mt-3 text-slate-700">
-          We can build custom Event Newsletters around your city’s voice and interests—like <a href="https://austin.irl.group" className={linkCls}>Raj’s Austin Events</a>.
+          Every edition has its own point of view. Explore the city directory to see what is happening near you, including <a href="https://austin.irl.group" className={linkCls}>Raj’s Austin Events</a>.
         </p>
         <h2 id="city-editions" className="mb-3 mt-8 font-serif text-2xl font-bold text-slate-900">City newsletters</h2>
         <ul className="space-y-2">
@@ -201,7 +201,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           </ul>
         </section>
         <section aria-labelledby="request-city-public" className="mt-8 border-t border-slate-200 pt-6">
-          <h2 id="request-city-public" className="font-serif text-2xl font-bold text-slate-900">Request your city</h2>
+          <h2 id="request-city-public" className="font-serif text-2xl font-bold text-slate-900">Suggest a city</h2>
           <p className="mt-2 text-slate-700">
             If your city is not listed, the interactive page lets you submit its name and your email address. The team reviews each request; submitting one does not automatically launch a city.
           </p>
@@ -233,7 +233,12 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
             <li key={c.slug}><a href={c.url} className={linkCls}>{publicCityLabel(c)}</a></li>
           ))}
         </ul>
-        <Faq items={[{ q: "Is this a ride service?", a: "No. EventCarpooling connects communities through local events and available carpool-interest tools; it does not book or guarantee rides." }]} />
+        <Faq items={[{
+          q: "Is this a ride service?",
+          a: model.citySlug
+            ? "No. EventCarpooling connects communities through local events and available carpool-interest tools; it does not book or guarantee rides."
+            : "No. In Real Life helps people discover local events and offers carpool-interest tools only where enabled; it does not book or guarantee rides.",
+        }]} />
       </>
     );
   } else {
