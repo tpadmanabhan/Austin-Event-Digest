@@ -370,6 +370,11 @@ test("legacy domain permanently redirects root and city hosts while preserving p
   const cityRedirect = await rawDocument("austin.eventcarpooling.com", "/digest/12?ref=old");
   assert.equal(cityRedirect.response.status, 301);
   assert.equal(cityRedirect.response.headers.get("location"), "https://austin.irl.group/digest/12?ref=old");
+  for (const slug of cities) {
+    const redirect = await rawDocument(`${slug}.eventcarpooling.com`, "/");
+    assert.equal(redirect.response.status, 301, `${slug} should permanently redirect`);
+    assert.equal(redirect.response.headers.get("location"), `https://${slug}.irl.group/`, `${slug} should redirect to its matching IRL host`);
+  }
   const assetRedirect = await rawDocument("tokyo.eventcarpooling.com", "/assets/app.js?v=2");
   assert.equal(assetRedirect.response.status, 301);
   assert.equal(assetRedirect.response.headers.get("location"), "https://tokyo.irl.group/assets/app.js?v=2");
