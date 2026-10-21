@@ -102,7 +102,7 @@ describe("AI Ethics reading section", () => {
     });
     expect(html).toContain("AI Ethics");
     const requestedItems = [
-      "Rebuilding EventCarpooling.com for a better user experience",
+      "Improving the local events guide for a better user experience",
       "Want an event page for your city?",
       "https://www.theatlantic.com/health/2026/10/community-builders/688947/",
       "https://luma.com/i1m74hz4",
@@ -149,6 +149,39 @@ describe("AI Ethics reading section", () => {
 // ── buildDigestEmailHtml ────────────────────────────────────────────────────
 
 describe("buildDigestEmailHtml — city branding isolation", () => {
+  it.each([
+    "austin",
+    "austincares",
+    "atlanta",
+    "boston",
+    "brushycreek",
+    "bulverde",
+    "dc",
+    "houston",
+    "la",
+    "miami",
+    "osaka",
+    "portland",
+    "sacramento",
+    "sanfrancisco",
+    "stlouis",
+    "tokyo",
+  ])("keeps legacy EventCarpooling and carpooling branding out of %s digest HTML", slug => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      siteUrl: `https://${slug}.irl.group`,
+    }, null, null, {
+      slug,
+      name: slug === "austincares" ? "Austin Cares" : `${slug} Events`,
+      city: slug === "austin" || slug === "austincares" ? "Austin, TX" : `${slug}, XX`,
+      digestTitle: null,
+    });
+
+    expect(html).toContain('href="https://irl.group" style="color:#78716c; text-decoration:underline;">IRL (In Real Life)</a>');
+    expect(html).not.toMatch(/eventcarpooling|carpool/i);
+    expect(html).not.toMatch(/eventcarpooling-logo\.(?:svg|png)/i);
+  });
+
   it("Austin digest contains 🤠 emoji and amber header color", () => {
     const html = buildDigestEmailHtml(
       baseDigest,

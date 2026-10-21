@@ -146,17 +146,6 @@ export function Layout({ children }: { children: ReactNode }) {
                 </button>
               )}
               <a
-                href="https://irl.group"
-                className="shrink-0 transition-opacity hover:opacity-80"
-              >
-                <img
-                  src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
-                  alt="EventCarpooling"
-                  className="h-8 w-auto object-contain"
-                />
-              </a>
-
-              <a
                 href="#subscribe"
                 className="hidden sm:inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0"
               >
@@ -251,13 +240,6 @@ export function Layout({ children }: { children: ReactNode }) {
                 © {new Date().getFullYear()} {tenant.name}. {isMiami ? "Curated along Biscayne Bay." : <>Handcrafted in {tenant.city.split(",")[0]}.</>}
               </p>
             </div>
-            <a href="https://irl.group" className="opacity-60 hover:opacity-90 transition-opacity">
-              <img
-                src={`${import.meta.env.BASE_URL}eventcarpooling-logo.svg`}
-                alt="Powered by EventCarpooling"
-                className="h-8 w-auto object-contain"
-              />
-            </a>
           </div>
         </div>
       </footer>
