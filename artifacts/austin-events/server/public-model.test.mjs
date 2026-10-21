@@ -126,14 +126,20 @@ test("trusted extended editions expose their actual date range instead of a week
 test("the platform document is readable and has real city links without scripts running", async () => {
   const { response, body } = await document("eventcarpooling.com");
   assert.equal(response.status, 200);
-  assert.match(body, /Event Newsletter in an Hour/);
-  assert.match(body, /Request your city/);
+  assert.match(body, /Make room/);
+  assert.match(body, /Suggest a city/);
   assert.match(body, /Local AI Ethics/);
   assert.match(body, /Intelligence with integrity/);
-  assert.match(body, /custom Event Newsletters/);
+  assert.match(body, /Every edition has its own point of view/);
   assert.match(body, /Raj’s Austin Events/);
   assert.match(body, /https:\/\/austincares\.irl\.group/);
+  assert.match(body, /<title>In Real Life \(IRL\) — Worthwhile things, close by<\/title>/);
+  assert.match(body, /<meta property="og:title" content="In Real Life \(IRL\) — Worthwhile things, close by">/);
+  assert.doesNotMatch(body, /EventCarpooling|eventcarpooling-logo/i);
   const model = modelOf(body);
+  assert.equal(model.title, "In Real Life (IRL) — Worthwhile things, close by");
+  assert.equal(model.schema.name, "In Real Life");
+  assert.equal(model.schema.alternateName, "IRL");
   assert.equal(model.cities[0].slug, "la");
   assert.equal(model.cities.length, 16);
   assert.ok(model.cities.every(city => city.url.startsWith("https://") && city.url.endsWith(".irl.group/")));
@@ -151,6 +157,8 @@ test("hydrated About pages do not hide their initial document behind an app hand
   const { response, body } = await document("eventcarpooling.com", "/about");
   assert.equal(response.status, 200);
   assert.match(body, /<div id="root"><div/);
+  assert.match(body, /<title>About In Real Life \| IRL<\/title>/);
+  assert.doesNotMatch(body, /EventCarpooling|eventcarpooling-logo/i);
   assert.doesNotMatch(body, /id="public-fallback"|id="public-app-loading"|data-public-boot/);
 });
 test("Spock's role and transparent mascot are in public platform and About HTML", async () => {

@@ -150,7 +150,7 @@ export async function loadPublicModel(site, pathname) {
   const tenants = listing?.tenants || [];
   const tenant = site.slug ? tenants.find(t => t.slug === site.slug) : null;
   const base = {
-    kind: "not-found", title: "Page not found | EventCarpooling", description: "This public page could not be found.",
+    kind: "not-found", title: "Page not found | In Real Life", description: "This public page could not be found.",
     canonical: origin + pathname, homeUrl: "/", events: [],
     cities: tenants.map(t => {
       const url = `https://${t.slug}.${PLATFORM_DOMAIN}/`;
@@ -174,11 +174,12 @@ export async function loadPublicModel(site, pathname) {
   const about = pathname === "/about";
   if (!site.slug) {
     if (pathname !== "/" && !about) return base;
+    const platformDescription = "A locally grounded guide to worthwhile city events and newsletters. Find something good nearby, then meet your city in person.";
     return { ...base, kind: about ? "about" : "platform", noindex: false,
-      title: about ? "About EventCarpooling" : "Event Newsletter in an Hour | EventCarpooling",
-      description: "Explore local and customized city newsletters, recently updated editions, AustinCares deals, and city-specific AI Ethics reading from EventCarpooling.",
-      intro: "Event Newsletter in an Hour.",
-      schema: { "@context": "https://schema.org", "@type": "WebSite", name: "EventCarpooling", url: PLATFORM_ORIGIN } };
+      title: about ? "About In Real Life | IRL" : "In Real Life (IRL) — Worthwhile things, close by",
+      description: platformDescription,
+      intro: "Make room for the real.",
+      schema: { "@context": "https://schema.org", "@type": "WebSite", name: "In Real Life", alternateName: "IRL", url: PLATFORM_ORIGIN, description: platformDescription } };
   }
   const cityName = tenant.city || tenant.name;
   Object.assign(base, { cityName, citySlug: site.slug, siteName: tenant.name });

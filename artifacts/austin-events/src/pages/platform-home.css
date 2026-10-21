@@ -1,3 +1,61 @@
+.irl-wordmark {
+  --irl-paper: #f3f0e5;
+  --irl-accent: #e3a16e;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: #25473c;
+  transition: transform .22s ease;
+}
+.irl-brand-link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.irl-brand-link:hover .irl-wordmark { transform: translateY(-2px); }
+.irl-brand-link:focus-visible {
+  outline: 3px solid #b46d4e;
+  outline-offset: 5px;
+}
+.irl-wordmark-mark { width: 45px; height: 45px; flex: 0 0 auto; }
+.irl-wordmark-type { display: flex; flex-direction: column; gap: 1px; }
+.irl-wordmark-name {
+  color: #28483d;
+  font: 22px/.98 "DM Serif Display", Georgia, serif;
+  letter-spacing: -.035em;
+}
+.irl-wordmark-initials {
+  color: #718278;
+  font: 700 8px/1.4 "DM Sans", sans-serif;
+  letter-spacing: .12em;
+  white-space: nowrap;
+}
+.irl-wordmark-initials i { padding: 0 3px; color: #b56c4e; font-style: normal; }
+.irl-wordmark-footer .irl-wordmark-mark { width: 52px; height: 52px; }
+.irl-wordmark-footer .irl-wordmark-name { font-size: 26px; }
+.irl-wordmark-footer .irl-wordmark-initials { font-size: 9px; }
+.platform-hero {
+  --irl-paper: #f3f0e5;
+  --irl-accent: #e3a16e;
+}
+.platform-hero .hero-kicker { color: #496b5d; }
+.platform-hero .hero-kicker .kicker-rule { background: #b56c4e; }
+.platform-hero .collage-stamp { box-shadow: 0 6px 22px rgba(60, 46, 35, .12); }
+.platform-hero .hero-copy h1 { text-wrap: balance; }
+.platform-hero .hero-copy h1 em { text-decoration: underline; text-decoration-color: #d7a98a; text-decoration-thickness: 2px; text-underline-offset: 7px; }
+.platform-hero .hero-actions .button-primary { box-shadow: 0 6px 16px rgba(49, 89, 75, .13); }
+.platform-hero .hero-actions .button-primary:active { transform: translateY(1px); }
+.platform-hero .hero-actions .button-quiet { padding: 10px 0; }
+.platform-hero .hero-baseline { color: #687b70; }
+.platform-hero .baseline-dot { background: #bd7859; }
+.platform-hero-ja .irl-wordmark-name { font-family: "Noto Serif JP", "DM Serif Display", serif; }
+header:has(.irl-wordmark) { border-color: #e3e4d8; background: rgba(250, 249, 243, .91); }
+header:has(.irl-wordmark) > div > div { min-height: 78px; }
+header:has(.irl-wordmark) nav > a[href="#launch"] { border-radius: 3px; box-shadow: 0 5px 15px rgba(49, 89, 75, .13); }
+footer:has(.irl-wordmark) { background: #f2f1e9; }
+footer:has(.irl-wordmark) .irl-wordmark { color: #25473c; }
+
 .platform-hero {
   --ink: #20332d;
   position: relative;
@@ -227,6 +285,13 @@
   .city-card-featured .city-card-main { height: 305px; }
 }
 @media (max-width: 680px) {
+  header:has(.irl-wordmark) > div > div { min-height: 66px; }
+  .irl-wordmark { gap: 8px; }
+  .irl-wordmark-mark { width: 37px; height: 37px; }
+  .irl-wordmark-name { font-size: 19px; }
+  .irl-wordmark-initials { font-size: 7px; }
+  .irl-wordmark-footer .irl-wordmark-mark { width: 44px; height: 44px; }
+  .irl-wordmark-footer .irl-wordmark-name { font-size: 22px; }
   .platform-hero { padding: 33px 20px 16px; }
   .platform-hero-inner { grid-template-columns: 1fr; gap: 8px; }
   .hero-copy { padding: 12px 0 0; }
@@ -274,4 +339,5 @@
 @media (prefers-reduced-motion: reduce) {
   .city-skeleton { animation: none; }
   .city-card, .city-card-photo, .button-primary { transition: none; }
+  .irl-wordmark, .irl-brand-link:hover .irl-wordmark { transition: none; transform: none; }
 }

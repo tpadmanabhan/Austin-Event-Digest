@@ -100,7 +100,7 @@ http.createServer(async (req, res) => {
     const body = privateRoute ? "" : module.render(model);
     const handoff = !privateRoute && !module.hydratesPublicDocument(model.kind);
     const pageBody = handoff
-      ? `<div id="public-fallback">${body}</div><div id="public-app-loading" role="status" aria-live="polite">Loading EventCarpooling…</div><div id="root"></div>`
+      ? `<div id="public-fallback">${body}</div><div id="public-app-loading" role="status" aria-live="polite">Loading In Real Life…</div><div id="root"></div>`
       : `<div id="root">${body}</div>`;
     // Share crawlers read this initial HTML without running client metadata effects.
     const image = model.event?.imageUrl || module.cityShareImage(site.slug, `https://${site.host}`);
@@ -112,6 +112,6 @@ http.createServer(async (req, res) => {
     // Log only the error classification, never signed query strings or credentials.
     console.error("Public document request failed", { code: error?.code || error?.name || "unknown" });
     // No stale fake edition or empty success response on a backend failure.
-    send(res, 503, "text/html", '<!doctype html><html lang="en"><head><title>Temporarily unavailable | EventCarpooling</title><meta name="robots" content="noindex"></head><body><h1>Temporarily unavailable</h1><p>Event information could not be loaded. Please try again shortly.</p></body></html>', { "Retry-After": "30", "Cache-Control": "no-store" });
+    send(res, 503, "text/html", '<!doctype html><html lang="en"><head><title>Temporarily unavailable | In Real Life</title><meta name="robots" content="noindex"></head><body><h1>Temporarily unavailable</h1><p>Event information could not be loaded. Please try again shortly.</p></body></html>', { "Retry-After": "30", "Cache-Control": "no-store" });
   }
 }).listen(Number(process.env.PORT || 3000), "0.0.0.0");
