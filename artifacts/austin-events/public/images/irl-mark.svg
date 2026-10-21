@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title">
+  <title id="title">IRL</title>
+  <circle cx="50" cy="50" r="47" fill="#204B3D"/>
+  <text x="50" y="59" text-anchor="middle" fill="#F8F8F2" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="31" font-weight="700" letter-spacing="-1.5">IRL</text>
+  <circle cx="76" cy="23" r="3.1" fill="#F39A4A"/>
+</svg>

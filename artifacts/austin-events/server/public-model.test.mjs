@@ -292,6 +292,7 @@ test("all city landing pages and full editions omit carpooling references", asyn
       const { response, body } = await document(`${city}.irl.group`, pathname);
       assert.equal(response.status, 200, `${city}${pathname}`);
       const visibleHtml = body.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
+      assert.match(visibleHtml, /src="\/images\/irl-monogram\.png"/, `${city}${pathname} IRL logo`);
       assert.doesNotMatch(visibleHtml, /carpool|eventcarpooling/i, `${city}${pathname}`);
     }
   }

@@ -177,6 +177,7 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
       digestTitle: null,
     });
 
+    expect(html).toContain('<img src="https://irl.group/images/irl-monogram.png" alt="IRL — In Real Life" width="88" height="88"');
     expect(html).toContain('href="https://irl.group" style="color:#78716c; text-decoration:underline;">IRL (In Real Life)</a>');
     expect(html).not.toMatch(/eventcarpooling|carpool/i);
     expect(html).not.toMatch(/eventcarpooling-logo\.(?:svg|png)/i);

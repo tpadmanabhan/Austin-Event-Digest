@@ -424,3 +424,17 @@ mtime_ms = 1792610904214
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/7209c10e-7d8b-4a26-a868-66c4c25782e2/ff76c457-f676-4ae2-b909-5795f17a0f68"
 storage_version_token = "1792610929952104"
 content_type = "image/svg+xml"
+
+[[outputs]]
+id = "ZiP-KUg3ld3d5rA06dlaA"
+uri = "file://generated-artifacts/IRL-Group-Project-Summary-2026-10-21.pdf"
+type = "pdf"
+title = "IRL.group Project Summary — October 21, 2026"
+description = "One-page PDF with current branding, verified production metrics, technical stack, and feature summary."
+logical_id = "c5b7d3a0-3beb-4521-97ae-e0f6b5382a4e"
+content_hash = "sha256:cec4fd0dda03b78d1fd17d468be470df54a544adb07bd82abf864c61d0e5bedf"
+size = 77187
+mtime_ms = 1792612148941
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/c5b7d3a0-3beb-4521-97ae-e0f6b5382a4e/74567405-8e51-42b6-b998-09782f408cb0"
+storage_version_token = "1792612177416085"
+content_type = "application/pdf"

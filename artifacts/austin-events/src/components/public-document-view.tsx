@@ -264,7 +264,20 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         )}
       </main>
       <footer className="border-t border-slate-200 py-6 text-center text-sm text-slate-600">
-        <a href={model.canonical} className={linkCls}>{site}</a>
+        <div className="flex flex-col items-center gap-3">
+          <a href="https://irl.group" aria-label="IRL — In Real Life">
+            <img
+              src="/images/irl-monogram.png"
+              alt="IRL — In Real Life"
+              width="84"
+              height="84"
+              loading="lazy"
+              decoding="async"
+              className="h-[84px] w-[84px] rounded-xl object-contain"
+            />
+          </a>
+          <a href={model.canonical} className={linkCls}>{site}</a>
+        </div>
       </footer>
     </div>
   );

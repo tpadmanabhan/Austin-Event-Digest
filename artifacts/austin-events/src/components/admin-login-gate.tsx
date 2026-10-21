@@ -243,6 +243,11 @@ export function AdminLoginGate({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center gap-4 mb-8">
+          <img
+            src={`${import.meta.env.BASE_URL}images/irl-mark.svg`}
+            alt="IRL — In Real Life"
+            className="h-12 w-12"
+          />
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
             {tenant.hasEmailAdmin ? <Mail className="h-7 w-7" /> : <Lock className="h-7 w-7" />}
           </div>

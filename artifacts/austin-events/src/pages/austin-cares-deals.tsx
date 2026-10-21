@@ -657,6 +657,15 @@ export default function AustinCaresDeals() {
 
       {/* ── FOOTER ── */}
       <footer style={{ padding: "38px 0", textAlign: "center", color: C.muted, fontSize: 13.5 }}>
+        <a href="https://irl.group" aria-label="IRL — In Real Life" style={{ display: "inline-block", marginBottom: 14 }}>
+          <img
+            src={`${import.meta.env.BASE_URL}images/irl-monogram.png`}
+            alt="IRL — In Real Life"
+            width={76}
+            height={76}
+            style={{ display: "block", width: 76, height: 76, borderRadius: 12 }}
+          />
+        </a>
         <div style={{ ...serif, fontWeight: 600, fontSize: 21, letterSpacing: "-0.01em", color: C.char, marginBottom: 6 }}>
           Austin<span style={{ color: C.rust }}>Cares</span>
         </div>

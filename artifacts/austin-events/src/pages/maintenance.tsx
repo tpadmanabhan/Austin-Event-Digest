@@ -66,12 +66,12 @@ export default function MaintenancePage() {
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: "18px", marginBottom: "56px" }}>
           <img
-            src="/eventcarpooling-logo.png"
-            alt="EventCarpooling"
-            style={{ width: "96px", height: "96px", borderRadius: "50%", objectFit: "cover", boxShadow: "0 4px 16px rgba(0,0,0,0.22)" }}
+            src={`${import.meta.env.BASE_URL}images/irl-monogram.png`}
+            alt="IRL — In Real Life"
+            style={{ width: "96px", height: "96px", borderRadius: "12px", objectFit: "contain", boxShadow: "0 4px 16px rgba(0,0,0,0.22)" }}
           />
           <span style={{ fontSize: "32px", fontWeight: "700", color: "#1a3a5c", letterSpacing: "-0.5px" }}>
-            EventCarpooling
+            In Real Life
           </span>
         </div>
 

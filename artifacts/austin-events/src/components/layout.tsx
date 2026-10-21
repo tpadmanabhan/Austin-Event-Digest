@@ -105,7 +105,8 @@ export function Layout({ children }: { children: ReactNode }) {
                   <span className="font-serif text-sm font-bold leading-none tracking-tight text-foreground">
                     {isOsaka && lang === "ja" ? "大阪のイベント" : tenant.name}
                   </span>
-                  <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/30 px-2 py-0.5 leading-none">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/30 px-2 py-0.5 leading-none">
+                    <img src={`${import.meta.env.BASE_URL}images/irl-mark.svg`} alt="" aria-hidden="true" className="h-4 w-4" />
                     <span className="text-[10px] italic text-primary" style={{ fontFamily: '"DM Serif Display", serif', letterSpacing: '0.01em' }}>
                       In Real Life
                     </span>
@@ -240,6 +241,15 @@ export function Layout({ children }: { children: ReactNode }) {
                 © {new Date().getFullYear()} {tenant.name}. {isMiami ? "Curated along Biscayne Bay." : <>Handcrafted in {tenant.city.split(",")[0]}.</>}
               </p>
             </div>
+            <a href="https://irl.group" aria-label="IRL — In Real Life" className="rounded-xl transition-opacity hover:opacity-100">
+              <img
+                src={`${import.meta.env.BASE_URL}images/irl-monogram.png`}
+                alt="IRL — In Real Life"
+                width={72}
+                height={72}
+                className="h-16 w-16 rounded-xl object-contain"
+              />
+            </a>
           </div>
         </div>
       </footer>

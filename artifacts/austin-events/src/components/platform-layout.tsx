@@ -9,11 +9,7 @@ import { Input } from "@/components/ui/input";
 function IrlWordmark({ footer = false }: { footer?: boolean }) {
   return (
     <span className={`irl-wordmark${footer ? " irl-wordmark-footer" : ""}`} aria-label="In Real Life, IRL">
-      <svg className="irl-wordmark-mark" viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M24 3.5a20.5 20.5 0 1 0 20.5 20.5A20.5 20.5 0 0 0 24 3.5Z" fill="currentColor" />
-        <path d="M14 31V17h3.2l6.8 8.4V17h3.1v14h-3l-7-8.7V31H14Zm16.4 0V17h3.3v11.1H40V31h-9.6Z" fill="var(--irl-paper)" />
-        <circle cx="37" cy="13" r="3" fill="var(--irl-accent)" />
-      </svg>
+      <img className="irl-wordmark-mark" src={`${import.meta.env.BASE_URL}images/irl-mark.svg`} alt="" aria-hidden="true" />
       <span className="irl-wordmark-type">
         <span className="irl-wordmark-name">In Real Life</span>
         <span className="irl-wordmark-initials">IRL <i aria-hidden="true">/</i> CITY NOTES &amp; GATHERINGS</span>

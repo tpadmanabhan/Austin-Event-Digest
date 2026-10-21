@@ -1289,6 +1289,9 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Footer -->
     <div style="border-top:1px solid #e7e5e4; padding-top:20px; margin-top:24px; text-align:center;">
+      <a href="https://irl.group" aria-label="IRL — In Real Life" style="display:inline-block; margin:0 auto 8px;">
+        <img src="https://irl.group/images/irl-monogram.png" alt="IRL — In Real Life" width="88" height="88" style="display:block; width:88px; height:88px; margin:0 auto;" />
+      </a>
       <p style="margin:0 0 6px; color:#78716c; font-size:13px;">${theme.curatorName ? `Curated with ❤️ by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}${slug === "portland" ? " from Portland, OR" : slug === "sacramento" ? " from Sacramento, CA" : slug === "bulverde" ? " from Bulverde, TX" : slug === "stlouis" ? " from St. Louis, MO" : slug === "tokyo" ? " from Tokyo, Japan" : " from Austin, TX"}` : slug === "tokyo" ? "Curated with ❤️ from Tokyo, Japan" : `Curated with ❤️ for ${escapeHtml(cityName)}`}</p>
       <p style="margin:0 0 16px; color:#a8a29e; font-size:12px;">You're receiving this because you subscribed at ${escapeHtml(theme.digestDisplayName)}.</p>
       <p style="margin:0 0 8px; color:#a8a29e; font-size:12px;"><a href="https://irl.group" style="color:#78716c; text-decoration:underline;">IRL (In Real Life)</a></p>
