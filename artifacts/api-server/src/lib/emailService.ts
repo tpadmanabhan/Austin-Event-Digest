@@ -247,6 +247,41 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 </html>`;
   }
 
+  if (tenant?.slug === "manchester") {
+    const firstName = name?.trim() ? escapeHtml(name.trim()) : "there";
+    const markUrl = `${siteUrl}/images/manchester-mark.svg`;
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're subscribed — ${escapeHtml(digestName)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f3ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:580px;margin:0 auto;padding:32px 16px;">
+    <div style="background:linear-gradient(135deg,#17323f 0%,#285265 58%,#A64B32 100%);border-radius:20px;padding:32px 28px;margin-bottom:20px;text-align:center;">
+      <img src="${escapeHtml(markUrl)}" alt="Manchester worker bee" width="54" height="54" style="display:block;margin:0 auto 12px;width:54px;height:54px;" />
+      <p style="margin:0 0 8px;color:#f4c15d;font-size:11px;font-weight:800;letter-spacing:2px;">IN REAL LIFE</p>
+      <h1 style="margin:0;color:#f8f3ea;font-size:26px;font-weight:800;">${escapeHtml(digestName)}</h1>
+      <p style="margin:8px 0 0;color:#d8c9b8;font-size:14px;">Manchester, England · IRL.group</p>
+    </div>
+    <div style="background:#ffffff;border:1px solid #e7ded2;border-radius:16px;padding:30px;margin-bottom:16px;">
+      <p style="margin:0 0 14px;color:#17323f;font-size:17px;font-weight:700;">You're subscribed, ${firstName}.</p>
+      <p style="margin:0 0 14px;color:#44403c;font-size:15px;line-height:1.75;">Your Manchester edition brings together worthwhile local plans across Tech, Arts, Sports, Civics and Wellness. Each listing links to its organizer so you can check current details before heading out.</p>
+      <p style="margin:0 0 24px;color:#44403c;font-size:15px;line-height:1.75;">Choose a plan, meet people there, and enjoy the city in real life.</p>
+      <div style="text-align:center;">
+        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#A64B32;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:100px;">Explore Manchester →</a>
+      </div>
+    </div>
+    <div style="text-align:center;padding:4px 0 16px;">
+      <p style="margin:0 0 8px;color:#78716c;font-size:13px;">Local plans. Real people. In Real Life.</p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">Subscribed via <a href="${escapeHtml(siteUrl)}" style="color:#78716c;">manchester.irl.group</a> — <a href="${escapeHtml(unsubUrl)}" style="color:#78716c;">unsubscribe anytime</a></p>
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
   // Per-city header theme for the welcome email
   const isAustin = !tenant?.slug || tenant.slug === "austin";
   const welcomeHeaderGradient = isAustin
@@ -563,11 +598,11 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const slug = tenant?.slug;
-  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento" || slug === "miami" || slug === "boston" || slug === "la"
-    ? digest.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s*(?:to|[-–—])\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
+  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento" || slug === "miami" || slug === "boston" || slug === "la" || slug === "manchester"
+    ? digest.subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s*(?:to|[-–—])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),\s*(\d{4})\s*$/i)
     : null;
   const editionRange = editionRangeMatch
-    ? `${editionRangeMatch[1]} – ${editionRangeMatch[2]}`
+    ? `${editionRangeMatch[1]} ${editionRangeMatch[2]} – ${editionRangeMatch[3] || editionRangeMatch[1]} ${editionRangeMatch[4]}, ${editionRangeMatch[5]}`
     : null;
   const cityName = tenant?.city?.split(",")[0] ?? "Austin";
   const greeting = `Hey ${cityName}!`;
@@ -712,6 +747,28 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(27,94,168,0.35)",
     rideBtnBg: "#1B5EA8",
     rideBtnColor: "#fff",
+  } : slug === "manchester" ? {
+    headerGradient: "linear-gradient(135deg, #17323f 0%, #285265 55%, #A64B32 100%)",
+    primary: "#A64B32",
+    primaryBtn: "#A64B32",
+    primaryDark: "#17323f",
+    primaryLight: "#f5e9e1",
+    primaryMuted: "#edc4ad",
+    textOnDark: "#f8f3ea",
+    textMutedOnDark: "#d8c9b8",
+    textStrong: "#ffffff",
+    linkColor: "#9A432D",
+    curatorName: "",
+    curatorUrl: null as string | null,
+    cityGuideText: "Your Manchester guide to the people, ideas and events worth showing up for",
+    digestDisplayName: tenant?.digestTitle || "Manchester Events",
+    headerEmoji: "",
+    eventBtnColor: "#A64B32",
+    eventBtnBorder: "#A64B32",
+    pillText: "rgba(248,243,234,0.92)",
+    pillBorder: "rgba(244,193,93,0.4)",
+    rideBtnBg: "#f4c15d",
+    rideBtnColor: "#17323f",
   } : slug === "osaka" ? {
     headerGradient: "linear-gradient(135deg, #10282a 0%, #0D5659 55%, #1B8A83 100%)",
     primary: "#0D7377",
@@ -1134,6 +1191,7 @@ export function buildDigestEmailHtml(digest: {
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
       ${slug === "houston" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/houston-astros.png", digest.siteUrl).toString() : "https://www.mlbstatic.com/team-logos/117.svg")}" alt="Houston Astros logo" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       ${slug === "la" ? `<table role="presentation" align="center" width="60" height="60" cellpadding="0" cellspacing="0" border="0" style="width:60px; height:60px; margin:0 auto 12px; border-collapse:collapse;"><tr><td align="center" valign="middle" width="54" height="54" style="width:54px; height:54px; border:3px solid #ffffff; border-radius:50%; background-color:#FDB927; color:#552583; text-align:center; vertical-align:middle; font-family:Arial,sans-serif; font-size:22px; font-weight:900; line-height:1;"><span role="img" aria-label="Los Angeles brand mark" style="display:inline-block; font-family:Arial,sans-serif; font-size:22px; font-weight:900; letter-spacing:-2px; line-height:1; vertical-align:middle;">LA</span></td></tr></table>` : ""}
+      ${slug === "manchester" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/manchester-mark.svg", digest.siteUrl).toString() : "https://manchester.irl.group/images/manchester-mark.svg")}" alt="Manchester worker bee" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:${theme.textOnDark}; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:${theme.textOnDark};">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
       <div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
         <div style="display:inline-block; background:${theme.primaryBtn}; border-radius:6px; padding:2px 8px;">

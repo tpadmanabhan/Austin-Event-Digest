@@ -7,7 +7,7 @@ export const LEGACY_DOMAIN = "eventcarpooling.com";
 export const PLATFORM_ORIGIN = `https://${PLATFORM_DOMAIN}`;
 const EXTENDED_RANGE_CITIES = new Set([
   "austin", "atlanta", "houston", "tokyo", "sanfrancisco", "sacramento",
-  "miami", "boston", "la", "stlouis", "portland", "bulverde", "dc",
+  "miami", "boston", "la", "stlouis", "portland", "bulverde", "dc", "manchester",
 ]);
 const MONTHS = new Map([
   ["jan", 0], ["feb", 1], ["mar", 2], ["apr", 3], ["may", 4], ["jun", 5],

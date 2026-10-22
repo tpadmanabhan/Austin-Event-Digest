@@ -547,6 +547,55 @@
   object-position: center 57%;
 }
 
+[data-tenant="manchester"] {
+  --background: 36 27% 96%;
+  --foreground: 204 34% 15%;
+  --border: 33 21% 83%;
+  --input: 33 21% 83%;
+  --card: 38 35% 99%;
+  --card-foreground: 204 34% 15%;
+  --card-border: 33 21% 83%;
+  --popover: 38 35% 99%;
+  --popover-foreground: 204 34% 15%;
+  --popover-border: 33 21% 83%;
+  --primary: 15 53% 42%;
+  --primary-foreground: 36 27% 96%;
+  --secondary: 198 36% 23%;
+  --secondary-foreground: 36 27% 96%;
+  --muted: 34 20% 90%;
+  --muted-foreground: 204 15% 38%;
+  --accent: 42 85% 62%;
+  --accent-foreground: 204 34% 15%;
+  --sidebar: 36 27% 94%;
+  --sidebar-foreground: 204 34% 15%;
+  --sidebar-border: 33 21% 83%;
+  --sidebar-primary: 15 53% 42%;
+  --sidebar-primary-foreground: 36 27% 96%;
+  --sidebar-accent: 34 20% 90%;
+  --sidebar-accent-foreground: 204 34% 15%;
+  --sidebar-ring: 15 53% 42%;
+}
+[data-tenant="manchester"] .manchester-home-hero {
+  background:
+    radial-gradient(ellipse at 85% 8%, hsl(42 85% 62% / .2), transparent 40%),
+    linear-gradient(145deg, hsl(36 27% 96%), hsl(35 28% 91%));
+}
+[data-tenant="manchester"] .manchester-home-hero h1 { letter-spacing: -.045em; }
+[data-tenant="manchester"] .manchester-hero-frame {
+  position: relative;
+  padding: 10px;
+  background: hsl(198 36% 23%);
+  border-radius: 1.5rem;
+  box-shadow: 18px 22px 0 -10px hsl(15 53% 42% / .42), 0 24px 70px hsl(204 34% 15% / .18);
+  overflow: hidden;
+}
+[data-tenant="manchester"] .manchester-hero-frame img {
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: none;
+  object-position: center 58%;
+}
+
 @layer base {
   * {
     @apply border-border;

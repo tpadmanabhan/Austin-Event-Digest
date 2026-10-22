@@ -1,0 +1,138 @@
+{
+  "weekOf": "2026-10-22",
+  "subject": "Manchester Events — October 22–31, 2026",
+  "intro": "Manchester’s October 22–31 guide brings together an open Manchester AI community evening, live football, a Northern Quarter literary conversation, Halloween across the city centre, a community-sector digital gathering and two Saturday parkruns. Check each organizer’s current registration, access and schedule details before setting out. Manchester Craft and Design Centre is the business spotlight, and Mustard Tree is the community spotlight. The AI Ethics reading list draws on Greater Manchester research into public participation and responsible AI.",
+  "events": [
+    {
+      "title": "Claire Lynch & Claire Adam",
+      "category": "Arts",
+      "date": "Friday, Oct 23 at 6:30 PM BST",
+      "venue": "Waterstones Deansgate, Manchester",
+      "description": "Manchester Literature Festival hosts award-winning writers Claire Lynch and Claire Adam for a conversation about their novels, mothers and daughters, hidden truths and choices across generations. Tickets are listed at £10 / £8; check the festival page for availability and booking details.",
+      "link": "https://manchesterliteraturefestival.co.uk/events/claire-lynch-claire-adam",
+      "source": "Manchester Literature Festival official event listing",
+      "startDate": "2026-10-23T18:30:00+01:00",
+      "timezone": "Europe/London"
+    },
+    {
+      "title": "South Manchester parkrun",
+      "category": "Wellness",
+      "date": "Saturday, Oct 24 at 9:00 AM BST",
+      "venue": "Platt Fields Park, Fallowfield, Manchester",
+      "description": "A free weekly 5K: walk, jog, run, volunteer or spectate. Register with parkrun before your first visit and bring a scannable barcode if you want a result. Check the official page for course details and any cancellation notice.",
+      "link": "https://www.parkrun.org.uk/southmanchester/",
+      "source": "South Manchester parkrun official event page",
+      "startDate": "2026-10-24T09:00:00+01:00",
+      "timezone": "Europe/London"
+    },
+    {
+      "title": "Halloween in the City Weekender",
+      "category": "Arts",
+      "date": "Saturday–Sunday, Oct 24–25; 10:00 AM–6:00 PM Saturday and 10:00 AM–5:00 PM Sunday",
+      "venue": "Manchester city centre — events across multiple locations",
+      "description": "Free family events across Manchester city centre, with live performances, fancy-dress fun, storytelling, spooky DJs and a monster procession. The official schedule lists Saturday 10 AM–6 PM and Sunday 10 AM–5 PM; check the event map and FAQs for locations and updates. Times are local to Manchester (BST Saturday; GMT Sunday after the clock change).",
+      "link": "https://www.visitmanchester.com/halloween-in-the-city/",
+      "source": "Visit Manchester official Halloween in the City 2026 programme",
+      "startDate": "2026-10-24T10:00:00+01:00",
+      "endDate": "2026-10-25T17:00:00Z",
+      "timezone": "Europe/London"
+    },
+    {
+      "title": "MCR Monsters",
+      "category": "Arts",
+      "date": "Saturday, Oct 24–Saturday, Oct 31",
+      "venue": "Manchester city centre — programme locations vary",
+      "description": "The MCR Monsters mark their tenth birthday with Halloween-themed activities across the city. Visit Manchester lists the programme from October 24 through October 31; consult the official listing for individual activity times and locations.",
+      "link": "https://www.visitmanchester.com/event/mcr-monsters/53878101/",
+      "source": "Visit Manchester official event listing",
+      "startDate": "2026-10-24",
+      "endDate": "2026-10-31",
+      "timezone": "Europe/London",
+      "lat": 53.48442,
+      "lng": -2.24273
+    },
+    {
+      "title": "Manchester United v AFC Bournemouth",
+      "category": "Sports",
+      "date": "Sunday, Oct 25 at 2:00 PM GMT",
+      "venue": "Old Trafford, Manchester",
+      "description": "Manchester United’s Premier League home fixture against AFC Bournemouth. The club lists a 2:00 PM local kick-off at Old Trafford; check the official match centre for ticket and broadcast information.",
+      "link": "https://www.manutd.com/en/matches/mens-team/manchester-united-v-afc-bournemouth-premier-league-20261025",
+      "source": "Manchester United official fixture listing",
+      "startDate": "2026-10-25T14:00:00Z",
+      "timezone": "Europe/London"
+    },
+    {
+      "title": "The Haunting of Hill House",
+      "category": "Arts",
+      "date": "Tuesday, Oct 27–Saturday, Oct 31; performance times vary",
+      "venue": "Palace Theatre, Oxford Street, Manchester M1 6FT",
+      "description": "A stage adaptation of Shirley Jackson’s novel, presented at the Palace Theatre. Visit the venue’s ticket page for the performance schedule, current availability and age guidance.",
+      "link": "https://www.atgtickets.com/shows/the-haunting-of-hill-house/palace-theatre-manchester/",
+      "source": "Visit Manchester and Palace Theatre listing",
+      "startDate": "2026-10-27",
+      "endDate": "2026-10-31",
+      "timezone": "Europe/London",
+      "lat": 53.47842,
+      "lng": -2.25028
+    },
+    {
+      "title": "Context, Retrieval & Compromised Agents",
+      "category": "Tech",
+      "date": "Wednesday, Oct 28 at 5:45 PM GMT",
+      "venue": "Accenture, No. 2 Circle Square, 1 Symphony Park, Manchester M1 7FS",
+      "venueAddress": "No. 2 Circle Square, 1 Symphony Park, Manchester M1 7FS",
+      "description": "Manchester AI hosts two hands-on talks: one on visual intelligence and semantic retrieval, and one on how compromised AI agents can retain access. The organizer asks attendees to register in advance, complete its post-RSVP security form and bring photo ID. Check Meetup for current availability and entry instructions.",
+      "link": "https://www.meetup.com/manchester-ai/events/316976981/",
+      "source": "Manchester AI official Meetup event page",
+      "startDate": "2026-10-28T17:45:00Z",
+      "endDate": "2026-10-28T20:30:00Z",
+      "timezone": "Europe/London",
+      "lat": 53.472656,
+      "lng": -2.238959
+    },
+    {
+      "title": "Community Matters: Canva Get Together",
+      "category": "Civics",
+      "date": "Thursday, Oct 29 at 10:30 AM GMT",
+      "venue": "Online",
+      "description": "A free, informal online session for charity-sector people interested in using Canva for visual design. There is no fixed agenda; participants share questions and tips. Register through Manchester Community Central’s event page.",
+      "link": "https://manchestercommunitycentral.org/support-groups/training-and-events/community-matters-canva-get-together",
+      "source": "Manchester Community Central official event page",
+      "startDate": "2026-10-29T10:30:00Z",
+      "endDate": "2026-10-29T11:30:00Z",
+      "timezone": "Europe/London"
+    },
+    {
+      "title": "South Manchester parkrun",
+      "category": "Wellness",
+      "date": "Saturday, Oct 31 at 9:00 AM GMT",
+      "venue": "Platt Fields Park, Fallowfield, Manchester",
+      "description": "A free weekly 5K: walk, jog, run, volunteer or spectate. Register with parkrun before your first visit and bring a scannable barcode if you want a result. Check the official page for course details and any cancellation notice.",
+      "link": "https://www.parkrun.org.uk/southmanchester/",
+      "source": "South Manchester parkrun official event page",
+      "startDate": "2026-10-31T09:00:00Z",
+      "timezone": "Europe/London"
+    },
+    {
+      "title": "Manchester Craft and Design Centre",
+      "category": "Arts",
+      "date": "Business spotlight — check current opening hours",
+      "venue": "Northern Quarter, Manchester",
+      "description": "A charitable creative space in the Northern Quarter, with independent makers’ studios and a programme supporting craft, design and creative careers. Check the centre’s site for current opening hours and visitor information.",
+      "link": "https://www.craftanddesign.com/about-us",
+      "source": "Manchester Craft and Design Centre official About page",
+      "isBusinessSpotlight": true
+    },
+    {
+      "title": "Mustard Tree",
+      "category": "Civics",
+      "date": "Community spotlight — explore current services",
+      "venue": "Manchester and Salford",
+      "description": "A local charity working to improve economic wellbeing and help people find settled homes through community shops, training placements, support services, gifting schemes, vocational training and creative classes. Check its site for current services, locations and ways to help.",
+      "link": "https://mustardtree.org.uk/about-us",
+      "source": "Mustard Tree official About page",
+      "isPost": true
+    }
+  ]
+}

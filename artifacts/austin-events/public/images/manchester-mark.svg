@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Manchester worker bee mark</title>
+  <circle cx="32" cy="32" r="31" fill="#173847"/>
+  <g fill="none" stroke="#f4c15d" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+    <path d="M23 23c-5-7-12-7-15-3 4 6 9 8 16 7M41 23c5-7 12-7 15-3-4 6-9 8-16 7"/>
+    <path d="M20 31c-5 2-7 5-8 9 5 1 9 0 13-3M44 31c5 2 7 5 8 9-5 1-9 0-13-3"/>
+    <path d="m25 29 7-6 7 6v13l-7 7-7-7z"/>
+    <path d="M25 34h14M25 39h14M32 23v26M23 30l-6-4M41 30l6-4"/>
+  </g>
+  <circle cx="32" cy="16" r="2" fill="#f4c15d"/>
+</svg>

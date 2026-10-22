@@ -281,6 +281,43 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).not.toContain("Happy Sunday, Austin");
   });
 
+  it("Manchester digest and welcome emails use Manchester and IRL.group branding", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      subject: "Manchester Events — October 22–31, 2026",
+      weekOf: "2026-10-22",
+      siteUrl: "https://manchester.irl.group",
+      events: [{
+        title: "Manchester AI community evening",
+        date: "Wednesday, October 28, 2026 at 5:45 PM GMT",
+        venue: "Manchester",
+        description: "A local technology meetup.",
+        category: "Tech",
+      }],
+    }, null, null, {
+      slug: "manchester", name: "Manchester Events", city: "Manchester, England",
+      digestTitle: "Manchester Events",
+    });
+
+    expect(html).toContain("October 22 – October 31, 2026");
+    expect(html).toContain("#A64B32");
+    expect(html).toContain("manchester.irl.group/images/manchester-mark.svg");
+    expect(html).toContain("Greater Manchester People’s Panel for AI");
+    expect(html).toContain("https://irl.group");
+    expect(html).not.toContain("🤠");
+    expect(html).not.toContain("Happy Sunday, Austin");
+
+    const welcome = buildWelcomeEmailHtml("Sam", {
+      slug: "manchester", name: "Manchester Events", city: "Manchester, England",
+      digestTitle: "Manchester Events",
+    }, "sam@example.com");
+    expect(welcome).toContain("manchester.irl.group");
+    expect(welcome).toContain("Manchester worker bee");
+    expect(welcome).toContain("unsubscribe?email=sam%40example.com");
+    expect(welcome).toContain("In Real Life");
+    expect(welcome).not.toContain("🤠");
+  });
+
   it("translates Japanese-city email events without shifting missing translations", async () => {
     mockOpenAIComplete.mockResolvedValueOnce({
       choices: [{

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Manchester city at dusk</title>
+  <desc id="desc">A warm industrial-era Manchester skyline with brick mills, a modern tower and a golden worker bee.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102c3c"/>
+      <stop offset=".58" stop-color="#315263"/>
+      <stop offset="1" stop-color="#bf7650"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4c15d" stop-opacity=".65"/>
+      <stop offset="1" stop-color="#f4c15d" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="windows" width="52" height="66" patternUnits="userSpaceOnUse">
+      <rect x="13" y="13" width="15" height="24" rx="2" fill="#f2bd62" opacity=".74"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <circle cx="1260" cy="235" r="200" fill="url(#glow)"/>
+  <circle cx="1260" cy="235" r="98" fill="#f4c15d" opacity=".76"/>
+  <path d="M0 690 176 632l111 36 178-105 115 52 174-122 156 63 193-145 143 64 174-102 180 82v545H0z" fill="#203d49" opacity=".55"/>
+  <path d="M0 775h1600v225H0z" fill="#172f3b"/>
+  <g fill="#a54e36">
+    <path d="M70 510h210v300H70zM95 438h160v72H95zM123 370h18v68h-18zM212 370h18v68h-18z"/>
+    <path d="M295 580h235v230H295zM320 510h185v70H320zM350 438h18v72h-18zM453 438h18v72h-18z"/>
+    <path d="M520 462h280v348H520zM555 390h210v72H555zM587 310h20v80h-20zM704 310h20v80h-20z"/>
+    <path d="M825 565h188v245H825zM850 492h138v73H850zM878 420h18v72h-18zM951 420h18v72h-18z"/>
+    <path d="M1055 495h224v315h-224zM1086 412h162v83h-162zM1112 335h18v77h-18zM1200 335h18v77h-18z"/>
+    <path d="M1316 610h210v200h-210zM1346 536h150v74h-150zM1375 466h18v70h-18zM1450 466h18v70h-18z"/>
+  </g>
+  <g fill="url(#windows)" opacity=".93">
+    <path d="M70 510h210v300H70zM295 580h235v230H295zM520 462h280v348H520zM825 565h188v245H825zM1055 495h224v315h-224zM1316 610h210v200h-210z"/>
+  </g>
+  <g fill="#17323f">
+    <path d="M0 805h1600v195H0z"/>
+    <path d="m0 858 225-45 180 42 179-35 218 54 224-40 222 34 214-44 138 32v144H0z" fill="#102a36"/>
+  </g>
+  <g transform="translate(1290 610)" fill="none" stroke="#f4c15d" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-61-45c-31-42-70-42-89-19 27 36 56 46 94 37M61-45c31-42 70-42 89-19-27 36-56 46-94 37" stroke-width="8"/>
+    <path d="M-78 2c-30 13-42 33-47 58 32 6 58-1 82-22M78 2c30 13 42 33 47 58-32 6-58-1-82-22" stroke-width="8"/>
+    <path d="m-48-20 48-39 48 39v90L0 80l-48-10zM-48 5h96M-48 35h96M0-59v139" stroke-width="8"/>
+    <path d="m-60-10-43-28m163 28 43-28M0-95v-32" stroke-width="7"/>
+  </g>
+  <rect width="1600" height="1000" fill="#102c3c" opacity=".08"/>
+</svg>

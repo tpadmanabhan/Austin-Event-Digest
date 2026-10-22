@@ -96,6 +96,31 @@
       }
     }
   },
+  "manchester": {
+    "city": "Manchester",
+    "eyebrow": "READING LIST / GREATER MANCHESTER",
+    "intro": "Greater Manchester has a locally developed model for putting residents—especially people often left out of technology decisions—in the room with researchers and businesses. These readings connect that public participation work to practical questions for the region’s AI builders: who gets to challenge a system, whose experience shapes it, and who remains accountable when it is used.",
+    "readings": [
+      {
+        "title": "Greater Manchester People’s Panel for AI: Building Trust and Giving People a Voice",
+        "source": "Manchester Metropolitan University",
+        "href": "https://www.mmu.ac.uk/sites/default/files/2023-04/People%27s%20Panel%20for%20AI%20v2%20final.pdf",
+        "note": "A case-study booklet about Greater Manchester residents questioning AI research and products, and the changes that followed."
+      },
+      {
+        "title": "Greater Manchester SME perspectives on current practices and future regulation of artificial intelligence",
+        "source": "Manchester Metropolitan University and Greater Manchester AI Foundry",
+        "href": "https://www.mmu.ac.uk/sites/default/files/2022-06/MMU-Opportunities-and-Challenges-Ethical-AI-Final.pdf",
+        "note": "Research on how small and medium-sized businesses in Greater Manchester approach responsible AI and the challenges they face."
+      },
+      {
+        "title": "The AI Con: How to Fight Big Tech’s Hype and Create the Future We Want",
+        "source": "Emily M. Bender and Alex Hanna · HarperCollins",
+        "href": "https://www.harpercollins.com/products/the-ai-con-emily-m-benderalex-hanna",
+        "note": "A critical account of AI industry claims that helps readers ask whose interests, labor and evidence are represented when systems are adopted."
+      }
+    ]
+  },
   "stlouis": {
     "city": "St. Louis",
     "eyebrow": "READING LIST / ST. LOUIS",
