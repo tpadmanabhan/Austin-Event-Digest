@@ -146,6 +146,31 @@
       }
     ]
   },
+  "dallas": {
+    "city": "Dallas",
+    "eyebrow": "READING LIST / DALLAS",
+    "intro": "A March 2025 City of Dallas committee briefing describes its AI plan around governance, applications and staff preparation. It says the City remains responsible for model outputs—especially when resources or benefits are allocated—and recommends human review and transparency. Read the briefing alongside the City’s current technology-accountability reporting and independent research on bias in automated systems.",
+    "readings": [
+      {
+        "title": "Update on Artificial Intelligence: City AI Plan, Governance and Best Practices",
+        "source": "City of Dallas · Government Performance and Financial Management Committee, March 2025",
+        "href": "https://dallascityhall.com/government/citymanager/Documents/Council%20Materials/C.%20Update%20on%20AI%20City%20AI%20Plan.pdf",
+        "note": "The committee briefing outlines the City’s AI-plan priorities, discusses risks including bias, and recommends human oversight and transparency. It is a briefing, not a claim that every recommendation has become a binding citywide policy."
+      },
+      {
+        "title": "Technology Accountability Report — August 2026",
+        "source": "City of Dallas Information and Technology Services",
+        "href": "https://dallascityhall.com/government/citymanager/Documents/FY25-26%20Memos/Technology%20Accountability%20Report%20-%20August%202026.pdf",
+        "note": "The City’s report describes the status of technology purchasing, implementation, operations and security through August 31, 2026. It provides local oversight context; it is not an AI-specific policy."
+      },
+      {
+        "title": "Race After Technology: Abolitionist Tools for the New Jim Code",
+        "source": "Ruha Benjamin · Polity",
+        "href": "https://www.politybooks.com/bookdetail?book_slug=race-after-technology-abolitionist-tools-for-the-new-jim-code--9781509526390",
+        "note": "A research-based look at how technologies that appear neutral can hide or deepen discrimination—a useful lens for considering automated systems in public services."
+      }
+    ]
+  },
   "stlouis": {
     "city": "St. Louis",
     "eyebrow": "READING LIST / ST. LOUIS",

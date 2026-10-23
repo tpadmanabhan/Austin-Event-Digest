@@ -7,7 +7,7 @@ export const LEGACY_DOMAIN = "eventcarpooling.com";
 export const PLATFORM_ORIGIN = `https://${PLATFORM_DOMAIN}`;
 const EXTENDED_RANGE_CITIES = new Set([
   "austin", "atlanta", "houston", "tokyo", "sanfrancisco", "sacramento",
-  "miami", "boston", "la", "stlouis", "portland", "bulverde", "dc", "manchester", "nyc",
+  "miami", "boston", "la", "stlouis", "portland", "bulverde", "dc", "manchester", "nyc", "dallas",
 ]);
 const MONTHS = new Map([
   ["jan", 0], ["feb", 1], ["mar", 2], ["apr", 3], ["may", 4], ["jun", 5],
@@ -134,7 +134,7 @@ export function eventSchema(event, origin) {
 
 import cityAiEthicsData from "../../../shared/city-ai-ethics.json" with { type: "json" };
 
-const PLATFORM_CITY_ORDER = ["nyc", "manchester", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
+const PLATFORM_CITY_ORDER = ["nyc", "dallas", "manchester", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
 const CITY_ETHICS_RESOURCES = {
   la: { url: "https://ita.lacity.gov/news/ita-publishes-ai-safety-checklist", title: "L.A. A.I. Safety Checklist" },
   boston: { url: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", title: "Boston’s generative AI policy" },
@@ -143,6 +143,7 @@ const CITY_ETHICS_RESOURCES = {
   sacramento: { url: "https://www.nist.gov/itl/ai-risk-management-framework", title: "NIST AI Risk Management Framework" },
   miami: { url: "https://algorithmsofoppression.com/about/", title: "Algorithms of Oppression" },
   nyc: { url: "https://www.nyc.gov/content/oti/pages/artificial-intelligence", title: "New York City AI policy and guidance" },
+  dallas: { url: "https://dallascityhall.com/government/citymanager/Documents/Council%20Materials/C.%20Update%20on%20AI%20City%20AI%20Plan.pdf", title: "Dallas AI Plan and governance briefing" },
 };
 
 export async function loadPublicModel(site, pathname) {
@@ -159,8 +160,8 @@ export async function loadPublicModel(site, pathname) {
         const localEthics = cityAiEthicsData[t.slug];
       return {
         slug: t.slug, name: t.name || t.city, url,
-          ethicsUrl: localEthics ? `${url}#city-ai-ethics` : ethics?.url || url,
-          ethicsTitle: localEthics ? `${localEthics.city} AI Ethics reading list` : ethics?.title || `Explore the ${t.city || t.name} edition for local updates`,
+          ethicsUrl: t.slug === "dallas" ? ethics?.url : localEthics ? `${url}#city-ai-ethics` : ethics?.url || url,
+          ethicsTitle: t.slug === "dallas" ? ethics?.title : localEthics ? `${localEthics.city} AI Ethics reading list` : ethics?.title || `Explore the ${t.city || t.name} edition for local updates`,
       };
     }).sort((a, b) => {
       const rank = slug => {

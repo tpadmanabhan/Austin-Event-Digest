@@ -367,8 +367,17 @@ export async function geocodeEvents(
       result.push({ ...event, lat: null, lng: null });
       continue;
     }
+    if (citySlug === "dallas" && [
+      "Homes across the Dallas–Fort Worth area",
+      "Dallas area",
+    ].includes(venueName)) {
+      result.push({ ...event, lat: null, lng: null });
+      continue;
+    }
     const address = typeof event["venueAddress"] === "string" ? event["venueAddress"].trim() : "";
-    const venue = citySlug === "boston" && address ? `${venueName}, ${address}` : venueName;
+    const venue = (citySlug === "boston" || citySlug === "dallas") && address
+      ? `${venueName}, ${address}`
+      : venueName;
 
     // Skip events with no venue; but for events that already have coordinates,
     // still validate them against city bounds when a slug is provided — this

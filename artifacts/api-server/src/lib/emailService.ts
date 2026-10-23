@@ -317,6 +317,41 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 </html>`;
   }
 
+  if (tenant?.slug === "dallas") {
+    const firstName = name?.trim() ? escapeHtml(name.trim()) : "there";
+    const markUrl = `${siteUrl}/images/dallas-mark.svg`;
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're subscribed — ${escapeHtml(digestName)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f7f3e9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:580px;margin:0 auto;padding:32px 16px;">
+    <div style="background:linear-gradient(135deg,#123b43 0%,#174b54 58%,#a94f35 100%);border-radius:20px;padding:32px 28px;margin-bottom:20px;text-align:center;">
+      <img src="${escapeHtml(markUrl)}" alt="Dallas skyline mark" width="58" height="58" style="display:block;margin:0 auto 12px;width:58px;height:58px;" />
+      <p style="margin:0 0 8px;color:#e6b451;font-size:11px;font-weight:800;letter-spacing:2px;">IN REAL LIFE</p>
+      <h1 style="margin:0;color:#f7f3e9;font-size:26px;font-weight:800;">${escapeHtml(digestName)}</h1>
+      <p style="margin:8px 0 0;color:#e8d5bb;font-size:14px;">Dallas &amp; North Texas · IRL.group</p>
+    </div>
+    <div style="background:#ffffff;border:1px solid #e6dfd0;border-radius:16px;padding:30px;margin-bottom:16px;">
+      <p style="margin:0 0 14px;color:#123b43;font-size:17px;font-weight:700;">You're subscribed, ${firstName}.</p>
+      <p style="margin:0 0 14px;color:#44403c;font-size:15px;line-height:1.75;">Your Dallas edition brings together local plans across Dallas and North Texas, with links to organizers so you can confirm current details.</p>
+      <p style="margin:0 0 24px;color:#44403c;font-size:15px;line-height:1.75;">Find something worth showing up for, meet people there, and enjoy the city in real life.</p>
+      <div style="text-align:center;">
+        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#a94f35;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:100px;">Explore Dallas →</a>
+      </div>
+    </div>
+    <div style="text-align:center;padding:4px 0 16px;">
+      <p style="margin:0 0 8px;color:#78716c;font-size:13px;">Local plans. Real people. In Real Life.</p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">Subscribed via <a href="${escapeHtml(siteUrl)}" style="color:#78716c;">dallas.irl.group</a> — <a href="${escapeHtml(unsubUrl)}" style="color:#78716c;">unsubscribe anytime</a></p>
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
   // Per-city header theme for the welcome email
   const isAustin = !tenant?.slug || tenant.slug === "austin";
   const welcomeHeaderGradient = isAustin
@@ -633,7 +668,7 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const slug = tenant?.slug;
-  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento" || slug === "miami" || slug === "boston" || slug === "la" || slug === "manchester" || slug === "nyc"
+  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento" || slug === "miami" || slug === "boston" || slug === "la" || slug === "manchester" || slug === "nyc" || slug === "dallas"
     ? digest.subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s*(?:to|[-–—])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),\s*(\d{4})\s*$/i)
     : null;
   const editionRange = editionRangeMatch
@@ -804,6 +839,17 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(244,196,91,0.45)",
     rideBtnBg: "#f4c45b",
     rideBtnColor: "#102b3a",
+  } : slug === "dallas" ? {
+    headerGradient: "linear-gradient(135deg, #123b43 0%, #174b54 58%, #a94f35 100%)",
+    primary: "#a94f35", primaryBtn: "#a94f35", primaryDark: "#123b43",
+    primaryLight: "#f7f3e9", primaryMuted: "#e6b451",
+    textOnDark: "#f7f3e9", textMutedOnDark: "#e8d5bb", textStrong: "#123b43",
+    linkColor: "#174b54", curatorName: "", curatorUrl: null as string | null,
+    cityGuideText: "Your October guide to Dallas and North Texas",
+    digestDisplayName: tenant?.digestTitle || "Dallas Events", headerEmoji: "",
+    eventBtnColor: "#a94f35", eventBtnBorder: "#a94f35",
+    pillText: "#f7f3e9", pillBorder: "rgba(230,180,81,0.5)",
+    rideBtnBg: "#e6b451", rideBtnColor: "#123b43",
   } : slug === "manchester" ? {
     headerGradient: "linear-gradient(135deg, #17323f 0%, #285265 55%, #A64B32 100%)",
     primary: "#A64B32",
@@ -1059,7 +1105,7 @@ export function buildDigestEmailHtml(digest: {
     Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
   };
 
-  const eventTimezone = slug === "la" || slug === "sanfrancisco" || slug === "sacramento" ? "America/Los_Angeles" : slug === "atlanta" || slug === "miami" || slug === "boston" ? "America/New_York" : "America/Chicago";
+  const eventTimezone = slug === "manchester" ? "Europe/London" : slug === "la" || slug === "sanfrancisco" || slug === "sacramento" ? "America/Los_Angeles" : slug === "nyc" || slug === "atlanta" || slug === "miami" || slug === "boston" ? "America/New_York" : "America/Chicago";
 
   function parseSortKey(dateStr: string): number {
     const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
@@ -1249,6 +1295,7 @@ export function buildDigestEmailHtml(digest: {
       ${slug === "houston" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/houston-astros.png", digest.siteUrl).toString() : "https://www.mlbstatic.com/team-logos/117.svg")}" alt="Houston Astros logo" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       ${slug === "la" ? `<table role="presentation" align="center" width="60" height="60" cellpadding="0" cellspacing="0" border="0" style="width:60px; height:60px; margin:0 auto 12px; border-collapse:collapse;"><tr><td align="center" valign="middle" width="54" height="54" style="width:54px; height:54px; border:3px solid #ffffff; border-radius:50%; background-color:#FDB927; color:#552583; text-align:center; vertical-align:middle; font-family:Arial,sans-serif; font-size:22px; font-weight:900; line-height:1;"><span role="img" aria-label="Los Angeles brand mark" style="display:inline-block; font-family:Arial,sans-serif; font-size:22px; font-weight:900; letter-spacing:-2px; line-height:1; vertical-align:middle;">LA</span></td></tr></table>` : ""}
       ${slug === "nyc" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/nyc-mark.svg", digest.siteUrl).toString() : "https://nyc.irl.group/images/nyc-mark.svg")}" alt="New York City mark" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
+      ${slug === "dallas" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/dallas-mark.svg", digest.siteUrl).toString() : "https://dallas.irl.group/images/dallas-mark.svg")}" alt="Dallas skyline mark" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       ${slug === "manchester" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/manchester-mark.svg", digest.siteUrl).toString() : "https://manchester.irl.group/images/manchester-mark.svg")}" alt="Manchester worker bee" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:${theme.textOnDark}; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:${theme.textOnDark};">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
       <div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
@@ -1300,7 +1347,7 @@ export function buildDigestEmailHtml(digest: {
     </div>` : ""}
 
     <!-- AustinCares Launch Promo (other established city newsletters) -->
-    ${slug !== "austincares" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" ? `
+    ${slug !== "austincares" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
     <div style="background:${slug === "austin" ? "linear-gradient(135deg,#fff8ed 0%,#f8f2e8 54%,#edf7f0 100%)" : "linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%)"}; border:${slug === "austin" ? "1.5px solid #ead7ba" : "none"}; border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
       <p style="margin:0 0 6px; color:${slug === "austin" ? "#a45b22" : "#fbbf24"}; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ New · Austin Cares</p>
       <p style="margin:0 0 10px; color:${slug === "austin" ? "#3f392f" : "#ffffff"}; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
@@ -1321,7 +1368,7 @@ export function buildDigestEmailHtml(digest: {
     ${buildStaticMapSection(cleanDigestEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
 
     <!-- Coming Soon: New Features -->
-    ${slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" ? `
+    ${slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <!-- Badge -->
       <div style="display:inline-block; background:${slug === "austin" ? "rgba(47,133,90,0.10)" : "rgba(255,255,255,0.12)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.22)" : "rgba(255,255,255,0.2)"}; border-radius:100px; padding:5px 14px; margin-bottom:16px;">

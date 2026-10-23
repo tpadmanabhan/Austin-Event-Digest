@@ -380,6 +380,47 @@ describe("known-venue lookup table", () => {
     expect(mockExecute).not.toHaveBeenCalled();
   });
 
+  it("resolves Dallas venues from their verified names and supplied addresses", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+
+    const events = [
+      { venue: "Fireside Recreation Center", venueAddress: "8601 Fireside, Dallas, TX 75217" },
+      { venue: "Pumpkin Village, Dallas Arboretum", venueAddress: "8525 Garland Road, Dallas, TX 75218" },
+      { venue: "City Park (Old City Park)", venueAddress: "1515 S. Harwood St., Dallas, TX 75215" },
+      { venue: "Kay Bailey Hutchison Convention Center", venueAddress: "650 S Griffin Street, Dallas, TX 75202" },
+      { venue: "PM Lounge", venueAddress: "2918 N Henderson Avenue, Dallas, TX 75206" },
+      { venue: "Samuell (East) Farm, Mesquite", venueAddress: "100 US-80, Mesquite, TX 75149" },
+      { venue: "Deep Vellum Books", venueAddress: "3000 Commerce Street, Dallas, TX 75226" },
+    ];
+
+    const result = await geocodeEvents(events, "dallas");
+
+    expect(result.map(event => [event["lat"], event["lng"]])).toEqual([
+      [32.6979820, -96.6716750],
+      [32.8232490, -96.7168709],
+      [32.7738412, -96.7859749],
+      [32.7739782, -96.8017506],
+      [32.8205088, -96.7847409],
+      [32.7851501, -96.5877509],
+      [32.7836138, -96.7802134],
+    ]);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+    expect(mockExecute).not.toHaveBeenCalled();
+  });
+
+  it("clears stale pins from Dallas-wide listings with no single venue", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+
+    const result = await geocodeEvents([
+      { venue: "Homes across the Dallas–Fort Worth area", lat: 32.9980105, lng: -96.7620799 },
+      { venue: "Dallas area", lat: 32.9980105, lng: -96.7620799 },
+    ], "dallas");
+
+    expect(result.map(event => [event["lat"], event["lng"]])).toEqual([[null, null], [null, null]]);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+    expect(mockExecute).not.toHaveBeenCalled();
+  });
+
   it("normalizes 'The', apostrophes, and case when matching", async () => {
     vi.stubGlobal("fetch", vi.fn());
 

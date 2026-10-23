@@ -17,12 +17,13 @@ interface TenantSummary {
   categories: string[];
 }
 
-const LIVE_CITY_ORDER = ["nyc", "manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
+const LIVE_CITY_ORDER = ["nyc", "dallas", "manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
 const cityUrl = (slug: string) => `https://${slug}.irl.group`;
 const publicImage = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
 
 const CITY_DIRECTORY = [
   { slug: "nyc", name: "New York City Events", city: "New York City", image: publicImage("nyc-hero-photo.jpg"), alt: "New York skyline at blue hour viewed across the East River" },
+  { slug: "dallas", name: "Dallas Events", city: "Dallas", image: publicImage("dallas-hero.jpg"), alt: "Dallas skyline at dusk" },
   { slug: "manchester", name: "Manchester Events", city: "Manchester, England", image: publicImage("manchester-hero.svg"), alt: "Illustrated Manchester skyline at dusk with a golden worker bee" },
   { slug: "osaka", name: "Osaka Events", city: "Osaka", image: publicImage("osaka-hero.jpg"), alt: "Dotonbori canal and evening lights in Osaka" },
   { slug: "la", name: "Los Angeles Events", city: "Los Angeles", image: LA_HERO_IMAGE_URL, alt: "Pacific Ocean at Point Dume near Los Angeles" },
@@ -47,6 +48,7 @@ const ETHICS_RESOURCES: Record<string, { href: string; label: string; jaLabel: s
   osaka: { href: "https://www.city.osaka.lg.jp/ictsenryakushitsu/page/0000675810.html", label: "Osaka City AI Utilization Basic Policy", jaLabel: "大阪市AI活用基本方針" },
   manchester: { href: "https://www.mmu.ac.uk/research/projects/gm-people-panel-ai", label: "Greater Manchester People’s Panel for AI", jaLabel: "Greater Manchester People’s Panel for AI" },
   nyc: { href: "https://www.nyc.gov/content/oti/pages/artificial-intelligence", label: "New York City AI policy and guidance", jaLabel: "ニューヨーク市のAI方針とガイダンス" },
+  dallas: { href: "https://dallascityhall.com/government/citymanager/Documents/Council%20Materials/C.%20Update%20on%20AI%20City%20AI%20Plan.pdf", label: "Dallas AI Plan and governance briefing", jaLabel: "ダラス市のAI計画とガバナンスに関する説明資料" },
   austin: { href: "https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/", label: "AI Doesn’t Solve This", jaLabel: "AI Doesn’t Solve This" },
   sacramento: { href: "https://www.nist.gov/itl/ai-risk-management-framework", label: "NIST AI Risk Management Framework", jaLabel: "NIST AIリスクマネジメント・フレームワーク" },
   miami: { href: "https://algorithmsofoppression.com/about/", label: "Algorithms of Oppression", jaLabel: "Algorithms of Oppression" },
@@ -76,7 +78,7 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
     ? lang === "ja" ? reading.jaLabel : reading.label
     : copy.cityExplore.replace("{city}", cityName);
   return (
-      <article className={`city-card group ${city.slug === "nyc" ? "city-card-featured" : ""}`}>
+      <article className={`city-card group ${city.slug === "nyc" ? "city-card-featured" : ""} ${city.slug === "dallas" ? "city-card-dallas" : ""}`}>
       <a className="city-card-main" href={cityUrl(city.slug)} target="_blank" rel="noopener noreferrer" aria-label={lang === "ja" ? `${displayName}を見る` : `Visit ${city.name}`}>
         {city.image ? (
           <img className="city-card-photo" src={city.image} alt={japaneseCity?.alt ?? city.alt ?? ""} loading="lazy" />
@@ -84,6 +86,7 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
           <div className="city-card-placeholder" aria-hidden="true"><MapPin size={21} strokeWidth={1.6} /></div>
         )}
         <span className="city-card-shade" aria-hidden="true" />
+        {city.slug === "dallas" && <span className="city-card-badge" aria-hidden="true">NEW</span>}
         <span className="city-card-heading">
           <span className="city-card-city">{cityName}</span>
           <span className="city-card-name">{displayName}</span>

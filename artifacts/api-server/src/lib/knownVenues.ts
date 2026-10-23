@@ -46,6 +46,17 @@ const SLUG_ALIASES: Record<string, string> = {
  * normalizeVenueName() form.
  */
 const KNOWN_VENUES: Record<string, Record<string, VenueCoords>> = {
+  dallas: {
+    // Venue addresses and OSM place identities were checked against the Dallas edition sources.
+    "fireside recreation center":         { lat: 32.6979820, lng: -96.6716750 },
+    "pumpkin village":                   { lat: 32.8232490, lng: -96.7168709 },
+    "city park old city park":           { lat: 32.7738412, lng: -96.7859749 },
+    "american airlines center":          { lat: 32.7904894, lng: -96.8102830 },
+    "kay bailey hutchison convention center": { lat: 32.7739782, lng: -96.8017506 },
+    "pm lounge":                         { lat: 32.8205088, lng: -96.7847409 },
+    "samuell east farm":                 { lat: 32.7851501, lng: -96.5877509 },
+    "deep vellum books":                 { lat: 32.7836138, lng: -96.7802134 },
+  },
   boston: {
     // OpenStreetMap place identities checked against the organizer's Boston venues.
     "adams park": { lat: 42.2863873, lng: -71.1285388 },
@@ -212,4 +223,5 @@ export const CITY_GEOCODE_HINTS: Record<string, string> = {
   tokyo:       "Tokyo, Japan",
   osaka:       "Osaka, Japan",
   dc:          "Washington, DC",
+  dallas:      "Dallas, Texas",
 };

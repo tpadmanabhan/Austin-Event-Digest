@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Dallas skyline mark</title>
+  <rect width="128" height="128" rx="28" fill="#174b54"/>
+  <circle cx="64" cy="64" r="50" fill="none" stroke="#e6b451" stroke-width="4"/>
+  <path d="M25 87V63h12v24h7V52h12v35h7V38h13v49h7V57h12v30h7V67h12v20H25Z" fill="#f7f3e9"/>
+  <path d="M72 38c8 0 13 5 13 13" fill="none" stroke="#c86b49" stroke-linecap="round" stroke-width="4"/>
+  <path d="M31 96h66" stroke="#c86b49" stroke-linecap="round" stroke-width="5"/>
+</svg>

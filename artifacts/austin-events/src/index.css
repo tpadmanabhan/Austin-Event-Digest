@@ -656,6 +656,131 @@
   text-transform: uppercase;
 }
 
+[data-tenant="dallas"] {
+  --background: 38 30% 96%;
+  --foreground: 197 39% 15%;
+  --border: 32 21% 82%;
+  --input: 32 21% 82%;
+  --card: 40 37% 99%;
+  --card-foreground: 197 39% 15%;
+  --card-border: 32 21% 82%;
+  --popover: 40 37% 99%;
+  --popover-foreground: 197 39% 15%;
+  --popover-border: 32 21% 82%;
+  --primary: 17 54% 44%;
+  --primary-foreground: 39 35% 97%;
+  --secondary: 192 48% 24%;
+  --secondary-foreground: 40 33% 97%;
+  --muted: 36 19% 90%;
+  --muted-foreground: 197 18% 36%;
+  --accent: 43 84% 59%;
+  --accent-foreground: 197 39% 15%;
+  --sidebar: 38 30% 94%;
+  --sidebar-foreground: 197 39% 15%;
+  --sidebar-border: 32 21% 82%;
+  --sidebar-primary: 17 54% 44%;
+  --sidebar-primary-foreground: 39 35% 97%;
+  --sidebar-accent: 36 19% 90%;
+  --sidebar-accent-foreground: 197 39% 15%;
+  --sidebar-ring: 17 54% 44%;
+}
+[data-tenant="dallas"] .dallas-home-hero {
+  background:
+    radial-gradient(ellipse at 84% 8%, hsl(43 84% 59% / .23), transparent 38%),
+    repeating-linear-gradient(137deg, transparent 0 42px, hsl(192 48% 24% / .025) 42px 43px),
+    linear-gradient(150deg, hsl(38 30% 96%), hsl(35 27% 90%));
+  isolation: isolate;
+}
+[data-tenant="dallas"] .dallas-home-hero::after {
+  position: absolute;
+  z-index: 0;
+  right: -9rem;
+  bottom: -14rem;
+  width: 34rem;
+  height: 34rem;
+  border: 1px solid hsl(17 54% 44% / .12);
+  border-radius: 50%;
+  box-shadow: 0 0 0 26px hsl(17 54% 44% / .035), 0 0 0 52px hsl(17 54% 44% / .025);
+  content: "";
+  pointer-events: none;
+}
+[data-tenant="dallas"] .dallas-home-hero h1 { letter-spacing: -.045em; }
+[data-tenant="dallas"] .dallas-hero-frame {
+  position: relative;
+  padding: 8px;
+  background: hsl(192 48% 21%);
+  border: 1px solid hsl(43 84% 59% / .62);
+  border-radius: 5px;
+  box-shadow: 17px 19px 0 -9px hsl(17 54% 44% / .48), 0 24px 60px hsl(197 39% 15% / .2);
+  overflow: hidden;
+}
+[data-tenant="dallas"] .dallas-hero-frame img {
+  border: 0;
+  border-radius: 2px;
+  box-shadow: none;
+  object-position: center 60%;
+}
+[data-tenant="dallas"] .dallas-edition-tag {
+  position: absolute;
+  bottom: 22px;
+  left: 22px;
+  right: 22px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 12px 14px;
+  border: 1px solid hsl(43 84% 59% / .56);
+  border-left: 4px solid hsl(43 84% 59%);
+  border-radius: 3px;
+  color: hsl(39 35% 97%);
+  background: hsl(192 48% 17% / .9);
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+[data-tenant="dallas"] .dallas-fieldnote {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-left: 3px solid hsl(17 54% 44%);
+  border-radius: 2px;
+  padding: 19px 22px;
+  background: hsl(40 37% 99% / .78);
+  box-shadow: 0 8px 24px hsl(197 39% 15% / .06);
+}
+[data-tenant="dallas"] .dallas-fieldnote::after {
+  position: absolute;
+  top: 13px;
+  right: 14px;
+  width: 35px;
+  height: 35px;
+  border: 1px solid hsl(43 84% 59% / .55);
+  border-radius: 50%;
+  content: "";
+}
+[data-tenant="dallas"] .dallas-fieldnote p {
+  max-width: 38rem;
+  padding-right: 16px;
+  font-style: normal;
+  font-size: 14px;
+}
+[data-tenant="dallas"] .dallas-hero-frame img {
+  animation: dallas-skyline-drift 24s ease-in-out infinite alternate;
+}
+@keyframes dallas-skyline-drift {
+  from { transform: scale(1.015); }
+  to { transform: scale(1.055) translateX(-.5%); }
+}
+@media (max-width: 640px) {
+  [data-tenant="dallas"] .dallas-edition-tag { bottom: 17px; left: 17px; right: 17px; padding: 9px 10px; font-size: 8px; letter-spacing: .07em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-tenant="dallas"] .dallas-hero-frame img { animation: none; }
+}
+
 @layer base {
   * {
     @apply border-border;

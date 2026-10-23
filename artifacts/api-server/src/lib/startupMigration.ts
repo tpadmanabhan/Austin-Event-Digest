@@ -7,6 +7,7 @@ import { seedMiami } from "./seedMiami";
 import { seedBoston } from "./seedBoston";
 import { seedManchester } from "./seedManchester";
 import { seedNYC } from "./seedNYC";
+import { seedDallas } from "./seedDallas";
 
 const MARCH_29_EVENTS = [
   {
@@ -1193,6 +1194,13 @@ export async function runStartupMigration(): Promise<void> {
     logger.info("New York City tenant and unsent first edition seeded");
   } catch (err) {
     logger.warn({ err }, "New York City seed failed (non-fatal)");
+  }
+
+  try {
+    await seedDallas();
+    logger.info("Dallas tenant and unsent first edition seeded");
+  } catch (err) {
+    logger.warn({ err }, "Dallas seed failed (non-fatal)");
   }
 
   // Migrate austincares subscribers → brushycreek (idempotent)

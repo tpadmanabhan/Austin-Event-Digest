@@ -96,6 +96,85 @@ describe("AI Ethics reading section", () => {
     expect(html).not.toContain("AI Doesn’t Solve This");
   });
 
+  it("renders Dallas dates, branding and locally grounded AI Ethics without Austin copy", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      subject: "Dallas Events: October 23–31, 2026",
+      weekOf: "2026-10-23",
+      siteUrl: "https://dallas.irl.group",
+      events: [{
+        title: "Dallas community evening",
+        date: "2026-10-29T00:30:00Z",
+        venue: "Dallas",
+        description: "A local community event.",
+        category: "Community",
+      }],
+    }, null, null, {
+      slug: "dallas", name: "Dallas Events", city: "Dallas, TX",
+      digestTitle: "Dallas Events",
+    });
+
+    expect(html).toContain("October 23 – October 31, 2026");
+    expect(html).toContain("dallas.irl.group/images/dallas-mark.svg");
+    expect(html).toContain("#a94f35");
+    expect(html).toContain("READING LIST / DALLAS");
+    expect(html).toContain("Update on Artificial Intelligence: City AI Plan, Governance and Best Practices");
+    expect(html).toContain("Technology Accountability Report — August 2026");
+    expect(html).toContain("Race After Technology");
+    expect(html).toContain("Wed, Oct 28, 2026 · 7:30 PM");
+    expect(html).not.toContain("🤠");
+    expect(html).not.toContain("Happy Sunday, Austin");
+    expect(html.replace(/<!--[\s\S]*?-->/g, "")).not.toContain("Austin");
+
+    const welcome = buildWelcomeEmailHtml("Taylor", {
+      slug: "dallas", name: "Dallas Events", city: "Dallas, TX",
+      digestTitle: "Dallas Events",
+    }, "taylor@example.com");
+    expect(welcome).toContain("dallas.irl.group/images/dallas-mark.svg");
+    expect(welcome).toContain("Dallas &amp; North Texas");
+    expect(welcome).toContain("Explore Dallas");
+    expect(welcome).toContain("unsubscribe?email=taylor%40example.com");
+    expect(welcome).not.toContain("🤠");
+    expect(welcome).not.toMatch(/eventcarpooling|carpool/i);
+  });
+
+  it("renders NYC's local date range, branding, reading list, time zone and welcome email", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      subject: "New York City Events — October 23–31, 2026",
+      weekOf: "2026-10-23",
+      siteUrl: "https://nyc.irl.group",
+      events: [{
+        title: "New York community evening",
+        date: "2026-10-29T00:30:00Z",
+        venue: "New York City",
+        description: "A local community event.",
+        category: "Community",
+      }],
+    }, null, null, {
+      slug: "nyc", name: "New York City Events", city: "New York City, NY",
+      digestTitle: "New York City Events",
+    });
+
+    expect(html).toContain("October 23 – October 31, 2026");
+    expect(html).toContain("nyc.irl.group/images/nyc-mark.svg");
+    expect(html).toContain("#D65B3B");
+    expect(html).toContain("Automated Employment Decision Tools (Local Law 144)");
+    expect(html).toContain("Wed, Oct 28, 2026 · 8:30 PM");
+    expect(html).not.toContain("🤠");
+    expect(html).not.toContain("Happy Sunday, Austin");
+
+    const welcome = buildWelcomeEmailHtml("Jordan", {
+      slug: "nyc", name: "New York City Events", city: "New York City, NY",
+      digestTitle: "New York City Events",
+    }, "jordan@example.com");
+    expect(welcome).toContain("nyc.irl.group/images/nyc-mark.svg");
+    expect(welcome).toContain("Five boroughs. One good plan.");
+    expect(welcome).toContain("unsubscribe?email=jordan%40example.com");
+    expect(welcome).not.toContain("🤠");
+    expect(welcome).not.toMatch(/eventcarpooling|carpool/i);
+  });
+
   it("combines Austin's rebuild and city request, then renders the remaining AI Ethics items in order", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
@@ -130,13 +209,13 @@ describe("AI Ethics reading section", () => {
     expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf("<!-- Location CTA -->"));
   });
 
-  it.each(["tokyo", "austincares", "brushycreek", "portland", "bulverde", "stlouis", "dc", "atlanta", "houston"])(
+  it.each(["tokyo", "austincares", "brushycreek", "portland", "bulverde", "stlouis", "dc", "atlanta", "houston", "dallas"])(
     "does not leak Austin's editorial section into %s",
     slug => {
       const html = buildDigestEmailHtml(baseDigest, null, null, {
         slug, name: "City Events", city: "City", digestTitle: null,
       });
-      const localEthicsSlugs = new Set(["tokyo", "portland", "bulverde", "stlouis", "dc", "houston"]);
+      const localEthicsSlugs = new Set(["tokyo", "portland", "bulverde", "stlouis", "dc", "houston", "dallas"]);
       if (localEthicsSlugs.has(slug)) expect(html).toContain("AI Ethics");
       else expect(html).not.toContain("AI Ethics");
       expect(html).not.toContain("AI Doesn’t Solve This");
@@ -156,10 +235,13 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     "boston",
     "brushycreek",
     "bulverde",
+    "dallas",
     "dc",
     "houston",
     "la",
+    "manchester",
     "miami",
+    "nyc",
     "osaka",
     "portland",
     "sacramento",
@@ -289,7 +371,7 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
       siteUrl: "https://manchester.irl.group",
       events: [{
         title: "Manchester AI community evening",
-        date: "Wednesday, October 28, 2026 at 5:45 PM GMT",
+        date: "2026-10-29T00:30:00Z",
         venue: "Manchester",
         description: "A local technology meetup.",
         category: "Tech",
@@ -304,6 +386,7 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).toContain("manchester.irl.group/images/manchester-mark.svg");
     expect(html).toContain("Greater Manchester People’s Panel for AI");
     expect(html).toContain("https://irl.group");
+    expect(html).toContain("Thu, Oct 29, 2026 · 12:30 AM");
     expect(html).not.toContain("🤠");
     expect(html).not.toContain("Happy Sunday, Austin");
 

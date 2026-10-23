@@ -20,6 +20,7 @@ const CITY_SHARE_IMAGES: Record<string, string> = {
   tokyo: "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1200&h=630&auto=format&fit=crop&q=80",
   manchester: "images/manchester-share.jpg",
   nyc: "images/nyc-share.jpg",
+  dallas: "images/dallas-hero.jpg",
 };
 
 export function cityShareImage(citySlug: string | null, origin: string, basePath = "/") {

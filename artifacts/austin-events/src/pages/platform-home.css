@@ -221,8 +221,14 @@ footer:has(.irl-wordmark) .irl-wordmark { color: #25473c; }
 .city-card { overflow: hidden; border: 1px solid #e2e3d9; border-radius: 5px; background: #f4f3ec; transition: transform .22s ease, box-shadow .22s ease; }
 .city-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(37, 58, 47, .1); }
 .city-card-featured { grid-column: span 2; grid-row: span 2; }
+.city-card-dallas { border-color: #d8c6a7; background: #f4f0e5; }
+.city-card-dallas .city-card-main { height: 132px; }
+.city-card-dallas .city-card-shade { background: linear-gradient(transparent 18%, rgba(19, 47, 52, .86)); }
+.city-card-dallas .city-card-reading { border-top: 1px solid #e1d6c1; }
+.city-card-dallas .city-card-city { color: #f1c77d; }
 .city-card-main { position: relative; display: block; height: 132px; overflow: hidden; color: white; text-decoration: none; }
 .city-card-featured .city-card-main { height: 297px; }
+.city-card-badge { position: absolute; top: 12px; left: 12px; z-index: 2; padding: 5px 8px; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; color: #fff; background: #a94f35; box-shadow: 0 3px 12px rgba(18, 35, 31, .2); font-size: 9px; font-weight: 800; letter-spacing: .12em; line-height: 1; }
 .city-card-photo { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
 .city-card:hover .city-card-photo { transform: scale(1.045); }
 .city-card-shade { position: absolute; inset: 20% 0 0; background: linear-gradient(transparent, rgba(22, 39, 33, .82)); }
@@ -316,6 +322,7 @@ footer:has(.irl-wordmark) .irl-wordmark { color: #25473c; }
   .city-grid:not(:has(.directory-skeletons)), .directory-skeletons { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
   .city-card-featured { grid-column: span 2; grid-row: span 1; }
   .city-card-main { height: 123px; }
+  .city-card-dallas .city-card-main { height: 123px; }
   .city-card-featured .city-card-main { height: 195px; }
   .city-card-name { font-size: 18px; }
   .city-card-city { font-size: 8px; }
@@ -340,4 +347,5 @@ footer:has(.irl-wordmark) .irl-wordmark { color: #25473c; }
   .city-skeleton { animation: none; }
   .city-card, .city-card-photo, .button-primary { transition: none; }
   .irl-wordmark, .irl-brand-link:hover .irl-wordmark { transition: none; transform: none; }
+  [data-tenant="dallas"] .dallas-hero-frame img { animation: none; }
 }

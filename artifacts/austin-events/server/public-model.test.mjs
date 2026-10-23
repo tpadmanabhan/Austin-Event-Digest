@@ -7,14 +7,14 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolveSite, legacyRedirectHost, eventSchema, validIsoDate, venueIdentity, publicApiOrigin, publicEditionRange } from "./public-model.mjs";
 
-const cities = ["nyc", "la", "austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
+const cities = ["nyc", "dallas", "la", "austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
   "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston", "boston", "miami", "osaka", "manchester"];
 const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
 const eventId = city => `ev-${String(cities.indexOf(city) + 1).padStart(24, "0")}`;
 const fixture = city => ({
   id: cities.indexOf(city) + 10,
-  weekOf: city === "nyc" ? "2026-10-23T00:00:00.000Z" : city === "manchester" ? "2026-10-22T00:00:00.000Z" : "2031-10-12T00:00:00.000Z",
-  subject: city === "nyc" ? "New York City Events — October 23–31, 2026" : city === "manchester" ? "Manchester Events — October 22–31, 2026" : `${city} test edition`,
+  weekOf: city === "nyc" || city === "dallas" ? "2026-10-23T00:00:00.000Z" : city === "manchester" ? "2026-10-22T00:00:00.000Z" : "2031-10-12T00:00:00.000Z",
+  subject: city === "nyc" ? "New York City Events — October 23–31, 2026" : city === "dallas" ? "Dallas Events: October 23–31, 2026" : city === "manchester" ? "Manchester Events — October 22–31, 2026" : `${city} test edition`,
   intro: "A test newsletter introduction.",
   events: [{ eventId: eventId(city), title: `${city} test community talk`, date: "October 12, 2031 at noon UTC",
     startDate: "2031-10-12T12:00:00Z", venue: `${city} test hall`, venueAddress: "1 Test Street",
@@ -126,6 +126,7 @@ test("trusted extended editions expose their actual date range instead of a week
   assert.equal(publicEditionRange("houston", "Houston Events: October 17–23, 2026"), "October 17 – October 23, 2026");
   assert.equal(publicEditionRange("manchester", "Manchester Events — October 22–31, 2026"), "October 22 – October 31, 2026");
   assert.equal(publicEditionRange("nyc", "New York City Events — October 23–31, 2026"), "October 23 – October 31, 2026");
+  assert.equal(publicEditionRange("dallas", "Dallas Events: October 23–31, 2026"), "October 23 – October 31, 2026");
   assert.equal(publicEditionRange("futurecity", "Future Events: October 17–31, 2026"), undefined);
 });
 test("the platform document is readable and has real city links without scripts running", async () => {
@@ -139,9 +140,10 @@ test("the platform document is readable and has real city links without scripts 
   assert.match(body, /Raj’s Austin Events/);
   assert.match(body, /https:\/\/austincares\.irl\.group/);
   assert.match(body, /https:\/\/nyc\.irl\.group/);
+  assert.match(body, /https:\/\/dallas\.irl\.group/);
   const platformHomeSource = readFileSync(new URL("../src/pages/platform-home.tsx", import.meta.url), "utf8");
-  assert.match(platformHomeSource, /const LIVE_CITY_ORDER = \["nyc", "manchester"/,
-    "New York City should sort before Manchester");
+  assert.match(platformHomeSource, /const LIVE_CITY_ORDER = \["nyc", "dallas", "manchester"/,
+    "Dallas should follow featured New York City in the directory");
   assert.match(platformHomeSource, /city\.slug === "nyc" \? "city-card-featured"/,
     "New York City should use the featured card style");
   assert.match(body, /<title>In Real Life \(IRL\) — Worthwhile things, close by<\/title>/);
@@ -152,13 +154,14 @@ test("the platform document is readable and has real city links without scripts 
   assert.equal(model.schema.name, "In Real Life");
   assert.equal(model.schema.alternateName, "IRL");
   assert.equal(model.cities[0].slug, "nyc");
-  assert.equal(model.cities[1].slug, "manchester");
+  assert.equal(model.cities[1].slug, "dallas");
+  assert.equal(model.cities[2].slug, "manchester");
   assert.ok(model.cities.some(city => city.slug === "manchester"), "Manchester should remain in the directory");
-  assert.equal(model.cities.length, 18);
+  assert.equal(model.cities.length, 19);
   assert.ok(model.cities.every(city => city.url.startsWith("https://") && city.url.endsWith(".irl.group/")));
   assert.ok(model.cities.every(city => !("isNew" in city)), "City listings must not advertise New badges");
   assert.match(model.cities[0].ethicsUrl, /nyc\.irl\.group\/#city-ai-ethics/);
-  assert.equal(model.cities[2].slug, "la");
+  assert.equal(model.cities[3].slug, "la");
   assert.match(body, /https:\/\/tokyo\.irl\.group\//);
   assert.match(body, /<h1/);
   assert.equal(modelOf(body).kind, "platform");
@@ -244,6 +247,7 @@ test("every city sends its configured share image or platform fallback in the in
     osaka: "/images/irl-open-graph.jpg",
     manchester: "/images/manchester-share.jpg",
     nyc: "/images/nyc-share.jpg",
+    dallas: "/images/dallas-hero.jpg",
   };
   for (const city of cities) {
     const host = `${city}.irl.group`;
@@ -266,6 +270,9 @@ test("every city sends its configured share image or platform fallback in the in
       if (city === "nyc" && pathname === "/") {
         assert.equal(modelOf(body).editionRange, "October 23 – October 31, 2026");
       }
+      if (city === "dallas" && pathname === "/") {
+        assert.equal(modelOf(body).editionRange, "October 23 – October 31, 2026");
+      }
       const ethicsTitle = {
         houston: "Atlas of AI",
         tokyo: "Tokyo AI Adoption and Use Guidelines",
@@ -274,6 +281,7 @@ test("every city sends its configured share image or platform fallback in the in
         bulverde: "Data Feminism",
         dc: "Weapons of Math Destruction",
         nyc: "The Algorithm: How AI Decides Who Gets Hired",
+        dallas: "Update on Artificial Intelligence: City AI Plan, Governance and Best Practices",
       }[city];
       if (ethicsTitle && pathname !== "/about") {
         assert.match(body, /AI Ethics/, `${city}${pathname} should include an AI Ethics section`);
@@ -287,6 +295,15 @@ test("every city sends its configured share image or platform fallback in the in
       assert.match(response.headers.get("content-type"), /^image\/(?:jpeg|png)/);
     }
   }
+});
+test("Dallas follows New York in the city directory and has local AI reading links", async () => {
+  const { response, body } = await document("eventcarpooling.com");
+  assert.equal(response.status, 200);
+  const cities = modelOf(body).cities;
+  assert.equal(cities[0].slug, "nyc");
+  assert.equal(cities[1].slug, "dallas");
+  assert.equal(cities[1].ethicsTitle, "Dallas AI Plan and governance briefing");
+  assert.equal(cities[1].ethicsUrl, "https://dallascityhall.com/government/citymanager/Documents/Council%20Materials/C.%20Update%20on%20AI%20City%20AI%20Plan.pdf");
 });
 test("platform and future city image fallbacks never borrow Austin's preview", async () => {
   const { response, body } = await document("eventcarpooling.com");

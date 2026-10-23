@@ -102,17 +102,19 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant
         ? `Discover upcoming San Francisco events across Tech, Arts, Sports, Civics, and Wellness. Check organizer details, explore a new neighborhood, and make plans with your community.`
       : slug === "la"
         ? `Discover Los Angeles events across Tech, Arts, Sports, Civics, and Wellness. Check the original organizer details, explore a new neighborhood, and make an in-person plan.`
+      : slug === "dallas"
+        ? `Discover Dallas and North Texas events across Tech, Arts, Sports, Civics, and Wellness. Check organizer details and make an in-person plan.`
       : `Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Get out there and enjoy it!`;
   const intro = cityIntro;
 
-  const subjectEmoji = slug === "la" || slug === "boston" || slug === "miami" || slug === "sanfrancisco" ? "" : slug === "atlanta" ? "🍑" : slug === "houston" ? "⭐" : slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
+  const subjectEmoji = slug === "la" || slug === "boston" || slug === "miami" || slug === "sanfrancisco" || slug === "dallas" ? "" : slug === "atlanta" ? "🍑" : slug === "houston" ? "⭐" : slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
 
   return {
-    subject: `${subjectEmoji ? `${subjectEmoji} ` : ""}${digestName}${["la", "atlanta", "houston", "sanfrancisco", "miami", "boston"].includes(slug ?? "") ? "" : " Events"} — Week of ${dateRange}`,
+    subject: `${subjectEmoji ? `${subjectEmoji} ` : ""}${digestName}${["la", "atlanta", "houston", "sanfrancisco", "miami", "boston", "dallas"].includes(slug ?? "") ? "" : " Events"} — Week of ${dateRange}`,
     intro,
-    // The generic sample fixture is Austin-specific. Atlanta and Houston start
-    // empty until real city events arrive from source adapters.
-    events: ["la", "atlanta", "houston", "sanfrancisco", "miami", "boston"].includes(slug ?? "") ? [] : SAMPLE_EVENTS,
+    // The generic sample fixture is Austin-specific. These cities start empty
+    // until real city events arrive from source adapters.
+    events: ["la", "atlanta", "houston", "sanfrancisco", "miami", "boston", "dallas"].includes(slug ?? "") ? [] : SAMPLE_EVENTS,
   };
 }
 

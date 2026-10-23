@@ -341,7 +341,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const _s = req.tenant!.slug;
       const separator = _s === "houston" ? " to " : "–";
       const label = `${weekOf.toLocaleDateString("en-US", opts)}${separator}${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-      const subjectEmoji = ["la", "boston", "miami", "sanfrancisco", "osaka"].includes(_s) ? "" : _s === "atlanta" ? "🍑" : _s === "houston" ? "⭐" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
+      const subjectEmoji = ["la", "boston", "miami", "sanfrancisco", "osaka", "dallas"].includes(_s) ? "" : _s === "atlanta" ? "🍑" : _s === "houston" ? "⭐" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
       subject = `${subjectEmoji ? `${subjectEmoji} ` : ""}${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
     } else {
       subject = fallback.subject;
@@ -1210,10 +1210,12 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
       const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
       const label = `${weekOf.toLocaleDateString("en-US", opts)}–${weekEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
       const isAustinCares = req.tenant!.slug === "austincares";
-      const subjectEmoji2 = isAustinCares ? "🏷️" : "🤠";
-      const subject = `${subjectEmoji2} ${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
+      const subjectEmoji2 = isAustinCares ? "🏷️" : req.tenant!.slug === "dallas" ? "" : "🤠";
+      const subject = `${subjectEmoji2 ? `${subjectEmoji2} ` : ""}${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
       const intro = isAustinCares
         ? `Happy Sunday, Austin! Here are this week's best local deals — from Tuesday lunch specials to all-week savings at your favorite spots.\n\nThese deals are hand-picked from Austin restaurants and local businesses. Tap any deal below to claim it.`
+        : req.tenant!.slug === "dallas"
+        ? `Here are upcoming Dallas and North Texas plans across Tech, Arts, Sports, Civics, and Wellness. Check each organizer’s link for current details and registration.`
         : `Hey ${req.tenant!.city.split(",")[0]}! I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest — get out there and enjoy it! 🤠`;
 
       const [newDigest] = await db
