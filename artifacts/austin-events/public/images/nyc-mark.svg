@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <circle cx="128" cy="128" r="119" fill="#102B3A"/>
+  <circle cx="128" cy="128" r="109" stroke="#F4C45B" stroke-width="5"/>
+  <circle cx="128" cy="128" r="92" stroke="#FBF8F1" stroke-opacity=".34" stroke-width="2"/>
+  <path d="M67 160V111h10l20 29v-29h11v49H98l-20-29v29H67Zm73 0v-18l-18-31h13l11 20 11-20h13l-18 31v18h-12Zm33 0v-49h37v10h-25v9h22v10h-22v10h26v10h-38Z" fill="#FBF8F1"/>
+  <path d="M89 183h78" stroke="#D65B3B" stroke-width="8" stroke-linecap="round"/>
+  <text x="128" y="76" text-anchor="middle" fill="#F4C45B" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="4">FIVE BOROUGHS</text>
+  <circle cx="58" cy="128" r="4" fill="#F4C45B"/>
+  <circle cx="198" cy="128" r="4" fill="#F4C45B"/>
+</svg>

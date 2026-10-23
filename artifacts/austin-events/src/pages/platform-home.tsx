@@ -17,11 +17,12 @@ interface TenantSummary {
   categories: string[];
 }
 
-const LIVE_CITY_ORDER = ["manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
+const LIVE_CITY_ORDER = ["nyc", "manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
 const cityUrl = (slug: string) => `https://${slug}.irl.group`;
 const publicImage = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
 
 const CITY_DIRECTORY = [
+  { slug: "nyc", name: "New York City Events", city: "New York City", image: publicImage("nyc-hero.svg"), alt: "Illustrated New York skyline at dusk with a river and bridges" },
   { slug: "manchester", name: "Manchester Events", city: "Manchester, England", image: publicImage("manchester-hero.svg"), alt: "Illustrated Manchester skyline at dusk with a golden worker bee" },
   { slug: "osaka", name: "Osaka Events", city: "Osaka", image: publicImage("osaka-hero.jpg"), alt: "Dotonbori canal and evening lights in Osaka" },
   { slug: "la", name: "Los Angeles Events", city: "Los Angeles", image: LA_HERO_IMAGE_URL, alt: "Pacific Ocean at Point Dume near Los Angeles" },
@@ -45,6 +46,7 @@ const ETHICS_RESOURCES: Record<string, { href: string; label: string; jaLabel: s
   sanfrancisco: { href: "https://hai.stanford.edu/ai-index/2026-ai-index-report", label: "Stanford HAI AI Index 2026", jaLabel: "スタンフォードHAI AIインデックス 2026" },
   osaka: { href: "https://www.city.osaka.lg.jp/ictsenryakushitsu/page/0000675810.html", label: "Osaka City AI Utilization Basic Policy", jaLabel: "大阪市AI活用基本方針" },
   manchester: { href: "https://www.mmu.ac.uk/research/projects/gm-people-panel-ai", label: "Greater Manchester People’s Panel for AI", jaLabel: "Greater Manchester People’s Panel for AI" },
+  nyc: { href: "https://www.nyc.gov/content/oti/pages/artificial-intelligence", label: "New York City AI policy and guidance", jaLabel: "ニューヨーク市のAI方針とガイダンス" },
   austin: { href: "https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/", label: "AI Doesn’t Solve This", jaLabel: "AI Doesn’t Solve This" },
   sacramento: { href: "https://www.nist.gov/itl/ai-risk-management-framework", label: "NIST AI Risk Management Framework", jaLabel: "NIST AIリスクマネジメント・フレームワーク" },
   miami: { href: "https://algorithmsofoppression.com/about/", label: "Algorithms of Oppression", jaLabel: "Algorithms of Oppression" },
@@ -74,7 +76,7 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
     ? lang === "ja" ? reading.jaLabel : reading.label
     : copy.cityExplore.replace("{city}", cityName);
   return (
-      <article className={`city-card group ${city.slug === "manchester" ? "city-card-featured" : ""}`}>
+      <article className={`city-card group ${city.slug === "nyc" ? "city-card-featured" : ""}`}>
       <a className="city-card-main" href={cityUrl(city.slug)} target="_blank" rel="noopener noreferrer" aria-label={lang === "ja" ? `${displayName}を見る` : `Visit ${city.name}`}>
         {city.image ? (
           <img className="city-card-photo" src={city.image} alt={japaneseCity?.alt ?? city.alt ?? ""} loading="lazy" />

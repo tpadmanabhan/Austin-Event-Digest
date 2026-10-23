@@ -247,6 +247,41 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 </html>`;
   }
 
+  if (tenant?.slug === "nyc") {
+    const firstName = name?.trim() ? escapeHtml(name.trim()) : "there";
+    const markUrl = `${siteUrl}/images/nyc-mark.svg`;
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're subscribed — ${escapeHtml(digestName)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f1e9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:580px;margin:0 auto;padding:32px 16px;">
+    <div style="background:linear-gradient(135deg,#102b3a 0%,#194b5b 62%,#D65B3B 100%);border-radius:20px;padding:32px 28px;margin-bottom:20px;text-align:center;">
+      <img src="${escapeHtml(markUrl)}" alt="New York City mark" width="58" height="58" style="display:block;margin:0 auto 12px;width:58px;height:58px;" />
+      <p style="margin:0 0 8px;color:#f4c45b;font-size:11px;font-weight:800;letter-spacing:2px;">IN REAL LIFE</p>
+      <h1 style="margin:0;color:#fbf8f1;font-size:26px;font-weight:800;">${escapeHtml(digestName)}</h1>
+      <p style="margin:8px 0 0;color:#d5e0df;font-size:14px;">New York City · IRL.group</p>
+    </div>
+    <div style="background:#ffffff;border:1px solid #e5ded1;border-radius:16px;padding:30px;margin-bottom:16px;">
+      <p style="margin:0 0 14px;color:#102b3a;font-size:17px;font-weight:700;">You're subscribed, ${firstName}.</p>
+      <p style="margin:0 0 14px;color:#44403c;font-size:15px;line-height:1.75;">Your New York City edition brings together worthwhile plans across Tech, Arts, Sports, Civics and Wellness, with events from all five boroughs and links back to organizers.</p>
+      <p style="margin:0 0 24px;color:#44403c;font-size:15px;line-height:1.75;">Pick a plan, meet people there, and enjoy the city in real life.</p>
+      <div style="text-align:center;">
+        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#D65B3B;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:100px;">Explore New York City →</a>
+      </div>
+    </div>
+    <div style="text-align:center;padding:4px 0 16px;">
+      <p style="margin:0 0 8px;color:#78716c;font-size:13px;">Five boroughs. One good plan.</p>
+      <p style="margin:0;color:#a8a29e;font-size:12px;">Subscribed via <a href="${escapeHtml(siteUrl)}" style="color:#78716c;">nyc.irl.group</a> — <a href="${escapeHtml(unsubUrl)}" style="color:#78716c;">unsubscribe anytime</a></p>
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
   if (tenant?.slug === "manchester") {
     const firstName = name?.trim() ? escapeHtml(name.trim()) : "there";
     const markUrl = `${siteUrl}/images/manchester-mark.svg`;
@@ -598,7 +633,7 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const slug = tenant?.slug;
-  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento" || slug === "miami" || slug === "boston" || slug === "la" || slug === "manchester"
+  const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento" || slug === "miami" || slug === "boston" || slug === "la" || slug === "manchester" || slug === "nyc"
     ? digest.subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s*(?:to|[-–—])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),\s*(\d{4})\s*$/i)
     : null;
   const editionRange = editionRangeMatch
@@ -747,6 +782,28 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(27,94,168,0.35)",
     rideBtnBg: "#1B5EA8",
     rideBtnColor: "#fff",
+  } : slug === "nyc" ? {
+    headerGradient: "linear-gradient(135deg, #102b3a 0%, #194b5b 58%, #D65B3B 100%)",
+    primary: "#D65B3B",
+    primaryBtn: "#D65B3B",
+    primaryDark: "#102b3a",
+    primaryLight: "#f4eee5",
+    primaryMuted: "#efc6b8",
+    textOnDark: "#fbf8f1",
+    textMutedOnDark: "#d5e0df",
+    textStrong: "#ffffff",
+    linkColor: "#b8472c",
+    curatorName: "",
+    curatorUrl: null as string | null,
+    cityGuideText: "Your guide to New York City, across all five boroughs",
+    digestDisplayName: tenant?.digestTitle || "New York City Events",
+    headerEmoji: "",
+    eventBtnColor: "#102b3a",
+    eventBtnBorder: "#102b3a",
+    pillText: "rgba(251,248,241,0.94)",
+    pillBorder: "rgba(244,196,91,0.45)",
+    rideBtnBg: "#f4c45b",
+    rideBtnColor: "#102b3a",
   } : slug === "manchester" ? {
     headerGradient: "linear-gradient(135deg, #17323f 0%, #285265 55%, #A64B32 100%)",
     primary: "#A64B32",
@@ -1191,6 +1248,7 @@ export function buildDigestEmailHtml(digest: {
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:32px; margin-bottom:24px; text-align:center;">
       ${slug === "houston" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/houston-astros.png", digest.siteUrl).toString() : "https://www.mlbstatic.com/team-logos/117.svg")}" alt="Houston Astros logo" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       ${slug === "la" ? `<table role="presentation" align="center" width="60" height="60" cellpadding="0" cellspacing="0" border="0" style="width:60px; height:60px; margin:0 auto 12px; border-collapse:collapse;"><tr><td align="center" valign="middle" width="54" height="54" style="width:54px; height:54px; border:3px solid #ffffff; border-radius:50%; background-color:#FDB927; color:#552583; text-align:center; vertical-align:middle; font-family:Arial,sans-serif; font-size:22px; font-weight:900; line-height:1;"><span role="img" aria-label="Los Angeles brand mark" style="display:inline-block; font-family:Arial,sans-serif; font-size:22px; font-weight:900; letter-spacing:-2px; line-height:1; vertical-align:middle;">LA</span></td></tr></table>` : ""}
+      ${slug === "nyc" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/nyc-mark.svg", digest.siteUrl).toString() : "https://nyc.irl.group/images/nyc-mark.svg")}" alt="New York City mark" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       ${slug === "manchester" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/manchester-mark.svg", digest.siteUrl).toString() : "https://manchester.irl.group/images/manchester-mark.svg")}" alt="Manchester worker bee" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:${theme.textOnDark}; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:${theme.textOnDark};">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
       <div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">

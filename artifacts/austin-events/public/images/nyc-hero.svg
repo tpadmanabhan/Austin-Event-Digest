@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200" fill="none">
+  <defs>
+    <linearGradient id="sky" x1="800" y1="0" x2="800" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#132C43"/>
+      <stop offset=".42" stop-color="#36586A"/>
+      <stop offset=".76" stop-color="#C8755B"/>
+      <stop offset="1" stop-color="#F4B976"/>
+    </linearGradient>
+    <linearGradient id="water" x1="800" y1="830" x2="800" y2="1200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#244F60"/>
+      <stop offset="1" stop-color="#102B3A"/>
+    </linearGradient>
+    <linearGradient id="riverGlow" x1="800" y1="850" x2="800" y2="1040" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4C45B" stop-opacity=".66"/>
+      <stop offset="1" stop-color="#F4C45B" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="windows" width="42" height="46" patternUnits="userSpaceOnUse">
+      <rect x="8" y="10" width="9" height="15" rx="2" fill="#F4C45B" fill-opacity=".76"/>
+      <rect x="27" y="10" width="8" height="15" rx="2" fill="#F2E8CF" fill-opacity=".36"/>
+    </pattern>
+    <pattern id="smallWindows" width="32" height="36" patternUnits="userSpaceOnUse">
+      <rect x="7" y="8" width="7" height="12" rx="1.5" fill="#F4C45B" fill-opacity=".72"/>
+      <rect x="21" y="8" width="6" height="12" rx="1.5" fill="#F2E8CF" fill-opacity=".32"/>
+    </pattern>
+  </defs>
+
+  <path fill="url(#sky)" d="M0 0h1600v1200H0z"/>
+  <circle cx="1230" cy="272" r="127" fill="#F8C778" fill-opacity=".84"/>
+  <circle cx="1230" cy="272" r="174" fill="#F8C778" fill-opacity=".09"/>
+  <path d="M0 655c151-42 253-45 393 0 122 40 224 36 353-5 118-37 244-35 364 3 143 45 299 39 490-11v185H0V655Z" fill="#F1A973" fill-opacity=".22"/>
+  <path d="M0 754c208-33 361-38 542-3 176 35 309 44 479-1 198-52 360-36 579 8v145H0V754Z" fill="#D58167" fill-opacity=".32"/>
+
+  <!-- Distant rooftops -->
+  <path d="M0 701h55v-57h49v45h61v-94h40v-51h14v-38h16v38h13v51h42v94h46v-76h55v88h70V620h38v-82h13v-44h14v44h13v82h38v81h64v-56h46v61h65v-95h44v-54h20v-52h14v52h15v54h49v95h67v-79h35v-55h11v-39h14v39h12v55h41v79h54v-94h63v95h56v-70h50v70h45v-82h34v-34h15v34h13v82h45v-54h38v54h65v125H0V701Z" fill="#234657"/>
+  <path d="M0 701h55v-57h49v45h61v-94h40v-51h14v-38h16v38h13v51h42v94h46v-76h55v88h70V620h38v-82h13v-44h14v44h13v82h38v81h64v-56h46v61h65v-95h44v-54h20v-52h14v52h15v54h49v95h67v-79h35v-55h11v-39h14v39h12v55h41v79h54v-94h63v95h56v-70h50v70h45v-82h34v-34h15v34h13v82h45v-54h38v54h65v125H0V701Z" fill="url(#smallWindows)" opacity=".82"/>
+
+  <!-- Empire State Building -->
+  <path d="M356 750V486h22v-52h17v-52h17v-48h11v-64h17v-84h18v84h17v64h11v48h17v52h17v316H356Z" fill="#17394C"/>
+  <path d="M356 750V486h22v-52h17v-52h17v-48h11v-64h17v-84h18v84h17v64h11v48h17v52h17v316H356Z" fill="url(#windows)" opacity=".85"/>
+  <path d="M430 184h18v-64h8v64h8v52h-34v-52Z" fill="#17394C"/>
+  <path d="M438 119h9" stroke="#F7D083" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- One World Trade Center -->
+  <path d="M1116 750V393l62-230 63 230v357h-125Z" fill="#17394C"/>
+  <path d="M1116 750V393l62-230 63 230v357h-125Z" fill="url(#windows)" opacity=".72"/>
+  <path d="M1178 163V90" stroke="#F5D587" stroke-width="5"/>
+
+  <!-- Varied Manhattan buildings -->
+  <path d="M90 750V570h96v-80h68v260H90Zm437 0V558h51v-49h31v49h61v192H527Zm195 0V587h84v-54h48v54h69v163H722Zm511 0V553h47v-78h26v-56h21v56h24v78h48v197h-166Zm-105 0V620h64v-65h26v-42h19v107h54v130h-163Zm341 0V616h57v-55h31v55h65v134h-153Z" fill="#1A4052"/>
+  <path d="M90 750V570h96v-80h68v260H90Zm437 0V558h51v-49h31v49h61v192H527Zm195 0V587h84v-54h48v54h69v163H722Zm511 0V553h47v-78h26v-56h21v56h24v78h48v197h-166Zm-105 0V620h64v-65h26v-42h19v107h54v130h-163Zm341 0V616h57v-55h31v55h65v134h-153Z" fill="url(#smallWindows)" opacity=".68"/>
+
+  <!-- Waterfront and river reflections -->
+  <path d="M0 778c233-27 419-20 614 10 188 29 353 29 545-4 162-28 289-32 441-3v419H0V778Z" fill="url(#water)"/>
+  <path d="M715 790h408l122 259H603l112-259Z" fill="url(#riverGlow)" opacity=".8"/>
+  <path d="M67 852h364M1125 874h276M167 918h238M1002 934h402M58 1000h426M1100 1020h286M193 1080h318M904 1102h455" stroke="#F4C45B" stroke-opacity=".38" stroke-width="4" stroke-linecap="round"/>
+  <path d="M0 833c199-21 357-19 546 9 192 28 367 27 558-4 185-30 347-27 496-2" stroke="#DAA876" stroke-opacity=".38" stroke-width="4"/>
+
+  <!-- Brooklyn Bridge silhouette -->
+  <path d="M0 844h1600v21H0z" fill="#E5B779"/>
+  <path d="M182 842V578m0 0 17-25 17 25m-34 0h34m-34 54h34m-34 55h34m-34 54h34m-34 54h34m-34 47h34M1374 842V578m0 0 17-25 17 25m-34 0h34m-34 54h34m-34 55h34m-34 54h34m-34 54h34m-34 47h34" stroke="#E5B779" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M197 580c167 242 341 264 603 264m-586-264c115 151 247 239 586 264m574-264c-167 242-341 264-603 264m586-264c-115 151-247 239-586 264" stroke="#E5B779" stroke-width="5" stroke-opacity=".88"/>
+  <path d="M199 603 35 842m181-204L73 842m147-170L116 842m114-142L160 842m104-119L204 842m-5-239 164 239m-147-204 132 204m-97-168 108 168m-72-132 85 132m-48-96 62 96m1001-239 164 239m-181-204 132 204m-147-170 108 170m-114-142 85 142m-104-119 62 119m5-239-164 239m147-204-132 204m97-168-108 168m72-132-85 132m48-96-62 96" stroke="#E5B779" stroke-width="3" stroke-opacity=".72"/>
+  <path d="M0 844h1600v31H0z" fill="#102B3A"/>
+  <path d="M0 844h1600v8H0z" fill="#F4C45B"/>
+  <path d="M0 882h1600" stroke="#E5B779" stroke-width="5" stroke-opacity=".56"/>
+
+  <!-- Foreground lights -->
+  <circle cx="132" cy="909" r="5" fill="#F4C45B"/>
+  <circle cx="255" cy="909" r="5" fill="#F4C45B"/>
+  <circle cx="382" cy="909" r="5" fill="#F4C45B"/>
+  <circle cx="1202" cy="909" r="5" fill="#F4C45B"/>
+  <circle cx="1332" cy="909" r="5" fill="#F4C45B"/>
+  <circle cx="1464" cy="909" r="5" fill="#F4C45B"/>
+  <path d="M0 1140c189-38 345-37 533 0 201 39 399 40 597 2 181-35 326-36 470-7v65H0v-60Z" fill="#0D2431" fill-opacity=".8"/>
+</svg>

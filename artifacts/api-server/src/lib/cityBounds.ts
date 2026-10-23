@@ -34,6 +34,7 @@ export const MAP_CENTERS: Record<string, CityCenter> = {
   la: { lat: 34.0522, lng: -118.2437 },
   osaka: { lat: 34.6937, lng: 135.5023 },
   manchester: { lat: 53.4808, lng: -2.2426 },
+  nyc: { lat: 40.7128, lng: -74.0060 },
 };
 
 export const CITY_LABELS: Record<string, string> = {
@@ -54,6 +55,7 @@ export const CITY_LABELS: Record<string, string> = {
   la: "Los Angeles",
   osaka: "Osaka",
   manchester: "Manchester",
+  nyc: "New York City",
 };
 
 /**
@@ -81,6 +83,7 @@ export const CITY_MAX_RADIUS_MILES: Record<string, number> = {
   la: 70,
   osaka: 40,
   manchester: 40,
+  nyc: 60,
 };
 
 /** Haversine distance in miles between two lat/lng pairs. */

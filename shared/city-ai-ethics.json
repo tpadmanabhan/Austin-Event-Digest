@@ -121,6 +121,31 @@
       }
     ]
   },
+  "nyc": {
+    "city": "New York City",
+    "eyebrow": "READING LIST / NEW YORK CITY",
+    "intro": "New York City publishes principles and guidance for government AI, while Local Law 144 sets requirements for automated employment decision tools. These sources connect public-service accountability with the practical question of how AI-based hiring systems affect New Yorkers.",
+    "readings": [
+      {
+        "title": "New York City Generative AI Use Guidance",
+        "source": "New York City Office of Technology and Innovation",
+        "href": "https://www.nyc.gov/assets/oti/downloads/pdf/New-York-City-Generative-AI-Use-Guidance.pdf",
+        "note": "The city’s guidance applies its AI principles to generative-AI use, with questions about suitability, reliability, privacy and human responsibility."
+      },
+      {
+        "title": "Automated Employment Decision Tools (Local Law 144)",
+        "source": "NYC Department of Consumer and Worker Protection",
+        "href": "https://www.nyc.gov/site/dca/about/automated-employment-decision-tools.page",
+        "note": "Explains the city law’s bias-audit, public-summary and candidate-notice requirements for covered automated hiring tools."
+      },
+      {
+        "title": "The Algorithm: How AI Decides Who Gets Hired, Monitored, Promoted, and Fired",
+        "source": "Hilke Schellmann · Grand Central Publishing",
+        "href": "https://www.hachettebookgroup.com/titles/hilke-schellmann/the-algorithm/9780306827365",
+        "note": "Investigates AI in recruiting and workplace decisions, adding a practical lens to New York’s rules for algorithmic hiring."
+      }
+    ]
+  },
   "stlouis": {
     "city": "St. Louis",
     "eyebrow": "READING LIST / ST. LOUIS",

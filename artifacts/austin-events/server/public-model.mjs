@@ -7,7 +7,7 @@ export const LEGACY_DOMAIN = "eventcarpooling.com";
 export const PLATFORM_ORIGIN = `https://${PLATFORM_DOMAIN}`;
 const EXTENDED_RANGE_CITIES = new Set([
   "austin", "atlanta", "houston", "tokyo", "sanfrancisco", "sacramento",
-  "miami", "boston", "la", "stlouis", "portland", "bulverde", "dc", "manchester",
+  "miami", "boston", "la", "stlouis", "portland", "bulverde", "dc", "manchester", "nyc",
 ]);
 const MONTHS = new Map([
   ["jan", 0], ["feb", 1], ["mar", 2], ["apr", 3], ["may", 4], ["jun", 5],
@@ -134,7 +134,7 @@ export function eventSchema(event, origin) {
 
 import cityAiEthicsData from "../../../shared/city-ai-ethics.json" with { type: "json" };
 
-const PLATFORM_CITY_ORDER = ["la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
+const PLATFORM_CITY_ORDER = ["nyc", "manchester", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
 const CITY_ETHICS_RESOURCES = {
   la: { url: "https://ita.lacity.gov/news/ita-publishes-ai-safety-checklist", title: "L.A. A.I. Safety Checklist" },
   boston: { url: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", title: "Boston’s generative AI policy" },
@@ -142,6 +142,7 @@ const CITY_ETHICS_RESOURCES = {
   austin: { url: "https://customersuccessforgood.com/2026/10/07/ai-doesnt-solve-this/", title: "AI Doesn’t Solve This" },
   sacramento: { url: "https://www.nist.gov/itl/ai-risk-management-framework", title: "NIST AI Risk Management Framework" },
   miami: { url: "https://algorithmsofoppression.com/about/", title: "Algorithms of Oppression" },
+  nyc: { url: "https://www.nyc.gov/content/oti/pages/artificial-intelligence", title: "New York City AI policy and guidance" },
 };
 
 export async function loadPublicModel(site, pathname) {
@@ -183,7 +184,7 @@ export async function loadPublicModel(site, pathname) {
   }
   const cityName = tenant.city || tenant.name;
   Object.assign(base, { cityName, citySlug: site.slug, siteName: tenant.name });
-  if (about) return { ...base, kind: "about", noindex: false, title: `About ${tenant.name} | EventCarpooling`,
+  if (about) return { ...base, kind: "about", noindex: false, title: `About ${tenant.name} | In Real Life`,
     description: `Learn how ${tenant.name} brings together local events, newsletters, maps, and community participation.` };
   const digestMatch = pathname.match(/^\/digest\/(\d+)$/);
   if (pathname !== "/" && pathname !== "/full" && !digestMatch && !pathname.startsWith("/events/") && !pathname.startsWith("/venues/")) return base;

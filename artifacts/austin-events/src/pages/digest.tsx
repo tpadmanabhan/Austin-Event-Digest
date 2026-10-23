@@ -312,6 +312,7 @@ export default function DigestView() {
   const isToky = tenant.slug === "tokyo";
   const isOsaka = tenant.slug === "osaka";
   const isManchester = tenant.slug === "manchester";
+  const isNYC = tenant.slug === "nyc";
   const isJapaneseEdition = isToky || isOsaka;
   const isStLouis = tenant.slug === "stlouis";
   const isSF = tenant.slug === "sanfrancisco";
@@ -348,6 +349,7 @@ export default function DigestView() {
     dc:          [38.907,  -77.037],
     osaka:       [34.6937, 135.5023],
     manchester:  [53.4808, -2.2426],
+    nyc:          [40.7128, -74.0060],
   };
   const isLocationEnabled = tenant.slug in MAP_CENTERS;
   const showMap = tenant.slug in MAP_CENTERS;
@@ -493,7 +495,7 @@ export default function DigestView() {
   }
 
   const { label: editionDateRange, extended: hasExtendedRange } =
-      getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc" || isManchester, isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc" || isManchester);
+      getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc" || isManchester || isNYC, isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc" || isManchester || isNYC);
   const displayEditionDateRange = isOsaka && lang === "ja"
     ? formatJapaneseEditionDateRange(editionDateRange)
     : editionDateRange;
@@ -502,7 +504,7 @@ export default function DigestView() {
   return (
     <Layout>
       {/* ANNOUNCEMENT BANNER */}
-      {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && !isLA && !isManchester && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
+      {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && !isLA && !isManchester && !isNYC && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
         <span className="text-foreground/80">Build the local events guide for your city or neighborhood:</span>{" "}
         <a href="https://irl.group" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
@@ -518,6 +520,7 @@ export default function DigestView() {
         <header className="mb-16">
           {isBoston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Boston / The Charles River edition</div>}
           {isManchester && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Manchester / The citywide edition</div>}
+          {isNYC && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> New York City / The five-borough edition</div>}
           {isLA && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Los Angeles / The Pacific Coast edition</div>}
           {isOsaka && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" />{lang === "ja" ? "大阪 / 街のイベントガイド" : "Osaka / The citywide field guide"}</div>}
           {isMiami && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Miami / The bayfront edition</div>}
@@ -531,7 +534,7 @@ export default function DigestView() {
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
             {(() => {
-              const emojiMatch = isHouston || isSF || isMiami || isBoston || isLA || isOsaka || isManchester ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
+              const emojiMatch = isHouston || isSF || isMiami || isBoston || isLA || isOsaka || isManchester || isNYC ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
               const emoji = emojiMatch ? emojiMatch[1] : "";
               if (isAustinCares) return `${emoji}Austin Cares Weekly Deals`;
                const titleBase = tenant.slug === "austin" && /upcoming events/i.test(digest.subject)

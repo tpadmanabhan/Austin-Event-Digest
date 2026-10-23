@@ -596,6 +596,66 @@
   object-position: center 58%;
 }
 
+[data-tenant="nyc"] {
+  --background: 40 33% 96%;
+  --foreground: 205 42% 14%;
+  --border: 36 21% 83%;
+  --input: 36 21% 83%;
+  --card: 42 40% 99%;
+  --card-foreground: 205 42% 14%;
+  --card-border: 36 21% 83%;
+  --popover: 42 40% 99%;
+  --popover-foreground: 205 42% 14%;
+  --popover-border: 36 21% 83%;
+  --primary: 14 65% 50%;
+  --primary-foreground: 40 33% 97%;
+  --secondary: 199 47% 23%;
+  --secondary-foreground: 40 33% 97%;
+  --muted: 38 22% 90%;
+  --muted-foreground: 205 17% 38%;
+  --accent: 43 91% 59%;
+  --accent-foreground: 205 42% 14%;
+  --sidebar: 40 33% 94%;
+  --sidebar-foreground: 205 42% 14%;
+  --sidebar-border: 36 21% 83%;
+  --sidebar-primary: 14 65% 50%;
+  --sidebar-primary-foreground: 40 33% 97%;
+  --sidebar-accent: 38 22% 90%;
+  --sidebar-accent-foreground: 205 42% 14%;
+  --sidebar-ring: 14 65% 50%;
+}
+[data-tenant="nyc"] .nyc-home-hero {
+  background:
+    radial-gradient(ellipse at 86% 7%, hsl(43 91% 59% / .19), transparent 38%),
+    linear-gradient(150deg, hsl(40 33% 96%), hsl(36 28% 90%));
+}
+[data-tenant="nyc"] .nyc-home-hero h1 { letter-spacing: -.045em; }
+[data-tenant="nyc"] .nyc-hero-frame {
+  position: relative;
+  padding: 10px;
+  background: hsl(199 47% 18%);
+  border-radius: 1.5rem;
+  box-shadow: 18px 22px 0 -10px hsl(14 65% 50% / .42), 0 24px 70px hsl(205 42% 14% / .2);
+  overflow: hidden;
+}
+[data-tenant="nyc"] .nyc-hero-frame img {
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: none;
+  object-position: center 56%;
+}
+[data-tenant="nyc"] .nyc-edition-tag {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 14px 2px 0;
+  color: hsl(205 42% 14%);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
 @layer base {
   * {
     @apply border-border;
