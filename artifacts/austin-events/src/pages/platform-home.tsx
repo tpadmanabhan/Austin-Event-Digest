@@ -18,6 +18,7 @@ interface TenantSummary {
 }
 
 const LIVE_CITY_ORDER = ["nyc", "dallas", "manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
+const NEW_CITY_SLUGS = new Set(["nyc", "dallas", "manchester", "osaka"]);
 const cityUrl = (slug: string) => `https://${slug}.irl.group`;
 const publicImage = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
 
@@ -86,7 +87,7 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
           <div className="city-card-placeholder" aria-hidden="true"><MapPin size={21} strokeWidth={1.6} /></div>
         )}
         <span className="city-card-shade" aria-hidden="true" />
-        {city.slug === "dallas" && <span className="city-card-badge" aria-hidden="true">NEW</span>}
+        {NEW_CITY_SLUGS.has(city.slug) && <span className="city-card-badge" aria-hidden="true">NEW</span>}
         <span className="city-card-heading">
           <span className="city-card-city">{cityName}</span>
           <span className="city-card-name">{displayName}</span>
