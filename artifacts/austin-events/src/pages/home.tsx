@@ -250,7 +250,7 @@ export default function Home() {
   const showMap = tenant.slug in MAP_CENTERS;
   const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
   const heroImage = isNYC
-    ? "nyc-hero.svg"
+    ? "nyc-hero-photo.jpg"
     : isMiami
     ? "miami-hero.jpg"
     : isSF
@@ -287,14 +287,14 @@ export default function Home() {
     : isMiami
       ? `${import.meta.env.BASE_URL}api/storage/public-objects/cities/miami/hero.jpg?v=photo-20261013`
     : isNYC
-      ? `${import.meta.env.BASE_URL}images/nyc-hero.svg`
+      ? `${import.meta.env.BASE_URL}images/nyc-hero-photo.jpg`
     : isManchester
       ? `${import.meta.env.BASE_URL}images/manchester-hero.svg`
     : tenant.hasHeroImage && !isAtlanta && !isHouston && !isSF && !isMiami
       ? `/api/tenant/image/hero?slug=${encodeURIComponent(tenant.slug)}`
       : `${import.meta.env.BASE_URL}images/${heroImage}`;
   const heroAlt = isNYC
-    ? "Original illustration of the New York skyline at dusk, with bridges, river and warm-lit buildings"
+    ? "New York skyline at blue hour viewed across the East River"
     : isLA
     ? "Sunset over the Pacific Ocean at Point Dume near Los Angeles"
     : isBoston

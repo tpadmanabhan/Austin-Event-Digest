@@ -22,7 +22,7 @@ const cityUrl = (slug: string) => `https://${slug}.irl.group`;
 const publicImage = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
 
 const CITY_DIRECTORY = [
-  { slug: "nyc", name: "New York City Events", city: "New York City", image: publicImage("nyc-hero.svg"), alt: "Illustrated New York skyline at dusk with a river and bridges" },
+  { slug: "nyc", name: "New York City Events", city: "New York City", image: publicImage("nyc-hero-photo.jpg"), alt: "New York skyline at blue hour viewed across the East River" },
   { slug: "manchester", name: "Manchester Events", city: "Manchester, England", image: publicImage("manchester-hero.svg"), alt: "Illustrated Manchester skyline at dusk with a golden worker bee" },
   { slug: "osaka", name: "Osaka Events", city: "Osaka", image: publicImage("osaka-hero.jpg"), alt: "Dotonbori canal and evening lights in Osaka" },
   { slug: "la", name: "Los Angeles Events", city: "Los Angeles", image: LA_HERO_IMAGE_URL, alt: "Pacific Ocean at Point Dume near Los Angeles" },
