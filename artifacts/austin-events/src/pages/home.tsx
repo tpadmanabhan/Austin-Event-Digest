@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EventMap } from "@/components/event-map";
+import { CityEventsFeed } from "@/components/city-events-feed";
 import { AiEthicsSection } from "@/components/ai-ethics-section";
 import { SfAiEthicsSection } from "@/components/sf-ai-ethics-section";
 import { SacramentoAiEthicsSection } from "@/components/sacramento-ai-ethics-section";
@@ -567,8 +568,9 @@ export default function Home() {
                initial={isBoston || isLA ? false : { opacity: 0, scale: 0.95 }}
                animate={isBoston || isLA ? undefined : { opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-                 className={`relative ${(isAustinCares || isBulverde) ? "order-first lg:order-none" : ""} block ${isDallas ? "dallas-hero-frame" : isNYC ? "nyc-hero-frame" : isManchester ? "manchester-hero-frame" : isOsaka ? "osaka-hero-frame" : isHouston ? "houston-hero-frame" : isSF ? "sf-hero-frame" : isMiami ? "miami-hero-frame" : isBoston ? "boston-hero-frame" : isLA ? "la-hero-frame" : ""}`}
+                 className={`block ${(isAustinCares || isBulverde) ? "order-first lg:order-none" : ""}`}
             >
+               <div className={`relative ${isDallas ? "dallas-hero-frame" : isNYC ? "nyc-hero-frame" : isManchester ? "manchester-hero-frame" : isOsaka ? "osaka-hero-frame" : isHouston ? "houston-hero-frame" : isSF ? "sf-hero-frame" : isMiami ? "miami-hero-frame" : isBoston ? "boston-hero-frame" : isLA ? "la-hero-frame" : ""}`}>
                {!isHouston && !isSF && !isMiami && !isBoston && !isLA && !isOsaka && !isManchester && !isNYC && !isDallas && <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />}
               <img 
                 src={heroSrc}
@@ -584,6 +586,8 @@ export default function Home() {
                {isSF && <div className="sf-edition-tag"><span>The Golden Gate / In real life</span><span>{latestIssueRange || "October 12 – 31, 2026"}</span></div>}
                {isHouston && <div className="houston-edition-tag"><span>Bayou City / In real life</span><span>{latestIssueRange || "Your next plan starts here"}</span></div>}
                 {isNYC && <div className="nyc-edition-tag"><span>The Five Boroughs / In real life</span><span>{latestIssueRange || "October 23 – 31, 2026"}</span></div>}
+               </div>
+                <CityEventsFeed />
             </motion.div>
 
           </div>

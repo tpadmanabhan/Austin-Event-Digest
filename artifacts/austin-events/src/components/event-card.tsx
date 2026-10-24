@@ -242,11 +242,12 @@ interface RsvpBoxProps {
   eventTitle: string;
   eventDate: string;
   eventVenue: string;
+  autoOpen?: boolean;
 }
 
-export function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBoxProps) {
+export function RsvpBox({ digestId, eventTitle, eventDate, eventVenue, autoOpen = false }: RsvpBoxProps) {
   const { rsvpd, markRsvpd } = useRsvpState(digestId, eventTitle);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(autoOpen);
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [confirmedName, setConfirmedName] = useState<string | null>(null);
@@ -393,6 +394,15 @@ export function RsvpBox({ digestId, eventTitle, eventDate, eventVenue }: RsvpBox
 export function EventCard({ event, digestId, distanceMiles, translating }: { event: EventItem; digestId?: number; distanceMiles?: number; translating?: boolean }) {
   const { citySlug } = useDomain();
   const cardSlug = slugify(event.title);
+  const cardId = event.eventId || cardSlug;
+  const interestRequested = typeof window !== "undefined" && window.location.hash === `#event-${cardId}`;
+  useEffect(() => {
+    if (!interestRequested) return;
+    const timer = window.setTimeout(() => {
+      document.getElementById(`event-${cardId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, [cardId, interestRequested]);
   // Keep the original event photo on our own host so all four recurring yoga cards render reliably.
   const imageUrl = citySlug === "austin" && event.title === "FREE Yoga in San Gabriel Park"
     ? `${import.meta.env.BASE_URL}images/san-gabriel-yoga.jpg`
@@ -415,7 +425,7 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
   };
 
   return (
-    <div id={`event-${cardSlug}`} className={`group relative flex flex-col rounded-2xl bg-card border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full ${event.link ? "border-primary/40 border-t-2 border-t-primary hover:border-primary/60" : "border-border hover:border-primary/30"}`}>
+    <div id={`event-${cardId}`} className={`group relative flex flex-col rounded-2xl bg-card border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full ${event.link ? "border-primary/40 border-t-2 border-t-primary hover:border-primary/60" : "border-border hover:border-primary/30"}`}>
       {translating && (
         <div className="absolute inset-0 z-10 rounded-2xl bg-card/80 backdrop-blur-[1px] flex items-center justify-center animate-pulse pointer-events-none">
           <span className="text-sm font-medium text-muted-foreground tracking-wide">翻訳中…</span>
@@ -576,6 +586,7 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
             eventTitle={event.title}
             eventDate={event.date}
             eventVenue={event.venue}
+            autoOpen={interestRequested}
           />
         )}
         <TellAFriendBox event={event} citySlug={citySlug ?? "austin"} />

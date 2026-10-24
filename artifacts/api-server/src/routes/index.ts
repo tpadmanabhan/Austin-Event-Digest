@@ -12,6 +12,7 @@ import translateRouter from "./translate";
 import storageRouter from "./storage";
 import dealsRouter from "./deals";
 import contentRouter from "./content";
+import platformEventsRouter from "./platformEvents";
 import { requireTenant, requirePlatformRoot } from "../middleware/resolveTenant";
 
 const router: IRouter = Router();
@@ -25,6 +26,7 @@ router.use(storageRouter);
 // Platform-only guards are per-route; legacy public city creation is retired.
 router.use(tenantsRouter);
 router.use(cityRequestsRouter);
+router.use(platformEventsRouter);
 
 // City-level routes — require a resolved tenant from the subdomain
 router.use("/newsletter", requireTenant, newsletterRouter);
