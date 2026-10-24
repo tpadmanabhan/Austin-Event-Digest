@@ -7,6 +7,7 @@ import { ArrowDown, ArrowRight, ExternalLink, MapPin, Newspaper } from "lucide-r
 import { PlatformLayout } from "@/components/platform-layout";
 import { useLang } from "@/contexts/lang-context";
 import { LaunchCityModal } from "@/components/launch-city-modal";
+import { CityEventsFeed } from "@/components/city-events-feed";
 import { JAPANESE_CITY_COPY, PLATFORM_HOME_COPY } from "@/i18n/platform-home";
 
 interface TenantSummary {
@@ -132,24 +133,27 @@ function PlatformHomeInner() {
             <p className="hero-footnote">{copy.heroFootnote}</p>
           </motion.div>
 
-          <motion.div className="vista-collage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08 }} aria-label={copy.collageLabel}>
-            <figure className="vista vista-large">
-              <img src="/api/storage/public-objects/cities/boston/hero.jpg" alt={lang === "ja" ? "ボストンの街並み" : "Boston city view"} fetchPriority="high" />
-              <figcaption><span>{copy.newEdition}</span><b>{lang === "ja" ? "ボストン" : "Boston"}</b></figcaption>
-            </figure>
-            <figure className="vista vista-sf">
-              <img src={publicImage("houston-dusk.jpg")} alt={lang === "ja" ? "夕暮れのヒューストンのスカイライン" : "Houston skyline at dusk"} />
-              <figcaption><span>02</span><b>{lang === "ja" ? "ヒューストン" : "Houston"}</b></figcaption>
-            </figure>
-            <figure className="vista vista-austin">
-              <img src="/api/storage/public-objects/cities/miami/hero.jpg" alt={lang === "ja" ? "マイアミの水辺とスカイライン" : "Miami waterfront skyline"} />
-              <figcaption><span>03</span><b>{lang === "ja" ? "マイアミ" : "Miami"}</b></figcaption>
-            </figure>
-            <figure className="vista vista-sac">
-              <img src={publicImage("sacramento-hero.jpg")} alt={lang === "ja" ? "サクラメントの街並み" : "Sacramento city view"} />
-            </figure>
-            <span className="collage-stamp">{lang === "ja" ? <>素敵な出会いが<br />ここにある</> : <>GOOD THINGS<br />HAPPEN HERE</>}</span>
-          </motion.div>
+          <div className="platform-hero-right">
+            <motion.div className="vista-collage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08 }} aria-label={copy.collageLabel}>
+              <figure className="vista vista-large">
+                <img src="/api/storage/public-objects/cities/boston/hero.jpg" alt={lang === "ja" ? "ボストンの街並み" : "Boston city view"} fetchPriority="high" />
+                <figcaption><span>{copy.newEdition}</span><b>{lang === "ja" ? "ボストン" : "Boston"}</b></figcaption>
+              </figure>
+              <figure className="vista vista-sf">
+                <img src={publicImage("houston-dusk.jpg")} alt={lang === "ja" ? "夕暮れのヒューストンのスカイライン" : "Houston skyline at dusk"} />
+                <figcaption><span>02</span><b>{lang === "ja" ? "ヒューストン" : "Houston"}</b></figcaption>
+              </figure>
+              <figure className="vista vista-austin">
+                <img src="/api/storage/public-objects/cities/miami/hero.jpg" alt={lang === "ja" ? "マイアミの水辺とスカイライン" : "Miami waterfront skyline"} />
+                <figcaption><span>03</span><b>{lang === "ja" ? "マイアミ" : "Miami"}</b></figcaption>
+              </figure>
+              <figure className="vista vista-sac">
+                <img src={publicImage("sacramento-hero.jpg")} alt={lang === "ja" ? "サクラメントの街並み" : "Sacramento city view"} />
+              </figure>
+              <span className="collage-stamp">{lang === "ja" ? <>素敵な出会いが<br />ここにある</> : <>GOOD THINGS<br />HAPPEN HERE</>}</span>
+            </motion.div>
+            <CityEventsFeed />
+          </div>
         </div>
         <div className="hero-baseline"><span>{copy.baselineLead}</span><span className="baseline-dot" /><span>{copy.baselineTail}</span></div>
       </section>

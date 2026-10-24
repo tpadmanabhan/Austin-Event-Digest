@@ -85,6 +85,7 @@ footer:has(.irl-wordmark) .irl-wordmark { color: #25473c; }
   max-width: 1180px;
   margin: 0 auto;
 }
+.platform-hero-right { min-width: 0; }
 .hero-copy { padding: 16px 0 40px; }
 .hero-kicker, .eyebrow, .spotlight-topline {
   display: inline-flex;

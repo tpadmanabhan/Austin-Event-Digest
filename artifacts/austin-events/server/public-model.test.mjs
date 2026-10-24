@@ -142,6 +142,8 @@ test("the platform document is readable and has real city links without scripts 
   assert.match(body, /https:\/\/nyc\.irl\.group/);
   assert.match(body, /https:\/\/dallas\.irl\.group/);
   const platformHomeSource = readFileSync(new URL("../src/pages/platform-home.tsx", import.meta.url), "utf8");
+  assert.match(platformHomeSource, /<CityEventsFeed \/>/,
+    "the hydrated irl.group landing page should show the cross-city event feed");
   assert.match(platformHomeSource, /const LIVE_CITY_ORDER = \["nyc", "dallas", "manchester"/,
     "Dallas should follow featured New York City in the directory");
   assert.match(platformHomeSource, /city\.slug === "nyc" \? "city-card-featured"/,

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, CalendarClock, Radio } from "lucide-react";
-import { useTenant } from "@/contexts/tenant-context";
 
 type CityFeedEvent = {
   id: string;
@@ -89,7 +88,6 @@ async function fetchCityFeed(): Promise<CityFeedResponse> {
 }
 
 export function CityEventsFeed() {
-  const tenant = useTenant();
   const [now, setNow] = useState(() => new Date());
   const { data, isLoading, isError } = useQuery({
     queryKey: ["city-events-feed"],
