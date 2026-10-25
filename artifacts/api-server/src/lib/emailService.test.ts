@@ -175,36 +175,35 @@ describe("AI Ethics reading section", () => {
     expect(welcome).not.toMatch(/eventcarpooling|carpool/i);
   });
 
-  it("combines Austin's rebuild and city request, then renders the remaining AI Ethics items in order", () => {
+  it("renders Austin's testimonial before the AI Ethics readings in order", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
     });
+    expect(html).toContain("After a decade involved with ServiceSpace");
+    expect(html.indexOf("After a decade involved with ServiceSpace")).toBeLessThan(html.indexOf("AI Ethics"));
     expect(html).toContain("AI Ethics");
     const requestedItems = [
-      "Improving the local events guide for a better user experience",
-      "Want an event page for your city?",
-      "https://www.theatlantic.com/health/2026/10/community-builders/688947/",
-      "https://luma.com/i1m74hz4",
-      "Food for thought: Are destination websites okay with mass-scale data scraping by AI personal assistants?",
-      "https://www.siliconvalley.com/2026/10/16/meta-updates-data-scraping-policy-following-criticism/",
-      "https://www.theverge.com/ai-artificial-intelligence/1013195/ai-agents-blocked-web",
+      "IRL.group: a home for local creators",
+      "https://irl.group/",
+      "ServiceSpace and Awakin Circles",
+      "https://nipun.servicespace.org/",
+      "https://www.awakin.org/",
+      "The IRL economy is taking off",
+      "https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/?rand=8593",
+      "Scottie Scheffler on choosing the right partnerships",
+      "https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/",
+      "What you’ll find here",
+      "Faith leaders and AI guardrails",
+      "https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/",
     ];
     const requestedPositions = requestedItems.map(value => html.indexOf(value));
     expect(requestedPositions.every(position => position >= 0)).toBe(true);
     expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
-    expect(html).toMatch(/<a href="https:\/\/irl\.group\/"[^>]*>Want an event page for your city\?<\/a> — Make a request; customization is also considered for each city\./);
-    expect(html).toContain("customization is also considered for each city");
-    expect(html).toContain("Meta updates data-scraping policy following criticism");
-    expect(html).toContain("The revised terms leave questions about how business websites can control automated access to their content.");
-    expect(html).toContain("Websites are closing their doors to AI agents");
-    expect(html).toContain("The report shows that sites are blocking agents over licensing, control, and security concerns, so agents’ ability to act for users depends on website permission.");
-    expect(html).not.toContain("AI Doesn’t Solve This");
-    expect(html).not.toContain("10% Happier with Dan Harris");
-    expect(html).not.toContain("Chasing Life with Dr. Sanjay Gupta");
-    expect(html).not.toContain("The Wisdom of the Bullfrog");
-    expect(html).not.toContain("Nick Bostrom");
-    expect(html).not.toContain("404media.co");
-    expect(html).not.toContain("are-we-trading-our-soul-for-convenience");
+    expect(html).toContain("— Raj");
+    expect(html).toContain("It’s not necessarily not wanting to do things. It’s just wanting to do things with the right people.");
+    expect(html).not.toContain("The Rise of the IRL Influencer");
+    expect(html).not.toContain("Spurs² Hackathon @ UT Austin");
+    expect(html).not.toContain("Meta updates data-scraping policy following criticism");
     expect(html.indexOf("AI Ethics")).toBeGreaterThan(html.indexOf("<!-- Intro -->"));
     expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf("<!-- Location CTA -->"));
   });

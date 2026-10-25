@@ -1,0 +1,67 @@
+{
+  "testimonial": "After a decade involved with ServiceSpace, I still value the phone-free Awakin Circles I attended on both coasts and in Houston: meditation, an hour of sharing, and a meal. Austin’s many newcomers could make something similar flourish here.",
+  "attribution": "Raj",
+  "title": "AI Ethics",
+  "intro": "These stories connect human connection and community access to the choices we make about AI.",
+  "items": [
+    {
+      "title": "IRL.group: a home for local creators",
+      "description": "IRL.group gives city and community creators a place to bring people together offline.",
+      "links": [
+        {
+          "label": "Explore IRL.group",
+          "url": "https://irl.group/"
+        }
+      ]
+    },
+    {
+      "title": "ServiceSpace and Awakin Circles",
+      "description": "Nipun Mehta founded ServiceSpace in the Bay Area. Its free circles welcome friends, family, and strangers with no commercial, denominational, or sponsor agenda.",
+      "links": [
+        {
+          "label": "Nipun Mehta",
+          "url": "https://nipun.servicespace.org/"
+        },
+        {
+          "label": "Awakin Circles",
+          "url": "https://www.awakin.org/"
+        }
+      ]
+    },
+    {
+      "title": "The IRL economy is taking off",
+      "description": "The live-event economy is growing as people seek face-to-face connection in an increasingly digital world.",
+      "links": [
+        {
+          "label": "Read the Fortune article",
+          "url": "https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/?rand=8593"
+        }
+      ]
+    },
+    {
+      "title": "Scottie Scheffler on choosing the right partnerships",
+      "description": "“It’s not necessarily not wanting to do things. It’s just wanting to do things with the right people.”",
+      "links": [
+        {
+          "label": "Read the interview",
+          "url": "https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/"
+        }
+      ]
+    },
+    {
+      "title": "What you’ll find here",
+      "description": "I’ll favor recurring, mindful gatherings over transactional one-offs so people can keep showing up for their local community.",
+      "links": []
+    },
+    {
+      "title": "Faith leaders and AI guardrails",
+      "description": "At an AI conference, faith leaders questioned what AI could cost humanity and whether guardrails can help while its longer-term dangers remain unclear.",
+      "links": [
+        {
+          "label": "Read the Religion News Service report",
+          "url": "https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/"
+        }
+      ]
+    }
+  ]
+}

@@ -201,15 +201,17 @@ test("city and historical edition responses are tenant-specific and readable", a
     assert.equal(modelOf(edition.body).kind, "digest");
   }
 });
-test("Austin's Food for Thought articles appear in the public city and edition documents", async () => {
+test("Austin's testimonial and AI Ethics readings appear in the public city and edition documents", async () => {
   const host = "austin.eventcarpooling.com";
   for (const pathname of ["/", `/digest/${fixture("austin").id}`]) {
     const { response, body } = await document(host, pathname);
     assert.equal(response.status, 200);
-    assert.ok(body.includes("Meta updates data-scraping policy following criticism"));
-    assert.ok(body.includes("Websites are closing their doors to AI agents"));
-    assert.ok(body.includes("https://www.theverge.com/ai-artificial-intelligence/1013195/ai-agents-blocked-web"));
-    assert.ok(body.includes("The report shows that sites are blocking agents over licensing, control, and security concerns"));
+    assert.ok(body.includes("After a decade involved with ServiceSpace"));
+    assert.ok(body.indexOf("After a decade involved with ServiceSpace") < body.indexOf("AI Ethics"));
+    assert.ok(body.includes("IRL.group: a home for local creators"));
+    assert.ok(body.includes("https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/"));
+    assert.ok(body.includes("https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/"));
+    assert.ok(body.includes("https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/"));
   }
 });
 test("San Francisco shares its Golden Gate image in initial homepage and edition HTML", async () => {

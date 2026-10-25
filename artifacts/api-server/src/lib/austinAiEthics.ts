@@ -1,14 +1,39 @@
+import austinAiEthics from "../../../../shared/austin-ai-ethics.json";
+
+const escapeHtml = (value: string) =>
+  value.replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character]!);
+
 /** Austin's editorial reading card, rendered with email-safe inline styles. */
 export function buildAustinAiEthicsSection(): string {
+  const links = (item: (typeof austinAiEthics.items)[number]) =>
+    (item.links ?? [])
+      .map(
+        ({ label, url }) =>
+          `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="color:#047857; text-decoration:underline;">${escapeHtml(label)}</a>`,
+      )
+      .join(" · ");
+
   return `
     <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:12px; padding:22px; margin-bottom:24px;">
-      <h2 style="margin:0 0 12px; color:#1f2937; font-size:20px; font-weight:700;">AI Ethics</h2>
-      <p style="margin:0; color:#4b5563; font-size:15px; line-height:1.7;">Responsible technology should make digital experiences easier to use, support real-world connection, and be built around the people it serves. This week, I’m connecting those ideas to my website rebuild, a story about community builders, a sports-tech hackathon, and questions about AI systems accessing website content.</p>
+      <blockquote style="margin:0 0 18px; padding:12px 16px; border-left:3px solid #059669; background:#ecfdf5; color:#374151; font-size:14px; font-style:italic; line-height:1.7;">
+        “${escapeHtml(austinAiEthics.testimonial)}”
+        <footer style="margin-top:8px; color:#4b5563; font-size:12px; font-style:normal; font-weight:600;">— ${escapeHtml(austinAiEthics.attribution)}</footer>
+      </blockquote>
+      <h2 style="margin:0 0 12px; color:#1f2937; font-size:20px; font-weight:700;">${escapeHtml(austinAiEthics.title)}</h2>
+      <p style="margin:0; color:#4b5563; font-size:15px; line-height:1.7;">${escapeHtml(austinAiEthics.intro)}</p>
       <ul style="margin:16px 0 0; padding-left:20px; color:#4b5563; font-size:14px; line-height:1.8;">
-        <li style="margin-bottom:10px;"><a href="https://irl.group/" style="color:#047857; text-decoration:underline;">Improving the local events guide for a better user experience</a> — I’m improving the site so finding local events feels clearer and easier. <a href="https://irl.group/" style="color:#047857; text-decoration:underline;">Want an event page for your city?</a> — Make a request; customization is also considered for each city.</li>
-        <li style="margin-bottom:10px;"><a href="https://www.theatlantic.com/health/2026/10/community-builders/688947/" style="color:#047857; text-decoration:underline;">The Rise of the IRL Influencer</a> — Nancy Walecki on community builders bringing people together offline.</li>
-        <li style="margin-bottom:10px;"><a href="https://luma.com/i1m74hz4" style="color:#047857; text-decoration:underline;">Spurs² Hackathon @ UT Austin</a> — I’m participating in a hackathon with the San Antonio Spurs and partners to build AI-powered sports media tools.</li>
-        <li><strong>Food for thought: Are destination websites okay with mass-scale data scraping by AI personal assistants?</strong> — <a href="https://www.siliconvalley.com/2026/10/16/meta-updates-data-scraping-policy-following-criticism/" style="color:#047857; text-decoration:underline;">Meta updates data-scraping policy following criticism</a> — The revised terms leave questions about how business websites can control automated access to their content. <a href="https://www.theverge.com/ai-artificial-intelligence/1013195/ai-agents-blocked-web" style="color:#047857; text-decoration:underline;">Websites are closing their doors to AI agents</a> — The report shows that sites are blocking agents over licensing, control, and security concerns, so agents’ ability to act for users depends on website permission.</li>
+        ${austinAiEthics.items
+          .map(
+            (item, index) =>
+              `<li style="margin-bottom:${index === austinAiEthics.items.length - 1 ? "0" : "10px"};"><strong>${escapeHtml(item.title)}</strong> — ${escapeHtml(item.description)}${item.links?.length ? ` ${links(item)}` : ""}</li>`,
+          )
+          .join("\n        ")}
       </ul>
     </div>`;
 }
