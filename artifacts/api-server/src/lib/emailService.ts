@@ -58,6 +58,12 @@ export function formatCityNewsletterSubject(subject: string, tenantSlug?: string
   const title = existingLabel
     ? trimmed.slice(0, existingLabel.index).trim()
     : trimmed.replace(NEWSLETTER_DATE_SUFFIX, "").trim();
+  const alreadyIncludesLabel = tenantSlug === "austincares"
+    ? /\bUpcoming Deals\b/i.test(title)
+    : /\bUpcoming Events\b/i.test(title);
+  if (alreadyIncludesLabel) {
+    return title.toLowerCase() === label.toLowerCase() ? label : title;
+  }
 
   return `${title || trimmed} — ${label}`;
 }

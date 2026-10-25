@@ -71,6 +71,12 @@ describe("newsletter sender identity", () => {
     expect(sendMail.mock.calls[0][0].subject).toBe(`${edition.subject} — Upcoming Events`);
   });
 
+  it("does not duplicate an existing generic event label in the subject", async () => {
+    const { sendNewsletterEmail } = await import("./emailService");
+    await sendNewsletterEmail({ ...edition, subject: "upcoming events", tenantSlug: "austin" });
+    expect(sendMail.mock.calls[0][0].subject).toBe("Upcoming Events");
+  });
+
   it("uses Titan SMTP and leaves newsletter replies addressed to the From mailbox", async () => {
     const { sendNewsletterEmail } = await import("./emailService");
     await sendNewsletterEmail({ ...edition, fromName: "Austin Cares" });
@@ -94,6 +100,9 @@ describe("newsletter sender identity", () => {
     ["Austin Events — Week of 10/12/2026 – 10/18/2026", "austin", "Austin Events — Upcoming Events"],
     ["San Francisco Events — Upcoming Events", "sanfrancisco", "San Francisco Events — Upcoming Events"],
     ["🏷️ Austin Cares Weekly Deals — Week of October 12–18, 2026", "austincares", "🏷️ Austin Cares Weekly Deals — Upcoming Deals"],
+    ["upcoming events", "austin", "Upcoming Events"],
+    ["Austin Upcoming Events: October 25–31, 2026", "austin", "Austin Upcoming Events"],
+    ["upcoming deals", "austincares", "Upcoming Deals"],
   ])("removes the date range from city newsletter subjects", async (subject, tenantSlug, expected) => {
     const { formatCityNewsletterSubject } = await import("./emailService");
     expect(formatCityNewsletterSubject(subject, tenantSlug)).toBe(expected);
