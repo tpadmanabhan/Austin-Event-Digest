@@ -48,3 +48,4 @@
 - [City provisioning policy](city-provisioning-policy.md) — manual review stays separate from account creation; root routing and city admin credentials are not platform approval.
 - [Workspace send runner restarts](workspace-send-runner-restarts.md) — a restart can kill the process and erase its log; verify production send metadata before any re-arm.
 - [React SSR footer image loading](react-ssr-footer-image-loading.md) — lazy-load footer logos so React SSR does not inject a preload node into the public hydration root.
+- [Mobile city-grid sizing](mobile-city-grid-sizing.md) — use explicit single-column base tracks; implicit grid columns can preserve desktop-sized content and clip it on phones.

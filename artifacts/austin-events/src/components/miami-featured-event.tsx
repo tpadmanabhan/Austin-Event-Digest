@@ -52,7 +52,7 @@ export function MiamiFeaturedEvent({ event, digestId, headingLevel = "h2", class
             <strong className="font-bold">{lead}</strong>
           </p>
           {rest ? <p className="mt-3 max-w-2xl text-sm leading-7" style={{ color: "rgba(251,244,234,.82)" }}>{rest}</p> : null}
-          <dl className="mt-5 grid gap-2 text-sm sm:grid-cols-2" style={{ color: "rgba(251,244,234,.9)" }}>
+          <dl className="mt-5 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2" style={{ color: "rgba(251,244,234,.9)" }}>
             <div className="flex gap-2"><CalendarDays className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "#8FD3C4" }} /><dt className="sr-only">Date</dt><dd>{event.date}</dd></div>
             {event.venue ? <div className="flex gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "#8FD3C4" }} /><dt className="sr-only">Venue</dt><dd>{event.venue}{event.venueAddress && !event.venue.includes(event.venueAddress) ? `, ${event.venueAddress}` : ""}</dd></div> : null}
           </dl>

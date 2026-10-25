@@ -175,12 +175,13 @@ describe("AI Ethics reading section", () => {
     expect(welcome).not.toMatch(/eventcarpooling|carpool/i);
   });
 
-  it("renders Austin's testimonial before the AI Ethics readings in order", () => {
+  it("merges Austin's Awakin reference into the AI Ethics paragraph once", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
     });
-    expect(html).toContain("After a decade involved with ServiceSpace");
-    expect(html.indexOf("After a decade involved with ServiceSpace")).toBeLessThan(html.indexOf("AI Ethics"));
+    const awakinReference = "After a decade involved with ServiceSpace, Raj still values the phone-free Awakin Circles";
+    expect(html.split(awakinReference).length - 1).toBe(1);
+    expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf(awakinReference));
     expect(html).toContain("AI Ethics");
     const requestedItems = [
       "IRL.group: a home for local creators",
@@ -199,7 +200,6 @@ describe("AI Ethics reading section", () => {
     const requestedPositions = requestedItems.map(value => html.indexOf(value));
     expect(requestedPositions.every(position => position >= 0)).toBe(true);
     expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
-    expect(html).toContain("— Raj");
     expect(html).toContain("It’s not necessarily not wanting to do things. It’s just wanting to do things with the right people.");
     expect(html).not.toContain("The Rise of the IRL Influencer");
     expect(html).not.toContain("Spurs² Hackathon @ UT Austin");

@@ -829,7 +829,7 @@ export default function DigestView() {
                       Two new features{" "}
                       <span style={{ color: "#60a5fa", fontStyle: "italic" }}>rolling out soon</span>
                     </h3>
-                    <div className="grid sm:grid-cols-2 gap-5 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                       <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
                         <div className="text-2xl mb-2">📨</div>
                         <p className="font-bold text-white mb-1">Tell a Friend</p>
@@ -1000,7 +1000,7 @@ export default function DigestView() {
                     </button>
                   </div>
                 ) : (
-                  <div className={geoActive ? "flex flex-col gap-6" : "grid sm:grid-cols-2 gap-8"}>
+                  <div className={geoActive ? "flex flex-col gap-6" : "grid grid-cols-1 sm:grid-cols-2 gap-8"}>
                     {regularEvents.map((event: any, i: number) => (
                       <div key={i} style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
                         <EventCard event={translateEvent(event)} digestId={digest.id} distanceMiles={getDistanceMiles(event)} translating={isJapaneseEdition && lang === "ja" && translating} />

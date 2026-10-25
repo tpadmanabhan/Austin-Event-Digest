@@ -201,13 +201,15 @@ test("city and historical edition responses are tenant-specific and readable", a
     assert.equal(modelOf(edition.body).kind, "digest");
   }
 });
-test("Austin's testimonial and AI Ethics readings appear in the public city and edition documents", async () => {
+test("Austin's public city and edition documents merge the Awakin reference into AI Ethics", async () => {
   const host = "austin.eventcarpooling.com";
   for (const pathname of ["/", `/digest/${fixture("austin").id}`]) {
     const { response, body } = await document(host, pathname);
     assert.equal(response.status, 200);
-    assert.ok(body.includes("After a decade involved with ServiceSpace"));
-    assert.ok(body.indexOf("After a decade involved with ServiceSpace") < body.indexOf("AI Ethics"));
+    assert.ok(body.includes("A test newsletter introduction."));
+    const awakinReference = "After a decade involved with ServiceSpace, Raj still values the phone-free Awakin Circles";
+    assert.equal(body.split(awakinReference).length - 1, 1);
+    assert.ok(body.indexOf("AI Ethics") < body.indexOf(awakinReference));
     assert.ok(body.includes("IRL.group: a home for local creators"));
     assert.ok(body.includes("https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/"));
     assert.ok(body.includes("https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/"));

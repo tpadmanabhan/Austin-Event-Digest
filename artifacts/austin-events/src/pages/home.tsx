@@ -415,7 +415,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary)_0%,transparent_40%)] opacity-5" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className={`grid lg:grid-cols-2 gap-12 lg:gap-8 ${isMiami || isBoston || isLA ? "items-start" : "items-center"}`}>
+          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 ${isMiami || isBoston || isLA ? "items-start" : "items-center"}`}>
             
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
@@ -713,7 +713,7 @@ export default function Home() {
                   Two new features{" "}
                   <span style={{ color: "#60a5fa", fontStyle: "italic" }}>rolling out soon</span>
                 </h3>
-                <div className="grid sm:grid-cols-2 gap-5 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                   <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
                     <div className="text-2xl mb-2">📨</div>
                     <p className="font-bold text-white mb-1">Tell a Friend</p>
@@ -741,7 +741,7 @@ export default function Home() {
           </div>}
 
           {isLoadingLatest ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3].map(i => (
                 <div key={i} className="h-96 rounded-2xl bg-muted animate-pulse" />
               ))}

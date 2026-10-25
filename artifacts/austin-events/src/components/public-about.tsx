@@ -19,7 +19,7 @@ export function PublicAbout() {
         <p className="mb-8 max-w-2xl text-slate-600">
           EventCarpooling is a neighborhood-focused, multi-city guide that connects people through curated events, local newsletters, and available carpool-interest tools.
         </p>
-        <dl className="grid gap-6 sm:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {TOPICS.map((t) => (
             <div key={t.h} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
               <dt className="mb-1 font-serif text-lg font-bold text-slate-900">{t.h}</dt>
