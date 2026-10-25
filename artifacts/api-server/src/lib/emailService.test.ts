@@ -191,7 +191,7 @@ describe("AI Ethics reading section", () => {
       "https://www.awakin.org/",
       "The IRL economy is taking off",
       "https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/?rand=8593",
-      "Scottie Scheffler on choosing the right partnerships",
+      "Golfer Scottie Scheffler on choosing the right partnerships",
       "https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/",
       "What you’ll find here",
       "Faith leaders and AI guardrails",
