@@ -325,12 +325,6 @@ Match the provider log to the intended recipient and the request's recorded time
 ## Sending an approved draft to production at a specified time
 
 For a scheduled production send, follow the full [targeted-send checklist](references/city-pages-and-targeted-sends.md#scheduled-production-send). It separates edition identification, production synchronization, recipient authorization, and send timing; the endpoint sends immediately.
-6. **Re-check immediately before sending.** Confirm the production edition remains the intended edition, is unsent, still matches the reviewed content, and its authenticated preview works. Verify the current active-subscriber count and that recipients are all subscribers for the selected tenant. Then make exactly one authenticated production request with `confirm: true` and the verified production digest ID.
-7. **Report the actual outcome.** Check the HTTP status, response body, delivered/failed counts, and production `sentAt`/`sentCount` after sending. Report the requested and actual start/completion times in the named city time zone. If a request times out or the result is unclear, inspect send state and server logs before deciding whether another request is safe; never automatically retry a potentially delivered broadcast.
-
-Keep production admin tokens and derived credentials in memory or the approved secrets flow. Never put them in task scripts, files, logs, or chat. A test send is not authorization for a subscriber-wide send; the user must explicitly authorize the production send, recipient scope, and timing.
-
-For a workspace one-time send, use the managed background shell runner and its returned task ID to monitor completion, not a detached Node child inside CodeExecution. Record a deterministic fingerprint of the reviewed content (subject, intro, week, ordered events) and re-check the same representation just before sending; abort if it changed. Stop if the requested time has passed or the edition is already sent; do not silently send early, late, or twice. Start the send at the requested instant and report completion separately, because sending the whole list takes time. If “CST” is used colloquially for Austin local time during daylight saving, clarify that the scheduled zone is `America/Chicago` and report the actual CDT/CST offset.
 
 ## Deduplication Check Before Sending
 
