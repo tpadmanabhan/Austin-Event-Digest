@@ -1,109 +1,46 @@
-# Workspace
+# IRL Group workspace
 
-## Overview
+## Product and architecture
 
-pnpm workspace monorepo using TypeScript. This is "Raj's Austin Events" — a personalized weekly newsletter website about Austin events.
+This pnpm monorepo powers IRL Group: a multi-tenant local-events platform with city editions, newsletters, admin tools, and the AustinCares deals directory. The canonical public domain is `irl.group`; new links, APIs, and canonicals must use it. Keep the legacy host only for intentional redirects or compatibility, and do not change the verified mail sender address as part of a domain migration.
 
-## Stack
+- Runtime: Node.js 24, TypeScript 5.9, pnpm workspaces.
+- API: Express 5 in `artifacts/api-server`.
+- Public site: React/Vite SSR in `artifacts/austin-events`.
+- Data: Replit-managed PostgreSQL through Drizzle in `lib/db`; development and production are separate environments.
+- Object uploads: Replit Object Storage through the local sidecar in `artifacts/api-server/src/lib/objectStorage.ts`.
+- Email: Titan SMTP for outbound app mail; Gmail IMAP for newsletter-source intake.
+- AI: server-side OpenAI-compatible calls; verify Replit AI Integrations endpoint portability before any off-Replit run.
 
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
-- **Email**: Resend API (requires RESEND_API_KEY secret)
+Other artifacts and workflows, such as the portfolio and mockup sandbox, are workspace tools and are not automatically part of the public production site.
 
-## Features
+## Host and tenant rules
 
-1. **Landing page** with email subscription form and latest digest preview
-2. **Digest page** — view individual weekly digests with event cards
-3. **Admin panel** at `/admin` — generate new digests, manage subscribers, send newsletters, add spotlights
-4. **Email newsletters** via Resend (configure RESEND_API_KEY env var)
+The API resolves a city tenant from the incoming `Host` header. Production requests must preserve the original host through any reverse proxy; an unknown or inactive tenant must not silently fall back to another city. Development uses `DEFAULT_TENANT_SLUG` and can use `X-Tenant-Slug` only outside production.
 
-## Environment Variables
+The platform has a root hub and city subdomains. The migration checklist inventories 19 slugs; verify the active tenant rows and DNS records before treating that list as complete. Preserve both `irl.group` and `*.irl.group`, wildcard HTTPS, and all active city hostnames during any provider change. See `docs/irl-group-migration.md`.
 
-- `RESEND_API_KEY` — API key from resend.com for sending emails
-- `FROM_EMAIL` — The "from" email address (defaults to newsletter@rajsaustinevents.com)
-- `FROM_NAME` — The sender name (defaults to "Raj's Austin Events")
-- `DATABASE_URL` — Auto-provided by Replit PostgreSQL
-- `RSVP_HMAC_SECRET` — Secret key used to sign RSVP email links (prevents link forgery). Generate with: `openssl rand -base64 32`. When not set, the email-link RSVP flow is disabled.
+## Data and operational safety
 
-## Structure
+- Treat subscribers, city-request submissions, RSVPs, and community deal submissions as personal or user-provided data. Keep exports encrypted and outside Git.
+- Never put secret values, bearer tokens, or database URLs in code, docs, logs, scripts, or commits. Record names only; use the Replit Secrets UI and the destination's secret manager for values.
+- Do not assume development and production database IDs, records, or configuration match.
+- Newsletter broadcasts require explicit user authorization. Test sends must target one approved recipient.
+- Newsletter From settings are separate from page-domain changes.
+- The API currently starts daily and weekly maintenance/refresh timers in each server process. Review `docs/irl-group-migration.md` before changing deployment topology or enabling jobs on a second host.
 
-```text
-artifacts-monorepo/
-├── artifacts/              # Deployable applications
-│   ├── api-server/         # Express API server
-│   └── austin-events/      # React + Vite frontend website
-├── lib/                    # Shared libraries
-│   ├── api-spec/           # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/   # Generated React Query hooks
-│   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts
-└── ...
-```
+## Build and run
 
-## TypeScript & Composite Projects
+- `pnpm install --frozen-lockfile`
+- `pnpm run typecheck`
+- `pnpm run build`
+- API development: `pnpm --filter @workspace/api-server run dev`
+- Public site development: `pnpm --filter @workspace/austin-events run dev`
+- API production start: `pnpm --filter @workspace/api-server run start`
+- Public site production serve: `pnpm --filter @workspace/austin-events run serve`
 
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references.
+The API requires `PORT` and `DATABASE_URL`. The API runs `runStartupMigration()` at startup; review that behavior before starting multiple instances against a new database. The web and API are separate services and need the correct proxy/API routing.
 
-## Root Scripts
+## Migration documentation
 
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages that define it
-- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
-
-## Packages
-
-### `artifacts/austin-events` (`@workspace/austin-events`)
-
-React + Vite frontend. Pages: Home, Digest view, Admin panel.
-
-### `artifacts/api-server` (`@workspace/api-server`)
-
-Express 5 API server. Routes:
-- `GET /api/healthz` — health check
-- `POST /api/newsletter/subscribe` — subscribe to newsletter
-- `POST /api/newsletter/unsubscribe` — unsubscribe
-- `GET /api/newsletter/subscribers` — list subscribers (admin)
-- `GET /api/events/digest/latest` — get latest digest
-- `GET /api/events/digest/list` — list all digests
-- `POST /api/events/digest/generate` — generate new digest (admin)
-- `POST /api/events/digest/send` — send digest to subscribers (admin)
-
-### `lib/db` (`@workspace/db`)
-
-Database layer. Tables: `subscribers`, `digests`.
-
-### `lib/api-spec` (`@workspace/api-spec`)
-
-Owns the OpenAPI 3.1 spec. Run codegen: `pnpm --filter @workspace/api-spec run codegen`
-
-## Email Setup
-
-To enable email sending, set the `RESEND_API_KEY` secret in your environment:
-1. Sign up at resend.com (free)
-2. Create an API key
-3. Add `RESEND_API_KEY` to your Replit secrets
-4. Optionally set `FROM_EMAIL` to your verified domain email
-
-Without the key, the app works fully but emails won't be sent.
-
-## Gmail / Event Source Integration (PENDING)
-
-Events are sourced from: `aiimplementationclubaustin@gmail.com`
-
-The Gmail OAuth integration (connector:ccfg_google-mail_B959E7249792448ABBA58D46AF) was not yet authorized.
-
-**To complete this:** Either:
-- Option A: Re-authorize the Gmail OAuth connector via Replit integrations, OR
-- Option B: Generate a Gmail App Password at myaccount.google.com/apppasswords and add these secrets:
-  - `GMAIL_USER` = `aiimplementationclubaustin@gmail.com`
-  - `GMAIL_APP_PASSWORD` = the 16-character app password
-
-The IMAP email reader code is in `artifacts/api-server/src/lib/emailReader.ts`.
-Once credentials are set, digest generation will auto-read newsletters from that inbox.
+`README.md` is the short operator guide. `docs/irl-group-migration.md` contains the staged off-Replit inventory, backup, staging, DNS cutover, rollback, and post-cutover checklist. The procedure is documentation, not authorization to export data, transfer secrets, send newsletters, or change DNS.
