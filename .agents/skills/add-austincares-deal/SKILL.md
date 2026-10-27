@@ -1,11 +1,11 @@
 ---
 name: add-austincares-deal
-description: Add a new deal to the AustinCares deals page and map. Use when the user wants to add, update, or remove a business deal on austincares.eventcarpooling.com — either as a static (curated) entry or a community submission.
+description: Add a new deal to the AustinCares deals page and map. Use when the user wants to add, update, or remove a business deal on austincares.irl.group — either as a static (curated) entry or a community submission.
 ---
 
 # AustinCares — Full Reference
 
-AustinCares is a standalone tenant on `austincares.eventcarpooling.com` — a **weekly deals site**, not an events site. It has two pages, a deals API, and a digest email that links subscribers to the full deals directory. The digest is populated with weekly deals (formatted as event-like objects), not city events.
+AustinCares is a standalone tenant on `austincares.irl.group` — a **weekly deals site**, not an events site. It has two pages, a deals API, and a digest email that links subscribers to the full deals directory. The digest is populated with weekly deals (formatted as event-like objects), not city events.
 
 ---
 

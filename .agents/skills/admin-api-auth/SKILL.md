@@ -43,7 +43,7 @@ Use `POST /api/admin/verify` with `{ "token": "<runtime-derived-token>" }` or th
 SELECT password_hash FROM tenants WHERE slug = 'austin';
 ```
 
-**For production API calls** (`https://austin.eventcarpooling.com/...`):
+**For production API calls** (`https://austin.irl.group/...`):
 ```js
 // In CodeExecution:
 const result = await executeSql({
@@ -108,7 +108,7 @@ Authorization: Bearer <token>
 Use `PATCH /api/admin/settings` to update tenant display fields on production without touching the DB directly. This is the right way to fix email FROM names, digest display names, and subject line fallbacks.
 
 ```bash
-curl -s -X PATCH "https://CITY.eventcarpooling.com/api/admin/settings" \
+curl -s -X PATCH "https://CITY.irl.group/api/admin/settings" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name":"Austin Cares","digestTitle":"Austin Cares Weekly Deals"}'

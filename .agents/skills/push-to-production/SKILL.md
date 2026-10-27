@@ -8,7 +8,7 @@ description: Push event digest data or other changes from the dev environment to
 ## Key Facts
 
 - **Dev and production are separate environments.** Their tenant rows, digests, and admin credentials may differ; always target and authenticate to the intended city subdomain.
-- **Production URL:** `https://eventcarpooling.com` / `https://<city>.eventcarpooling.com`
+- **Production URL:** `https://irl.group` / `https://<city>.irl.group`
 - **Code changes** → Publish via Replit deploy button.
 - **Production data writes** → Use the authenticated production API. Production `executeSql` is for read-only inspection; do not try to write production rows directly with it.
 - Public GET endpoints such as `/api/events/digest/latest` do not validate admin credentials.

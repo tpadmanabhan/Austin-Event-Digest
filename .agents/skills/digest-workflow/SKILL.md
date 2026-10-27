@@ -19,6 +19,12 @@ When creating or refreshing a city's event website or newsletter, actively resea
 
 Read [AI event curation](references/ai-event-curation.md) before generating, importing, or curating an edition. Follow its source-verification, date-range, safe-addition, and completion checks. This default applies across cities, not just San Francisco; it does not expand isolated technical fixes or deals-only requests.
 
+## Thematic directories and recurring activities
+
+The city-wide AI Ethics and AI-event defaults above apply to full geographic city guides. If the user requests a separate, narrowly scoped directory (for example, free recurring wellness activities), honor that boundary instead of adding unrelated city events or sections.
+
+For recurring activities, verify recurrence, time, cost, audience or eligibility, and public location from organizer sources. Prefer evergreen schedule labels without invented end dates; do not invent a cadence or assign synthetic one-time dates. Distinguish free activities from optional donations, RSVP requirements, and eligibility limits. If a calendar has no current dated listing, do not invent one: show only a verified recurring schedule or link the calendar without claiming a cadence. Keep non-public addresses out of event fields, maps, coordinates, and structured data; use the confirmed area and explain when the organizer shares the exact location. Do not geocode an address disclosed only after RSVP.
+
 ## Keep digests readable publicly
 
 Use `.agents/skills/verify-ai-readable-pages/SKILL.md` for the live HTML audit. Check real body text with scripts/data removed, verified Event-schema coverage, and readable week/navigation labels. Local tests do not prove a change is published; do not promise rides or AI indexing.
@@ -49,10 +55,10 @@ Read [Austin edition maintenance](references/austin-edition-maintenance.md) when
 
 ```bash
 # Dev through the workspace proxy
-curl -s "http://localhost:80/api/events/digest/list" -H "Host: austin.eventcarpooling.com"
+curl -s "http://localhost:80/api/events/digest/list" -H "Host: austin.irl.group"
 
 # Production
-curl -s "https://austin.eventcarpooling.com/api/events/digest/list"
+curl -s "https://austin.irl.group/api/events/digest/list"
 ```
 
 These GETs are public and filter past events; they are useful for finding the digest ID, not for backing up its stored events. Identify the target by tenant, ID, subject, and `weekOf`; an edition can contain events beyond its nominal week. When changing a live edition, inspect its current metadata and raw event array before writing. Read production data with the read-only database tool, then write via the city admin API. Never log a password hash or bearer token.
@@ -272,7 +278,7 @@ for e in events:
 The intro text is stored separately from events and can be patched independently:
 
 ```bash
-curl -s -X PATCH "https://CITY.eventcarpooling.com/api/events/digest/ID/intro" \
+curl -s -X PATCH "https://CITY.irl.group/api/events/digest/ID/intro" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"intro":"Hey Portland! Here'\''s your weekly curated guide..."}'
@@ -318,13 +324,7 @@ Match the provider log to the intended recipient and the request's recorded time
 
 ## Sending an approved draft to production at a specified time
 
-When the user asks to send a specific draft to production at a later time, treat content approval, production synchronization, recipient scope, and the send time as separate requirements:
-
-1. **Identify and inspect both editions.** Confirm the city, target local date and time zone, and source draft by its tenant, ID, week, subject, and sent status. Identify the matching production edition independently; never assume dev and production IDs match or that “latest” means the intended edition. A recent test email is evidence of what the draft rendered at that time, not proof that production has the same stored content.
-2. **Compare the approved content with production before changing it.** Inspect subject, intro, ordered events, stable event IDs, URLs, featured/spotlight flags, and other email-visible fields. Use complete stored arrays as read-only comparison sources when available. Public projections may filter expired/adult entries and cannot safely be used as full-array replacement payloads.
-3. **Synchronize only differences, preserving data.** Prefer supported scoped, tenant-authenticated edits for individual fields. For a required multi-field array update, re-read the complete production array immediately before writing, stop if it changed since review, and retain all records and fields not intentionally changed. Never substitute a full event-list replacement merely to correct one URL. If the API would strip metadata or alter unrelated events, stop and resolve that before sending; production SQL is read-only.
-4. **Verify the exact production edition.** Re-read the saved record and verify the intended content matches the approved draft while its ID, event count/order, unrelated event fields, and edition metadata remain intact. Confirm the authenticated production email preview contains the approved version and corrected links. A database write is live data and needs no republish; a code/template change requires publication, and must be verified on the published site.
-5. **Schedule for the requested city-local time.** Resolve the date/time and DST offset for the city's named time zone, then determine the exact UTC instant; do not assume the developer's local zone or a fixed UTC offset. The digest send endpoint sends immediately, not at a future time. Use a monitored, one-time background runner only if the workspace can keep it active through the send window. Confirm the runner is active and state whether the send is merely queued. If a monitored runner is unavailable, do not claim the send is scheduled or send early; explain the limitation and ask what the user wants instead. A workspace process is not a durable production scheduler; do not promise it survives a stopped workspace or process.
+For a scheduled production send, follow the full [targeted-send checklist](references/city-pages-and-targeted-sends.md#scheduled-production-send). It separates edition identification, production synchronization, recipient authorization, and send timing; the endpoint sends immediately.
 6. **Re-check immediately before sending.** Confirm the production edition remains the intended edition, is unsent, still matches the reviewed content, and its authenticated preview works. Verify the current active-subscriber count and that recipients are all subscribers for the selected tenant. Then make exactly one authenticated production request with `confirm: true` and the verified production digest ID.
 7. **Report the actual outcome.** Check the HTTP status, response body, delivered/failed counts, and production `sentAt`/`sentCount` after sending. Report the requested and actual start/completion times in the named city time zone. If a request times out or the result is unclear, inspect send state and server logs before deciding whether another request is safe; never automatically retry a potentially delivered broadcast.
 

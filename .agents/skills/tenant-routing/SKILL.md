@@ -1,11 +1,17 @@
 ---
 name: tenant-routing
-description: Understand how the multi-tenant routing system works for eventcarpooling.com. Use when adding a new city, debugging tenant resolution, or working on per-city branding, email templates, or API routing.
+description: Understand multi-tenant routing on irl.group (formerly EventCarpooling). Use when adding a city or thematic tenant, debugging tenant resolution, or working on per-tenant branding, email templates, or API routing.
 ---
 
 # Tenant Routing
 
-## New-city content default: AI events under Tech
+## Geographic cities and thematic tenants
+
+First determine whether the requested tenant is a full geographic city edition or a narrowly scoped thematic directory. Apply the city-wide AI Ethics, AI-event, and spotlight defaults to full city editions; for a thematic tenant, follow the user's explicit content scope. Read the digest workflow's “Thematic directories and recurring activities” section when the listings are recurring or evergreen.
+
+The platform homepage's cross-city event feed currently reads the latest digest for each active tenant and displays only entries it can parse as future dated events. Evergreen schedule labels without a calendar date are omitted. Do not invent dates to force recurring activities into this feed; either keep the tenant's own directory as the discovery surface or add explicit recurrence support and verify the feed behavior.
+
+## New full-city content default: AI events under Tech
 
 Every existing and future city must also have location-specific **AI Ethics** content on the homepage, full edition, readable public document and newsletter. Follow the digest workflow's universal AI Ethics requirement; no city is exempt merely because it lacks verified scheduled AI events. Keep local topics and readings distinct rather than copying another city's list.
 
@@ -27,7 +33,9 @@ Use persistent event/venue identities and source-verified ISO metadata. Keep sig
 
 ## How It Works
 
-Every city runs on the same codebase but gets its own branded experience via subdomain. `app.ts` trusts the proxy, then `resolveTenant.ts` derives a slug from the request host and looks up an active tenant row. In production, a city subdomain such as `austin.eventcarpooling.com` selects that tenant; the root domain and the reserved `www`/`api` hosts have no tenant context. City routes are mounted behind `requireTenant`; admin routes additionally use `requireAdmin`.
+The current canonical public domain is `irl.group`; `eventcarpooling.com` is a legacy domain. All new code, public links, API URLs, and canonicals must use `irl.group`. Keep the old host only for intentional legacy redirects or compatibility handling; do not change verified mail sender addresses as part of a host migration.
+
+Every city runs on the same codebase but gets its own branded experience via subdomain. `app.ts` trusts the proxy, then `resolveTenant.ts` derives a slug from the request host and looks up an active tenant row. In production, a city subdomain such as `austin.irl.group` selects that tenant; the root domain and the reserved `www`/`api` hosts have no tenant context. City routes are mounted behind `requireTenant`; admin routes additionally use `requireAdmin`.
 
 ## Host and environment routing
 
@@ -52,7 +60,7 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 
 ## City Reference
 
-### 🤠 Austin (`austin.eventcarpooling.com`)
+### 🤠 Austin (`austin.irl.group`)
 - **Auth:** Password-hash HMAC is accepted by `requireAdmin`. Austin's startup migration re-hashes `ADMIN_PASSWORD` at server startup when configured, so obtain a fresh target-environment hash before deriving a token. Do not assume AustinCares has the same startup rotation; see `admin-api-auth`.
 - **Curator:** Raj (customersuccessforgood.com)
 - **Language:** English
@@ -60,7 +68,7 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Layout:** Generic `home.tsx`; admin panel at `/admin`
 - **Community events:** Curated Austin recurring events are defined in `weeklyRefresh.ts` and merged during generation; inspect the current definitions rather than treating adapters as the only source.
 
-### Sacramento (`sacramento.eventcarpooling.com`)
+### Sacramento (`sacramento.irl.group`)
 - **Auth:** Email-based HMAC — see `admin-api-auth`; resolve the tenant ID and admin email in the environment being targeted.
 - **Curator:** Bob
 - **Language:** English
@@ -68,12 +76,12 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Layout:** Shared homepage/full-edition structure with Sacramento-specific capital-city copy, extended-range labels and its own AI Ethics readings on web/public-document/email surfaces.
 - **Curation:** Verify current organizer listings across the requested categories, including local AI workshops and regional outings under Tech. Do not treat older fallback event examples as a verified current calendar.
 
-### San Francisco (`sanfrancisco.eventcarpooling.com`)
+### San Francisco (`sanfrancisco.irl.group`)
 - **Auth:** Inspect the target environment's tenant and use `admin-api-auth`; do not assume another city's token applies.
 - **Branding:** Preserve the San Francisco Giants/orange identity and city-specific hero.
 - **Layout and curation:** Keep extended-range labels, local spotlights and San Francisco's own readings consistent on the homepage, full edition, public document and email. Verified local AI events remain Tech; a reading list does not substitute for scheduled AI events.
 
-### 🌹 Portland (`portland.eventcarpooling.com`)
+### 🌹 Portland (`portland.irl.group`)
 - **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** *(blank — footer attribution won't render)*
 - **Language:** English
@@ -82,7 +90,7 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Community events:** Community Gardens, Powell's Books, Saturday Market, PSU Farmers Market, Sunday Parkways, Tech Meetup, First Thursday Art Walk
 - **⚠️ Ticketmaster geographic bleed:** TM city search for "Portland, OR" sometimes returns events for Portland, **Maine** (e.g. Portland Sea Dogs baseball). Always filter these before sending — look for venues clearly outside Oregon.
 
-### ⚾ St. Louis (`stlouis.eventcarpooling.com`)
+### ⚾ St. Louis (`stlouis.irl.group`)
 - **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** Phil
 - **Language:** English
@@ -91,7 +99,7 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Community events:** Soulard Market, Gateway Arch, Art Museum, City Museum, STL Tech Meetup, Laumeier, Tower Grove
 - **⚠️ Geocoding drift:** Vague venue strings like "Atomic Lounge, St. Louis" geocoded to Las Vegas; "Atomic Garage, St. Louis" geocoded to Des Moines. Always audit coords against the St. Louis bounding box (lat 37–40, lng -96 to -88) before sending. See "Geocoding Drift Audit" in the digest-workflow skill for the fix pattern.
 
-### 🏞️ Brushy Creek (`brushycreek.eventcarpooling.com`)
+### 🏞️ Brushy Creek (`brushycreek.irl.group`)
 - **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** Rohan Vivier
 - **Language:** English
@@ -100,7 +108,7 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Community events:** None defined — uses Austin metro Ticketmaster (Sports focus)
 - **⚠️ Carry-forward leak:** Austin sample events (Barton Springs, Alamo Drafthouse, ACL Live, South Congress Farmers Market, East Austin Studio Tour) have been found as carry-forward entries in Brushy Creek digests. Always filter these out after generating — they don't belong in a Round Rock/Cedar Park digest.
 
-### 🌄 Bulverde (`bulverde.eventcarpooling.com`)
+### 🌄 Bulverde (`bulverde.irl.group`)
 - **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** *(blank)*
 - **Language:** English
@@ -109,7 +117,7 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Community events:** River Walk, Pearl Farmers Market, Bulverde Community Market, San Antonio Museum of Art, Comal County Civic Forum, Geekdom SA Tech Meetup, La Villita Night Market
 - **⚠️ Geocoding bounds:** Bulverde serves the San Antonio metro — geocoding bounds extend to include SA (lat 29.3–30.4, lng -98.8 to -98.0). Name-only SA venues (Laugh Out Loud Comedy Club, Nelson Wolff Stadium, La Villita, Geekdom) require hardcoded coords — Nominatim can't find them from name alone.
 
-### 🗼 Tokyo (`tokyo.eventcarpooling.com`) — See `tokyo-digest` skill
+### 🗼 Tokyo (`tokyo.irl.group`) — See `tokyo-digest` skill
 - **Auth:** Email-based HMAC — see `admin-api-auth`; resolve the environment-specific tenant ID rather than assuming it.
 - **Curator:** *(blank)*
 - **Language:** English + Japanese (toggle available; Japanese strings in `i18n/ja.ts`)
@@ -118,7 +126,7 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Japanese translation coverage:** `translateEvent()` is called on all card types — regular events, featured/amber-framed events, Business Spotlight, Community Spotlight. Section headers ("Business Spotlight" → "ビジネススポットライト"), button labels ("Visit Website" → "ウェブサイトを見る", "Apply Now" → "今すぐ申し込む") are also translated via `jt()` + `JA.*`.
 - **⚠️ Carry-forward leak:** Austin sample events (Barton Springs, Alamo Drafthouse, ACL Live) have been found as carry-forward `featured: true` entries in Tokyo digests. Always check for and remove Austin-venue events after generating or importing a Tokyo digest.
 
-### 🏛️ DC (`dc.eventcarpooling.com`)
+### 🏛️ DC (`dc.irl.group`)
 - **Auth:** Email-based HMAC — see `admin-api-auth`.
 - **Curator:** *(blank)*
 - **Language:** English
@@ -127,7 +135,7 @@ Changes to one city's editorial sections, curator claims, images, or action labe
 - **Community events:** Eastern Market (Arts + Civics), Smithsonian (Arts), DC Tech Meetup (Tech), National Mall Morning Run (Wellness), Kennedy Center Millennium Stage (Arts)
 - **⚠️ Geocoding drift:** "Washington" alone geocodes to Washington State — always use "Washington, DC" in venue strings. The Sage venue geocoded to WA state; The National Theatre geocoded to Africa on first pass. Always audit coords against DC metro bounds (lat 38.5–39.2, lng -77.5 to -76.7) before sending.
 
-### 🌿 AustinCares (`austincares.eventcarpooling.com`)
+### 🌿 AustinCares (`austincares.irl.group`)
 - **Auth:** Password-hash HMAC is accepted by `requireAdmin`; verify the target-environment hash when needed. Do not assume Austin's startup hash rotation applies.
 - **Curator:** *(blank)*
 - **Language:** English

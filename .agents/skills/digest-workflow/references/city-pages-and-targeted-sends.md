@@ -32,6 +32,16 @@ Do not make one city's requested position a universal default for future cities.
 - If a request times out or delivery is uncertain, inspect logs before retrying. Do not resend copies already confirmed as sent. SMTP acceptance confirms a send, not inbox placement or that the recipient read it.
 - Never save recipient addresses or derived credentials in the skill, reusable scripts or project memory.
 
+## Scheduled production send
+
+When the user asks to send a specific draft to production at a later time, treat content approval, production synchronization, recipient scope, and send time as separate requirements:
+
+1. **Identify both editions.** Confirm the city, target local date and time zone, and source draft by tenant, ID, week, subject, and sent status. Identify the matching production edition independently; never assume dev and production IDs match or that “latest” means the intended edition. A recent test email is not proof that production has the same stored content.
+2. **Compare before changing production.** Inspect subject, intro, ordered events, stable event IDs, URLs, featured/spotlight flags, and other email-visible fields. Use complete stored arrays as read-only comparison sources when available. Public projections may filter entries and are unsafe as full-array replacement payloads.
+3. **Synchronize only differences.** Prefer supported scoped, tenant-authenticated edits. For a required multi-field update, re-read the complete production array immediately before writing, stop if it changed since review, and retain all records and fields not intentionally changed. Never replace the full event list just to correct one URL. Production SQL is read-only.
+4. **Verify production.** Re-read the saved record and confirm the approved content, ID, event count/order, unrelated fields, and send metadata remain intact. Check the authenticated production email preview. Data-only API edits are live immediately; template-code changes require publication and live verification.
+5. **Respect the requested local send time.** Resolve the date, time zone, and DST offset to the exact UTC instant. The digest endpoint sends immediately. Use a monitored, one-time background runner only if it can remain active through the send window; confirm whether it is merely queued. If no monitored runner is available, do not claim the send is scheduled or send early. A workspace process is not a durable production scheduler.
+
 ## Complete, published and sent are different states
 
 Check desktop and phone layouts, category filtering, event visibility and the email preview before saying the update is ready. Preserve older editions and send metadata.
