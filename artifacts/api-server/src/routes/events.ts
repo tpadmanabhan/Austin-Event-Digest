@@ -1493,6 +1493,7 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
         html,
         fromName: req.tenant?.name || undefined,
         tenantSlug: req.tenant?.slug,
+        weekOf: digest.weekOf,
       });
 
       if (result.success) {

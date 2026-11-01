@@ -49,10 +49,13 @@ const NEWSLETTER_DATE_SUFFIX = new RegExp(
   "i",
 );
 
-export function formatCityNewsletterSubject(subject: string, tenantSlug?: string): string {
+export function formatCityNewsletterSubject(
+  subject: string,
+  tenantSlug?: string,
+  weekOf?: Date | string | null,
+): string {
   const label = tenantSlug === "austincares" ? "Upcoming Deals" : "Upcoming Events";
   const trimmed = subject.trim();
-  if (!trimmed) return label;
 
   const existingLabel = trimmed.match(/\s+[—–-]\s+Upcoming (?:Events|Deals)\s*$/i);
   const title = existingLabel
@@ -61,22 +64,48 @@ export function formatCityNewsletterSubject(subject: string, tenantSlug?: string
   const alreadyIncludesLabel = tenantSlug === "austincares"
     ? /\bUpcoming Deals\b/i.test(title)
     : /\bUpcoming Events\b/i.test(title);
-  if (alreadyIncludesLabel) {
-    return title.toLowerCase() === label.toLowerCase() ? label : title;
+  const formattedSubject = !trimmed
+    ? label
+    : alreadyIncludesLabel
+      ? title.toLowerCase() === label.toLowerCase() ? label : title
+      : `${title || trimmed} — ${label}`;
+
+  if (tenantSlug !== "austin" || !weekOf) return formattedSubject;
+
+  const weekDateString = weekOf instanceof Date
+    ? Number.isNaN(weekOf.getTime()) ? "" : weekOf.toISOString().slice(0, 10)
+    : String(weekOf).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(weekDateString)) return formattedSubject;
+
+  const weekDate = new Date(`${weekDateString}T12:00:00.000Z`);
+  if (
+    Number.isNaN(weekDate.getTime()) ||
+    weekDate.toISOString().slice(0, 10) !== weekDateString
+  ) {
+    return formattedSubject;
   }
 
-  return `${title || trimmed} — ${label}`;
+  const weekLabel = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(weekDate);
+  return `${formattedSubject} — Week of ${weekLabel}`;
 }
 
 // Edition emails omit Reply-To so responses go to the visible From address.
 // Transactional emails can specify their own reply targets.
 export async function sendNewsletterEmail(
-  options: Omit<SendEmailOptions, "replyTo"> & { tenantSlug?: string },
+  options: Omit<SendEmailOptions, "replyTo"> & {
+    tenantSlug?: string;
+    weekOf?: Date | string | null;
+  },
 ): Promise<SendEmailResult> {
-  const { tenantSlug, ...emailOptions } = options;
+  const { tenantSlug, weekOf, ...emailOptions } = options;
   return sendEmail({
     ...emailOptions,
-    subject: formatCityNewsletterSubject(options.subject, tenantSlug),
+    subject: formatCityNewsletterSubject(options.subject, tenantSlug, weekOf),
     fromName: `${options.fromName?.trim() || FROM_NAME} — No Reply`,
     fromEmail: NEWSLETTER_FROM_EMAIL,
   });
