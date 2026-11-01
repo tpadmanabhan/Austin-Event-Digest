@@ -183,6 +183,11 @@ describe("AI Ethics reading section", () => {
     expect(html.split(privacyFeatureReference).length - 1).toBe(1);
     expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf(privacyFeatureReference));
     expect(html).not.toContain("meditation, an hour of sharing, and a meal");
+    expect(html).toContain("Groups, designed privacy-first");
+    expect(html).toContain("No phone number required");
+    expect(html).not.toContain("Two new features");
+    expect(html).not.toContain("SMS for Local Businesses");
+    expect(html).not.toContain("Tell a Friend");
     expect(html).toContain("AI Ethics");
     const ethicsHeading = '<h2 style="margin:0 0 12px; color:#1f2937; font-size:20px; font-weight:700;">AI Ethics</h2>';
     expect(html.split(ethicsHeading).length - 1).toBe(1);

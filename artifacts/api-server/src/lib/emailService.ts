@@ -1412,8 +1412,21 @@ export function buildDigestEmailHtml(digest: {
 
     ${buildStaticMapSection(cleanDigestEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
 
+    <!-- Austin privacy-first Groups feature -->
+    ${slug === "austin" ? `
+    <div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#0f3460 100%); border-radius:16px; padding:26px 24px; margin-bottom:24px;">
+      <div style="display:inline-block; background:rgba(255,255,255,0.12); border:1px solid rgba(147,197,253,0.3); border-radius:100px; padding:5px 14px; margin-bottom:16px;">
+        <span style="color:#bfdbfe; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px;">Coming soon · Austin pilot</span>
+      </div>
+      <p style="margin:0 0 10px; color:#ffffff; font-size:22px; font-weight:800; line-height:1.25;">Groups, designed privacy-first</p>
+      <p style="margin:0 0 16px; color:#cbd5e1; font-size:14px; line-height:1.65;">Local hosts will bring small neighborhood groups together regularly. People can start with a username, without sharing an email address or phone number, and get to know the group at their own pace.</p>
+      <span style="display:inline-block; background:rgba(255,255,255,0.08); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); border-radius:100px; padding:6px 12px; margin:0 6px 4px 0; font-size:12px; font-weight:600;">Username first</span>
+      <span style="display:inline-block; background:rgba(255,255,255,0.08); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); border-radius:100px; padding:6px 12px; margin:0 6px 4px 0; font-size:12px; font-weight:600;">No email required</span>
+      <span style="display:inline-block; background:rgba(255,255,255,0.08); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); border-radius:100px; padding:6px 12px; margin:0 6px 4px 0; font-size:12px; font-weight:600;">No phone number required</span>
+    </div>` : ""}
+
     <!-- Coming Soon: New Features -->
-    ${slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
+    ${slug !== "austin" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <!-- Badge -->
       <div style="display:inline-block; background:${slug === "austin" ? "rgba(47,133,90,0.10)" : "rgba(255,255,255,0.12)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.22)" : "rgba(255,255,255,0.2)"}; border-radius:100px; padding:5px 14px; margin-bottom:16px;">
