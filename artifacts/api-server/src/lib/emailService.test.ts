@@ -200,6 +200,8 @@ describe("AI Ethics reading section", () => {
       "https://tech.yahoo.com/cybersecurity/articles/telling-ai-chatbots-biggest-secrets-144603184.html",
       "AI shopping agent threatens Amazon",
       "https://seekingalpha.com/news/4661876-metas-ai-shopping-agent-threatens-amazons-lucrative-advertising-business",
+      "manifesto for the AI coding age",
+      "https://www.aol.com/articles/protons-cto-wrote-manifesto-ai-083701000.html",
       "Spurs² Hackathon at UT Austin",
       "https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/",
       "IRL.group: a home for local creators",

@@ -216,6 +216,8 @@ test("Austin's public city and edition documents render current content in one A
     assert.ok(body.includes("https://tech.yahoo.com/cybersecurity/articles/telling-ai-chatbots-biggest-secrets-144603184.html"));
     assert.ok(body.includes("AI shopping agent threatens Amazon"));
     assert.ok(body.includes("https://seekingalpha.com/news/4661876-metas-ai-shopping-agent-threatens-amazons-lucrative-advertising-business"));
+    assert.ok(body.includes("manifesto for the AI coding age"));
+    assert.ok(body.includes("https://www.aol.com/articles/protons-cto-wrote-manifesto-ai-083701000.html"));
     assert.ok(body.includes("Spurs² Hackathon at UT Austin"));
     assert.ok(body.includes("https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/"));
     const awakinReference = "Nipun Mehta founded ServiceSpace in the Bay Area.";
