@@ -216,6 +216,8 @@ describe("AI Ethics reading section", () => {
       "What you’ll find here",
       "Faith leaders and AI guardrails",
       "https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/",
+      "Why Every Election Matters to Democracy with Stacey Abrams",
+      "https://podcasts.apple.com/us/podcast/guy-kawasakis-remarkable-people/id1483081827?i=1000797951025",
     ];
     const requestedPositions = requestedItems.map(value => html.indexOf(value));
     expect(requestedPositions.every(position => position >= 0)).toBe(true);

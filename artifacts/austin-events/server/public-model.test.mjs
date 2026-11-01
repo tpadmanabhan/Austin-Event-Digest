@@ -227,6 +227,8 @@ test("Austin's public city and edition documents render current content in one A
     assert.ok(body.includes("https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/"));
     assert.ok(body.includes("https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/"));
     assert.ok(body.includes("https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/"));
+    assert.ok(body.includes("Why Every Election Matters to Democracy with Stacey Abrams"));
+    assert.ok(body.includes("https://podcasts.apple.com/us/podcast/guy-kawasakis-remarkable-people/id1483081827?i=1000797951025"));
   }
 });
 test("San Francisco shares its Golden Gate image in initial homepage and edition HTML", async () => {
