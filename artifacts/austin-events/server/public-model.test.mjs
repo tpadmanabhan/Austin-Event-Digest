@@ -212,9 +212,13 @@ test("Austin's public city and edition documents render current content in one A
     assert.ok(body.includes("https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/"));
     assert.ok(body.includes("https://www.texastribune.org/2026/10/21/data-center-permits-tceq-texas/"));
     assert.ok(body.includes("https://www.texastribune.org/2026/10/20/data-centers-texas-air-quality-report-pollution-health-risks/"));
+    assert.ok(body.includes("We are telling AI chatbots our biggest secrets"));
+    assert.ok(body.includes("https://tech.yahoo.com/cybersecurity/articles/telling-ai-chatbots-biggest-secrets-144603184.html"));
+    assert.ok(body.includes("AI shopping agent threatens Amazon"));
+    assert.ok(body.includes("https://seekingalpha.com/news/4661876-metas-ai-shopping-agent-threatens-amazons-lucrative-advertising-business"));
     assert.ok(body.includes("Spurs² Hackathon at UT Austin"));
     assert.ok(body.includes("https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/"));
-    const awakinReference = "After a decade involved with ServiceSpace, Raj still values the phone-free Awakin Circles";
+    const awakinReference = "Nipun Mehta founded ServiceSpace in the Bay Area.";
     assert.equal(body.split(awakinReference).length - 1, 1);
     assert.ok(body.indexOf("AI Ethics") < body.indexOf(awakinReference));
     assert.ok(body.includes("IRL.group: a home for local creators"));
