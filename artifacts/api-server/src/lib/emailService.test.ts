@@ -295,6 +295,81 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).not.toContain("Week of ");
   });
 
+  it("orders Austin newsletter events chronologically, not by subscriber distance", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      weekOf: "2026-11-01",
+      events: [
+        {
+          title: "Later but closer",
+          date: "Wednesday, Nov 4 at 7:00 PM",
+          venue: "Near venue",
+          description: "Later event.",
+          category: "Community",
+          distanceMi: 0.2,
+        },
+        {
+          title: "Earlier but farther",
+          date: "Monday, Nov 2 at 1:00 PM",
+          venue: "Far venue",
+          description: "Earlier event.",
+          category: "Community",
+          distanceMi: 12,
+        },
+        {
+          title: "Sunday reading service",
+          date: "Every Sunday, 11:00 AM–12:00 PM",
+          venue: "Austin",
+          description: "Weekly service.",
+          category: "Community",
+          distanceMi: 3,
+        },
+        {
+          title: "Sunday volleyball",
+          date: "Sunday, Nov 1 at 12:00 PM",
+          venue: "Austin",
+          description: "Sunday event.",
+          category: "Sports",
+          distanceMi: 25,
+        },
+        {
+          title: "Sunday AI build",
+          date: "Every Sunday, 1:00–4:00 PM",
+          venue: "Austin",
+          description: "Weekly build session.",
+          category: "Tech",
+          distanceMi: 5,
+        },
+      ],
+      alsoNearby: [
+        {
+          title: "Later nearby event",
+          date: "Saturday, Nov 7 at 7:00 PM",
+          venue: "Far venue",
+          description: "Later nearby event.",
+          category: "Community",
+          distanceMi: 30,
+        },
+        {
+          title: "Earlier nearby event",
+          date: "Thursday, Nov 5 at 6:30 PM",
+          venue: "Far venue",
+          description: "Earlier nearby event.",
+          category: "Community",
+          distanceMi: 20,
+        },
+      ],
+    }, null, null, {
+      slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
+    });
+
+    expect(html.indexOf("Sunday reading service")).toBeLessThan(html.indexOf("Sunday volleyball"));
+    expect(html.indexOf("Sunday volleyball")).toBeLessThan(html.indexOf("Sunday AI build"));
+    expect(html.indexOf("Sunday AI build")).toBeLessThan(html.indexOf("Earlier but farther"));
+    expect(html.indexOf("Earlier but farther")).toBeLessThan(html.indexOf("Later but closer"));
+    expect(html.indexOf("Earlier nearby event")).toBeLessThan(html.indexOf("Later nearby event"));
+  });
+
   it("Austin digest header gradient uses the light-green Austin palette", () => {
     const html = buildDigestEmailHtml(
       baseDigest,

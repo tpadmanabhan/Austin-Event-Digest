@@ -1114,21 +1114,60 @@ export function buildDigestEmailHtml(digest: {
   const eventTimezone = slug === "manchester" ? "Europe/London" : slug === "la" || slug === "sanfrancisco" || slug === "sacramento" ? "America/Los_Angeles" : slug === "nyc" || slug === "atlanta" || slug === "miami" || slug === "boston" ? "America/New_York" : "America/Chicago";
 
   function parseSortKey(dateStr: string): number {
+    const weekOfText = digest.weekOf instanceof Date
+      ? digest.weekOf.toISOString().slice(0, 10)
+      : String(digest.weekOf).slice(0, 10);
+    const weekOfMatch = weekOfText.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const weekOfDate = weekOfMatch
+      ? new Date(Date.UTC(Number(weekOfMatch[1]), Number(weekOfMatch[2]) - 1, Number(weekOfMatch[3])))
+      : null;
+
+    const isoTime = Date.parse(dateStr);
+    if (/^\d{4}-\d{2}-\d{2}(?:T|$)/.test(dateStr) && Number.isFinite(isoTime)) return isoTime;
+
     const m = dateStr.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2})/i);
-    if (!m) return 9999 * 10000;
-    const month = MONTH_IDX[m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase().substring(0, 2)] ?? 0;
-    const day = parseInt(m[2], 10);
-    const timeM = dateStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    const recurringWeekday = dateStr.match(/\bEvery\s+(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)\b/i);
+    if (!m && !recurringWeekday) return Number.MAX_SAFE_INTEGER;
+
+    const rangeTime = dateStr.match(/(\d{1,2}):(\d{2})\s*[–-]\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    const timeM = rangeTime ? null : dateStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    const hourText = rangeTime?.[1] ?? timeM?.[1];
+    const minuteText = rangeTime?.[2] ?? timeM?.[2];
+    const period = rangeTime?.[5] ?? timeM?.[3];
     let minutes = 0;
-    if (timeM) {
-      let hour = parseInt(timeM[1], 10);
-      const min = parseInt(timeM[2], 10);
-      const isPm = timeM[3].toUpperCase() === "PM";
+    if (hourText && minuteText && period) {
+      let hour = parseInt(hourText, 10);
+      const min = parseInt(minuteText, 10);
+      const isPm = period.toUpperCase() === "PM";
       if (isPm && hour !== 12) hour += 12;
       if (!isPm && hour === 12) hour = 0;
       minutes = hour * 60 + min;
     }
-    return (month * 31 + day) * 1440 + minutes;
+
+    if (m) {
+      const month = MONTH_IDX[m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase().substring(0, 2)] ?? 0;
+      const day = parseInt(m[2], 10);
+      const year = weekOfDate?.getUTCFullYear() ?? new Date().getUTCFullYear();
+      const eventDate = new Date(Date.UTC(year, month, day, Math.floor(minutes / 60), minutes % 60));
+      if (weekOfDate && month < weekOfDate.getUTCMonth() && weekOfDate.getUTCMonth() - month > 6) {
+        eventDate.setUTCFullYear(year + 1);
+      }
+      return eventDate.getTime();
+    }
+
+    const weekdayNumbers: Record<string, number> = {
+      Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6,
+    };
+    if (!weekOfDate || !recurringWeekday) return Number.MAX_SAFE_INTEGER;
+    const weekday = weekdayNumbers[recurringWeekday[1][0]!.toUpperCase() + recurringWeekday[1].slice(1).toLowerCase()];
+    const dayOffset = (weekday - weekOfDate.getUTCDay() + 7) % 7;
+    return Date.UTC(
+      weekOfDate.getUTCFullYear(),
+      weekOfDate.getUTCMonth(),
+      weekOfDate.getUTCDate() + dayOffset,
+      Math.floor(minutes / 60),
+      minutes % 60,
+    );
   }
 
   function formatEventDate(dateStr: string): string {
@@ -1225,12 +1264,12 @@ export function buildDigestEmailHtml(digest: {
   const bizSpotlights = cleanDigestEvents.filter(e => !e.featured && e.isBusinessSpotlight);
   const commSpotlights = cleanDigestEvents.filter(e => !e.featured && e.isPost);
   const regularEventsRaw = [...cleanDigestEvents.filter(e => !e.featured && !e.isBusinessSpotlight && !e.isPost)];
-  const hasDistance = regularEventsRaw.some(e => e.distanceMi != null);
-  const regularEvents = hasDistance
-    ? regularEventsRaw.sort((a, b) => (a.distanceMi ?? Infinity) - (b.distanceMi ?? Infinity))
-    : regularEventsRaw.sort((a, b) => parseSortKey(a.date) - parseSortKey(b.date));
+  // Subscriber location can determine which section an event belongs in, but
+  // the newsletter sequence stays chronological for every recipient.
+  const regularEvents = regularEventsRaw.sort((a, b) => parseSortKey(a.date) - parseSortKey(b.date));
 
-  const alsoNearby = digest.alsoNearby ?? [];
+  const alsoNearby = [...(digest.alsoNearby ?? [])]
+    .sort((a, b) => parseSortKey(a.date) - parseSortKey(b.date));
 
   const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
   const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
@@ -1333,7 +1372,7 @@ export function buildDigestEmailHtml(digest: {
     ${digest.preferencesUrl ? `
     <div style="background:${theme.primaryLight}; border:1.5px solid ${theme.primaryBtn}; border-radius:14px; padding:18px 22px; margin-bottom:24px; text-align:center;">
       <a href="${escapeHtml(digest.preferencesUrl)}" style="color:${theme.primaryDark}; text-decoration:none; font-size:16px; font-weight:700; letter-spacing:-0.2px;">📍 See events near you →</a>
-      <p style="margin:6px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Set your neighborhood once — get distance-sorted events every week.</p>
+      <p style="margin:6px 0 0; color:#78716c; font-size:13px; line-height:1.5;">Set your neighborhood to see event distances and nearby listings.</p>
     </div>` : ""}
 
     <!-- Sort by Distance CTA (Austin + Brushy Creek only) -->
