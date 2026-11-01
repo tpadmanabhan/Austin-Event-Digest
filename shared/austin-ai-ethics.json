@@ -1,7 +1,35 @@
 {
   "title": "AI Ethics",
-  "intro": "These stories connect human connection and community access to the choices we make about AI. After a decade involved with ServiceSpace, Raj still values the phone-free Awakin Circles he attended on both coasts and in Houston: meditation, an hour of sharing, and a meal. He hopes Austin’s many newcomers can help something similar flourish here.",
+  "intro": "These stories connect data-center growth and AI accountability in Texas with the role of human connection and community access. Texas reporting asks who oversees permits and environmental effects as data centers expand. After a decade involved with ServiceSpace, Raj still values the phone-free Awakin Circles he attended on both coasts and in Houston: meditation, an hour of sharing, and a meal. He hopes Austin’s many newcomers can help something similar flourish here.",
   "items": [
+    {
+      "title": "Texas data-center governance, permits, and air quality",
+      "description": "Three Texas updates surface the stakes of data-center growth: Rick Perry lost a board reelection vote at Fermi; watchdog concerns led officials to disable an online permit filing system; and a Houston Advanced Research Center analysis warns that growth could reverse air-quality gains, especially with on-site natural-gas power.",
+      "links": [
+        {
+          "label": "Fermi board update (Oct. 30)",
+          "url": "https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/"
+        },
+        {
+          "label": "Texas permit filing update (Oct. 21)",
+          "url": "https://www.texastribune.org/2026/10/21/data-center-permits-tceq-texas/"
+        },
+        {
+          "label": "Air-quality analysis (Oct. 20)",
+          "url": "https://www.texastribune.org/2026/10/20/data-centers-texas-air-quality-report-pollution-health-risks/"
+        }
+      ]
+    },
+    {
+      "title": "Spurs² Hackathon at UT Austin",
+      "description": "Raj participated in the hackathon; his recap shares the project notes and work.",
+      "links": [
+        {
+          "label": "Read Raj’s recap",
+          "url": "https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/"
+        }
+      ]
+    },
     {
       "title": "IRL.group: a home for local creators",
       "description": "IRL.group gives city and community creators a place to bring people together offline.",

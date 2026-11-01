@@ -175,7 +175,7 @@ describe("AI Ethics reading section", () => {
     expect(welcome).not.toMatch(/eventcarpooling|carpool/i);
   });
 
-  it("merges Austin's Awakin reference into the AI Ethics paragraph once", () => {
+  it("keeps Austin's current updates in one shared AI Ethics section", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
     });
@@ -183,7 +183,15 @@ describe("AI Ethics reading section", () => {
     expect(html.split(awakinReference).length - 1).toBe(1);
     expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf(awakinReference));
     expect(html).toContain("AI Ethics");
+    const ethicsHeading = '<h2 style="margin:0 0 12px; color:#1f2937; font-size:20px; font-weight:700;">AI Ethics</h2>';
+    expect(html.split(ethicsHeading).length - 1).toBe(1);
     const requestedItems = [
+      "Texas data-center governance, permits, and air quality",
+      "https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/",
+      "https://www.texastribune.org/2026/10/21/data-center-permits-tceq-texas/",
+      "https://www.texastribune.org/2026/10/20/data-centers-texas-air-quality-report-pollution-health-risks/",
+      "Spurs² Hackathon at UT Austin",
+      "https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/",
       "IRL.group: a home for local creators",
       "https://irl.group/",
       "ServiceSpace and Awakin Circles",
@@ -202,7 +210,6 @@ describe("AI Ethics reading section", () => {
     expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
     expect(html).toContain("It’s not necessarily not wanting to do things. It’s just wanting to do things with the right people.");
     expect(html).not.toContain("The Rise of the IRL Influencer");
-    expect(html).not.toContain("Spurs² Hackathon @ UT Austin");
     expect(html).not.toContain("Meta updates data-scraping policy following criticism");
     expect(html.indexOf("AI Ethics")).toBeGreaterThan(html.indexOf("<!-- Intro -->"));
     expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf("<!-- Location CTA -->"));

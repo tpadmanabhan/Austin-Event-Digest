@@ -201,12 +201,19 @@ test("city and historical edition responses are tenant-specific and readable", a
     assert.equal(modelOf(edition.body).kind, "digest");
   }
 });
-test("Austin's public city and edition documents merge the Awakin reference into AI Ethics", async () => {
+test("Austin's public city and edition documents render current content in one AI Ethics section", async () => {
   const host = "austin.eventcarpooling.com";
   for (const pathname of ["/", `/digest/${fixture("austin").id}`]) {
     const { response, body } = await document(host, pathname);
     assert.equal(response.status, 200);
     assert.ok(body.includes("A test newsletter introduction."));
+    assert.equal((body.match(/<h2[^>]*>AI Ethics<\/h2>/g) || []).length, 1);
+    assert.ok(body.includes("Texas data-center governance, permits, and air quality"));
+    assert.ok(body.includes("https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/"));
+    assert.ok(body.includes("https://www.texastribune.org/2026/10/21/data-center-permits-tceq-texas/"));
+    assert.ok(body.includes("https://www.texastribune.org/2026/10/20/data-centers-texas-air-quality-report-pollution-health-risks/"));
+    assert.ok(body.includes("Spurs² Hackathon at UT Austin"));
+    assert.ok(body.includes("https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/"));
     const awakinReference = "After a decade involved with ServiceSpace, Raj still values the phone-free Awakin Circles";
     assert.equal(body.split(awakinReference).length - 1, 1);
     assert.ok(body.indexOf("AI Ethics") < body.indexOf(awakinReference));
