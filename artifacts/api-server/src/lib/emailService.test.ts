@@ -179,9 +179,10 @@ describe("AI Ethics reading section", () => {
     const html = buildDigestEmailHtml(baseDigest, null, null, {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
     });
-    const awakinReference = "After a decade involved with ServiceSpace, Raj still values the phone-free Awakin Circles";
-    expect(html.split(awakinReference).length - 1).toBe(1);
-    expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf(awakinReference));
+    const privacyFeatureReference = "IRL’s upcoming Groups feature applies privacy-first thinking to local community";
+    expect(html.split(privacyFeatureReference).length - 1).toBe(1);
+    expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf(privacyFeatureReference));
+    expect(html).not.toContain("meditation, an hour of sharing, and a meal");
     expect(html).toContain("AI Ethics");
     const ethicsHeading = '<h2 style="margin:0 0 12px; color:#1f2937; font-size:20px; font-weight:700;">AI Ethics</h2>';
     expect(html.split(ethicsHeading).length - 1).toBe(1);
@@ -213,6 +214,37 @@ describe("AI Ethics reading section", () => {
     expect(html).not.toContain("Meta updates data-scraping policy following criticism");
     expect(html.indexOf("AI Ethics")).toBeGreaterThan(html.indexOf("<!-- Intro -->"));
     expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf("<!-- Location CTA -->"));
+  });
+
+  it("keeps Austin men's basketball and the cycling event heading visible and chronological", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      weekOf: "2026-11-01",
+      events: [
+        {
+          title: "Texas Longhorns Mens Basketball vs. Chicago State Cougars Mens Basketball",
+          date: "Monday, Nov 2 at 1:00 PM",
+          venue: "Moody Center ATX",
+          description: "Men's basketball at Moody Center.",
+          category: "Sports",
+        },
+        {
+          title: "Thursday Blursday — Advanced/Rolling Ride (Cycling)",
+          date: "Recurring Thursday ride; Nov 5 at 6:30 PM",
+          venue: "Austin, TX",
+          description: "Weekly cycling ride.",
+          category: "Sports",
+        },
+      ],
+    }, null, null, {
+      slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
+    });
+
+    const basketballPosition = html.indexOf("Texas Longhorns Mens Basketball vs. Chicago State Cougars Mens Basketball");
+    const cyclingPosition = html.indexOf("Thursday Blursday — Advanced/Rolling Ride (Cycling)");
+    expect(basketballPosition).toBeGreaterThan(-1);
+    expect(cyclingPosition).toBeGreaterThan(basketballPosition);
+    expect(html).toContain("Weekly cycling ride.");
   });
 
   it.each(["tokyo", "austincares", "brushycreek", "portland", "bulverde", "stlouis", "dc", "atlanta", "houston", "dallas"])(

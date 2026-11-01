@@ -23,6 +23,7 @@ import { MiamiAiEthicsSection } from "@/components/miami-ai-ethics-section";
 import { BostonAiEthicsSection } from "@/components/boston-ai-ethics-section";
 import { LaAiEthicsSection } from "@/components/la-ai-ethics-section";
 import { CityAiEthicsSection } from "@/components/city-ai-ethics-section";
+import { PrivacyFirstGroupsFeature } from "@/components/privacy-first-groups-feature";
 import { LA_HERO_IMAGE_URL } from "@/lib/city-share-image";
 
 const SHOW_AUSTIN_CARES = true;
@@ -696,8 +697,10 @@ export default function Home() {
             </div>
           )}
 
+          {tenant.slug === "austin" && <PrivacyFirstGroupsFeature className="mb-10" />}
+
           {/* ── Coming Soon: New Features ───────────────────────────────── */}
-           {!isHouston && !isSF && !isSacramento && !isMiami && !isBoston && <div className="mb-10">
+           {tenant.slug !== "austin" && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && <div className="mb-10">
             <div
               className="rounded-3xl p-8 sm:p-10 overflow-hidden relative"
               style={{ background: "linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#0f3460 100%)" }}
