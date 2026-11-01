@@ -18,12 +18,14 @@ interface TenantSummary {
   categories: string[];
 }
 
-const LIVE_CITY_ORDER = ["nyc", "dallas", "manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
-const NEW_CITY_SLUGS = new Set(["nyc", "dallas", "manchester", "osaka"]);
+const FEATURED_CITY_SLUG = "austin";
+const LIVE_CITY_ORDER = ["austin", "nyc", "dallas", "manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
+const NEW_CITY_SLUGS = new Set([FEATURED_CITY_SLUG]);
 const cityUrl = (slug: string) => `https://${slug}.irl.group`;
 const publicImage = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
 
 const CITY_DIRECTORY = [
+  { slug: "austin", name: "Raj's Austin Events", city: "Austin", image: publicImage("austin-hero.png"), alt: "Austin skyline at sunset" },
   { slug: "nyc", name: "New York City Events", city: "New York City", image: publicImage("nyc-hero-photo.jpg"), alt: "New York skyline at blue hour viewed across the East River" },
   { slug: "dallas", name: "Dallas Events", city: "Dallas", image: publicImage("dallas-hero.jpg"), alt: "Dallas skyline at dusk" },
   { slug: "manchester", name: "Manchester Events", city: "Manchester, England", image: publicImage("manchester-hero.svg"), alt: "Illustrated Manchester skyline at dusk with a golden worker bee" },
@@ -32,7 +34,6 @@ const CITY_DIRECTORY = [
   { slug: "boston", name: "Boston Events", city: "Boston", image: "/api/storage/public-objects/cities/boston/hero.jpg", alt: "Boston city view" },
   { slug: "atlanta", name: "Atlanta Events", city: "Atlanta", image: publicImage("atlanta-hero.svg"), alt: "Atlanta city illustration" },
   { slug: "sanfrancisco", name: "San Francisco Events", city: "San Francisco", image: publicImage("sanfrancisco-hero.jpg"), alt: "San Francisco across the bay" },
-  { slug: "austin", name: "Raj's Austin Events", city: "Austin", image: publicImage("austin-hero.png"), alt: "Austin skyline at sunset" },
   { slug: "sacramento", name: "Sacramento Events", city: "Sacramento", image: publicImage("sacramento-hero.jpg"), alt: "Sacramento city vista" },
   { slug: "miami", name: "Miami Events", city: "Miami", image: "/api/storage/public-objects/cities/miami/hero.jpg", alt: "Miami waterfront skyline and beach" },
   { slug: "houston", name: "Houston Events", city: "Houston", image: publicImage("houston-dusk.jpg"), alt: "Houston skyline at dusk" },
@@ -80,7 +81,7 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
     ? lang === "ja" ? reading.jaLabel : reading.label
     : copy.cityExplore.replace("{city}", cityName);
   return (
-      <article className={`city-card group ${city.slug === "nyc" ? "city-card-featured" : ""} ${city.slug === "dallas" ? "city-card-dallas" : ""}`}>
+      <article className={`city-card group ${city.slug === FEATURED_CITY_SLUG ? "city-card-featured" : ""} ${city.slug === "dallas" ? "city-card-dallas" : ""}`}>
       <a className="city-card-main" href={cityUrl(city.slug)} target="_blank" rel="noopener noreferrer" aria-label={lang === "ja" ? `${displayName}を見る` : `Visit ${city.name}`}>
         {city.image ? (
           <img className="city-card-photo" src={city.image} alt={japaneseCity?.alt ?? city.alt ?? ""} loading="lazy" />
@@ -88,7 +89,7 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
           <div className="city-card-placeholder" aria-hidden="true"><MapPin size={21} strokeWidth={1.6} /></div>
         )}
         <span className="city-card-shade" aria-hidden="true" />
-        {NEW_CITY_SLUGS.has(city.slug) && <span className="city-card-badge" aria-hidden="true">NEW</span>}
+        {NEW_CITY_SLUGS.has(city.slug) && <span className="city-card-badge" aria-hidden="true">{copy.newBadge}</span>}
         <span className="city-card-heading">
           <span className="city-card-city">{cityName}</span>
           <span className="city-card-name">{displayName}</span>
@@ -137,7 +138,7 @@ function PlatformHomeInner() {
             <motion.div className="vista-collage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08 }} aria-label={copy.collageLabel}>
               <figure className="vista vista-large">
                 <img src="/api/storage/public-objects/cities/boston/hero.jpg" alt={lang === "ja" ? "ボストンの街並み" : "Boston city view"} fetchPriority="high" />
-                <figcaption><span>{copy.newEdition}</span><b>{lang === "ja" ? "ボストン" : "Boston"}</b></figcaption>
+                <figcaption><span>{copy.editionLabel}</span><b>{lang === "ja" ? "ボストン" : "Boston"}</b></figcaption>
               </figure>
               <figure className="vista vista-sf">
                 <img src={publicImage("houston-dusk.jpg")} alt={lang === "ja" ? "夕暮れのヒューストンのスカイライン" : "Houston skyline at dusk"} />

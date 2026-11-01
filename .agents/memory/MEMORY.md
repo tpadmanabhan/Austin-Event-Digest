@@ -43,7 +43,7 @@
 - [Public HTML and startup](public-html-startup.md) — readable no-JS content must not flash before the interactive homepage; preserve a usable fallback if startup fails.
 - [TypeScript reference refresh](typescript-reference-refresh.md) — rebuild shared references after schema/codegen changes; consumers can otherwise see stale declarations.
 - [Publication readiness](publication-readiness.md) — reproduce artifact build context; verify dynamic newsletter content in saved data and rendered output.
-- [Platform landing priorities](platform-landing-priorities.md) — concise one-hour newsletter, cities, deals, local AI Ethics, city requests, scenic photos, and readable public HTML.
+- [Platform landing priorities](platform-landing-priorities.md) — Austin is the featured city and the only edition with a New badge; keep the city directory readable and concise.
 - [City and newsletter branding](city-subdomain-branding.md) — avoid legacy EventCarpooling/carpooling copy and logos; mention IRL where natural.
 - [City provisioning policy](city-provisioning-policy.md) — manual review stays separate from account creation; root routing and city admin credentials are not platform approval.
 - [Workspace send runner restarts](workspace-send-runner-restarts.md) — a restart can kill the process and erase its log; verify production send metadata before any re-arm.

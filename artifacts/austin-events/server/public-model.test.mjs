@@ -144,10 +144,19 @@ test("the platform document is readable and has real city links without scripts 
   const platformHomeSource = readFileSync(new URL("../src/pages/platform-home.tsx", import.meta.url), "utf8");
   assert.match(platformHomeSource, /<CityEventsFeed \/>/,
     "the hydrated irl.group landing page should show the cross-city event feed");
-  assert.match(platformHomeSource, /const LIVE_CITY_ORDER = \["nyc", "dallas", "manchester"/,
-    "Dallas should follow featured New York City in the directory");
-  assert.match(platformHomeSource, /city\.slug === "nyc" \? "city-card-featured"/,
-    "New York City should use the featured card style");
+  assert.match(platformHomeSource, /const FEATURED_CITY_SLUG = "austin"/,
+    "Austin should be the featured city");
+  assert.match(platformHomeSource, /const LIVE_CITY_ORDER = \["austin", "nyc", "dallas"/,
+    "Austin should lead the city directory");
+  assert.match(platformHomeSource, /const NEW_CITY_SLUGS = new Set\(\[FEATURED_CITY_SLUG\]\)/,
+    "Austin should be the only city marked new");
+  assert.match(platformHomeSource, /city\.slug === FEATURED_CITY_SLUG \? "city-card-featured"/,
+    "Austin should use the featured card style");
+  assert.match(platformHomeSource, /NEW_CITY_SLUGS\.has\(city\.slug\).*copy\.newBadge/,
+    "the New badge should be limited to the configured city");
+  const platformHomeCopySource = readFileSync(new URL("../src/i18n/platform-home.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(platformHomeCopySource, /NEW EDITION|新しい都市版/,
+    "the Boston collage label should not imply another new city");
   assert.match(body, /<title>In Real Life \(IRL\) — Worthwhile things, close by<\/title>/);
   assert.match(body, /<meta property="og:title" content="In Real Life \(IRL\) — Worthwhile things, close by">/);
   assert.doesNotMatch(body, /EventCarpooling|eventcarpooling-logo/i);
@@ -155,15 +164,16 @@ test("the platform document is readable and has real city links without scripts 
   assert.equal(model.title, "In Real Life (IRL) — Worthwhile things, close by");
   assert.equal(model.schema.name, "In Real Life");
   assert.equal(model.schema.alternateName, "IRL");
-  assert.equal(model.cities[0].slug, "nyc");
-  assert.equal(model.cities[1].slug, "dallas");
-  assert.equal(model.cities[2].slug, "manchester");
+  assert.equal(model.cities[0].slug, "austin");
+  assert.equal(model.cities[1].slug, "nyc");
+  assert.equal(model.cities[2].slug, "dallas");
+  assert.equal(model.cities[3].slug, "manchester");
   assert.ok(model.cities.some(city => city.slug === "manchester"), "Manchester should remain in the directory");
   assert.equal(model.cities.length, 19);
   assert.ok(model.cities.every(city => city.url.startsWith("https://") && city.url.endsWith(".irl.group/")));
   assert.ok(model.cities.every(city => !("isNew" in city)), "City listings must not advertise New badges");
-  assert.match(model.cities[0].ethicsUrl, /nyc\.irl\.group\/#city-ai-ethics/);
-  assert.equal(model.cities[3].slug, "la");
+  assert.match(model.cities[1].ethicsUrl, /nyc\.irl\.group\/#city-ai-ethics/);
+  assert.equal(model.cities[4].slug, "la");
   assert.match(body, /https:\/\/tokyo\.irl\.group\//);
   assert.match(body, /<h1/);
   assert.equal(modelOf(body).kind, "platform");
@@ -220,15 +230,25 @@ test("Austin's public city and edition documents render current content in one A
     assert.ok(body.includes("https://www.aol.com/articles/protons-cto-wrote-manifesto-ai-083701000.html"));
     assert.ok(body.includes("Spurs² Hackathon at UT Austin"));
     assert.ok(body.includes("https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/"));
-    const awakinReference = "Nipun Mehta founded ServiceSpace in the Bay Area.";
-    assert.equal(body.split(awakinReference).length - 1, 1);
-    assert.ok(body.indexOf("AI Ethics") < body.indexOf(awakinReference));
     assert.ok(body.includes("IRL.group: a home for local creators"));
-    assert.ok(body.includes("https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/"));
-    assert.ok(body.includes("https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/"));
-    assert.ok(body.includes("https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/"));
     assert.ok(body.includes("Why Every Election Matters to Democracy with Stacey Abrams"));
     assert.ok(body.includes("https://podcasts.apple.com/us/podcast/guy-kawasakis-remarkable-people/id1483081827?i=1000797951025"));
+    const removedItems = [
+      "ServiceSpace and Awakin Circles",
+      "https://nipun.servicespace.org/",
+      "https://www.awakin.org/",
+      "The IRL economy is taking off",
+      "https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/",
+      "Golfer Scottie Scheffler on choosing the right partnerships",
+      "https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/",
+      "What you’ll find here",
+      "I’ll favor recurring, mindful gatherings over transactional one-offs",
+      "Faith leaders and AI guardrails",
+      "https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/",
+      "IRL’s upcoming Groups feature applies privacy-first thinking to local community",
+    ];
+    for (const item of removedItems) assert.ok(!body.includes(item), `removed item remains in AI Ethics section: ${item}`);
+    assert.ok(body.indexOf("AI Ethics") < body.indexOf("IRL.group: a home for local creators"));
   }
 });
 test("San Francisco shares its Golden Gate image in initial homepage and edition HTML", async () => {
@@ -317,14 +337,15 @@ test("every city sends its configured share image or platform fallback in the in
     }
   }
 });
-test("Dallas follows New York in the city directory and has local AI reading links", async () => {
+test("Austin leads New York and Dallas in the city directory", async () => {
   const { response, body } = await document("eventcarpooling.com");
   assert.equal(response.status, 200);
   const cities = modelOf(body).cities;
-  assert.equal(cities[0].slug, "nyc");
-  assert.equal(cities[1].slug, "dallas");
-  assert.equal(cities[1].ethicsTitle, "Dallas AI Plan and governance briefing");
-  assert.equal(cities[1].ethicsUrl, "https://dallascityhall.com/government/citymanager/Documents/Council%20Materials/C.%20Update%20on%20AI%20City%20AI%20Plan.pdf");
+  assert.equal(cities[0].slug, "austin");
+  assert.equal(cities[1].slug, "nyc");
+  assert.equal(cities[2].slug, "dallas");
+  assert.equal(cities[2].ethicsTitle, "Dallas AI Plan and governance briefing");
+  assert.equal(cities[2].ethicsUrl, "https://dallascityhall.com/government/citymanager/Documents/Council%20Materials/C.%20Update%20on%20AI%20City%20AI%20Plan.pdf");
 });
 test("platform and future city image fallbacks never borrow Austin's preview", async () => {
   const { response, body } = await document("eventcarpooling.com");

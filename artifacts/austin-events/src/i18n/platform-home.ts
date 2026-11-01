@@ -8,7 +8,7 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
   heroDescription: string;
   heroFootnote: string;
   collageLabel: string;
-  newEdition: string;
+  editionLabel: string;
   baselineLead: string;
   baselineTail: string;
   directoryEyebrow: string;
@@ -19,7 +19,6 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
   customNewsletterLink: string;
   customNewsletterEnding: string;
   newBadge: string;
-  recentlyAdded: string;
   localEthics: string;
   cityExplore: string;
   directoryError: string;
@@ -51,7 +50,7 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
     heroDescription: "A thoughtful guide to worthwhile events, local stories and city newsletters—made to help you step out and feel more at home where you live.",
     heroFootnote: "Browse a city edition. No account needed.",
     collageLabel: "Views from Boston, Houston, Miami and Sacramento",
-    newEdition: "01 / NEW EDITION",
+    editionLabel: "01 / CITY EDITION",
     baselineLead: "A little closer to where you are",
     baselineTail: "Local events · considered reads · shared places",
     directoryEyebrow: "A growing set of city editions",
@@ -62,7 +61,6 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
     customNewsletterLink: "Raj’s Austin Events",
     customNewsletterEnding: ".",
     newBadge: "New",
-    recentlyAdded: "Recently added",
     localEthics: "Local AI Ethics",
     cityExplore: "Explore the {city} edition",
     directoryError: "The directory is taking a moment. Showing the available editions.",
@@ -94,7 +92,7 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
     heroDescription: "街で見つけた、心に残るイベントや地域の読みものを。暮らす場所をもっと知り、誰かと同じ時間を過ごすためのガイドです。",
     heroFootnote: "都市版をご覧ください。アカウントは不要です。",
     collageLabel: "ボストン、ヒューストン、マイアミ、サクラメントの風景",
-    newEdition: "01 / 新しい都市版",
+    editionLabel: "01 / 都市版",
     baselineLead: "いつもの街を、少し新しく",
     baselineTail: "地域のイベント · 読みもの · 人が集う場所",
     directoryEyebrow: "街ごとのエディション",
@@ -105,7 +103,6 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
     customNewsletterLink: "Rajのオースティン版",
     customNewsletterEnding: "。",
     newBadge: "新着",
-    recentlyAdded: "最近追加された都市",
     localEthics: "地域のAI倫理",
     cityExplore: "{city}の都市版を見る",
     directoryError: "都市一覧の読み込みに時間がかかっています。表示できる都市をご案内します。",

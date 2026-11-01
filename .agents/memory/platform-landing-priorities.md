@@ -3,11 +3,17 @@ name: Platform landing-page priorities
 description: User's content hierarchy and visual direction for the EventCarpooling platform homepage.
 ---
 
-Prioritize “Event Newsletter in an Hour,” city editions (especially those with New updates), AustinCares deals, and AI Ethics connected to each city. Keep a visible, working way to request a city page. Other content should be abridged.
+Prioritize “Event Newsletter in an Hour,” city editions, AustinCares deals, and AI Ethics connected to each city. Keep a visible, working way to request a city page. Other content should be abridged.
 
 **Why:** The user said the platform page had too much content and identified these as the main priorities.
 
-**How to apply:** Keep future platform-homepage changes concise, preserve Boston at the top, and retain consistent New tags. Use pleasing, restful colors and a collage of scenic city photos rather than returning to a dense feature catalogue.
+**How to apply:** Keep future platform-homepage changes concise, preserve Boston as the hero collage's lead image, and use pleasing, restful colors with scenic city photos rather than returning to a dense feature catalogue.
+
+Austin is the featured city in the directory and the only city with a New badge. Keep Austin first and featured; do not mark other cities New.
+
+**Why:** On November 1, 2026, the user directed that Austin replace New York City as the featured directory city and carry the only New badge.
+
+**How to apply:** Keep the interactive city directory and the public HTML fallback ordered with Austin first, and keep all other city cards free of New badges.
 
 Preserve public HTML readability when redesigning the page, not only its JavaScript view.
 

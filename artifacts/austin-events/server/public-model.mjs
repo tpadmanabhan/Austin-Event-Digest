@@ -134,7 +134,7 @@ export function eventSchema(event, origin) {
 
 import cityAiEthicsData from "../../../shared/city-ai-ethics.json" with { type: "json" };
 
-const PLATFORM_CITY_ORDER = ["nyc", "dallas", "manchester", "la", "boston", "atlanta", "sanfrancisco", "austin", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
+const PLATFORM_CITY_ORDER = ["austin", "nyc", "dallas", "manchester", "la", "boston", "atlanta", "sanfrancisco", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
 const CITY_ETHICS_RESOURCES = {
   la: { url: "https://ita.lacity.gov/news/ita-publishes-ai-safety-checklist", title: "L.A. A.I. Safety Checklist" },
   boston: { url: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", title: "Boston’s generative AI policy" },

@@ -180,8 +180,7 @@ describe("AI Ethics reading section", () => {
       slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
     });
     const privacyFeatureReference = "IRL’s upcoming Groups feature applies privacy-first thinking to local community";
-    expect(html.split(privacyFeatureReference).length - 1).toBe(1);
-    expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf(privacyFeatureReference));
+    expect(html).not.toContain(privacyFeatureReference);
     expect(html).not.toContain("meditation, an hour of sharing, and a meal");
     expect(html).toContain("Groups, designed privacy-first");
     expect(html).toContain("No phone number required");
@@ -206,6 +205,13 @@ describe("AI Ethics reading section", () => {
       "https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/",
       "IRL.group: a home for local creators",
       "https://irl.group/",
+      "Why Every Election Matters to Democracy with Stacey Abrams",
+      "https://podcasts.apple.com/us/podcast/guy-kawasakis-remarkable-people/id1483081827?i=1000797951025",
+    ];
+    const requestedPositions = requestedItems.map(value => html.indexOf(value));
+    expect(requestedPositions.every(position => position >= 0)).toBe(true);
+    expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
+    const removedItems = [
       "ServiceSpace and Awakin Circles",
       "https://nipun.servicespace.org/",
       "https://www.awakin.org/",
@@ -213,16 +219,13 @@ describe("AI Ethics reading section", () => {
       "https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/?rand=8593",
       "Golfer Scottie Scheffler on choosing the right partnerships",
       "https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/",
+      "It’s not necessarily not wanting to do things. It’s just wanting to do things with the right people.",
       "What you’ll find here",
+      "I’ll favor recurring, mindful gatherings over transactional one-offs",
       "Faith leaders and AI guardrails",
       "https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/",
-      "Why Every Election Matters to Democracy with Stacey Abrams",
-      "https://podcasts.apple.com/us/podcast/guy-kawasakis-remarkable-people/id1483081827?i=1000797951025",
     ];
-    const requestedPositions = requestedItems.map(value => html.indexOf(value));
-    expect(requestedPositions.every(position => position >= 0)).toBe(true);
-    expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
-    expect(html).toContain("It’s not necessarily not wanting to do things. It’s just wanting to do things with the right people.");
+    expect(removedItems.every((value) => !html.includes(value))).toBe(true);
     expect(html).not.toContain("The Rise of the IRL Influencer");
     expect(html).not.toContain("Meta updates data-scraping policy following criticism");
     expect(html.indexOf("AI Ethics")).toBeGreaterThan(html.indexOf("<!-- Intro -->"));
