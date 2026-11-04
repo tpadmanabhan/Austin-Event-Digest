@@ -40,6 +40,10 @@ router.get("/events/upcoming-across-cities", async (req, res) => {
     }> = [];
 
     for (const row of rows) {
+      // Leadership Austin has its own alumni event feed and should not appear
+      // as an unrelated city's cross-city content.
+      if (row.slug === "leadershipaustin") continue;
+
       const digestCount = digestCountByTenant.get(row.tenantId) ?? 0;
       if (digestCount >= 1) continue;
       digestCountByTenant.set(row.tenantId, digestCount + 1);

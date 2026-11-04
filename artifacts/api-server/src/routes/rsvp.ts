@@ -29,7 +29,7 @@ router.get("/managed", async (req, res) => {
     res.status(400).json({ error: "invalid_request", message: "managedEventId is required" });
     return;
   }
-  if (!["austin", "leadershipaustin"].includes(req.tenant?.slug ?? "")) {
+  if (req.tenant?.slug !== "leadershipaustin") {
     res.status(404).json({ error: "not_found" });
     return;
   }
@@ -63,7 +63,7 @@ router.post("/managed", async (req, res) => {
     res.status(400).json({ error: "invalid_request", message: "Invalid event interest data" });
     return;
   }
-  if (!["austin", "leadershipaustin"].includes(req.tenant?.slug ?? "")) {
+  if (req.tenant?.slug !== "leadershipaustin") {
     res.status(404).json({ error: "not_found" });
     return;
   }

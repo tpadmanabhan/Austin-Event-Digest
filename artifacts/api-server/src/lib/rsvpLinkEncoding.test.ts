@@ -73,12 +73,12 @@ describe("newsletter RSVP parameter decoding", () => {
   });
 
   it("binds persistent-event interest links to tenant, event, title, and email", () => {
-    const sig = signManagedEventRsvpParams("austin", 42, title, email)!;
+    const sig = signManagedEventRsvpParams("leadershipaustin", 42, title, email)!;
 
-    expect(verifyManagedEventRsvpSignature("austin", 42, title, email.toUpperCase(), sig)).toBe(true);
-    expect(verifyManagedEventRsvpSignature("leadershipaustin", 42, title, email, sig)).toBe(false);
-    expect(verifyManagedEventRsvpSignature("austin", 43, title, email, sig)).toBe(false);
-    expect(verifyManagedEventRsvpSignature("austin", 42, `${title}!`, email, sig)).toBe(false);
-    expect(verifyManagedEventRsvpSignature("austin", 42, title, "other@example.com", sig)).toBe(false);
+    expect(verifyManagedEventRsvpSignature("leadershipaustin", 42, title, email.toUpperCase(), sig)).toBe(true);
+    expect(verifyManagedEventRsvpSignature("austin", 42, title, email, sig)).toBe(false);
+    expect(verifyManagedEventRsvpSignature("leadershipaustin", 43, title, email, sig)).toBe(false);
+    expect(verifyManagedEventRsvpSignature("leadershipaustin", 42, `${title}!`, email, sig)).toBe(false);
+    expect(verifyManagedEventRsvpSignature("leadershipaustin", 42, title, "other@example.com", sig)).toBe(false);
   });
 });

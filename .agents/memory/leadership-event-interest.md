@@ -1,6 +1,6 @@
 ---
 name: Alumni-sourced event interest
-description: Product decisions for interest submissions on Austin and Leadership Austin.
+description: Keep alumni event interest features exclusive to Leadership Austin.
 ---
 
 The user clarified that Austin.irl.group should stay as-is and Leadership Austin is a separate site. Alumni-sourced events, interest notifications, and the related newsletter block belong on Leadership Austin only. The user chose both interest notification emails and newsletter subscription for website participants. Signed newsletter links must not reactivate unsubscribed users.

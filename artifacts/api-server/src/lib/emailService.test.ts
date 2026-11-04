@@ -857,10 +857,13 @@ describe("Leadership Austin newsletter", () => {
 
     expect(austinHtml).not.toContain(event.title);
     expect(austinHtml).not.toContain("Upcoming community events");
+    expect(austinHtml).toContain("Austin Cares");
     expect(leadershipAustinHtml).toContain(event.title);
     expect(leadershipAustinHtml).toContain("Upcoming community events");
     expect(leadershipAustinHtml).toContain("✨ Interested?");
     expect(leadershipAustinHtml).toContain("https://leadershipaustin.irl.group/rsvp?m=42");
+    expect(leadershipAustinHtml).not.toContain("Austin Cares");
+    expect(leadershipAustinHtml).not.toContain("Two new features");
   });
 
   it("uses alumni branding, keeps event dates, and hides the edition date", () => {

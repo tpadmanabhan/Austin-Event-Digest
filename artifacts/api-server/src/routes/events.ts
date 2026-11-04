@@ -351,7 +351,7 @@ router.get("/leadership-managed/admin", requireAdmin, async (req, res) => {
 });
 
 router.get("/leadership-managed", async (req, res) => {
-  if (!["leadershipaustin", "austin"].includes(req.tenant?.slug ?? "")) {
+  if (req.tenant?.slug !== "leadershipaustin") {
     res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
     return;
   }

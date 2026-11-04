@@ -1547,7 +1547,7 @@ export function buildDigestEmailHtml(digest: {
     </div>` : ""}
 
     <!-- AustinCares Launch Promo (other established city newsletters) -->
-    ${slug !== "austincares" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
+    ${slug !== "austincares" && slug !== "leadershipaustin" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
     <div style="background:${slug === "austin" ? "linear-gradient(135deg,#fff8ed 0%,#f8f2e8 54%,#edf7f0 100%)" : "linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%)"}; border:${slug === "austin" ? "1.5px solid #ead7ba" : "none"}; border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
       <p style="margin:0 0 6px; color:${slug === "austin" ? "#a45b22" : "#fbbf24"}; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ New · Austin Cares</p>
       <p style="margin:0 0 10px; color:${slug === "austin" ? "#3f392f" : "#ffffff"}; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
@@ -1581,7 +1581,7 @@ export function buildDigestEmailHtml(digest: {
     </div>` : ""}
 
     <!-- Coming Soon: New Features -->
-    ${slug !== "austin" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
+    ${slug !== "austin" && slug !== "leadershipaustin" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <!-- Badge -->
       <div style="display:inline-block; background:${slug === "austin" ? "rgba(47,133,90,0.10)" : "rgba(255,255,255,0.12)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.22)" : "rgba(255,255,255,0.2)"}; border-radius:100px; padding:5px 14px; margin-bottom:16px;">
