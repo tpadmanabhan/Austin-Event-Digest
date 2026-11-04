@@ -6,8 +6,10 @@ vi.hoisted(() => {
 });
 
 import {
+  signManagedEventRsvpParams,
   signRsvpParams,
   signRsvpParamsByWeek,
+  verifyManagedEventRsvpSignature,
   verifyRsvpSignature,
   verifyRsvpSignatureByWeek,
 } from "./rsvpToken";
@@ -68,5 +70,15 @@ describe("newsletter RSVP parameter decoding", () => {
       134, decodeRsvpParam(encode(title)), decodeRsvpParam(encode(email)),
       undefined, sig!,
     )).toBe(true);
+  });
+
+  it("binds persistent-event interest links to tenant, event, title, and email", () => {
+    const sig = signManagedEventRsvpParams("austin", 42, title, email)!;
+
+    expect(verifyManagedEventRsvpSignature("austin", 42, title, email.toUpperCase(), sig)).toBe(true);
+    expect(verifyManagedEventRsvpSignature("leadershipaustin", 42, title, email, sig)).toBe(false);
+    expect(verifyManagedEventRsvpSignature("austin", 43, title, email, sig)).toBe(false);
+    expect(verifyManagedEventRsvpSignature("austin", 42, `${title}!`, email, sig)).toBe(false);
+    expect(verifyManagedEventRsvpSignature("austin", 42, title, "other@example.com", sig)).toBe(false);
   });
 });
