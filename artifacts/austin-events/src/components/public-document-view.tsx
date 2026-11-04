@@ -11,7 +11,7 @@ import { CityAiEthicsSection } from "./city-ai-ethics-section";
 import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "./miami-featured-event";
 import { SpockAboutMention } from "./spock-mascot";
 import { AlumniHappeningsSection } from "./alumni-happenings-section";
-import { AlumniWelcomeNote } from "./alumni-welcome-note";
+import { LeadershipAlumniTestimonial } from "./leadership-alumni-testimonial";
 
 const wrap = "mx-auto max-w-3xl px-4 py-10 sm:px-6";
 const linkCls = "font-semibold text-green-800 underline underline-offset-2 hover:text-green-700";
@@ -134,10 +134,10 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Upcoming events · ${model.editionRange}`}</p>
           : !isLeadershipAustin && model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
         <p className="mt-3 text-lg text-slate-800">{isLeadershipAustin ? "A practical home for the people, programs, and local stories shaping Austin. Browse alumni gatherings and follow each source for current details." : model.intro || model.description}</p>
+        {isLeadershipAustin && <LeadershipAlumniTestimonial />}
         {isLeadershipAustin && (
           <div className="mt-8 space-y-5">
             <AlumniHappeningsSection events={(model.events ?? []) as any[]} compact />
-            <AlumniWelcomeNote />
           </div>
         )}
         {!isLeadershipAustin && model.citySlug === "austin" && <AiEthicsSection className="mt-6" />}

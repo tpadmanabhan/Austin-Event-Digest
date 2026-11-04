@@ -27,7 +27,6 @@ import { CityAiEthicsSection } from "@/components/city-ai-ethics-section";
 import { PrivacyFirstGroupsFeature } from "@/components/privacy-first-groups-feature";
 import { LA_HERO_IMAGE_URL } from "@/lib/city-share-image";
 import { AlumniHappeningsSection } from "@/components/alumni-happenings-section";
-import { AlumniWelcomeNote } from "@/components/alumni-welcome-note";
 
 const SHOW_AUSTIN_CARES = true;
 
@@ -572,9 +571,14 @@ export default function Home() {
                     : `"Hey ${cityShortName}! I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`
                   }
                 </p>
+                {isLeadershipAustin && (
+                  <p className="mt-3 text-foreground/90 leading-relaxed text-sm not-italic">
+                    Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.
+                  </p>
+                )}
                 {isLeadershipAustin ? (
                   <div className="mt-4 border-t border-border/60 pt-3 not-italic">
-                    <p className="leadership-testimonial-name text-sm font-semibold text-foreground">Alexandria Robertson</p>
+                    <p className="leadership-testimonial-name text-sm font-semibold text-foreground">Alexandra Robertson</p>
                     <p className="leadership-testimonial-meta text-xs font-medium tracking-wide text-muted-foreground">Class Rep</p>
                     <p className="leadership-testimonial-meta text-xs tracking-wide text-muted-foreground">LA Emerge 18-2025</p>
                   </div>
@@ -749,7 +753,6 @@ export default function Home() {
           {isLeadershipAustin && (
             <div className="mb-10 space-y-5">
               <AlumniHappeningsSection events={(latestDigest?.events ?? []) as any[]} />
-              <AlumniWelcomeNote />
             </div>
           )}
 

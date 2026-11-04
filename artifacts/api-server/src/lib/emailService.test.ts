@@ -973,11 +973,15 @@ describe("Leadership Austin newsletter", () => {
     expect(html).toContain("Monday, November 16, 9:00–11:00 AM CT");
     expect(html).toContain("Thursday, December 3, 6:00–9:00 PM CT");
     expect(html).toContain("KMFA Studio, 41 Navasota Street, Austin, TX 78702");
+    expect(html).toContain("Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along.");
     expect(html).toContain("Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.");
-    expect(html).toContain('<strong style="font-weight:800;">Alexandria</strong> Robertson');
+    expect(html).toContain("Alexandra Robertson");
     expect(html).toContain("Class Rep");
     expect(html).toContain("LA Emerge 18-2025");
-    expect(html).not.toContain("Alexandra Robertson");
+    expect(html).not.toContain("Alexandria Robertson");
+    expect(html).not.toContain("A welcome to all alumni");
+    expect(html).not.toContain("Stay connected. Share what’s next.");
+    expect(html.indexOf("Hey, all alumni.")).toBeLessThan(html.indexOf(">Alumni Happenings</h2>"));
     expect(html).toContain("Ascension Seton");
     expect(html).toContain("The Austin Common");
     expect(html).toContain(">Subscribe here</a>");

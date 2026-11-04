@@ -1354,15 +1354,14 @@ export function buildDigestEmailHtml(digest: {
   const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
   const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
   const alsoNearbyCards = alsoNearby.map(e => buildEventCard(e, false)).join("");
-  const alumniWelcomeHtml = slug === "leadershipaustin" ? `
-    <section style="border-left:4px solid #FFBA01; background:#F3F6FA; border-radius:4px; padding:20px 22px; margin:0 0 24px;">
-      <p style="margin:0 0 6px; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase;">A welcome to all alumni</p>
-      <h2 style="margin:0 0 10px; color:#314363; font-family:'Barlow Condensed',Arial,sans-serif; font-size:27px; line-height:1.05; text-transform:uppercase;">Stay connected. Share what’s next.</h2>
-      <p style="margin:0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.7;">Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
-       <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:400;"><strong style="font-weight:800;">Alexandria</strong> Robertson</p>
-       <p style="margin:3px 0 0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:12px; font-weight:700;">Class Rep</p>
-       <p style="margin:2px 0 0; color:#64748b; font-family:'Figtree',Arial,sans-serif; font-size:12px;">LA Emerge 18-2025</p>
-     </section>` : "";
+  const leadershipTestimonialHtml = slug === "leadershipaustin" ? `
+      <div style="margin-top:18px; border-top:1px solid #e2e8f0; padding-top:16px;">
+        <p style="margin:0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.7; font-style:italic;">Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along.</p>
+        <p style="margin:10px 0 0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.7;">Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
+        <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800;">Alexandra Robertson</p>
+        <p style="margin:3px 0 0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:12px; font-weight:700;">Class Rep</p>
+        <p style="margin:2px 0 0; color:#64748b; font-family:'Figtree',Arial,sans-serif; font-size:12px;">LA Emerge 18-2025</p>
+      </div>` : "";
   const alumniSourcedEventsHtml = slug === "leadershipaustin" && (digest.alumniSourcedEvents ?? []).length > 0
     ? `<section style="margin:0 0 28px;border:1px solid #314363;border-radius:12px;overflow:hidden;background:#fff;">
         <div style="background:#314363;padding:16px 20px;">
@@ -1512,9 +1511,9 @@ export function buildDigestEmailHtml(digest: {
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:16px;">
       <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
       ${theme.curatorName ? `<p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
+      ${leadershipTestimonialHtml}
     </div>
 
-    ${alumniWelcomeHtml}
     ${alumniHappeningsHtml}
     ${alumniSourcedEventsHtml}
 

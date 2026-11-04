@@ -9,7 +9,7 @@ import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
 import { AlumniHappeningsSection } from "@/components/alumni-happenings-section";
-import { AlumniWelcomeNote } from "@/components/alumni-welcome-note";
+import { LeadershipAlumniTestimonial } from "@/components/leadership-alumni-testimonial";
 import { useLanguage } from "@/contexts/language-context";
 import { JA } from "@/i18n/ja";
 import { EventMap } from "@/components/event-map";
@@ -571,6 +571,7 @@ export default function DigestView() {
                 )}
               </p>
             )}
+            {isLeadershipAustin && <LeadershipAlumniTestimonial />}
           </div>
           {!isLeadershipAustin && tenant.slug === "austin" && <AiEthicsSection className="mt-6" />}
           {isSF && <SfAiEthicsSection className="mt-6" />}
@@ -586,7 +587,6 @@ export default function DigestView() {
           {isLeadershipAustin && (
             <div className="mt-6 space-y-5">
               <AlumniHappeningsSection events={digest.events as any[]} compact />
-              <AlumniWelcomeNote />
             </div>
           )}
         </header>
