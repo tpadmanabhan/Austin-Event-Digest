@@ -452,3 +452,17 @@ mtime_ms = 1793806577880
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/1a35d48c-cc43-4795-b166-07f38df8fe26/4869b384-2dbd-4d92-9148-4986f694cc39"
 storage_version_token = "1793806598327315"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "D1TNGcKbqUI9-QgFUM6n2"
+uri = "file://generated-artifacts/leadership-austin-admin-guide-v2.pdf"
+type = "pdf"
+title = "Leadership Austin Admin Guide V2"
+description = "Revised two-page PDF. The highlighted tenant reminder section has been removed, and the guide title and page labels identify this as V2."
+logical_id = "00d69b72-fff3-457c-b6b5-af1253034b35"
+content_hash = "sha256:fa06a32089ebc75fcd0afde8d30074158872cd4fc0ca43682a0edb745539d147"
+size = 82779
+mtime_ms = 1793807712660
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/00d69b72-fff3-457c-b6b5-af1253034b35/db33bab2-e544-4810-a58a-38a74815c0a9"
+storage_version_token = "1793807735381725"
+content_type = "application/pdf"

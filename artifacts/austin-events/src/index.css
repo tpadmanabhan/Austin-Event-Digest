@@ -845,14 +845,87 @@
   letter-spacing: -.025em;
   text-transform: uppercase;
 }
+[data-tenant="leadershipaustin"] .leadership-home-hero .leadership-eyebrow {
+  background: hsl(187 42% 91%);
+  border-color: hsl(187 36% 78%);
+  color: hsl(187 55% 26%);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+[data-tenant="leadershipaustin"] .leadership-home-hero .leadership-brand-lockup {
+  max-width: 11ch;
+  margin-bottom: 1.25rem;
+  font-size: clamp(3.4rem, 7.1vw, 6.35rem);
+  line-height: .9;
+  letter-spacing: -.025em;
+}
+[data-tenant="leadershipaustin"] .leadership-home-hero .leadership-wordmark {
+  max-width: 9.8ch;
+  color: #263650;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  letter-spacing: .005em;
+  text-transform: uppercase;
+}
+[data-tenant="leadershipaustin"] .leadership-home-hero .leadership-tagline {
+  color: #31586b;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+  font-weight: 400;
+  letter-spacing: -.045em;
+  line-height: 1;
+  text-transform: none;
+}
+[data-tenant="leadershipaustin"] .leadership-home-hero .leadership-purpose {
+  color: #bd5d43;
+  font-style: italic;
+}
+[data-tenant="leadershipaustin"] .leadership-home-hero .leadership-intro-copy {
+  max-width: 39rem;
+  color: #455b70;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
 [data-tenant="leadershipaustin"] .leadership-alumni-panel {
+  border: 1px solid hsl(204 38% 96% / .18);
   border-top: 5px solid #FFBA01;
-  background: linear-gradient(130deg, #314363, #263650);
+  background: linear-gradient(130deg, #314363 0%, #263650 68%, #245b63 100%);
   color: #f4f7fa;
   box-shadow: 0 20px 45px hsl(218 36% 22% / .16);
 }
 [data-tenant="leadershipaustin"] .leadership-alumni-panel h2 {
   color: #f4f7fa;
+}
+[data-tenant="leadershipaustin"] .leadership-alumni-panel .leadership-testimonial-copy {
+  color: #f4f7fa;
+}
+[data-tenant="leadershipaustin"] .leadership-alumni-panel .leadership-testimonial-name {
+  color: #fff;
+}
+[data-tenant="leadershipaustin"] .leadership-alumni-panel .leadership-testimonial-meta {
+  color: #c5d8df;
+}
+[data-tenant="leadershipaustin"] .leadership-hero-frame {
+  width: 100%;
+  max-width: 30rem;
+  margin-inline: auto;
+  padding: .55rem;
+  overflow: hidden;
+  border-radius: 1.8rem;
+  background: linear-gradient(145deg, #314363 0%, #4EBEE7 54%, #FFBA01 100%);
+  box-shadow: 0 24px 58px hsl(218 36% 22% / .2);
+}
+[data-tenant="leadershipaustin"] .leadership-hero-frame .leadership-hero-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  object-position: center 40%;
+  border: 1px solid hsl(0 0% 100% / .75);
+  border-radius: 1.35rem;
+  box-shadow: none;
+  animation: none;
 }
 
 @layer base {

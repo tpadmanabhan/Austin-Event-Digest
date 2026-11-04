@@ -288,6 +288,8 @@ export default function Home() {
                 : "austin-hero.png";
   const heroSrc = isDallas
     ? `${import.meta.env.BASE_URL}images/dallas-hero.jpg`
+    : isLeadershipAustin
+    ? `${import.meta.env.BASE_URL}images/leadership-austin-hero.webp`
     : isLA
     ? LA_HERO_IMAGE_URL
     : isOsaka
@@ -307,6 +309,8 @@ export default function Home() {
       : `${import.meta.env.BASE_URL}images/${heroImage}`;
   const heroAlt = tenant.slug === "austin"
     ? "Downtown Austin skyline across Lady Bird Lake"
+    : isLeadershipAustin
+    ? "Downtown Austin skyline and boats on Lady Bird Lake at sunset"
     : isDallas
     ? "Dallas skyline at dusk with Reunion Tower above the city"
     : isNYC
@@ -430,15 +434,15 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="max-w-2xl"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4 border border-secondary/20">
+              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4 border border-secondary/20 ${isLeadershipAustin ? "leadership-eyebrow" : ""}`}>
                 <Sparkles className="w-4 h-4" />
-                <span>{isLeadershipAustin ? "ALUMNI & COMMUNITY · AUSTIN, TEXAS" : isDallas ? "DALLAS / NORTH TEXAS FIELD GUIDE" : isNYC ? "NEW YORK CITY / FIVE-BOROUGH FIELD GUIDE" : isManchester ? "MANCHESTER / CITYWIDE FIELD GUIDE" : isOsaka ? (lang === "ja" ? "大阪 / 街のイベントガイド" : "OSAKA / THE CITYWIDE FIELD GUIDE") : isLA ? "LOS ANGELES / PACIFIC COAST EDITION" : isBoston ? "BOSTON / CHARLES RIVER EDITION" : isMiami ? "MIAMI / BAYFRONT EDITION" : isSacramento ? "SACRAMENTO / CAPITAL CITY EDITION" : isSF ? "SAN FRANCISCO / FOG CITY EDITION" : isHouston ? "HOUSTON / CITYWIDE FIELD GUIDE" : isAtlanta ? "Citywide, one good plan at a time." : jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
+                <span>{isLeadershipAustin ? "LEADERSHIP AUSTIN ALUMNI · AUSTIN, TEXAS" : isDallas ? "DALLAS / NORTH TEXAS FIELD GUIDE" : isNYC ? "NEW YORK CITY / FIVE-BOROUGH FIELD GUIDE" : isManchester ? "MANCHESTER / CITYWIDE FIELD GUIDE" : isOsaka ? (lang === "ja" ? "大阪 / 街のイベントガイド" : "OSAKA / THE CITYWIDE FIELD GUIDE") : isLA ? "LOS ANGELES / PACIFIC COAST EDITION" : isBoston ? "BOSTON / CHARLES RIVER EDITION" : isMiami ? "MIAMI / BAYFRONT EDITION" : isSacramento ? "SACRAMENTO / CAPITAL CITY EDITION" : isSF ? "SAN FRANCISCO / FOG CITY EDITION" : isHouston ? "HOUSTON / CITYWIDE FIELD GUIDE" : isAtlanta ? "Citywide, one good plan at a time." : jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
               </div>
               
-              <h1 className={`text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1] ${isLeadershipAustin ? "max-w-[11ch]" : ""} ${isHouston || isSF || isMiami || isBoston || isLA ? "lg:text-[4.5rem]" : ""}`}>
-                {isLeadershipAustin ? <span className="block">Leadership<br />Austin</span> : isDallas ? "Dallas, let's go." : isNYC ? "Five boroughs." : isManchester ? "Manchester," : isOsaka ? (lang === "ja" ? "大阪で、" : "Osaka,") : isLA ? "City to the coast." : isBoston ? "Both banks of the river." : isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} {!isLeadershipAustin && <br/>}
+              <h1 className={`text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1] ${isLeadershipAustin ? "leadership-brand-lockup max-w-[11ch]" : ""} ${isHouston || isSF || isMiami || isBoston || isLA ? "lg:text-[4.5rem]" : ""}`}>
+                {isLeadershipAustin ? <span className="leadership-wordmark block">Leadership Austin</span> : isDallas ? "Dallas, let's go." : isNYC ? "Five boroughs." : isManchester ? "Manchester," : isOsaka ? (lang === "ja" ? "大阪で、" : "Osaka,") : isLA ? "City to the coast." : isBoston ? "Both banks of the river." : isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} {!isLeadershipAustin && <br/>}
                 {isLeadershipAustin ? (
-                  <span className="mt-3 block">Lead with <span className="text-primary italic">Purpose.</span></span>
+                  <span className="leadership-tagline mt-3 block">Lead with <span className="leadership-purpose">Purpose.</span></span>
                 ) : isDallas ? (
                   <>Find your <span className="text-primary italic">next good plan.</span></>
                 ) : isAustinCares ? (
@@ -470,9 +474,9 @@ export default function Home() {
                 )}
               </h1>
               
-              <p className="text-base text-muted-foreground mb-5 leading-relaxed max-w-xl">
+              <p className={`text-base text-muted-foreground mb-5 leading-relaxed max-w-xl ${isLeadershipAustin ? "leadership-intro-copy" : ""}`}>
                 {isLeadershipAustin
-                  ? "A practical weekly home for Leadership Austin alumni and neighbors: discover upcoming programs, reconnect with your network, and share the local stories shaping our city."
+                  ? "Stay close to the people and ideas shaping Austin. Find Leadership Austin gatherings, share alumni stories, and discover meaningful ways to keep showing up for the city."
                   : isDallas
                   ? "From downtown Dallas to neighborhoods across North Texas, find verified tech, arts, sports, civic and wellness plans for October 23–31, with links back to organizers."
                   : isNYC
@@ -508,10 +512,10 @@ export default function Home() {
                   : `Every Sunday, a curated list of the best live music, food pop-ups, tech meetups, and hidden gems happening in ${cityShortName} for the week ahead (Sunday–Saturday).`}
               </p>
 
-              <div className={`mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl ${isDallas ? "dallas-fieldnote" : ""}`}>
-                <p className="text-foreground/90 leading-relaxed text-base italic whitespace-pre-line">
+              <div className={`mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl ${isDallas ? "dallas-fieldnote" : ""} ${isLeadershipAustin ? "leadership-alumni-panel" : ""}`}>
+                <p className={`text-foreground/90 leading-relaxed text-base italic whitespace-pre-line ${isLeadershipAustin ? "leadership-testimonial-copy" : ""}`}>
                   {isLeadershipAustin
-                    ? "A community is built between the big moments. Find a gathering worth making time for, and a story worth passing along."
+                    ? "Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along."
                     : isAustinCares
                     ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek."`
                     : isDallas
@@ -551,9 +555,9 @@ export default function Home() {
                 </p>
                 {isLeadershipAustin ? (
                   <div className="mt-4 border-t border-border/60 pt-3 not-italic">
-                    <p className="text-sm font-semibold text-foreground">Alexandria Robertson</p>
-                    <p className="text-xs font-medium tracking-wide text-muted-foreground">Class Rep</p>
-                    <p className="text-xs tracking-wide text-muted-foreground">LA Emerge 18-2025</p>
+                    <p className="leadership-testimonial-name text-sm font-semibold text-foreground">Alexandria Robertson</p>
+                    <p className="leadership-testimonial-meta text-xs font-medium tracking-wide text-muted-foreground">Class Rep</p>
+                    <p className="leadership-testimonial-meta text-xs tracking-wide text-muted-foreground">LA Emerge 18-2025</p>
                   </div>
                 ) : tenant.curatorName && (
                   <p className="mt-3 text-sm font-semibold text-primary not-italic">
@@ -589,12 +593,12 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.1 }}
                  className={`block ${(isAustinCares || isBulverde) ? "order-first lg:order-none" : ""}`}
             >
-               <div className={`relative ${isDallas ? "dallas-hero-frame" : isNYC ? "nyc-hero-frame" : isManchester ? "manchester-hero-frame" : isOsaka ? "osaka-hero-frame" : isHouston ? "houston-hero-frame" : isSF ? "sf-hero-frame" : isMiami ? "miami-hero-frame" : isBoston ? "boston-hero-frame" : isLA ? "la-hero-frame" : ""}`}>
-               {!isHouston && !isSF && !isMiami && !isBoston && !isLA && !isOsaka && !isManchester && !isNYC && !isDallas && <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />}
+                <div className={`relative ${isLeadershipAustin ? "leadership-hero-frame" : isDallas ? "dallas-hero-frame" : isNYC ? "nyc-hero-frame" : isManchester ? "manchester-hero-frame" : isOsaka ? "osaka-hero-frame" : isHouston ? "houston-hero-frame" : isSF ? "sf-hero-frame" : isMiami ? "miami-hero-frame" : isBoston ? "boston-hero-frame" : isLA ? "la-hero-frame" : ""}`}>
+                {!isLeadershipAustin && !isHouston && !isSF && !isMiami && !isBoston && !isLA && !isOsaka && !isManchester && !isNYC && !isDallas && <div className="absolute inset-0 bg-gradient-to-tr from-secondary/20 to-accent/20 rounded-3xl transform rotate-3 scale-105" />}
               <img 
                 src={heroSrc}
                 alt={heroAlt}
-                className={`relative rounded-3xl shadow-2xl border border-border w-full ${isAtlanta ? "atlanta-hero-image" : ""} ${tenant.slug === "austin" || tenant.slug === "austincares" ? "object-cover aspect-[3/4]" : isAustinCares ? "object-contain aspect-[16/9] bg-stone-900" : "object-cover aspect-[4/3]"}`}
+                 className={`relative rounded-3xl shadow-2xl border border-border w-full ${isLeadershipAustin ? "leadership-hero-image" : isAtlanta ? "atlanta-hero-image" : ""} ${!isLeadershipAustin && (tenant.slug === "austin" || tenant.slug === "austincares") ? "object-cover aspect-[3/4]" : !isLeadershipAustin && isAustinCares ? "object-contain aspect-[16/9] bg-stone-900" : !isLeadershipAustin ? "object-cover aspect-[4/3]" : ""}`}
               />
                {isDallas && <div className="dallas-edition-tag"><span>Dallas / In real life</span><span>{latestIssueRange || "October 23 – 31, 2026"}</span></div>}
                {isBoston && <div className="boston-edition-tag"><span>Back Bay from the Charles / In real life</span><span>{latestIssueRange || "October 14 – 31, 2026"}</span></div>}
