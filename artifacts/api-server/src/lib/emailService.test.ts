@@ -37,6 +37,7 @@ vi.hoisted(() => {
   process.env["TITAN_SMTP_USER"] = "raj@eventcarpooling.com";
   process.env["TITAN_SMTP_PASSWORD"] = "test-only-password";
   process.env["AI_INTEGRATIONS_OPENAI_API_KEY"] = "test-only-openai-key";
+  process.env["RSVP_HMAC_SECRET"] = "test-only-managed-event-signing-key";
 });
 
 vi.mock("nodemailer", () => ({
@@ -824,6 +825,44 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
 });
 
 describe("Leadership Austin newsletter", () => {
+  it("keeps alumni-sourced events on Leadership Austin newsletters only", () => {
+    const event = {
+      title: "Leadership Austin alumni gathering",
+      date: "November 7, 2026",
+      venue: "Austin, TX",
+      description: "A get-together shared by alumni.",
+      link: "https://example.com/alumni-gathering",
+      category: "Community",
+      sourceAlumni: "Amy Stansbury",
+      managedEventId: 42,
+    };
+    const digest = {
+      ...baseDigest,
+      subject: "Upcoming Events",
+      alumniSourcedEvents: [event],
+    };
+
+    const austinHtml = buildDigestEmailHtml(
+      { ...digest, siteUrl: "https://austin.irl.group" },
+      "Preview Reader",
+      "reader@example.com",
+      { slug: "austin", name: "Raj's Austin Events", city: "Austin, TX" },
+    );
+    const leadershipAustinHtml = buildDigestEmailHtml(
+      { ...digest, siteUrl: "https://leadershipaustin.irl.group" },
+      "Preview Reader",
+      "reader@example.com",
+      { slug: "leadershipaustin", name: "Leadership Austin", city: "Austin, TX" },
+    );
+
+    expect(austinHtml).not.toContain(event.title);
+    expect(austinHtml).not.toContain("Upcoming community events");
+    expect(leadershipAustinHtml).toContain(event.title);
+    expect(leadershipAustinHtml).toContain("Upcoming community events");
+    expect(leadershipAustinHtml).toContain("✨ Interested?");
+    expect(leadershipAustinHtml).toContain("https://leadershipaustin.irl.group/rsvp?m=42");
+  });
+
   it("uses alumni branding, keeps event dates, and hides the edition date", () => {
     const html = buildDigestEmailHtml(
       {

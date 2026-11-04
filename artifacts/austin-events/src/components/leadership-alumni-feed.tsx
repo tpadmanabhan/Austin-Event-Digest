@@ -86,7 +86,7 @@ export function LeadershipAlumniFeed() {
         )}
       </div>
       <p className="border-t border-border/70 px-4 py-2 text-[10px] text-muted-foreground">
-        Interest is counted separately for Austin and Leadership Austin.
+        Interest counts here are separate from Austin.irl.group.
       </p>
     </aside>
   );

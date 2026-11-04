@@ -3,10 +3,10 @@ name: Alumni-sourced event interest
 description: Product decisions for interest submissions on Austin and Leadership Austin.
 ---
 
-For alumni-sourced events, the user chose both interest notification emails and newsletter subscription for website participants. Website submissions subscribe to the newsletter for the site where they were submitted. Signed newsletter links must not reactivate unsubscribed users.
+The user clarified that Austin.irl.group should stay as-is and Leadership Austin is a separate site. Alumni-sourced events, interest notifications, and the related newsletter block belong on Leadership Austin only. The user chose both interest notification emails and newsletter subscription for website participants. Signed newsletter links must not reactivate unsubscribed users.
 
 Participant-facing notifications share event details and current interest counts, not names or email addresses. The site admin may receive the submitter's contact details.
 
-**Why:** The user selected both notifications and website subscription. Contact sharing was not requested, so participant identity stays private.
+**Why:** The user selected both notifications and website subscription, then clarified that Austin.irl.group must remain unchanged. Contact sharing was not requested, so participant identity stays private.
 
-**How to apply:** Preserve the site-specific subscription behavior and privacy boundary when changing alumni event interest forms or notification emails.
+**How to apply:** Keep the alumni interest feed and email content scoped to Leadership Austin; preserve the subscription behavior and privacy boundary there.

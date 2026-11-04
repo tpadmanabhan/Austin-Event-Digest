@@ -1686,7 +1686,7 @@ router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
   if (!digest) { res.status(404).json({ error: "not_found" }); return; }
   const tenant = req.tenant!;
   const siteUrl = publicTenantUrl(tenant.slug);
-  const alumniSourcedEvents = tenant.slug === "austin"
+  const alumniSourcedEvents = tenant.slug === "leadershipaustin"
     ? (await listUpcomingLeadershipEvents()).map(leadershipEventToEmailItem)
     : [];
   const html = buildDigestEmailHtml({
@@ -1779,7 +1779,7 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
       : emailEvents;
 
     const isAustin = req.tenant?.slug === "austin";
-    const alumniSourcedEvents = isAustin
+    const alumniSourcedEvents = req.tenant?.slug === "leadershipaustin"
       ? (await listUpcomingLeadershipEvents()).map(leadershipEventToEmailItem)
       : [];
 

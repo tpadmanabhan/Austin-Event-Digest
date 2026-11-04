@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Star, Bell, CheckCircle2, Loader2, Trophy, ExternalLink, Leaf, Calendar } from "lucide-react";
 
-import { useLatestDigest, useLeadershipManagedEvents } from "@/hooks/use-events";
+import { useLatestDigest } from "@/hooks/use-events";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { SubscribeForm } from "@/components/subscribe-form";
@@ -135,10 +135,6 @@ function parseEventDateForSort(dateStr: string): number {
 export default function Home() {
   const { data: latestDigestRes, isLoading: isLoadingLatest } = useLatestDigest();
   const tenant = useTenant();
-  const managedEventsQuery = useLeadershipManagedEvents(
-    tenant.slug === "austin" || tenant.slug === "leadershipaustin",
-  );
-  const managedEvents = managedEventsQuery.data?.events ?? [];
   const [categoryFilter, setCategoryFilter] = useState<DisplayCat>("All");
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const [featureEmail, setFeatureEmail] = useState("");
@@ -290,9 +286,7 @@ export default function Home() {
                 : isManchester
                   ? "manchester-hero.svg"
                 : "austin-hero.png";
-  const heroSrc = tenant.slug === "austin"
-    ? `${import.meta.env.BASE_URL}images/austin-hero-photo.webp`
-    : isDallas
+  const heroSrc = isDallas
     ? `${import.meta.env.BASE_URL}images/dallas-hero.jpg`
     : isLA
     ? LA_HERO_IMAGE_URL
@@ -606,7 +600,7 @@ export default function Home() {
                {isHouston && <div className="houston-edition-tag"><span>Bayou City / In real life</span><span>{latestIssueRange || "Your next plan starts here"}</span></div>}
                 {isNYC && <div className="nyc-edition-tag"><span>The Five Boroughs / In real life</span><span>{latestIssueRange || "October 23 – 31, 2026"}</span></div>}
                </div>
-                {tenant.slug === "austin" ? <LeadershipAlumniFeed /> : <CityEventsFeed />}
+                {isLeadershipAustin ? <LeadershipAlumniFeed /> : <CityEventsFeed />}
             </motion.div>
 
           </div>
@@ -720,26 +714,6 @@ export default function Home() {
           {isLeadershipAustin && (
             <div className="mb-10 space-y-5">
               <AlumniHappeningsSection events={(latestDigest?.events ?? []) as any[]} />
-              <section aria-labelledby="leadership-upcoming-events-title" className="rounded-2xl border border-[#314363]/20 bg-card p-5 shadow-sm sm:p-6">
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[#314363]">Shared by alumni</p>
-                <h3 id="leadership-upcoming-events-title" className="mt-1 font-serif text-2xl font-bold text-foreground">Upcoming Events</h3>
-                <p className="mt-1 mb-5 text-sm text-muted-foreground">Local events sourced by Leadership Austin alumni, separate from Leadership Austin programs.</p>
-                {managedEventsQuery.isLoading ? (
-                  <div className="grid gap-4 sm:grid-cols-2" role="status" aria-label="Loading alumni-sourced events">
-                    {[0, 1].map((item) => <div key={item} className="h-48 animate-pulse rounded-2xl bg-muted" />)}
-                  </div>
-                ) : managedEventsQuery.isError ? (
-                  <p className="text-sm text-muted-foreground" role="status">Alumni-sourced events could not load. Please try again shortly.</p>
-                ) : managedEvents.length > 0 ? (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {managedEvents.map((event) => (
-                      <EventCard key={event.id} event={event as any} />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No upcoming alumni-sourced events right now.</p>
-                )}
-              </section>
               <AlumniWelcomeNote />
             </div>
           )}

@@ -1361,7 +1361,7 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.7;">Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
       <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:700;">Alexandra Robertson</p>
      </section>` : "";
-  const alumniSourcedEventsHtml = (digest.alumniSourcedEvents ?? []).length > 0
+  const alumniSourcedEventsHtml = slug === "leadershipaustin" && (digest.alumniSourcedEvents ?? []).length > 0
     ? `<section style="margin:0 0 28px;border:1px solid #314363;border-radius:12px;overflow:hidden;background:#fff;">
         <div style="background:#314363;padding:16px 20px;">
           <p style="margin:0 0 4px;color:#4EBEE7;font-family:'Figtree',Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Leadership Austin alumni</p>

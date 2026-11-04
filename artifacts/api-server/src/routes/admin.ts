@@ -391,7 +391,7 @@ router.get("/digest/:id/preview-html", requireAdmin, async (req, res) => {
     }
 
     const siteUrl = publicTenantUrl(req.tenant!.slug);
-    const alumniSourcedEvents = req.tenant!.slug === "austin"
+    const alumniSourcedEvents = req.tenant!.slug === "leadershipaustin"
       ? (await listUpcomingLeadershipEvents()).map((event) => ({
           title: event.title,
           date: event.date,
