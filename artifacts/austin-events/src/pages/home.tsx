@@ -436,9 +436,9 @@ export default function Home() {
               </div>
               
               <h1 className={`text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1] ${isLeadershipAustin ? "max-w-[11ch]" : ""} ${isHouston || isSF || isMiami || isBoston || isLA ? "lg:text-[4.5rem]" : ""}`}>
-                {isLeadershipAustin ? <>Leadership<br />Austin</> : isDallas ? "Dallas, let's go." : isNYC ? "Five boroughs." : isManchester ? "Manchester," : isOsaka ? (lang === "ja" ? "大阪で、" : "Osaka,") : isLA ? "City to the coast." : isBoston ? "Both banks of the river." : isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} {!isLeadershipAustin && <br/>}
+                {isLeadershipAustin ? <span className="block">Leadership<br />Austin</span> : isDallas ? "Dallas, let's go." : isNYC ? "Five boroughs." : isManchester ? "Manchester," : isOsaka ? (lang === "ja" ? "大阪で、" : "Osaka,") : isLA ? "City to the coast." : isBoston ? "Both banks of the river." : isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} {!isLeadershipAustin && <br/>}
                 {isLeadershipAustin ? (
-                  <>Lead with <span className="text-primary italic">Purpose.</span></>
+                  <span className="mt-3 block">Lead with <span className="text-primary italic">Purpose.</span></span>
                 ) : isDallas ? (
                   <>Find your <span className="text-primary italic">next good plan.</span></>
                 ) : isAustinCares ? (
@@ -549,7 +549,13 @@ export default function Home() {
                     : `"Hey ${cityShortName}! I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`
                   }
                 </p>
-                {tenant.curatorName && (
+                {isLeadershipAustin ? (
+                  <div className="mt-4 border-t border-border/60 pt-3 not-italic">
+                    <p className="text-sm font-semibold text-foreground">Alexandria Robertson</p>
+                    <p className="text-xs font-medium tracking-wide text-muted-foreground">Class Rep</p>
+                    <p className="text-xs tracking-wide text-muted-foreground">LA Emerge 18-2025</p>
+                  </div>
+                ) : tenant.curatorName && (
                   <p className="mt-3 text-sm font-semibold text-primary not-italic">
                     —{" "}
                     {tenant.curatorName === "Raj" ? (
