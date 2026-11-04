@@ -445,7 +445,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary)_0%,transparent_40%)] opacity-5" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 ${isMiami || isBoston || isLA ? "items-start" : "items-center"}`}>
+          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 ${isLeadershipAustin ? "items-center lg:items-start" : isMiami || isBoston || isLA ? "items-start" : "items-center"}`}>
             
             <motion.div 
               initial={{ opacity: 0, x: -20 }}

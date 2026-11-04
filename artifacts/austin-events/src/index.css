@@ -825,6 +825,7 @@
   letter-spacing: .01em;
 }
 [data-tenant="leadershipaustin"] .leadership-home-hero {
+  padding-block: clamp(1.5rem, 4vh, 3rem);
   background:
     radial-gradient(ellipse at 86% 12%, hsl(197 76% 61% / .23), transparent 37%),
     linear-gradient(145deg, hsl(204 38% 96%), hsl(204 38% 91%));
