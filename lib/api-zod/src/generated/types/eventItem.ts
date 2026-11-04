@@ -24,6 +24,10 @@ export interface EventItem {
   category: string;
   imageUrl?: string | null;
   source?: string | null;
+  sourceName?: string;
+  sourceUrl?: string | null;
+  sourceAlumni?: string;
+  isPersistentManaged?: boolean;
   featured?: boolean;
   isPost?: boolean;
   isBusinessSpotlight?: boolean;

@@ -6,3 +6,4 @@ export * from "./rsvps";
 export * from "./gamification";
 export * from "./adminOtps";
 export * from "./submitted-deals";
+export * from "./leadership-events";

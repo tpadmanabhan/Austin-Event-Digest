@@ -126,6 +126,10 @@ export interface EventItem {
   category: string;
   imageUrl?: string | null;
   source?: string | null;
+  sourceName?: string;
+  sourceUrl?: string | null;
+  sourceAlumni?: string;
+  isPersistentManaged?: boolean;
   featured?: boolean;
   isPost?: boolean;
   isBusinessSpotlight?: boolean;
@@ -184,6 +188,73 @@ export interface AlumniHappeningInput {
 export interface AlumniHappeningResponse {
   success: boolean;
   digest: Digest;
+}
+
+export interface LeadershipManagedEventInput {
+  /**
+   * @minLength 1
+   * @maxLength 180
+   */
+  title: string;
+  /**
+   * @minLength 1
+   * @maxLength 160
+   */
+  date: string;
+  startDate: string;
+  endDate?: string;
+  /** @maxLength 80 */
+  timezone?: string;
+  /**
+   * @minLength 1
+   * @maxLength 240
+   */
+  venue: string;
+  /** @maxLength 300 */
+  venueAddress?: string;
+  /** @maxLength 3000 */
+  description: string;
+  /** @nullable */
+  link?: string | null;
+  /**
+   * @minLength 1
+   * @maxLength 80
+   */
+  category: string;
+  /** @maxLength 180 */
+  organizer?: string;
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  sourceName: string;
+  /** @nullable */
+  sourceUrl?: string | null;
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  sourceAlumni: string;
+  /** @nullable */
+  imageUrl?: string | null;
+}
+
+export type LeadershipManagedEvent = EventItem & {
+  id: number;
+  organizer?: string | null;
+  sourceUrl?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export interface LeadershipManagedEventsResponse {
+  events: LeadershipManagedEvent[];
+}
+
+export interface LeadershipManagedEventResponse {
+  success: boolean;
+  event: LeadershipManagedEvent;
 }
 
 export interface DigestListResponse {

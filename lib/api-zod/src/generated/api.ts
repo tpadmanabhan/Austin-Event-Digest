@@ -160,6 +160,10 @@ export const GetLatestDigestResponse = zod.object({
         category: zod.string(),
         imageUrl: zod.string().nullish(),
         source: zod.string().nullish(),
+        sourceName: zod.string().optional(),
+        sourceUrl: zod.string().nullish(),
+        sourceAlumni: zod.string().optional(),
+        isPersistentManaged: zod.boolean().optional(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),
@@ -207,6 +211,10 @@ export const ListDigestsResponse = zod.object({
           category: zod.string(),
           imageUrl: zod.string().nullish(),
           source: zod.string().nullish(),
+          sourceName: zod.string().optional(),
+          sourceUrl: zod.string().nullish(),
+          sourceAlumni: zod.string().optional(),
+          isPersistentManaged: zod.boolean().optional(),
           featured: zod.boolean().optional(),
           isPost: zod.boolean().optional(),
           isBusinessSpotlight: zod.boolean().optional(),
@@ -223,6 +231,224 @@ export const ListDigestsResponse = zod.object({
       createdAt: zod.coerce.date(),
     }),
   ),
+});
+
+/**
+ * @summary Get active upcoming Leadership Austin events
+ */
+export const ListLeadershipManagedEventsResponse = zod.object({
+  events: zod.array(
+    zod
+      .object({
+        eventId: zod.string().optional(),
+        venueId: zod.string().optional(),
+        startDate: zod
+          .string()
+          .optional()
+          .describe("Verified ISO date or timestamp from the event source"),
+        endDate: zod.string().optional(),
+        timezone: zod.string().optional(),
+        venueAddress: zod.string().optional(),
+        title: zod.string(),
+        date: zod.string(),
+        venue: zod.string(),
+        description: zod.string(),
+        link: zod.string().nullish(),
+        linkText: zod.string().optional(),
+        category: zod.string(),
+        imageUrl: zod.string().nullish(),
+        source: zod.string().nullish(),
+        sourceName: zod.string().optional(),
+        sourceUrl: zod.string().nullish(),
+        sourceAlumni: zod.string().optional(),
+        isPersistentManaged: zod.boolean().optional(),
+        featured: zod.boolean().optional(),
+        isPost: zod.boolean().optional(),
+        isBusinessSpotlight: zod.boolean().optional(),
+        isAlumniHappening: zod.boolean().optional(),
+        alumniHappeningType: zod.enum(["event", "news"]).optional(),
+        deadline: zod.string().nullish(),
+        zodiacSigns: zod.array(zod.string()).nullish(),
+        lat: zod.number().nullish(),
+        lng: zod.number().nullish(),
+      })
+      .and(
+        zod.object({
+          id: zod.number(),
+          organizer: zod.string().nullish(),
+          sourceUrl: zod.string().nullish(),
+          isActive: zod.boolean(),
+          createdAt: zod.coerce.date(),
+          updatedAt: zod.coerce.date(),
+        }),
+      ),
+  ),
+});
+
+/**
+ * @summary Add a persistent Leadership Austin event (admin)
+ */
+export const createLeadershipManagedEventBodyTitleMax = 180;
+
+export const createLeadershipManagedEventBodyDateMax = 160;
+
+export const createLeadershipManagedEventBodyTimezoneMax = 80;
+
+export const createLeadershipManagedEventBodyVenueMax = 240;
+
+export const createLeadershipManagedEventBodyVenueAddressMax = 300;
+
+export const createLeadershipManagedEventBodyDescriptionMax = 3000;
+
+export const createLeadershipManagedEventBodyCategoryMax = 80;
+
+export const createLeadershipManagedEventBodyOrganizerMax = 180;
+
+export const createLeadershipManagedEventBodySourceNameMax = 120;
+
+export const createLeadershipManagedEventBodySourceAlumniMax = 120;
+
+export const CreateLeadershipManagedEventBody = zod.object({
+  title: zod.string().min(1).max(createLeadershipManagedEventBodyTitleMax),
+  date: zod.string().min(1).max(createLeadershipManagedEventBodyDateMax),
+  startDate: zod.coerce.date(),
+  endDate: zod.coerce.date().optional(),
+  timezone: zod
+    .string()
+    .max(createLeadershipManagedEventBodyTimezoneMax)
+    .optional(),
+  venue: zod.string().min(1).max(createLeadershipManagedEventBodyVenueMax),
+  venueAddress: zod
+    .string()
+    .max(createLeadershipManagedEventBodyVenueAddressMax)
+    .optional(),
+  description: zod.string().max(createLeadershipManagedEventBodyDescriptionMax),
+  link: zod.string().url().nullish(),
+  category: zod
+    .string()
+    .min(1)
+    .max(createLeadershipManagedEventBodyCategoryMax),
+  organizer: zod
+    .string()
+    .max(createLeadershipManagedEventBodyOrganizerMax)
+    .optional(),
+  sourceName: zod
+    .string()
+    .min(1)
+    .max(createLeadershipManagedEventBodySourceNameMax),
+  sourceUrl: zod.string().url().nullish(),
+  sourceAlumni: zod
+    .string()
+    .min(1)
+    .max(createLeadershipManagedEventBodySourceAlumniMax),
+  imageUrl: zod.string().url().nullish(),
+});
+
+/**
+ * @summary Get all persistent Leadership Austin events (admin)
+ */
+export const ListAllLeadershipManagedEventsResponse = zod.object({
+  events: zod.array(
+    zod
+      .object({
+        eventId: zod.string().optional(),
+        venueId: zod.string().optional(),
+        startDate: zod
+          .string()
+          .optional()
+          .describe("Verified ISO date or timestamp from the event source"),
+        endDate: zod.string().optional(),
+        timezone: zod.string().optional(),
+        venueAddress: zod.string().optional(),
+        title: zod.string(),
+        date: zod.string(),
+        venue: zod.string(),
+        description: zod.string(),
+        link: zod.string().nullish(),
+        linkText: zod.string().optional(),
+        category: zod.string(),
+        imageUrl: zod.string().nullish(),
+        source: zod.string().nullish(),
+        sourceName: zod.string().optional(),
+        sourceUrl: zod.string().nullish(),
+        sourceAlumni: zod.string().optional(),
+        isPersistentManaged: zod.boolean().optional(),
+        featured: zod.boolean().optional(),
+        isPost: zod.boolean().optional(),
+        isBusinessSpotlight: zod.boolean().optional(),
+        isAlumniHappening: zod.boolean().optional(),
+        alumniHappeningType: zod.enum(["event", "news"]).optional(),
+        deadline: zod.string().nullish(),
+        zodiacSigns: zod.array(zod.string()).nullish(),
+        lat: zod.number().nullish(),
+        lng: zod.number().nullish(),
+      })
+      .and(
+        zod.object({
+          id: zod.number(),
+          organizer: zod.string().nullish(),
+          sourceUrl: zod.string().nullish(),
+          isActive: zod.boolean(),
+          createdAt: zod.coerce.date(),
+          updatedAt: zod.coerce.date(),
+        }),
+      ),
+  ),
+});
+
+/**
+ * @summary Archive a persistent Leadership Austin event (admin)
+ */
+export const ArchiveLeadershipManagedEventParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ArchiveLeadershipManagedEventResponse = zod.object({
+  success: zod.boolean(),
+  event: zod
+    .object({
+      eventId: zod.string().optional(),
+      venueId: zod.string().optional(),
+      startDate: zod
+        .string()
+        .optional()
+        .describe("Verified ISO date or timestamp from the event source"),
+      endDate: zod.string().optional(),
+      timezone: zod.string().optional(),
+      venueAddress: zod.string().optional(),
+      title: zod.string(),
+      date: zod.string(),
+      venue: zod.string(),
+      description: zod.string(),
+      link: zod.string().nullish(),
+      linkText: zod.string().optional(),
+      category: zod.string(),
+      imageUrl: zod.string().nullish(),
+      source: zod.string().nullish(),
+      sourceName: zod.string().optional(),
+      sourceUrl: zod.string().nullish(),
+      sourceAlumni: zod.string().optional(),
+      isPersistentManaged: zod.boolean().optional(),
+      featured: zod.boolean().optional(),
+      isPost: zod.boolean().optional(),
+      isBusinessSpotlight: zod.boolean().optional(),
+      isAlumniHappening: zod.boolean().optional(),
+      alumniHappeningType: zod.enum(["event", "news"]).optional(),
+      deadline: zod.string().nullish(),
+      zodiacSigns: zod.array(zod.string()).nullish(),
+      lat: zod.number().nullish(),
+      lng: zod.number().nullish(),
+    })
+    .and(
+      zod.object({
+        id: zod.number(),
+        organizer: zod.string().nullish(),
+        sourceUrl: zod.string().nullish(),
+        isActive: zod.boolean(),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+    ),
 });
 
 /**
@@ -265,6 +491,10 @@ export const GenerateDigestResponse = zod.object({
         category: zod.string(),
         imageUrl: zod.string().nullish(),
         source: zod.string().nullish(),
+        sourceName: zod.string().optional(),
+        sourceUrl: zod.string().nullish(),
+        sourceAlumni: zod.string().optional(),
+        isPersistentManaged: zod.boolean().optional(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),
@@ -366,6 +596,10 @@ export const AddAlumniHappeningResponse = zod.object({
         category: zod.string(),
         imageUrl: zod.string().nullish(),
         source: zod.string().nullish(),
+        sourceName: zod.string().optional(),
+        sourceUrl: zod.string().nullish(),
+        sourceAlumni: zod.string().optional(),
+        isPersistentManaged: zod.boolean().optional(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),

@@ -3,8 +3,8 @@ import { withPublicEventIds } from "../lib/publicEventIdentity";
 import { verifiedEventMetadata } from "../lib/verifiedEventMetadata";
 import { parseEventLink } from "../lib/eventLink";
 import { createHmac } from "node:crypto";
-import { db, digestsTable, subscribersTable, type EventItem, EventItemSchema } from "@workspace/db";
-import { eq, desc, and } from "drizzle-orm";
+import { db, digestsTable, leadershipEventsTable, subscribersTable, type EventItem, EventItemSchema } from "@workspace/db";
+import { eq, desc, asc, and } from "drizzle-orm";
 import {
   GenerateDigestBody,
   SendDigestBody,
@@ -15,6 +15,7 @@ import {
   GetPublicEventMetadataResponse,
   AddAlumniHappeningBody,
   AddAlumniHappeningResponse,
+  CreateLeadershipManagedEventBody,
 } from "@workspace/api-zod";
 import { generateSampleDigest, getStLouisSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendNewsletterEmail, buildDigestEmailHtml, translateEventsForEmail } from "../lib/emailService";
@@ -55,6 +56,70 @@ function computeProdToken(slug: string): string | null {
 }
 
 const router: IRouter = Router();
+
+function leadershipEventToApi(row: typeof leadershipEventsTable.$inferSelect) {
+  const event = EventItemSchema.parse({
+    title: row.title,
+    date: row.date,
+    startDate: row.startDate,
+    endDate: row.endDate ?? undefined,
+    timezone: row.timezone,
+    venue: row.venue,
+    venueAddress: row.venueAddress ?? undefined,
+    description: row.description,
+    link: row.link,
+    category: row.category,
+    imageUrl: row.imageUrl,
+    source: row.sourceName,
+    sourceName: row.sourceName,
+    sourceUrl: row.sourceUrl,
+    sourceAlumni: row.sourceAlumni,
+    isPersistentManaged: true,
+  });
+  const identified = withPublicEventIds([event], row.tenantId)[0]!;
+  return {
+    ...identified,
+    id: row.id,
+    organizer: row.organizer,
+    sourceUrl: row.sourceUrl,
+    isActive: row.isActive,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function eventDayInTimezone(value: string, timezone: string): string | null {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values["year"]}-${values["month"]}-${values["day"]}`;
+  } catch {
+    return null;
+  }
+}
+
+function normalizedEventTitle(value: string): string {
+  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function normalizedHttpUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    url.hash = "";
+    return url.href.replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Automatically marks events as featured (Special Event) when their date falls
@@ -248,6 +313,156 @@ router.get("/digest/latest", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Error fetching latest digest");
     res.status(500).json({ error: "server_error", message: "Failed to fetch digest" });
+  }
+});
+
+router.get("/leadership-managed/admin", requireAdmin, async (req, res) => {
+  if (req.tenant?.slug !== "leadershipaustin") {
+    res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
+    return;
+  }
+  try {
+    const rows = await db
+      .select()
+      .from(leadershipEventsTable)
+      .where(eq(leadershipEventsTable.tenantId, req.tenant.id))
+      .orderBy(asc(leadershipEventsTable.startDate), asc(leadershipEventsTable.id));
+    res.json({ events: rows.map(leadershipEventToApi) });
+  } catch (err) {
+    req.log.error({ err }, "Error listing persistent Leadership Austin events");
+    res.status(500).json({ error: "server_error", message: "Failed to list persistent events" });
+  }
+});
+
+router.get("/leadership-managed", async (req, res) => {
+  if (req.tenant?.slug !== "leadershipaustin") {
+    res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
+    return;
+  }
+  try {
+    const rows = await db
+      .select()
+      .from(leadershipEventsTable)
+      .where(and(eq(leadershipEventsTable.tenantId, req.tenant.id), eq(leadershipEventsTable.isActive, true)))
+      .orderBy(asc(leadershipEventsTable.startDate), asc(leadershipEventsTable.id));
+    const today = eventDayInTimezone(new Date().toISOString(), "America/Chicago");
+    const events = rows
+      .filter((row) => {
+        const eventDay = eventDayInTimezone(row.endDate || row.startDate, row.timezone);
+        return !!today && !!eventDay && eventDay >= today;
+      })
+      .map(leadershipEventToApi);
+    res.json({ events });
+  } catch (err) {
+    req.log.error({ err }, "Error listing upcoming persistent Leadership Austin events");
+    res.status(500).json({ error: "server_error", message: "Failed to list upcoming events" });
+  }
+});
+
+router.post("/leadership-managed", requireAdmin, async (req, res) => {
+  if (req.tenant?.slug !== "leadershipaustin") {
+    res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
+    return;
+  }
+  const parsed = CreateLeadershipManagedEventBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: "invalid_request", message: "A title, date, start time, venue, description, category, source, and alumni source person are required" });
+    return;
+  }
+  const input = parsed.data;
+  const title = input.title.trim();
+  const date = input.date.trim();
+  const venue = input.venue.trim();
+  const sourceAlumni = input.sourceAlumni.trim();
+  const startTime = Date.parse(input.startDate);
+  const endTime = input.endDate ? Date.parse(input.endDate) : null;
+  if (!title || !date || !venue || !sourceAlumni || !Number.isFinite(startTime)
+    || (input.endDate && (!Number.isFinite(endTime) || endTime! < startTime))) {
+    res.status(400).json({ error: "invalid_request", message: "Event details or date range are invalid" });
+    return;
+  }
+  for (const value of [input.link, input.sourceUrl, input.imageUrl]) {
+    if (value && !normalizedHttpUrl(value)) {
+      res.status(400).json({ error: "invalid_request", message: "Links must use HTTP or HTTPS" });
+      return;
+    }
+  }
+
+  try {
+    const existing = await db
+      .select()
+      .from(leadershipEventsTable)
+      .where(eq(leadershipEventsTable.tenantId, req.tenant.id));
+    const normalizedTitle = normalizedEventTitle(title);
+    const normalizedLink = normalizedHttpUrl(input.link);
+    const startDay = eventDayInTimezone(input.startDate, input.timezone?.trim() || "America/Chicago");
+    const duplicate = existing.some((row) => {
+      const sameLink = normalizedLink && normalizedHttpUrl(row.link) === normalizedLink;
+      const sameTitleAndDay = normalizedEventTitle(row.title) === normalizedTitle
+        && eventDayInTimezone(row.startDate, row.timezone) === startDay;
+      return !!sameLink || (!!startDay && sameTitleAndDay);
+    });
+    if (duplicate) {
+      res.status(409).json({ error: "duplicate_event", message: "This event is already in the persistent Leadership Austin list" });
+      return;
+    }
+
+    const [created] = await db
+      .insert(leadershipEventsTable)
+      .values({
+        tenantId: req.tenant.id,
+        title,
+        date,
+        startDate: input.startDate,
+        endDate: input.endDate ?? null,
+        timezone: input.timezone?.trim() || "America/Chicago",
+        venue,
+        venueAddress: input.venueAddress?.trim() || null,
+        description: input.description.trim(),
+        link: input.link ? input.link.trim() : null,
+        category: input.category.trim(),
+        organizer: input.organizer?.trim() || null,
+        sourceName: input.sourceName.trim(),
+        sourceUrl: input.sourceUrl?.trim() || null,
+        sourceAlumni,
+        imageUrl: input.imageUrl?.trim() || null,
+        isActive: true,
+      })
+      .returning();
+    if (!created) throw new Error("Event insert returned no row");
+    const event = leadershipEventToApi(created);
+    req.log.info({ eventId: event.eventId, title }, "Persistent Leadership Austin event added");
+    res.status(201).json({ success: true, event });
+  } catch (err) {
+    req.log.error({ err }, "Error creating persistent Leadership Austin event");
+    res.status(500).json({ error: "server_error", message: "Failed to add persistent event" });
+  }
+});
+
+router.delete("/leadership-managed/:id", requireAdmin, async (req, res) => {
+  if (req.tenant?.slug !== "leadershipaustin") {
+    res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
+    return;
+  }
+  const id = Number.parseInt(req.params["id"] as string, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid event id" });
+    return;
+  }
+  try {
+    const [archived] = await db
+      .update(leadershipEventsTable)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(and(eq(leadershipEventsTable.id, id), eq(leadershipEventsTable.tenantId, req.tenant.id)))
+      .returning();
+    if (!archived) {
+      res.status(404).json({ error: "not_found", message: "Persistent event not found" });
+      return;
+    }
+    res.json({ success: true, event: leadershipEventToApi(archived) });
+  } catch (err) {
+    req.log.error({ err, eventId: id }, "Error archiving persistent Leadership Austin event");
+    res.status(500).json({ error: "server_error", message: "Failed to archive event" });
   }
 });
 

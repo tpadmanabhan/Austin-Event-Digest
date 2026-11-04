@@ -31,6 +31,9 @@ import type {
   GetTenantConfigParams,
   HealthStatus,
   LeaderboardResponse,
+  LeadershipManagedEventInput,
+  LeadershipManagedEventResponse,
+  LeadershipManagedEventsResponse,
   MessageResponse,
   SendDigestRequest,
   SubscribeRequest,
@@ -701,6 +704,345 @@ export function useListDigests<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get active upcoming Leadership Austin events
+ */
+export const getListLeadershipManagedEventsUrl = () => {
+  return `/api/events/leadership-managed`;
+};
+
+export const listLeadershipManagedEvents = async (
+  options?: RequestInit,
+): Promise<LeadershipManagedEventsResponse> => {
+  return customFetch<LeadershipManagedEventsResponse>(
+    getListLeadershipManagedEventsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListLeadershipManagedEventsQueryKey = () => {
+  return [`/api/events/leadership-managed`] as const;
+};
+
+export const getListLeadershipManagedEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listLeadershipManagedEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listLeadershipManagedEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListLeadershipManagedEventsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listLeadershipManagedEvents>>
+  > = ({ signal }) =>
+    listLeadershipManagedEvents({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listLeadershipManagedEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListLeadershipManagedEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listLeadershipManagedEvents>>
+>;
+export type ListLeadershipManagedEventsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get active upcoming Leadership Austin events
+ */
+
+export function useListLeadershipManagedEvents<
+  TData = Awaited<ReturnType<typeof listLeadershipManagedEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listLeadershipManagedEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListLeadershipManagedEventsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add a persistent Leadership Austin event (admin)
+ */
+export const getCreateLeadershipManagedEventUrl = () => {
+  return `/api/events/leadership-managed`;
+};
+
+export const createLeadershipManagedEvent = async (
+  leadershipManagedEventInput: LeadershipManagedEventInput,
+  options?: RequestInit,
+): Promise<LeadershipManagedEventResponse> => {
+  return customFetch<LeadershipManagedEventResponse>(
+    getCreateLeadershipManagedEventUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(leadershipManagedEventInput),
+    },
+  );
+};
+
+export const getCreateLeadershipManagedEventMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createLeadershipManagedEvent>>,
+    TError,
+    { data: BodyType<LeadershipManagedEventInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createLeadershipManagedEvent>>,
+  TError,
+  { data: BodyType<LeadershipManagedEventInput> },
+  TContext
+> => {
+  const mutationKey = ["createLeadershipManagedEvent"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createLeadershipManagedEvent>>,
+    { data: BodyType<LeadershipManagedEventInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createLeadershipManagedEvent(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateLeadershipManagedEventMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createLeadershipManagedEvent>>
+>;
+export type CreateLeadershipManagedEventMutationBody =
+  BodyType<LeadershipManagedEventInput>;
+export type CreateLeadershipManagedEventMutationError =
+  ErrorType<ErrorResponse>;
+
+/**
+ * @summary Add a persistent Leadership Austin event (admin)
+ */
+export const useCreateLeadershipManagedEvent = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createLeadershipManagedEvent>>,
+    TError,
+    { data: BodyType<LeadershipManagedEventInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createLeadershipManagedEvent>>,
+  TError,
+  { data: BodyType<LeadershipManagedEventInput> },
+  TContext
+> => {
+  return useMutation(getCreateLeadershipManagedEventMutationOptions(options));
+};
+
+/**
+ * @summary Get all persistent Leadership Austin events (admin)
+ */
+export const getListAllLeadershipManagedEventsUrl = () => {
+  return `/api/events/leadership-managed/admin`;
+};
+
+export const listAllLeadershipManagedEvents = async (
+  options?: RequestInit,
+): Promise<LeadershipManagedEventsResponse> => {
+  return customFetch<LeadershipManagedEventsResponse>(
+    getListAllLeadershipManagedEventsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListAllLeadershipManagedEventsQueryKey = () => {
+  return [`/api/events/leadership-managed/admin`] as const;
+};
+
+export const getListAllLeadershipManagedEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listAllLeadershipManagedEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAllLeadershipManagedEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListAllLeadershipManagedEventsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listAllLeadershipManagedEvents>>
+  > = ({ signal }) =>
+    listAllLeadershipManagedEvents({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listAllLeadershipManagedEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListAllLeadershipManagedEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listAllLeadershipManagedEvents>>
+>;
+export type ListAllLeadershipManagedEventsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get all persistent Leadership Austin events (admin)
+ */
+
+export function useListAllLeadershipManagedEvents<
+  TData = Awaited<ReturnType<typeof listAllLeadershipManagedEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAllLeadershipManagedEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListAllLeadershipManagedEventsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Archive a persistent Leadership Austin event (admin)
+ */
+export const getArchiveLeadershipManagedEventUrl = (id: number) => {
+  return `/api/events/leadership-managed/${id}`;
+};
+
+export const archiveLeadershipManagedEvent = async (
+  id: number,
+  options?: RequestInit,
+): Promise<LeadershipManagedEventResponse> => {
+  return customFetch<LeadershipManagedEventResponse>(
+    getArchiveLeadershipManagedEventUrl(id),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getArchiveLeadershipManagedEventMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof archiveLeadershipManagedEvent>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof archiveLeadershipManagedEvent>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["archiveLeadershipManagedEvent"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof archiveLeadershipManagedEvent>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return archiveLeadershipManagedEvent(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ArchiveLeadershipManagedEventMutationResult = NonNullable<
+  Awaited<ReturnType<typeof archiveLeadershipManagedEvent>>
+>;
+
+export type ArchiveLeadershipManagedEventMutationError =
+  ErrorType<ErrorResponse>;
+
+/**
+ * @summary Archive a persistent Leadership Austin event (admin)
+ */
+export const useArchiveLeadershipManagedEvent = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof archiveLeadershipManagedEvent>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof archiveLeadershipManagedEvent>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getArchiveLeadershipManagedEventMutationOptions(options));
+};
 
 /**
  * @summary Generate a new weekly digest (admin)

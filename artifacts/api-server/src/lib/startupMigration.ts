@@ -9,6 +9,7 @@ import { seedManchester } from "./seedManchester";
 import { seedNYC } from "./seedNYC";
 import { seedDallas } from "./seedDallas";
 import { seedLeadershipAustin } from "./seedLeadershipAustin";
+import { seedLeadershipAustinManagedEvents } from "./leadershipAustinManagedEvents";
 
 const MARCH_29_EVENTS = [
   {
@@ -1209,6 +1210,13 @@ export async function runStartupMigration(): Promise<void> {
     logger.info("Leadership Austin tenant and unsent first edition seeded");
   } catch (err) {
     logger.warn({ err }, "Leadership Austin seed failed (non-fatal)");
+  }
+
+  try {
+    await seedLeadershipAustinManagedEvents();
+    logger.info("Persistent Leadership Austin events seeded");
+  } catch (err) {
+    logger.warn({ err }, "Persistent Leadership Austin event seed failed (non-fatal)");
   }
 
   // Migrate austincares subscribers → brushycreek (idempotent)
