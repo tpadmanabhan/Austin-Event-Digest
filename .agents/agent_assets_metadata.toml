@@ -438,3 +438,17 @@ mtime_ms = 1792612148941
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/c5b7d3a0-3beb-4521-97ae-e0f6b5382a4e/74567405-8e51-42b6-b998-09782f408cb0"
 storage_version_token = "1792612177416085"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "eRTlmGZG3-onw8ImAyz9f"
+uri = "file://generated-artifacts/leadership-austin-admin-guide.pdf"
+type = "pdf"
+title = "Leadership Austin Admin Guide"
+description = "Two-page PDF guide to signing in, managing alumni events and weekly digests, using subscriber and settings tools, and sending email safely. The Superconnector section is omitted."
+logical_id = "1a35d48c-cc43-4795-b166-07f38df8fe26"
+content_hash = "sha256:d061652f8cb12ec7c5abce186141777843bfc158aeec9c8aaf12d5808f4e97df"
+size = 91178
+mtime_ms = 1793806577880
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/1a35d48c-cc43-4795-b166-07f38df8fe26/4869b384-2dbd-4d92-9148-4986f694cc39"
+storage_version_token = "1793806598327315"
+content_type = "application/pdf"
