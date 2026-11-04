@@ -199,8 +199,12 @@ function getRsvpKey(digestId: number, eventTitle: string) {
   return `rsvp_${digestId}_${encodeURIComponent(eventTitle)}`;
 }
 
-function useRsvpState(digestId: number | undefined, eventTitle: string) {
-  const key = digestId ? getRsvpKey(digestId, eventTitle) : null;
+function useRsvpState(digestId: number | undefined, eventTitle: string, managedEventId?: number, citySlug?: string) {
+  const key = managedEventId
+    ? `rsvp_managed_${citySlug || "unknown"}_${managedEventId}`
+    : digestId
+      ? getRsvpKey(digestId, eventTitle)
+      : null;
   const [rsvpd, setRsvpd] = useState(() => key && typeof window !== "undefined" ? localStorage.getItem(key) === "1" : false);
 
   const markRsvpd = () => {
@@ -239,15 +243,17 @@ function TellAFriendBox(_props: { event: EventItem; citySlug: string }) {
 // ---------------------------------------------------------------------------
 
 interface RsvpBoxProps {
-  digestId: number;
+  digestId?: number;
+  managedEventId?: number;
   eventTitle: string;
   eventDate: string;
   eventVenue: string;
   autoOpen?: boolean;
 }
 
-export function RsvpBox({ digestId, eventTitle, eventDate, eventVenue, autoOpen = false }: RsvpBoxProps) {
-  const { rsvpd, markRsvpd } = useRsvpState(digestId, eventTitle);
+export function RsvpBox({ digestId, managedEventId, eventTitle, eventDate, eventVenue, autoOpen = false }: RsvpBoxProps) {
+  const { citySlug } = useDomain();
+  const { rsvpd, markRsvpd } = useRsvpState(digestId, eventTitle, managedEventId, citySlug ?? undefined);
   const [showForm, setShowForm] = useState(autoOpen);
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -257,13 +263,16 @@ export function RsvpBox({ digestId, eventTitle, eventDate, eventVenue, autoOpen 
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   useEffect(() => {
-    if (digestId && eventTitle) {
-      fetch(`/api/rsvp?digestId=${digestId}&eventTitle=${encodeURIComponent(eventTitle)}`)
+    if ((digestId || managedEventId) && eventTitle) {
+      const url = managedEventId
+        ? `/api/rsvp/managed?managedEventId=${managedEventId}`
+        : `/api/rsvp?digestId=${digestId}&eventTitle=${encodeURIComponent(eventTitle)}`;
+      fetch(url)
         .then(r => r.json())
         .then(data => setCount(data.count ?? 0))
         .catch(() => {});
     }
-  }, [digestId, eventTitle]);
+  }, [digestId, managedEventId, eventTitle]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,10 +280,16 @@ export function RsvpBox({ digestId, eventTitle, eventDate, eventVenue, autoOpen 
 
     setStatus("submitting");
     try {
-      const res = await fetch("/api/rsvp", {
+      const res = await fetch(managedEventId ? "/api/rsvp/managed" : "/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ digestId, eventTitle, email, name: firstName.trim(), captchaToken }),
+        body: JSON.stringify({
+          ...(managedEventId ? { managedEventId } : { digestId }),
+          eventTitle,
+          email,
+          name: firstName.trim(),
+          captchaToken,
+        }),
       });
       const data = await res.json();
       if (data.success) {
@@ -394,6 +409,7 @@ export function RsvpBox({ digestId, eventTitle, eventDate, eventVenue, autoOpen 
 
 export function EventCard({ event, digestId, distanceMiles, translating }: { event: EventItem; digestId?: number; distanceMiles?: number; translating?: boolean }) {
   const { citySlug } = useDomain();
+  const managedEventId = event.managedEventId;
   const cardSlug = slugify(event.title);
   const cardId = event.eventId || cardSlug;
   const interestRequested = typeof window !== "undefined" && window.location.hash === `#event-${cardId}`;
@@ -537,6 +553,10 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
           {event.description}
         </p>
 
+        {event.isPersistentManaged && event.sourceAlumni && (
+          <p className="mb-3 text-xs text-muted-foreground">Shared by {event.sourceAlumni}</p>
+        )}
+
         {event.source && (
           <div className="mb-4">
             {(() => {
@@ -581,9 +601,10 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
           </div>
         )}
 
-        {digestId && (
+        {(digestId || managedEventId) && (
           <RsvpBox
             digestId={digestId}
+            managedEventId={managedEventId}
             eventTitle={event.title}
             eventDate={event.date}
             eventVenue={event.venue}

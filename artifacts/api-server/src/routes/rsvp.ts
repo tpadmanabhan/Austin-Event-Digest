@@ -1,12 +1,196 @@
 import { Router, type IRouter } from "express";
-import { db, rsvpsTable, subscribersTable, digestsTable } from "@workspace/db";
+import {
+  db,
+  rsvpsTable,
+  subscribersTable,
+  digestsTable,
+  leadershipEventsTable,
+  leadershipEventRsvpsTable,
+  tenantsTable,
+} from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 import { sendRsvpNotification, sendRsvpGroupNotification, sendCarpoolAdminNotification } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
-import { verifyRsvpSignature, verifyRsvpSignatureByWeek } from "../lib/rsvpToken";
+import { verifyManagedEventRsvpSignature, verifyRsvpSignature, verifyRsvpSignatureByWeek } from "../lib/rsvpToken";
 import { awardXP } from "../lib/gamification";
 
 const router: IRouter = Router();
+
+router.get("/managed", async (req, res) => {
+  const managedEventId = Number.parseInt(String(req.query.managedEventId ?? ""), 10);
+  if (!Number.isInteger(managedEventId) || managedEventId <= 0) {
+    res.status(400).json({ error: "invalid_request", message: "managedEventId is required" });
+    return;
+  }
+  if (!["austin", "leadershipaustin"].includes(req.tenant?.slug ?? "")) {
+    res.status(404).json({ error: "not_found" });
+    return;
+  }
+
+  try {
+    const rows = await db
+      .select({ id: leadershipEventRsvpsTable.id })
+      .from(leadershipEventRsvpsTable)
+      .where(and(
+        eq(leadershipEventRsvpsTable.tenantId, req.tenant!.id),
+        eq(leadershipEventRsvpsTable.leadershipEventId, managedEventId),
+      ));
+    res.json({ count: rows.length });
+  } catch (err) {
+    req.log.error({ err, managedEventId }, "Error fetching persistent event interests");
+    res.status(500).json({ error: "server_error", message: "Failed to fetch event interests" });
+  }
+});
+
+router.post("/managed", async (req, res) => {
+  const body = req.body ?? {};
+  const managedEventId = Number(body.managedEventId);
+  const eventTitle = typeof body.eventTitle === "string" ? body.eventTitle.trim() : "";
+  const email = typeof body.email === "string" ? body.email.trim() : "";
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const captchaToken = typeof body.captchaToken === "string" ? body.captchaToken : "";
+  const sig = typeof body.sig === "string" ? body.sig : "";
+
+  if (!Number.isInteger(managedEventId) || managedEventId <= 0 || !eventTitle || eventTitle.length > 180
+    || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid event interest data" });
+    return;
+  }
+  if (!["austin", "leadershipaustin"].includes(req.tenant?.slug ?? "")) {
+    res.status(404).json({ error: "not_found" });
+    return;
+  }
+
+  const normalizedEmail = email.toLowerCase();
+  const hasSignature = sig.length > 0;
+  const hasCaptcha = captchaToken.length > 0;
+  if (!hasSignature && !hasCaptcha) {
+    res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
+    return;
+  }
+
+  const tenantSlug = req.tenant!.slug;
+  if (hasSignature) {
+    if (!verifyManagedEventRsvpSignature(tenantSlug, managedEventId, eventTitle, normalizedEmail, sig)) {
+      res.status(403).json({ error: "invalid_signature", message: "Invalid interest link. Please use the link from your email." });
+      return;
+    }
+  } else if (!(await verifyTurnstileToken(captchaToken, req.ip))) {
+    res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
+    return;
+  }
+
+  try {
+    const [sourceTenant] = await db
+      .select({ id: tenantsTable.id })
+      .from(tenantsTable)
+      .where(eq(tenantsTable.slug, "leadershipaustin"))
+      .limit(1);
+    if (!sourceTenant) {
+      res.status(404).json({ error: "not_found", message: "Source event not found" });
+      return;
+    }
+
+    const [event] = await db
+      .select()
+      .from(leadershipEventsTable)
+      .where(and(
+        eq(leadershipEventsTable.id, managedEventId),
+        eq(leadershipEventsTable.tenantId, sourceTenant.id),
+        eq(leadershipEventsTable.isActive, true),
+      ))
+      .limit(1);
+    if (!event || event.title !== eventTitle) {
+      res.status(404).json({ error: "not_found", message: "Event not found" });
+      return;
+    }
+
+    const tenantId = req.tenant!.id;
+    const priorRsvps = await db
+      .select()
+      .from(leadershipEventRsvpsTable)
+      .where(and(
+        eq(leadershipEventRsvpsTable.tenantId, tenantId),
+        eq(leadershipEventRsvpsTable.leadershipEventId, managedEventId),
+      ));
+    const [created] = await db
+      .insert(leadershipEventRsvpsTable)
+      .values({
+        tenantId,
+        leadershipEventId: managedEventId,
+        email: normalizedEmail,
+        name: hasSignature ? (name || null) : null,
+      })
+      .onConflictDoNothing()
+      .returning({ id: leadershipEventRsvpsTable.id });
+    const alreadyRsvpd = !created;
+
+    if (created) {
+      await db
+        .insert(subscribersTable)
+        .values({ tenantId, email: normalizedEmail, name: hasSignature ? (name || null) : null, isActive: true })
+        .onConflictDoUpdate({
+          target: [subscribersTable.tenantId, subscribersTable.email],
+          set: { isActive: true, ...(hasSignature && name ? { name } : {}) },
+        });
+
+      const rsvperName = (hasSignature ? name : "") || email.split("@")[0];
+      for (const prior of priorRsvps) {
+        if (prior.email !== normalizedEmail) {
+          sendRsvpNotification({
+            to: prior.email,
+            rsvperName,
+            rsvperEmail: normalizedEmail,
+            eventTitle: event.title,
+            eventDate: event.date,
+            eventVenue: event.venue,
+            digestSubject: "Upcoming events shared by Leadership Austin alumni",
+            newsletterName: req.tenant!.name,
+          }).catch(() => {});
+        }
+      }
+      if (priorRsvps.length > 0) {
+        sendRsvpGroupNotification({
+          to: normalizedEmail,
+          matches: priorRsvps.map((prior) => ({ name: prior.name || prior.email.split("@")[0], email: prior.email })),
+          eventTitle: event.title,
+          eventDate: event.date,
+          eventVenue: event.venue,
+          newsletterName: req.tenant!.name,
+        }).catch(() => {});
+      }
+      sendCarpoolAdminNotification({
+        rsvperEmail: normalizedEmail,
+        rsvperName: name || null,
+        eventTitle: event.title,
+        eventDate: event.date,
+        eventVenue: event.venue,
+        totalRsvps: priorRsvps.length + 1,
+        adminEmail: req.tenant!.adminEmail,
+        newsletterName: req.tenant!.name,
+      }).catch(() => {});
+      awardXP(tenantId, "rsvp", 10, { eventTitle, managedEventId }).catch(() => {});
+    }
+
+    const countRows = await db
+      .select({ id: leadershipEventRsvpsTable.id })
+      .from(leadershipEventRsvpsTable)
+      .where(and(
+        eq(leadershipEventRsvpsTable.tenantId, tenantId),
+        eq(leadershipEventRsvpsTable.leadershipEventId, managedEventId),
+      ));
+    req.log.info({ managedEventId, tenantId, alreadyRsvpd }, "Persistent event interest recorded");
+    res.json({
+      success: true,
+      message: alreadyRsvpd ? "You already marked yourself interested." : "Interest recorded.",
+      count: countRows.length,
+      alreadyRsvpd,
+    });
+  } catch (err) {
+    req.log.error({ err, managedEventId }, "Error recording persistent event interest");
+    res.status(500).json({ error: "server_error", message: "Failed to record event interest" });
+  }
+});
 
 router.post("/", async (req, res) => {
   const { digestId, weekOf: weekOfParam, eventTitle, email, name, captchaToken, sig } = req.body ?? {};

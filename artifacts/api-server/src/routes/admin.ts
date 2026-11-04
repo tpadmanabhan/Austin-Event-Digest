@@ -9,6 +9,7 @@ import { verifyTurnstileToken } from "../lib/turnstile";
 import { requireAdmin, adminTokenForHash, adminTokenForEmail } from "../middleware/requireAdmin";
 import { verifyPassword } from "../lib/passwordHash";
 import { publicTenantUrl } from "../lib/publicUrls";
+import { listUpcomingLeadershipEvents } from "../lib/leadershipAustinManagedEvents";
 
 const router: IRouter = Router();
 
@@ -390,6 +391,19 @@ router.get("/digest/:id/preview-html", requireAdmin, async (req, res) => {
     }
 
     const siteUrl = publicTenantUrl(req.tenant!.slug);
+    const alumniSourcedEvents = req.tenant!.slug === "austin"
+      ? (await listUpcomingLeadershipEvents()).map((event) => ({
+          title: event.title,
+          date: event.date,
+          venue: event.venue,
+          description: event.description,
+          category: event.category,
+          link: event.link,
+          sourceAlumni: event.sourceAlumni,
+          organizer: event.organizer,
+          managedEventId: event.id,
+        }))
+      : [];
     const html = buildDigestEmailHtml(
       {
         subject: digest.subject,
@@ -398,6 +412,7 @@ router.get("/digest/:id/preview-html", requireAdmin, async (req, res) => {
         events: (digest.events as any[]) || [],
         digestId: digest.id,
         siteUrl,
+        alumniSourcedEvents,
       },
       "Preview Reader",
       undefined,

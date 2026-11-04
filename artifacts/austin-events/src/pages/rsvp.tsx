@@ -13,6 +13,8 @@ export default function RsvpPage() {
   // Legacy links use d= (numeric digest ID, dev-only)
   const weekOf = params.get("w") || undefined;
   const digestId = !weekOf ? parseInt(params.get("d") || "") : NaN;
+  const managedEventId = parseInt(params.get("m") || "");
+  const isManagedEvent = Number.isInteger(managedEventId) && managedEventId > 0;
   const eventTitle = decodeRsvpParam(params.get("e"));
   const email = decodeRsvpParam(params.get("em"));
   const name = decodeRsvpParam(params.get("n"));
@@ -24,19 +26,19 @@ export default function RsvpPage() {
   const [count, setCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const hasValidParams = !!((weekOf || digestId) && eventTitle && (email || !sig));
+  const hasValidParams = !!((weekOf || digestId || isManagedEvent) && eventTitle && (email || !sig));
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!emailInput.trim()) return;
     setStatus("loading");
 
-    fetch("/api/rsvp", {
+    fetch(isManagedEvent ? "/api/rsvp/managed" : "/api/rsvp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         // Send weekOf for new-style links; digestId for legacy links
-        ...(weekOf ? { weekOf } : { digestId }),
+        ...(isManagedEvent ? { managedEventId } : weekOf ? { weekOf } : { digestId }),
         eventTitle,
         email: emailInput.trim(),
         name: nameInput.trim() || undefined,
@@ -70,10 +72,10 @@ export default function RsvpPage() {
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Car className="w-8 h-8 text-primary" />
                 </div>
-                <h1 className="font-serif text-3xl font-bold text-foreground mb-2">Carpool RSVP</h1>
+                <h1 className="font-serif text-3xl font-bold text-foreground mb-2">{isManagedEvent ? "Event interest" : "Carpool RSVP"}</h1>
                 {eventTitle && (
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    Interested in carpooling to:<br />
+                    {isManagedEvent ? "Interested in:" : "Interested in carpooling to:"}<br />
                     <span className="font-semibold text-foreground">{eventTitle}</span>
                   </p>
                 )}
@@ -114,8 +116,8 @@ export default function RsvpPage() {
                       <p className="text-xs text-muted-foreground">Email is tied to your newsletter subscription.</p>
                     )}
                   </div>
-                  <Button type="submit" className="w-full" size="lg">
-                    🚗 Count me in for carpooling!
+              <Button type="submit" className="w-full" size="lg">
+                    {isManagedEvent ? "Mark me interested" : "🚗 Count me in for carpooling!"}
                   </Button>
                 </form>
               )}
@@ -136,12 +138,12 @@ export default function RsvpPage() {
               </div>
               <div>
                 <h1 className="font-serif text-3xl font-bold text-foreground mb-2">
-                  {status === "already" ? "Already RSVPd!" : "You're in! 🚗"}
+                  {status === "already" ? "Already recorded!" : isManagedEvent ? "You're in!" : "You're in! 🚗"}
                 </h1>
                 <p className="text-muted-foreground text-lg leading-relaxed">
                   {status === "already"
-                    ? "You already marked yourself as interested in carpooling to this event."
-                    : "We've let other subscribers know you're interested in carpooling!"}
+                    ? isManagedEvent ? "You already marked yourself as interested in this event." : "You already marked yourself as interested in carpooling to this event."
+                    : isManagedEvent ? "Your interest has been recorded for this event." : "We've let other subscribers know you're interested in carpooling!"}
                 </p>
               </div>
               <div className="bg-card border border-border rounded-2xl p-6 text-left">
@@ -149,7 +151,7 @@ export default function RsvpPage() {
                 <p className="font-serif text-xl font-bold text-foreground">{eventTitle}</p>
                 {count > 1 && (
                   <p className="text-sm text-primary font-medium mt-3">
-                    🚗 {count} {count === 1 ? "person" : "people"} interested in carpooling
+                    {isManagedEvent ? "✨" : "🚗"} {count} {count === 1 ? "person" : "people"} {isManagedEvent ? "interested" : "interested in carpooling"}
                   </p>
                 )}
               </div>

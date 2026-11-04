@@ -10,6 +10,40 @@ function weekPayload(weekOf: string, eventTitle: string, email: string): string 
   return `w:${weekOf}:${eventTitle}:${email.toLowerCase()}`;
 }
 
+function managedEventPayload(tenantSlug: string, managedEventId: number, eventTitle: string, email: string): string {
+  return `managed:${tenantSlug}:${managedEventId}:${eventTitle}:${email.toLowerCase()}`;
+}
+
+export function signManagedEventRsvpParams(
+  tenantSlug: string,
+  managedEventId: number,
+  eventTitle: string,
+  email: string,
+): string | null {
+  if (!RSVP_HMAC_SECRET) return null;
+  return createHmac("sha256", RSVP_HMAC_SECRET)
+    .update(managedEventPayload(tenantSlug, managedEventId, eventTitle, email))
+    .digest("base64url");
+}
+
+export function verifyManagedEventRsvpSignature(
+  tenantSlug: string,
+  managedEventId: number,
+  eventTitle: string,
+  email: string,
+  sig: string,
+): boolean {
+  if (!RSVP_HMAC_SECRET) return false;
+  const expected = createHmac("sha256", RSVP_HMAC_SECRET)
+    .update(managedEventPayload(tenantSlug, managedEventId, eventTitle, email))
+    .digest("base64url");
+  try {
+    return timingSafeEqual(Buffer.from(expected), Buffer.from(sig));
+  } catch {
+    return false;
+  }
+}
+
 export function signRsvpParams(
   digestId: number,
   eventTitle: string,

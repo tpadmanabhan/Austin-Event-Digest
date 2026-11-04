@@ -27,6 +27,7 @@ import type {
   ErrorResponse,
   GamificationMeResponse,
   GenerateDigestRequest,
+  GetLeadershipEventRsvpCountParams,
   GetPublicEventMetadata200,
   GetTenantConfigParams,
   HealthStatus,
@@ -34,6 +35,9 @@ import type {
   LeadershipManagedEventInput,
   LeadershipManagedEventResponse,
   LeadershipManagedEventsResponse,
+  ManagedEventRsvpCount,
+  ManagedEventRsvpRequest,
+  ManagedEventRsvpResponse,
   MessageResponse,
   SendDigestRequest,
   SubscribeRequest,
@@ -874,6 +878,202 @@ export const useCreateLeadershipManagedEvent = <
   TContext
 > => {
   return useMutation(getCreateLeadershipManagedEventMutationOptions(options));
+};
+
+/**
+ * @summary Get interest count for a persistent Leadership Austin event
+ */
+export const getGetLeadershipEventRsvpCountUrl = (
+  params: GetLeadershipEventRsvpCountParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/rsvp/managed?${stringifiedParams}`
+    : `/api/rsvp/managed`;
+};
+
+export const getLeadershipEventRsvpCount = async (
+  params: GetLeadershipEventRsvpCountParams,
+  options?: RequestInit,
+): Promise<ManagedEventRsvpCount> => {
+  return customFetch<ManagedEventRsvpCount>(
+    getGetLeadershipEventRsvpCountUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetLeadershipEventRsvpCountQueryKey = (
+  params?: GetLeadershipEventRsvpCountParams,
+) => {
+  return [`/api/rsvp/managed`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetLeadershipEventRsvpCountQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLeadershipEventRsvpCount>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetLeadershipEventRsvpCountParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getLeadershipEventRsvpCount>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetLeadershipEventRsvpCountQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getLeadershipEventRsvpCount>>
+  > = ({ signal }) =>
+    getLeadershipEventRsvpCount(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLeadershipEventRsvpCount>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetLeadershipEventRsvpCountQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getLeadershipEventRsvpCount>>
+>;
+export type GetLeadershipEventRsvpCountQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get interest count for a persistent Leadership Austin event
+ */
+
+export function useGetLeadershipEventRsvpCount<
+  TData = Awaited<ReturnType<typeof getLeadershipEventRsvpCount>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetLeadershipEventRsvpCountParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getLeadershipEventRsvpCount>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetLeadershipEventRsvpCountQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Record interest in a persistent Leadership Austin event
+ */
+export const getCreateLeadershipEventRsvpUrl = () => {
+  return `/api/rsvp/managed`;
+};
+
+export const createLeadershipEventRsvp = async (
+  managedEventRsvpRequest: ManagedEventRsvpRequest,
+  options?: RequestInit,
+): Promise<ManagedEventRsvpResponse> => {
+  return customFetch<ManagedEventRsvpResponse>(
+    getCreateLeadershipEventRsvpUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(managedEventRsvpRequest),
+    },
+  );
+};
+
+export const getCreateLeadershipEventRsvpMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createLeadershipEventRsvp>>,
+    TError,
+    { data: BodyType<ManagedEventRsvpRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createLeadershipEventRsvp>>,
+  TError,
+  { data: BodyType<ManagedEventRsvpRequest> },
+  TContext
+> => {
+  const mutationKey = ["createLeadershipEventRsvp"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createLeadershipEventRsvp>>,
+    { data: BodyType<ManagedEventRsvpRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createLeadershipEventRsvp(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateLeadershipEventRsvpMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createLeadershipEventRsvp>>
+>;
+export type CreateLeadershipEventRsvpMutationBody =
+  BodyType<ManagedEventRsvpRequest>;
+export type CreateLeadershipEventRsvpMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Record interest in a persistent Leadership Austin event
+ */
+export const useCreateLeadershipEventRsvp = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createLeadershipEventRsvp>>,
+    TError,
+    { data: BodyType<ManagedEventRsvpRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createLeadershipEventRsvp>>,
+  TError,
+  { data: BodyType<ManagedEventRsvpRequest> },
+  TContext
+> => {
+  return useMutation(getCreateLeadershipEventRsvpMutationOptions(options));
 };
 
 /**

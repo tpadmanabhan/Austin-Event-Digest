@@ -32,6 +32,7 @@ import { safeOutboundFetch } from "../lib/safeOutboundFetch";
 import { prewarmTranslationCache } from "../lib/translationPrewarm";
 import { signSubscriberToken } from "../lib/subscriberToken";
 import { publicTenantUrl } from "../lib/publicUrls";
+import { listUpcomingLeadershipEvents } from "../lib/leadershipAustinManagedEvents";
 
 // ---------------------------------------------------------------------------
 // Production tenant auth — email-based HMAC for managed (null-passwordHash) cities
@@ -80,11 +81,26 @@ function leadershipEventToApi(row: typeof leadershipEventsTable.$inferSelect) {
   return {
     ...identified,
     id: row.id,
+    managedEventId: row.id,
     organizer: row.organizer,
     sourceUrl: row.sourceUrl,
     isActive: row.isActive,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function leadershipEventToEmailItem(row: typeof leadershipEventsTable.$inferSelect) {
+  return {
+    title: row.title,
+    date: row.date,
+    venue: row.venue,
+    description: row.description,
+    category: row.category,
+    link: row.link,
+    sourceAlumni: row.sourceAlumni,
+    organizer: row.organizer,
+    managedEventId: row.id,
   };
 }
 
@@ -335,23 +351,12 @@ router.get("/leadership-managed/admin", requireAdmin, async (req, res) => {
 });
 
 router.get("/leadership-managed", async (req, res) => {
-  if (req.tenant?.slug !== "leadershipaustin") {
+  if (!["leadershipaustin", "austin"].includes(req.tenant?.slug ?? "")) {
     res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
     return;
   }
   try {
-    const rows = await db
-      .select()
-      .from(leadershipEventsTable)
-      .where(and(eq(leadershipEventsTable.tenantId, req.tenant.id), eq(leadershipEventsTable.isActive, true)))
-      .orderBy(asc(leadershipEventsTable.startDate), asc(leadershipEventsTable.id));
-    const today = eventDayInTimezone(new Date().toISOString(), "America/Chicago");
-    const events = rows
-      .filter((row) => {
-        const eventDay = eventDayInTimezone(row.endDate || row.startDate, row.timezone);
-        return !!today && !!eventDay && eventDay >= today;
-      })
-      .map(leadershipEventToApi);
+    const events = (await listUpcomingLeadershipEvents()).map(leadershipEventToApi);
     res.json({ events });
   } catch (err) {
     req.log.error({ err }, "Error listing upcoming persistent Leadership Austin events");
@@ -374,10 +379,12 @@ router.post("/leadership-managed", requireAdmin, async (req, res) => {
   const date = input.date.trim();
   const venue = input.venue.trim();
   const sourceAlumni = input.sourceAlumni.trim();
-  const startTime = Date.parse(input.startDate);
-  const endTime = input.endDate ? Date.parse(input.endDate) : null;
+  const startDate = input.startDate instanceof Date ? input.startDate.toISOString() : input.startDate;
+  const endDate = input.endDate instanceof Date ? input.endDate.toISOString() : input.endDate;
+  const startTime = Date.parse(startDate);
+  const endTime = endDate ? Date.parse(endDate) : null;
   if (!title || !date || !venue || !sourceAlumni || !Number.isFinite(startTime)
-    || (input.endDate && (!Number.isFinite(endTime) || endTime! < startTime))) {
+    || (endDate && (!Number.isFinite(endTime) || endTime! < startTime))) {
     res.status(400).json({ error: "invalid_request", message: "Event details or date range are invalid" });
     return;
   }
@@ -395,7 +402,7 @@ router.post("/leadership-managed", requireAdmin, async (req, res) => {
       .where(eq(leadershipEventsTable.tenantId, req.tenant.id));
     const normalizedTitle = normalizedEventTitle(title);
     const normalizedLink = normalizedHttpUrl(input.link);
-    const startDay = eventDayInTimezone(input.startDate, input.timezone?.trim() || "America/Chicago");
+    const startDay = eventDayInTimezone(startDate, input.timezone?.trim() || "America/Chicago");
     const duplicate = existing.some((row) => {
       const sameLink = normalizedLink && normalizedHttpUrl(row.link) === normalizedLink;
       const sameTitleAndDay = normalizedEventTitle(row.title) === normalizedTitle
@@ -413,8 +420,8 @@ router.post("/leadership-managed", requireAdmin, async (req, res) => {
         tenantId: req.tenant.id,
         title,
         date,
-        startDate: input.startDate,
-        endDate: input.endDate ?? null,
+        startDate,
+        endDate: endDate ?? null,
         timezone: input.timezone?.trim() || "America/Chicago",
         venue,
         venueAddress: input.venueAddress?.trim() || null,
@@ -1679,6 +1686,9 @@ router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
   if (!digest) { res.status(404).json({ error: "not_found" }); return; }
   const tenant = req.tenant!;
   const siteUrl = publicTenantUrl(tenant.slug);
+  const alumniSourcedEvents = tenant.slug === "austin"
+    ? (await listUpcomingLeadershipEvents()).map(leadershipEventToEmailItem)
+    : [];
   const html = buildDigestEmailHtml({
     events: (digest.events as any[]) || [],
     subject: digest.subject,
@@ -1686,6 +1696,7 @@ router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
     weekOf: digest.weekOf instanceof Date ? digest.weekOf.toISOString() : String(digest.weekOf),
     digestId: digest.id,
     siteUrl,
+    alumniSourcedEvents,
   }, undefined, tenant.adminEmail, tenant);
   res.setHeader("Content-Type", "text/html");
   res.send(html);
@@ -1768,6 +1779,9 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
       : emailEvents;
 
     const isAustin = req.tenant?.slug === "austin";
+    const alumniSourcedEvents = isAustin
+      ? (await listUpcomingLeadershipEvents()).map(leadershipEventToEmailItem)
+      : [];
 
     for (const recipient of recipients) {
       const { mainEvents: recipientEvents, alsoNearby } = selectRecipientDigestEvents(
@@ -1791,6 +1805,7 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
         siteUrl,
         preferencesUrl,
         alsoNearby,
+        alumniSourcedEvents,
       }, recipient.name, recipient.email, req.tenant ?? undefined);
 
       const result = await sendNewsletterEmail({

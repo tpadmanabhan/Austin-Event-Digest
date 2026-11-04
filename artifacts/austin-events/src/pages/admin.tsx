@@ -16,6 +16,7 @@ import { AdminSettingsTab } from "@/components/admin-settings-tab";
 import { useAdminRsvps } from "@/hooks/use-rsvps";
 import { SuperconnectorTab } from "@/components/superconnector-tab";
 import { AdminHelpTab } from "@/components/admin-help-tab";
+import { LeadershipManagedEventsAdmin } from "@/components/leadership-managed-events-admin";
 
 type FirstRunStep = "generate" | "preview" | "ready";
 
@@ -1506,6 +1507,12 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+
+            {tenant.slug === "leadershipaustin" && (
+              <div className="mb-6">
+                <LeadershipManagedEventsAdmin />
+              </div>
+            )}
 
             {tenant.slug === "leadershipaustin" && (
               <section className="overflow-hidden rounded-2xl border border-[#314363]/20 bg-card shadow-sm" aria-labelledby="admin-alumni-title">

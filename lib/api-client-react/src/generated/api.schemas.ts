@@ -130,6 +130,7 @@ export interface EventItem {
   sourceUrl?: string | null;
   sourceAlumni?: string;
   isPersistentManaged?: boolean;
+  managedEventId?: number;
   featured?: boolean;
   isPost?: boolean;
   isBusinessSpotlight?: boolean;
@@ -257,6 +258,32 @@ export interface LeadershipManagedEventResponse {
   event: LeadershipManagedEvent;
 }
 
+export interface ManagedEventRsvpRequest {
+  /** @minimum 1 */
+  managedEventId: number;
+  /**
+   * @minLength 1
+   * @maxLength 180
+   */
+  eventTitle: string;
+  email: string;
+  /** @maxLength 160 */
+  name?: string;
+  captchaToken?: string;
+  sig?: string;
+}
+
+export interface ManagedEventRsvpResponse {
+  success: boolean;
+  message: string;
+  count: number;
+  alreadyRsvpd: boolean;
+}
+
+export interface ManagedEventRsvpCount {
+  count: number;
+}
+
 export interface DigestListResponse {
   digests: Digest[];
 }
@@ -356,6 +383,10 @@ export type GetPublicEventMetadata200Metadata = {
 
 export type GetPublicEventMetadata200 = {
   metadata: GetPublicEventMetadata200Metadata;
+};
+
+export type GetLeadershipEventRsvpCountParams = {
+  managedEventId: number;
 };
 
 export type GetTenantConfigParams = {

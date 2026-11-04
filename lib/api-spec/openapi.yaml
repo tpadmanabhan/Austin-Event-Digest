@@ -226,6 +226,60 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /rsvp/managed:
+    get:
+      operationId: getLeadershipEventRsvpCount
+      tags: [events]
+      summary: Get interest count for a persistent Leadership Austin event
+      parameters:
+        - name: managedEventId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Interest count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManagedEventRsvpCount"
+    post:
+      operationId: createLeadershipEventRsvp
+      tags: [events]
+      summary: Record interest in a persistent Leadership Austin event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManagedEventRsvpRequest"
+      responses:
+        "200":
+          description: Interest recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManagedEventRsvpResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid signed email link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /events/leadership-managed/admin:
     get:
       operationId: listAllLeadershipManagedEvents
@@ -629,6 +683,8 @@ components:
           type: string
         isPersistentManaged:
           type: boolean
+        managedEventId:
+          type: integer
         featured:
           type: boolean
         isPost:
@@ -840,6 +896,48 @@ components:
         event:
           $ref: "#/components/schemas/LeadershipManagedEvent"
       required: [success, event]
+
+    ManagedEventRsvpRequest:
+      type: object
+      properties:
+        managedEventId:
+          type: integer
+          minimum: 1
+        eventTitle:
+          type: string
+          minLength: 1
+          maxLength: 180
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          maxLength: 160
+        captchaToken:
+          type: string
+        sig:
+          type: string
+      required: [managedEventId, eventTitle, email]
+
+    ManagedEventRsvpResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        count:
+          type: integer
+        alreadyRsvpd:
+          type: boolean
+      required: [success, message, count, alreadyRsvpd]
+
+    ManagedEventRsvpCount:
+      type: object
+      properties:
+        count:
+          type: integer
+      required: [count]
 
     DigestListResponse:
       type: object

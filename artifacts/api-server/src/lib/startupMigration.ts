@@ -1213,10 +1213,65 @@ export async function runStartupMigration(): Promise<void> {
   }
 
   try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS leadership_events (
+        id SERIAL PRIMARY KEY,
+        tenant_id INTEGER NOT NULL REFERENCES tenants(id),
+        seed_key TEXT,
+        title TEXT NOT NULL,
+        date TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT,
+        timezone TEXT NOT NULL DEFAULT 'America/Chicago',
+        venue TEXT NOT NULL,
+        venue_address TEXT,
+        description TEXT NOT NULL,
+        link TEXT,
+        category TEXT NOT NULL,
+        organizer TEXT,
+        source_name TEXT NOT NULL,
+        source_url TEXT,
+        source_alumni TEXT NOT NULL,
+        image_url TEXT,
+        is_active BOOLEAN NOT NULL DEFAULT TRUE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await db.execute(sql`
+      CREATE UNIQUE INDEX IF NOT EXISTS leadership_events_tenant_seed_key_uq
+      ON leadership_events (tenant_id, seed_key)
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS leadership_events_tenant_active_start_idx
+      ON leadership_events (tenant_id, is_active, start_date)
+    `);
+  } catch (err) {
+    logger.warn({ err }, "Persistent Leadership Austin event table migration failed");
+  }
+
+  try {
     await seedLeadershipAustinManagedEvents();
     logger.info("Persistent Leadership Austin events seeded");
   } catch (err) {
     logger.warn({ err }, "Persistent Leadership Austin event seed failed (non-fatal)");
+  }
+
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS leadership_event_rsvps (
+        id SERIAL PRIMARY KEY,
+        tenant_id INTEGER NOT NULL REFERENCES tenants(id),
+        leadership_event_id INTEGER NOT NULL REFERENCES leadership_events(id),
+        email TEXT NOT NULL,
+        name TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT leadership_event_rsvp_tenant_event_email_uq
+          UNIQUE (tenant_id, leadership_event_id, email)
+      )
+    `);
+  } catch (err) {
+    logger.warn({ err }, "Persistent Leadership Austin RSVP table migration failed");
   }
 
   // Migrate austincares subscribers → brushycreek (idempotent)

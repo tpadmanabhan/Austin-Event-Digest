@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { db, leadershipEventsTable, tenantsTable } from "@workspace/db";
 
 const AUSTIN_COMMON_EVENTS_URL = "https://theaustincommon.com/events/";
@@ -136,6 +136,42 @@ const INITIAL_EVENTS = [
     organizer: "LBJ Future Forum",
   },
 ] as const;
+
+function localDay(value: Date, timezone: string): string | null {
+  if (!Number.isFinite(value.getTime())) return null;
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(value);
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values["year"]}-${values["month"]}-${values["day"]}`;
+  } catch {
+    return null;
+  }
+}
+
+export async function listUpcomingLeadershipEvents() {
+  const [tenant] = await db
+    .select({ id: tenantsTable.id })
+    .from(tenantsTable)
+    .where(eq(tenantsTable.slug, "leadershipaustin"))
+    .limit(1);
+  if (!tenant) return [];
+
+  const rows = await db
+    .select()
+    .from(leadershipEventsTable)
+    .where(and(eq(leadershipEventsTable.tenantId, tenant.id), eq(leadershipEventsTable.isActive, true)))
+    .orderBy(asc(leadershipEventsTable.startDate), asc(leadershipEventsTable.id));
+  const today = localDay(new Date(), "America/Chicago");
+  return rows.filter((row) => {
+    const eventDay = localDay(new Date(row.endDate || row.startDate), row.timezone);
+    return !!today && !!eventDay && eventDay >= today;
+  });
+}
 
 export async function seedLeadershipAustinManagedEvents(): Promise<void> {
   const [tenant] = await db

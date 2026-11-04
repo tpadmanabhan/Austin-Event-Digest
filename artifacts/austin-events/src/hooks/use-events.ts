@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   useGetLatestDigest as useGetLatestApi,
   useListDigests as useListDigestsApi,
@@ -14,6 +14,40 @@ export function useLatestDigest() {
 
 export function useAllDigests() {
   return useListDigestsApi();
+}
+
+export type LeadershipManagedEvent = {
+  id: number;
+  managedEventId: number;
+  title: string;
+  date: string;
+  startDate: string;
+  endDate?: string | null;
+  timezone: string;
+  venue: string;
+  description: string;
+  link?: string | null;
+  category: string;
+  source?: string | null;
+  sourceName?: string;
+  sourceUrl?: string | null;
+  sourceAlumni: string;
+  organizer?: string | null;
+  isPersistentManaged: true;
+};
+
+export function useLeadershipManagedEvents(enabled = true) {
+  return useQuery({
+    queryKey: ["leadership-managed-events"],
+    queryFn: async () => {
+      const response = await fetch("/api/events/leadership-managed");
+      if (!response.ok) throw new Error("Unable to load alumni-sourced events.");
+      return response.json() as Promise<{ events: LeadershipManagedEvent[] }>;
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+  });
 }
 
 export function useGenerateDigest() {

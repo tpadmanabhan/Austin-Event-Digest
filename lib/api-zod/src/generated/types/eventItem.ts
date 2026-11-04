@@ -28,6 +28,7 @@ export interface EventItem {
   sourceUrl?: string | null;
   sourceAlumni?: string;
   isPersistentManaged?: boolean;
+  managedEventId?: number;
   featured?: boolean;
   isPost?: boolean;
   isBusinessSpotlight?: boolean;

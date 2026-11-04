@@ -164,6 +164,7 @@ export const GetLatestDigestResponse = zod.object({
         sourceUrl: zod.string().nullish(),
         sourceAlumni: zod.string().optional(),
         isPersistentManaged: zod.boolean().optional(),
+        managedEventId: zod.number().optional(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),
@@ -215,6 +216,7 @@ export const ListDigestsResponse = zod.object({
           sourceUrl: zod.string().nullish(),
           sourceAlumni: zod.string().optional(),
           isPersistentManaged: zod.boolean().optional(),
+          managedEventId: zod.number().optional(),
           featured: zod.boolean().optional(),
           isPost: zod.boolean().optional(),
           isBusinessSpotlight: zod.boolean().optional(),
@@ -262,6 +264,7 @@ export const ListLeadershipManagedEventsResponse = zod.object({
         sourceUrl: zod.string().nullish(),
         sourceAlumni: zod.string().optional(),
         isPersistentManaged: zod.boolean().optional(),
+        managedEventId: zod.number().optional(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),
@@ -345,6 +348,44 @@ export const CreateLeadershipManagedEventBody = zod.object({
 });
 
 /**
+ * @summary Get interest count for a persistent Leadership Austin event
+ */
+export const GetLeadershipEventRsvpCountQueryParams = zod.object({
+  managedEventId: zod.coerce.number(),
+});
+
+export const GetLeadershipEventRsvpCountResponse = zod.object({
+  count: zod.number(),
+});
+
+/**
+ * @summary Record interest in a persistent Leadership Austin event
+ */
+
+export const createLeadershipEventRsvpBodyEventTitleMax = 180;
+
+export const createLeadershipEventRsvpBodyNameMax = 160;
+
+export const CreateLeadershipEventRsvpBody = zod.object({
+  managedEventId: zod.number().min(1),
+  eventTitle: zod
+    .string()
+    .min(1)
+    .max(createLeadershipEventRsvpBodyEventTitleMax),
+  email: zod.string().email(),
+  name: zod.string().max(createLeadershipEventRsvpBodyNameMax).optional(),
+  captchaToken: zod.string().optional(),
+  sig: zod.string().optional(),
+});
+
+export const CreateLeadershipEventRsvpResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string(),
+  count: zod.number(),
+  alreadyRsvpd: zod.boolean(),
+});
+
+/**
  * @summary Get all persistent Leadership Austin events (admin)
  */
 export const ListAllLeadershipManagedEventsResponse = zod.object({
@@ -373,6 +414,7 @@ export const ListAllLeadershipManagedEventsResponse = zod.object({
         sourceUrl: zod.string().nullish(),
         sourceAlumni: zod.string().optional(),
         isPersistentManaged: zod.boolean().optional(),
+        managedEventId: zod.number().optional(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),
@@ -429,6 +471,7 @@ export const ArchiveLeadershipManagedEventResponse = zod.object({
       sourceUrl: zod.string().nullish(),
       sourceAlumni: zod.string().optional(),
       isPersistentManaged: zod.boolean().optional(),
+      managedEventId: zod.number().optional(),
       featured: zod.boolean().optional(),
       isPost: zod.boolean().optional(),
       isBusinessSpotlight: zod.boolean().optional(),
@@ -495,6 +538,7 @@ export const GenerateDigestResponse = zod.object({
         sourceUrl: zod.string().nullish(),
         sourceAlumni: zod.string().optional(),
         isPersistentManaged: zod.boolean().optional(),
+        managedEventId: zod.number().optional(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),
@@ -600,6 +644,7 @@ export const AddAlumniHappeningResponse = zod.object({
         sourceUrl: zod.string().nullish(),
         sourceAlumni: zod.string().optional(),
         isPersistentManaged: zod.boolean().optional(),
+        managedEventId: zod.number().optional(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),

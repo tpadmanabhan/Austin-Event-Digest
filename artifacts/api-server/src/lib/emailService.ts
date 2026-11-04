@@ -10,7 +10,7 @@ import { buildMiamiAiEthicsSection } from "./miamiAiEthics";
 import { buildBostonAiEthicsSection } from "./bostonAiEthics";
 import { buildLaAiEthicsSection } from "./laAiEthics";
 import { buildCityAiEthicsSection } from "./cityAiEthics";
-import { signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
+import { signManagedEventRsvpParams, signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
 import { publicTenantUrl } from "./publicUrls";
 
 const FROM_NAME = process.env.FROM_NAME || "Raj's Austin Events";
@@ -573,6 +573,22 @@ export function buildRsvpUrl(siteUrl: string, digestId: number, eventTitle: stri
   return `${siteUrl}/rsvp?d=${digestId}&e=${e}&em=${em}${n}${s}`;
 }
 
+function buildManagedEventRsvpUrl(
+  siteUrl: string,
+  tenantSlug: string,
+  managedEventId: number,
+  eventTitle: string,
+  subscriberEmail: string,
+  subscriberName?: string | null,
+): string {
+  const e = Buffer.from(eventTitle).toString("base64url");
+  const em = Buffer.from(subscriberEmail).toString("base64url");
+  const n = subscriberName ? `&n=${Buffer.from(subscriberName).toString("base64url")}` : "";
+  const sig = signManagedEventRsvpParams(tenantSlug, managedEventId, eventTitle, subscriberEmail);
+  const s = sig ? `&s=${sig}` : "";
+  return `${siteUrl}/rsvp?m=${managedEventId}&e=${e}&em=${em}${n}${s}`;
+}
+
 type DigestEventItem = {
   title: string;
   date: string;
@@ -583,6 +599,9 @@ type DigestEventItem = {
   linkText?: string | null;
   imageUrl?: string | null;
   source?: string | null;
+  managedEventId?: number;
+  sourceAlumni?: string;
+  organizer?: string | null;
   featured?: boolean | null;
   isBusinessSpotlight?: boolean | null;
   isPost?: boolean | null;
@@ -696,6 +715,7 @@ export function buildDigestEmailHtml(digest: {
   digestId?: number;
   siteUrl?: string;
   alsoNearby?: DigestEventItem[];
+  alumniSourcedEvents?: DigestEventItem[];
   preferencesUrl?: string | null;
 }, subscriberName?: string | null, subscriberEmail?: string | null, tenant?: { slug?: string | null; name?: string | null; city?: string | null; digestTitle?: string | null; curatorName?: string | null }): string {
   const weekDate = new Date(digest.weekOf).toLocaleDateString("en-US", {
@@ -1340,7 +1360,32 @@ export function buildDigestEmailHtml(digest: {
       <h2 style="margin:0 0 10px; color:#314363; font-family:'Barlow Condensed',Arial,sans-serif; font-size:27px; line-height:1.05; text-transform:uppercase;">Stay connected. Share what’s next.</h2>
       <p style="margin:0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.7;">Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
       <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:700;">Alexandra Robertson</p>
-    </section>` : "";
+     </section>` : "";
+  const alumniSourcedEventsHtml = (digest.alumniSourcedEvents ?? []).length > 0
+    ? `<section style="margin:0 0 28px;border:1px solid #314363;border-radius:12px;overflow:hidden;background:#fff;">
+        <div style="background:#314363;padding:16px 20px;">
+          <p style="margin:0 0 4px;color:#4EBEE7;font-family:'Figtree',Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Leadership Austin alumni</p>
+          <h2 style="margin:0;color:#fff;font-family:'Barlow Condensed',Arial,sans-serif;font-size:26px;line-height:1.05;text-transform:uppercase;">Upcoming community events</h2>
+        </div>
+        ${(digest.alumniSourcedEvents ?? []).map((event) => {
+          const link = safeHref(event.link);
+          const rsvpLink = event.managedEventId && digest.siteUrl && subscriberEmail && slug
+            ? buildManagedEventRsvpUrl(digest.siteUrl, slug, event.managedEventId, event.title, subscriberEmail, subscriberName)
+            : null;
+          return `<article style="padding:18px 20px;border-top:1px solid #e2e8f0;background:#fff;">
+            <p style="margin:0 0 5px;color:#64748b;font-family:'Figtree',Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;">Shared by ${escapeHtml(event.sourceAlumni || "a Leadership Austin alum")}</p>
+            <h3 style="margin:0 0 7px;color:#314363;font-family:'Barlow Condensed',Arial,sans-serif;font-size:21px;line-height:1.1;">${link ? `<a href="${link}" style="color:#314363;text-decoration:none;">${escapeHtml(event.title)}</a>` : escapeHtml(event.title)}</h3>
+            ${event.date ? `<p style="margin:0 0 5px;color:#314363;font-family:'Figtree',Arial,sans-serif;font-size:13px;font-weight:700;">${escapeHtml(event.date)}</p>` : ""}
+            ${event.venue ? `<p style="margin:0 0 8px;color:#64748b;font-family:'Figtree',Arial,sans-serif;font-size:13px;">${escapeHtml(event.venue)}</p>` : ""}
+            ${event.description ? `<p style="margin:0 0 12px;color:#475569;font-family:'Figtree',Arial,sans-serif;font-size:14px;line-height:1.65;">${escapeHtml(event.description)}</p>` : ""}
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              ${link ? `<a href="${link}" style="display:inline-block;color:#314363;font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:800;text-decoration:underline;">Event details</a>` : ""}
+              ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-block;background:#fff;color:#314363;border:1.5px solid #314363;border-radius:8px;padding:7px 14px;text-decoration:none;font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:800;">✨ Interested?</a>` : ""}
+            </div>
+          </article>`;
+        }).join("")}
+      </section>`
+    : "";
   const alumniHappeningsHtml = alumniHappenings.length > 0 ? `
     <section style="margin:0 0 24px; border-radius:8px; overflow:hidden; border:1px solid #314363;">
       <div style="background:#314363; padding:16px 20px;">
@@ -1468,6 +1513,7 @@ export function buildDigestEmailHtml(digest: {
 
     ${alumniWelcomeHtml}
     ${alumniHappeningsHtml}
+    ${alumniSourcedEventsHtml}
 
     ${slug === "austin" ? buildAustinAiEthicsSection() : ""}
     ${slug === "sanfrancisco" ? buildSanFranciscoAiEthicsSection() : ""}

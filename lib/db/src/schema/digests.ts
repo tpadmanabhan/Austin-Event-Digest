@@ -23,6 +23,7 @@ export const EventItemSchema = z.object({
   sourceUrl: z.string().nullable().optional(),
   sourceAlumni: z.string().optional(),
   isPersistentManaged: z.boolean().optional(),
+  managedEventId: z.number().int().positive().optional(),
   featured: z.boolean().optional(),
   isPost: z.boolean().optional(),
   isBusinessSpotlight: z.boolean().optional(),
