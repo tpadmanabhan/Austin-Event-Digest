@@ -14,7 +14,7 @@ export function LeadershipAlumniTestimonial({ className = "" }: { className?: st
         We created this space to stay connected with our Emerge Class 18 community and share upcoming events.
       </p>
       <div className="mt-4 border-t border-[#314363]/15 pt-3">
-        <p className="leadership-testimonial-name text-sm font-semibold text-[#314363]">Alexandra Robertson</p>
+        <p className="leadership-testimonial-name text-sm font-semibold text-[#314363]">Alexandria Robertson</p>
         <p className="leadership-testimonial-meta text-xs font-medium tracking-wide text-muted-foreground">Class Rep</p>
         <p className="leadership-testimonial-meta text-xs tracking-wide text-muted-foreground">LA Emerge 18-2025</p>
       </div>

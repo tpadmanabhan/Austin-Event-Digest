@@ -981,10 +981,10 @@ describe("Leadership Austin newsletter", () => {
     expect(html).toContain("font-family:'Figtree',Arial,sans-serif;");
     expect(html).not.toContain("...");
     expect(html).not.toContain("…");
-    expect(html).toContain("Alexandra Robertson");
+    expect(html).toContain("Alexandria Robertson");
     expect(html).toContain("Class Rep");
     expect(html).toContain("LA Emerge 18-2025");
-    expect(html).not.toContain("Alexandria Robertson");
+    expect(html).not.toContain("Alexandra Robertson");
     expect(html).not.toContain("A welcome to all alumni");
     expect(html).not.toContain("Stay connected. Share what’s next.");
     expect(html.indexOf("Hey, all alumni.")).toBeLessThan(html.indexOf(">Alumni Happenings</h2>"));

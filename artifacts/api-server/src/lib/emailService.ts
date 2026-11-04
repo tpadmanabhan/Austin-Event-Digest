@@ -1360,7 +1360,7 @@ export function buildDigestEmailHtml(digest: {
       <div style="margin-top:18px; border-top:1px solid #e2e8f0; padding-top:16px;">
         <p style="margin:0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:16px; line-height:1.7; font-style:italic; font-weight:600;">Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along.</p>
         <p style="margin:12px 0 0; padding:12px 14px; border-left:4px solid #FFBA01; border-radius:4px; background:#f7f4ef; color:#334155; font-family:'Figtree',Arial,sans-serif; font-size:16px; line-height:1.65; font-weight:600;"><span style="color:#a94832; font-weight:800;">Hey, all alumni.</span> We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
-        <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800;">Alexandra Robertson</p>
+        <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800;">Alexandria Robertson</p>
         <p style="margin:3px 0 0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:12px; font-weight:700;">Class Rep</p>
         <p style="margin:2px 0 0; color:#64748b; font-family:'Figtree',Arial,sans-serif; font-size:12px;">LA Emerge 18-2025</p>
       </div>` : "";

@@ -579,7 +579,7 @@ export default function Home() {
                 )}
                 {isLeadershipAustin ? (
                   <div className="mt-4 border-t border-border/60 pt-3 not-italic">
-                    <p className="leadership-testimonial-name text-sm font-semibold text-foreground">Alexandra Robertson</p>
+                    <p className="leadership-testimonial-name text-sm font-semibold text-foreground">Alexandria Robertson</p>
                     <p className="leadership-testimonial-meta text-xs font-medium tracking-wide text-muted-foreground">Class Rep</p>
                     <p className="leadership-testimonial-meta text-xs tracking-wide text-muted-foreground">LA Emerge 18-2025</p>
                   </div>
