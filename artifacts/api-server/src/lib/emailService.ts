@@ -1784,6 +1784,97 @@ export interface RsvpPerson {
   email: string;
 }
 
+interface ManagedEventInterestDetails {
+  eventTitle: string;
+  eventDate: string;
+  eventVenue: string;
+  siteName?: string | null;
+}
+
+function managedEventInterestDetailsHtml(details: ManagedEventInterestDetails): string {
+  return `
+    <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:16px;margin:16px 0;">
+      <p style="margin:0 0 8px;color:#1e293b;font-size:16px;font-weight:700;">${escapeHtml(details.eventTitle)}</p>
+      <p style="margin:0 0 4px;color:#475569;font-size:14px;">Date: ${escapeHtml(details.eventDate)}</p>
+      <p style="margin:0;color:#475569;font-size:14px;">Venue: ${escapeHtml(details.eventVenue)}</p>
+    </div>`;
+}
+
+// Notify people who previously expressed interest in an alumni-sourced event.
+export async function sendManagedEventInterestNotification(opts: ManagedEventInterestDetails & {
+  to: string;
+  totalInterested: number;
+}): Promise<void> {
+  const siteName = opts.siteName || "Leadership Austin alumni events";
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:24px;">
+    <p style="margin:0 0 8px;color:#1e293b;font-size:20px;font-weight:700;">Someone else is interested</p>
+    <p style="margin:0;color:#475569;font-size:15px;line-height:1.6;">Another person marked interest in this event. Your contact details are not shared with other participants.</p>
+    ${managedEventInterestDetailsHtml(opts)}
+    <p style="margin:0;color:#475569;font-size:14px;">${opts.totalInterested} ${opts.totalInterested === 1 ? "person is" : "people are"} interested.</p>
+    <p style="margin:18px 0 0;color:#64748b;font-size:12px;">${escapeHtml(siteName)}</p>
+  </div>
+</body></html>`;
+  const result = await sendEmail({
+    to: opts.to,
+    subject: `New interest in: ${opts.eventTitle.slice(0, 60)}`,
+    html,
+  });
+  if (!result.success) logger.warn({ to: opts.to, error: result.error }, "Failed to send managed-event interest notification");
+}
+
+// Tell a new participant how many people have expressed interest without sharing
+// any other participant's identity or contact details.
+export async function sendManagedEventInterestGroupNotification(opts: ManagedEventInterestDetails & {
+  to: string;
+  totalInterested: number;
+}): Promise<void> {
+  if (opts.totalInterested < 2) return;
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:24px;">
+    <p style="margin:0 0 8px;color:#1e293b;font-size:20px;font-weight:700;">Others are interested too</p>
+    <p style="margin:0;color:#475569;font-size:15px;line-height:1.6;">${opts.totalInterested} people have marked interest in this event. Participant contact details are not shared.</p>
+    ${managedEventInterestDetailsHtml(opts)}
+  </div>
+</body></html>`;
+  const result = await sendEmail({
+    to: opts.to,
+    subject: `Others interested in: ${opts.eventTitle.slice(0, 60)}`,
+    html,
+  });
+  if (!result.success) logger.warn({ to: opts.to, error: result.error }, "Failed to send managed-event interest group notification");
+}
+
+export async function sendManagedEventInterestAdminNotification(opts: ManagedEventInterestDetails & {
+  interestedEmail: string;
+  interestedName?: string | null;
+  totalInterested: number;
+  adminEmail?: string | null;
+}): Promise<void> {
+  const name = opts.interestedName?.trim() || opts.interestedEmail.split("@")[0];
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:24px;">
+    <p style="margin:0 0 8px;color:#1e293b;font-size:20px;font-weight:700;">New event interest</p>
+    <p style="margin:0;color:#475569;font-size:14px;">Name: ${escapeHtml(name)}</p>
+    <p style="margin:6px 0;color:#475569;font-size:14px;">Email: ${escapeHtml(opts.interestedEmail)}</p>
+    ${managedEventInterestDetailsHtml(opts)}
+    <p style="margin:0;color:#475569;font-size:14px;">Total people interested: <strong>${opts.totalInterested}</strong></p>
+  </div>
+</body></html>`;
+  const result = await sendEmail({
+    to: opts.adminEmail || ADMIN_NOTIFY_EMAIL,
+    subject: `New event interest: ${opts.eventTitle.slice(0, 60)}`,
+    html,
+  });
+  if (!result.success) logger.warn({ error: result.error }, "Failed to send managed-event interest admin notification");
+}
+
 function buildPersonCards(people: RsvpPerson[]): string {
   return people.map(p => {
     const first = p.name.split(" ")[0];

@@ -15,6 +15,9 @@ import {
   buildDigestEmailHtml,
   buildWelcomeEmailHtml,
   sendWelcomeEmail,
+  sendManagedEventInterestNotification,
+  sendManagedEventInterestGroupNotification,
+  sendManagedEventInterestAdminNotification,
   translateEventsForEmail,
   formatCityNewsletterSubject,
 } from "./emailService";
@@ -937,5 +940,62 @@ describe("Leadership Austin newsletter", () => {
       "leadershipaustin",
       "2026-11-08",
     )).toBe("Leadership Austin — Upcoming Events");
+  });
+});
+
+describe("managed event interest notifications", () => {
+  it("sends interest-only updates with escaped event and participant details", async () => {
+    mockSendMail.mockClear();
+    await sendManagedEventInterestNotification({
+      to: "prior@example.com",
+      eventTitle: "Community <Meetup>",
+      eventDate: "November 7, 2026",
+      eventVenue: "Austin, TX",
+      siteName: "Austin Events",
+      totalInterested: 2,
+    });
+
+    expect(mockSendMail).toHaveBeenCalledOnce();
+    const email = mockSendMail.mock.calls[0][0] as { subject: string; html: string };
+    expect(email.subject).toContain("New interest in:");
+    expect(email.html).toContain("Someone else is interested");
+    expect(email.html).toContain("Community &lt;Meetup&gt;");
+    expect(email.html).toContain("2 people are interested");
+    expect(email.html).not.toContain("taylor@example.com");
+    expect(email.html).not.toContain("carpool");
+    expect(email.html).not.toContain("RSVP");
+  });
+
+  it("sends group and admin notices using interest language", async () => {
+    mockSendMail.mockClear();
+    const event = {
+      eventTitle: "Alumni gathering",
+      eventDate: "November 7, 2026",
+      eventVenue: "Austin, TX",
+      siteName: "Austin Events",
+    };
+    await sendManagedEventInterestGroupNotification({
+      ...event,
+      to: "new@example.com",
+      totalInterested: 2,
+    });
+    await sendManagedEventInterestAdminNotification({
+      ...event,
+      interestedEmail: "new@example.com",
+      interestedName: "New Person",
+      totalInterested: 2,
+      adminEmail: "admin@example.com",
+    });
+
+    expect(mockSendMail).toHaveBeenCalledTimes(2);
+    const groupEmail = mockSendMail.mock.calls[0][0] as { subject: string; html: string };
+    const adminEmail = mockSendMail.mock.calls[1][0] as { subject: string; html: string };
+    expect(groupEmail.subject).toContain("Others interested in:");
+    expect(groupEmail.html).toContain("Others are interested too");
+    expect(groupEmail.html).toContain("2 people have marked interest");
+    expect(groupEmail.html).not.toContain("jordan@example.com");
+    expect(adminEmail.subject).toContain("New event interest:");
+    expect(adminEmail.html).toContain("Total people interested: <strong>2</strong>");
+    expect(groupEmail.html + adminEmail.html).not.toContain("carpool");
   });
 });

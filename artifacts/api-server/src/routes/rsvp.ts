@@ -9,7 +9,14 @@ import {
   tenantsTable,
 } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
-import { sendRsvpNotification, sendRsvpGroupNotification, sendCarpoolAdminNotification } from "../lib/emailService";
+import {
+  sendRsvpNotification,
+  sendRsvpGroupNotification,
+  sendCarpoolAdminNotification,
+  sendManagedEventInterestNotification,
+  sendManagedEventInterestGroupNotification,
+  sendManagedEventInterestAdminNotification,
+} from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { verifyManagedEventRsvpSignature, verifyRsvpSignature, verifyRsvpSignatureByWeek } from "../lib/rsvpToken";
 import { awardXP } from "../lib/gamification";
@@ -123,53 +130,53 @@ router.post("/managed", async (req, res) => {
       })
       .onConflictDoNothing()
       .returning({ id: leadershipEventRsvpsTable.id });
-    const alreadyRsvpd = !created;
+    const alreadyInterested = !created;
 
     if (created) {
-      await db
-        .insert(subscribersTable)
-        .values({ tenantId, email: normalizedEmail, name: hasSignature ? (name || null) : null, isActive: true })
-        .onConflictDoUpdate({
-          target: [subscribersTable.tenantId, subscribersTable.email],
-          set: { isActive: true, ...(hasSignature && name ? { name } : {}) },
-        });
+      // Website submissions explicitly opt in to the newsletter. Signed links
+      // come from an existing newsletter and should not reactivate unsubscribed users.
+      if (!hasSignature) {
+        await db
+          .insert(subscribersTable)
+          .values({ tenantId, email: normalizedEmail, name: name || null, isActive: true })
+          .onConflictDoUpdate({
+            target: [subscribersTable.tenantId, subscribersTable.email],
+            set: { isActive: true, ...(name ? { name } : {}) },
+          });
+      }
 
-      const rsvperName = (hasSignature ? name : "") || email.split("@")[0];
       for (const prior of priorRsvps) {
         if (prior.email !== normalizedEmail) {
-          sendRsvpNotification({
+          sendManagedEventInterestNotification({
             to: prior.email,
-            rsvperName,
-            rsvperEmail: normalizedEmail,
             eventTitle: event.title,
             eventDate: event.date,
             eventVenue: event.venue,
-            digestSubject: "Upcoming events shared by Leadership Austin alumni",
-            newsletterName: req.tenant!.name,
+            siteName: req.tenant!.name,
+            totalInterested: priorRsvps.length + 1,
           }).catch(() => {});
         }
       }
       if (priorRsvps.length > 0) {
-        sendRsvpGroupNotification({
+        sendManagedEventInterestGroupNotification({
           to: normalizedEmail,
-          matches: priorRsvps.map((prior) => ({ name: prior.name || prior.email.split("@")[0], email: prior.email })),
           eventTitle: event.title,
           eventDate: event.date,
           eventVenue: event.venue,
-          newsletterName: req.tenant!.name,
+          siteName: req.tenant!.name,
+          totalInterested: priorRsvps.length + 1,
         }).catch(() => {});
       }
-      sendCarpoolAdminNotification({
-        rsvperEmail: normalizedEmail,
-        rsvperName: name || null,
+      sendManagedEventInterestAdminNotification({
+        interestedEmail: normalizedEmail,
+        interestedName: name || null,
         eventTitle: event.title,
         eventDate: event.date,
         eventVenue: event.venue,
-        totalRsvps: priorRsvps.length + 1,
+        totalInterested: priorRsvps.length + 1,
         adminEmail: req.tenant!.adminEmail,
-        newsletterName: req.tenant!.name,
+        siteName: req.tenant!.name,
       }).catch(() => {});
-      awardXP(tenantId, "rsvp", 10, { eventTitle, managedEventId }).catch(() => {});
     }
 
     const countRows = await db
@@ -179,12 +186,12 @@ router.post("/managed", async (req, res) => {
         eq(leadershipEventRsvpsTable.tenantId, tenantId),
         eq(leadershipEventRsvpsTable.leadershipEventId, managedEventId),
       ));
-    req.log.info({ managedEventId, tenantId, alreadyRsvpd }, "Persistent event interest recorded");
+    req.log.info({ managedEventId, tenantId, alreadyInterested }, "Persistent event interest recorded");
     res.json({
       success: true,
-      message: alreadyRsvpd ? "You already marked yourself interested." : "Interest recorded.",
+      message: alreadyInterested ? "You already marked yourself interested." : "Interest recorded.",
       count: countRows.length,
-      alreadyRsvpd,
+      alreadyRsvpd: alreadyInterested,
     });
   } catch (err) {
     req.log.error({ err, managedEventId }, "Error recording persistent event interest");

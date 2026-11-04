@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { CheckCircle2, XCircle, Loader2, ArrowLeft, Car } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ArrowLeft, Car, Sparkles } from "lucide-react";
 import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +70,9 @@ export default function RsvpPage() {
             <div className="space-y-6">
               <div className="text-center">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Car className="w-8 h-8 text-primary" />
+                  {isManagedEvent
+                    ? <Sparkles className="w-8 h-8 text-primary" />
+                    : <Car className="w-8 h-8 text-primary" />}
                 </div>
                 <h1 className="font-serif text-3xl font-bold text-foreground mb-2">{isManagedEvent ? "Event interest" : "Carpool RSVP"}</h1>
                 {eventTitle && (
@@ -127,18 +129,20 @@ export default function RsvpPage() {
           {status === "loading" && (
             <div className="text-center space-y-4">
               <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
-              <p className="text-muted-foreground text-lg">Recording your RSVP…</p>
+              <p className="text-muted-foreground text-lg">{isManagedEvent ? "Recording your interest…" : "Recording your RSVP…"}</p>
             </div>
           )}
 
           {(status === "success" || status === "already") && (
             <div className="space-y-6 text-center">
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                <Car className="w-10 h-10 text-primary" />
+                {isManagedEvent
+                  ? <Sparkles className="w-10 h-10 text-primary" />
+                  : <Car className="w-10 h-10 text-primary" />}
               </div>
               <div>
                 <h1 className="font-serif text-3xl font-bold text-foreground mb-2">
-                  {status === "already" ? "Already recorded!" : isManagedEvent ? "You're in!" : "You're in! 🚗"}
+                  {status === "already" ? "Already recorded!" : isManagedEvent ? "Interest recorded" : "You're in! 🚗"}
                 </h1>
                 <p className="text-muted-foreground text-lg leading-relaxed">
                   {status === "already"
@@ -155,10 +159,12 @@ export default function RsvpPage() {
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground justify-center">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                Other subscribers have been notified
-              </div>
+              {!isManagedEvent && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  Other subscribers have been notified
+                </div>
+              )}
             </div>
           )}
 

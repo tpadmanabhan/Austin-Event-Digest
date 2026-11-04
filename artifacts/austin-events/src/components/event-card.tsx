@@ -315,8 +315,12 @@ export function RsvpBox({ digestId, managedEventId, eventTitle, eventDate, event
         <div className="flex items-center gap-2 text-primary text-sm font-semibold">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>
-            {confirmedName ? `You're in, ${confirmedName}! ✨` : "You're in! ✨"}
-            <span className="font-normal text-muted-foreground ml-1">Other subscribers have been notified.</span>
+            {managedEventId
+              ? "Interest recorded."
+              : confirmedName ? `You're in, ${confirmedName}! ✨` : "You're in! ✨"}
+            {!managedEventId && (
+              <span className="font-normal text-muted-foreground ml-1">Other subscribers have been notified.</span>
+            )}
           </span>
         </div>
         {count && count > 1 && (
@@ -349,7 +353,7 @@ export function RsvpBox({ digestId, managedEventId, eventTitle, eventDate, event
         <form onSubmit={handleSubmit} className="space-y-3">
           <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-primary" />
-            Let others know you're going!
+            {managedEventId ? "Let others know you're interested." : "Let others know you're going!"}
           </p>
           <div className="grid grid-cols-2 gap-2">
             <Input
@@ -368,6 +372,11 @@ export function RsvpBox({ digestId, managedEventId, eventTitle, eventDate, event
               required
             />
           </div>
+          {managedEventId && (
+            <p className="text-xs text-muted-foreground">
+              Submitting subscribes you to this site’s event newsletter. You may get an update if others mark interest; your contact details are visible to the site admin, not other participants. Unsubscribe anytime.
+            </p>
+          )}
           <TurnstileWidget
             onSuccess={setCaptchaToken}
             onError={() => setCaptchaToken(null)}
@@ -382,7 +391,7 @@ export function RsvpBox({ digestId, managedEventId, eventTitle, eventDate, event
             >
               {status === "submitting"
                 ? <><Loader2 className="w-3 h-3 animate-spin mr-1" />Submitting…</>
-                : "Count me in!"}
+                : managedEventId ? "Share my interest" : "Count me in!"}
             </Button>
             <Button
               type="button"
