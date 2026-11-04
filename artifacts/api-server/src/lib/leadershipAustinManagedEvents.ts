@@ -1,5 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
 import { db, leadershipEventsTable, tenantsTable } from "@workspace/db";
+import { geocodeEvents } from "./geocodeVenue";
 
 const AUSTIN_COMMON_EVENTS_URL = "https://theaustincommon.com/events/";
 const SOURCE_ALUMNI = "Amy Stansbury";
@@ -153,6 +154,14 @@ function localDay(value: Date, timezone: string): string | null {
   }
 }
 
+const LOCATION_NEEDS_REVIEW = new Set([
+  "Grandpa’s Lakeview Terrace",
+  "Congress Avenue",
+  "Seaholm Intake Building",
+  "Vesper",
+  "Leadership Austin Offices",
+]);
+
 export async function listUpcomingLeadershipEvents() {
   const [tenant] = await db
     .select({ id: tenantsTable.id })
@@ -167,10 +176,25 @@ export async function listUpcomingLeadershipEvents() {
     .where(and(eq(leadershipEventsTable.tenantId, tenant.id), eq(leadershipEventsTable.isActive, true)))
     .orderBy(asc(leadershipEventsTable.startDate), asc(leadershipEventsTable.id));
   const today = localDay(new Date(), "America/Chicago");
-  return rows.filter((row) => {
+  const upcoming = rows.filter((row) => {
     const eventDay = localDay(new Date(row.endDate || row.startDate), row.timezone);
     return !!today && !!eventDay && eventDay >= today;
   });
+  const eventLocations = upcoming.map((row) => {
+    // Do not pin a route or a location whose geocoder result did not identify the venue.
+    const locationNeedsReview = LOCATION_NEEDS_REVIEW.has(row.venue.trim());
+    return {
+      venue: locationNeedsReview
+        ? ""
+        : [row.venue, row.venueAddress, "Austin, Texas"].filter(Boolean).join(", "),
+    };
+  });
+  const geocoded = await geocodeEvents(eventLocations, "austin");
+  return upcoming.map((row, index) => ({
+    ...row,
+    lat: typeof geocoded[index]?.["lat"] === "number" ? geocoded[index]["lat"] as number : null,
+    lng: typeof geocoded[index]?.["lng"] === "number" ? geocoded[index]["lng"] as number : null,
+  }));
 }
 
 export async function seedLeadershipAustinManagedEvents(): Promise<void> {

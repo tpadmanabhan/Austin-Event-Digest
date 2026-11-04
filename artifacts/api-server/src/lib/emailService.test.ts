@@ -835,6 +835,8 @@ describe("Leadership Austin newsletter", () => {
       category: "Community",
       sourceAlumni: "Amy Stansbury",
       managedEventId: 42,
+      lat: 30.311664,
+      lng: -97.6902159,
     };
     const digest = {
       ...baseDigest,
@@ -862,6 +864,11 @@ describe("Leadership Austin newsletter", () => {
     expect(leadershipAustinHtml).toContain("Upcoming community events");
     expect(leadershipAustinHtml).toContain("✨ Interested?");
     expect(leadershipAustinHtml).toContain("https://leadershipaustin.irl.group/rsvp?m=42");
+    expect(leadershipAustinHtml).toContain("Alumni and community event locations in Austin");
+    expect(leadershipAustinHtml).toContain("30.311664%2C-97.6902159%2Cblue");
+    expect(leadershipAustinHtml).toContain("Only verified venue locations are pinned");
+    expect(leadershipAustinHtml).toContain("Open Leadership Austin site");
+    expect(austinHtml).not.toContain("Alumni and community event locations in Austin");
     expect(leadershipAustinHtml).not.toContain("Austin Cares");
     expect(leadershipAustinHtml).not.toContain("Two new features");
   });

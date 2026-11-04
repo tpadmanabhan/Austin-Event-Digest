@@ -647,12 +647,12 @@ function buildStaticMapSection(
     <!-- Event Map Preview -->
     <div style="margin-bottom:24px; border-radius:14px; overflow:hidden; border:1px solid #e7e5e4;">
       <div style="background:#f8fafc; padding:10px 16px; border-bottom:1px solid #e7e5e4;">
-        <p style="margin:0; font-size:13px; font-weight:700; color:#1c1917;">${slug === "austincares" ? "🗺️ Deal locations in Austin" : `🗺️ This week's event locations in ${cityLabel}`}</p>
+        <p style="margin:0; font-size:13px; font-weight:700; color:#1c1917;">${slug === "austincares" ? "🗺️ Deal locations in Austin" : slug === "leadershipaustin" ? "🗺️ Alumni and community event locations in Austin" : `🗺️ This week's event locations in ${cityLabel}`}</p>
       </div>
       ${linkUrl ? `<a href="${escapeHtml(linkUrl)}" style="display:block; line-height:0;">` : ""}
-        <img src="${escapeHtml(mapUrl)}" alt="${slug === "austincares" ? "Map of deal locations in Austin" : `Map of this week's events in ${cityLabel}`}" width="580" height="260" style="display:block; width:100%; max-width:580px; height:auto; border:none;" />
+        <img src="${escapeHtml(mapUrl)}" alt="${slug === "austincares" ? "Map of deal locations in Austin" : slug === "leadershipaustin" ? "Map of alumni and community events in Austin" : `Map of this week's events in ${cityLabel}`}" width="580" height="260" style="display:block; width:100%; max-width:580px; height:auto; border:none;" />
       ${linkUrl ? `</a>` : ""}
-      ${linkUrl ? `<div style="background:#f8fafc; padding:8px 16px; border-top:1px solid #e7e5e4; text-align:center;"><a href="${escapeHtml(linkUrl)}" style="color:#7c3aed; font-size:12px; font-weight:600; text-decoration:none;">Open interactive map &amp; sort by distance →</a></div>` : ""}
+      ${linkUrl ? `<div style="background:#f8fafc; padding:8px 16px; border-top:1px solid #e7e5e4; text-align:center;"><a href="${escapeHtml(linkUrl)}" style="color:#7c3aed; font-size:12px; font-weight:600; text-decoration:none;">${slug === "leadershipaustin" ? "Open Leadership Austin site →" : "Open interactive map &amp; sort by distance →"}</a>${slug === "leadershipaustin" ? `<p style="margin:6px 0 0; color:#78716c; font-size:11px;">Only verified venue locations are pinned; other events remain listed without a pin.</p>` : ""}</div>` : ""}
     </div>`;
 }
 
@@ -1565,7 +1565,14 @@ export function buildDigestEmailHtml(digest: {
       <a href="${escapeHtml(digest.siteUrl)}" style="display:inline-block; background:#dc2626; color:#fff; font-size:14px; font-weight:700; text-decoration:none; padding:11px 26px; border-radius:100px; letter-spacing:-0.1px;">View full edition →</a>
     </div>` : ""}
 
-    ${buildStaticMapSection(contentEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
+    ${buildStaticMapSection(
+      slug === "leadershipaustin"
+        ? [...contentEvents, ...(digest.alumniSourcedEvents ?? [])]
+        : contentEvents,
+      slug ?? undefined,
+      digest.siteUrl ?? undefined,
+      digest.digestId,
+    )}
 
     <!-- Austin privacy-first Groups feature -->
     ${slug === "austin" ? `

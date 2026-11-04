@@ -25,6 +25,9 @@ export type LeadershipManagedEvent = {
   endDate?: string | null;
   timezone: string;
   venue: string;
+  venueAddress?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   description: string;
   link?: string | null;
   category: string;

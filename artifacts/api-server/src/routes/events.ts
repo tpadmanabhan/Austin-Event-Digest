@@ -58,7 +58,12 @@ function computeProdToken(slug: string): string | null {
 
 const router: IRouter = Router();
 
-function leadershipEventToApi(row: typeof leadershipEventsTable.$inferSelect) {
+type LeadershipEventWithCoordinates = typeof leadershipEventsTable.$inferSelect & {
+  lat?: number | null;
+  lng?: number | null;
+};
+
+function leadershipEventToApi(row: LeadershipEventWithCoordinates) {
   const event = EventItemSchema.parse({
     title: row.title,
     date: row.date,
@@ -76,6 +81,8 @@ function leadershipEventToApi(row: typeof leadershipEventsTable.$inferSelect) {
     sourceUrl: row.sourceUrl,
     sourceAlumni: row.sourceAlumni,
     isPersistentManaged: true,
+    lat: row.lat ?? null,
+    lng: row.lng ?? null,
   });
   const identified = withPublicEventIds([event], row.tenantId)[0]!;
   return {
@@ -90,7 +97,7 @@ function leadershipEventToApi(row: typeof leadershipEventsTable.$inferSelect) {
   };
 }
 
-function leadershipEventToEmailItem(row: typeof leadershipEventsTable.$inferSelect) {
+function leadershipEventToEmailItem(row: LeadershipEventWithCoordinates) {
   return {
     title: row.title,
     date: row.date,
@@ -101,6 +108,8 @@ function leadershipEventToEmailItem(row: typeof leadershipEventsTable.$inferSele
     sourceAlumni: row.sourceAlumni,
     organizer: row.organizer,
     managedEventId: row.id,
+    lat: row.lat ?? null,
+    lng: row.lng ?? null,
   };
 }
 

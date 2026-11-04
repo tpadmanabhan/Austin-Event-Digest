@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Star, Bell, CheckCircle2, Loader2, Trophy, ExternalLink, Leaf, Calendar } from "lucide-react";
 
-import { useLatestDigest } from "@/hooks/use-events";
+import { useLatestDigest, useLeadershipManagedEvents } from "@/hooks/use-events";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
 import { SubscribeForm } from "@/components/subscribe-form";
@@ -196,6 +196,24 @@ export default function Home() {
   const isNYC = tenant.slug === "nyc";
   const isDallas = tenant.slug === "dallas";
   const isLeadershipAustin = tenant.slug === "leadershipaustin";
+  const leadershipManagedEventsQuery = useLeadershipManagedEvents(isLeadershipAustin);
+  const mapEvents = useMemo(() => {
+    const digestEvents = ((latestDigest?.events ?? []) as any[])
+      .filter((event: any) => !(isLeadershipAustin && event.isAlumniHappening));
+    const alumniEvents = isLeadershipAustin ? (leadershipManagedEventsQuery.data?.events ?? []) : [];
+    return [...digestEvents, ...alumniEvents];
+  }, [latestDigest?.events, leadershipManagedEventsQuery.data?.events, isLeadershipAustin]);
+  const mapEventsKey = mapEvents
+    .map((event: any) => [
+      event.eventId ?? event.managedEventId ?? event.title,
+      event.venue,
+      event.lat,
+      event.lng,
+      event.featured,
+      event.isPost,
+      event.isBusinessSpotlight,
+    ].join(":"))
+    .join("|");
   const isJapaneseEdition = isToky || isOsaka;
   const [homeTranslatedMap, setHomeTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
   const [homeTranslating, setHomeTranslating] = useState(false);
@@ -254,6 +272,7 @@ export default function Home() {
     nyc:          [40.7128, -74.0060],
     dallas:       [32.7767, -96.7970],
     dc:          [38.907, -77.037],
+    leadershipaustin: [30.2672, -97.7431],
   };
   const showMap = tenant.slug in MAP_CENTERS;
   const mapCenter: [number, number] = MAP_CENTERS[tenant.slug] ?? [30.267, -97.743];
@@ -704,18 +723,24 @@ export default function Home() {
             </div>
           )}
 
-          {/* Event Map — Austin & Brushy Creek only */}
-          {showMap && latestDigest?.events && (
+          {/* Event Map */}
+          {showMap && (latestDigest?.events || (isLeadershipAustin && leadershipManagedEventsQuery.data?.events)) && (
             <div className="mb-10">
               <h3 className="font-serif text-xl font-bold mb-4 flex items-center gap-2">
                   {isLeadershipAustin ? "Where the community gathers" : isOsaka ? (lang === "ja" ? "大阪のイベント開催地" : "Where this edition's events are happening") : isDallas ? "Find your way around Dallas" : isBoston ? "Find your way around Boston" : isMiami ? "Find your way around Miami" : isSacramento ? "Find your way around Sacramento" : isSF ? "Find your way around San Francisco" : isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : latestIssueRange ? jt("🗺️ Where this edition's events are happening", "🗺️ このエディションのイベント開催地") : "🗺️ Where this week's events are happening"}
               </h3>
               <EventMap
-                events={(latestDigest.events as any[]).filter((event: any) => !(isLeadershipAustin && event.isAlumniHappening))}
+                key={mapEventsKey}
+                events={mapEvents}
                 center={mapCenter}
                 radiusMiles={30}
                 height={340}
               />
+              {isLeadershipAustin && (
+                <p className="mt-2 text-center text-xs text-muted-foreground">
+                  Only verified venue locations are pinned; events without a confirmed point remain listed without a pin.
+                </p>
+              )}
             </div>
           )}
 

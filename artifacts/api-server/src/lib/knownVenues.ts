@@ -153,6 +153,12 @@ const KNOWN_VENUES: Record<string, Record<string, VenueCoords>> = {
     "empire control room":           { lat: 30.2672, lng: -97.7375 },
     "far out lounge":                { lat: 30.2015, lng: -97.7727 },
     "punch bowl social":             { lat: 30.4021, lng: -97.7241 },
+    // OpenStreetMap venue identities/address matches used by Leadership Austin alumni events.
+    "windsor park branch library":   { lat: 30.3116640, lng: -97.6902159 },
+    "h e b techridge":               { lat: 30.4053865, lng: -97.6717792 },
+    "central machine works":         { lat: 30.2520070, lng: -97.7015211 },
+    "festival beach food forest":    { lat: 30.2531047, lng: -97.7353009 },
+    "lbj presidential library":      { lat: 30.2858948, lng: -97.7292852 },
   },
   brushycreek: {
     "dell diamond":                  { lat: 30.5273, lng: -97.6316 },
