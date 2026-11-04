@@ -1435,6 +1435,7 @@ export function buildDigestEmailHtml(digest: {
 
   const buildSpotlightCard = (event: (typeof digest.events)[number], accentColor: string, labelText: string, labelEmoji: string) => {
     const safeLink = safeHref(event.link);
+    const linkLabel = event.title === "The Austin Common" ? "Subscribe here" : "Learn More →";
     // Decode then escape directly — same pattern as regular event cards
     const rawImageUrl = event.imageUrl ? decodeHtmlEntities(event.imageUrl).trim() : null;
     const resolvedImageUrl = rawImageUrl
@@ -1456,7 +1457,7 @@ export function buildDigestEmailHtml(digest: {
         <h3 style="margin:0 0 8px; font-size:18px; font-weight:700;">${safeLink ? `<a href="${safeLink}" style="color:#1c1917; text-decoration:none;">${escapeHtml(event.title)}</a>` : `<span style="color:#1c1917;">${escapeHtml(event.title)}</span>`}</h3>
         ${event.description ? `<p style="margin:0 0 14px; color:#44403c; font-size:14px; line-height:1.7;">${escapeHtml(event.description)}</p>` : ""}
         ${event.deadline ? `<p style="margin:0 0 12px; color:#b45309; font-size:13px; font-weight:600;">⏰ Deadline: ${escapeHtml(event.deadline)}</p>` : ""}
-        ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:${accentColor}; color:#fff; padding:9px 20px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:700;">Learn More →</a>` : ""}
+        ${safeLink ? `<a href="${safeLink}" style="display:inline-block; background:${accentColor}; color:#fff; padding:9px 20px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:700;">${escapeHtml(linkLabel)}</a>` : ""}
       </div>
     </div>
   `;

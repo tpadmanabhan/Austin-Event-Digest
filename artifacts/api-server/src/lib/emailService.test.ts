@@ -980,6 +980,7 @@ describe("Leadership Austin newsletter", () => {
     expect(html).not.toContain("Alexandra Robertson");
     expect(html).toContain("Ascension Seton");
     expect(html).toContain("The Austin Common");
+    expect(html).toContain(">Subscribe here</a>");
     expect(html).not.toContain("Week of November 8");
     expect(html).not.toContain(">Beta<");
     expect(html).not.toContain("AI Ethics");
