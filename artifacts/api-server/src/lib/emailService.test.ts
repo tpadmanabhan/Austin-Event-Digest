@@ -974,7 +974,13 @@ describe("Leadership Austin newsletter", () => {
     expect(html).toContain("Thursday, December 3, 6:00–9:00 PM CT");
     expect(html).toContain("KMFA Studio, 41 Navasota Street, Austin, TX 78702");
     expect(html).toContain("Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along.");
-    expect(html).toContain("Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.");
+    const visibleText = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    expect(visibleText).toContain("Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.");
+    expect(visibleText).toContain("A pulse on the people, programs, and ideas moving Austin forward.");
+    expect(html).toContain('font-size:16px; line-height:1.65; font-weight:600;');
+    expect(html).toContain("font-family:'Figtree',Arial,sans-serif;");
+    expect(html).not.toContain("...");
+    expect(html).not.toContain("…");
     expect(html).toContain("Alexandra Robertson");
     expect(html).toContain("Class Rep");
     expect(html).toContain("LA Emerge 18-2025");
@@ -991,12 +997,12 @@ describe("Leadership Austin newsletter", () => {
     expect(html.match(/Difficult Talks: Foundation for Courageous Communication/g)).toHaveLength(1);
   });
 
-  it("formats the subject as upcoming events without an edition date", () => {
+  it("adds the edition date to the Leadership Austin subject", () => {
     expect(formatCityNewsletterSubject(
       "Leadership Austin — Week of November 8, 2026",
       "leadershipaustin",
       "2026-11-08",
-    )).toBe("Leadership Austin — Upcoming Events");
+    )).toBe("Leadership Austin — Upcoming Events — Week of Nov 8, 2026");
   });
 });
 

@@ -36,7 +36,9 @@ export function AlumniHappeningsSection({
           <p className="mb-2 text-[11px] font-bold uppercase tracking-[.24em] text-[#4EBEE7]">Leadership Austin · Community notes</p>
           <h2 id="alumni-happenings-title" className="text-4xl font-bold uppercase leading-none sm:text-5xl">Alumni Happenings</h2>
         </div>
-        <p className="max-w-sm text-sm leading-relaxed text-white/75">A pulse on the people, programs, and ideas moving Austin forward.</p>
+        <p className="max-w-sm border-l-2 border-[#FFBA01] pl-4 text-base font-medium leading-relaxed text-white sm:text-lg">
+          <span className="font-bold text-[#FFBA01]">A pulse</span> on the people, programs, and ideas moving Austin forward.
+        </p>
       </div>
       {alumni.length ? (
         <div className="mt-5 space-y-7">

@@ -572,8 +572,9 @@ export default function Home() {
                   }
                 </p>
                 {isLeadershipAustin && (
-                  <p className="mt-3 text-foreground/90 leading-relaxed text-sm not-italic">
-                    Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.
+                  <p className="mt-4 border-l-2 border-[#FFBA01] pl-4 text-base font-medium leading-relaxed text-white sm:text-lg not-italic">
+                    <span className="font-bold text-[#FFBA01]">Hey, all alumni.</span>{" "}
+                    We created this space to stay connected with our Emerge Class 18 community and share upcoming events.
                   </p>
                 )}
                 {isLeadershipAustin ? (

@@ -70,7 +70,9 @@ export function formatCityNewsletterSubject(
       ? title.toLowerCase() === label.toLowerCase() ? label : title
       : `${title || trimmed} — ${label}`;
 
-  if (tenantSlug !== "austin" || !weekOf) return formattedSubject;
+  const usesEditionDateInSubject =
+    tenantSlug === "austin" || tenantSlug === "leadershipaustin";
+  if (!usesEditionDateInSubject || !weekOf) return formattedSubject;
 
   const weekDateString = weekOf instanceof Date
     ? Number.isNaN(weekOf.getTime()) ? "" : weekOf.toISOString().slice(0, 10)
@@ -1356,8 +1358,8 @@ export function buildDigestEmailHtml(digest: {
   const alsoNearbyCards = alsoNearby.map(e => buildEventCard(e, false)).join("");
   const leadershipTestimonialHtml = slug === "leadershipaustin" ? `
       <div style="margin-top:18px; border-top:1px solid #e2e8f0; padding-top:16px;">
-        <p style="margin:0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.7; font-style:italic;">Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along.</p>
-        <p style="margin:10px 0 0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.7;">Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
+        <p style="margin:0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:16px; line-height:1.7; font-style:italic; font-weight:600;">Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along.</p>
+        <p style="margin:12px 0 0; padding:12px 14px; border-left:4px solid #FFBA01; border-radius:4px; background:#f7f4ef; color:#334155; font-family:'Figtree',Arial,sans-serif; font-size:16px; line-height:1.65; font-weight:600;"><span style="color:#a94832; font-weight:800;">Hey, all alumni.</span> We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
         <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800;">Alexandra Robertson</p>
         <p style="margin:3px 0 0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:12px; font-weight:700;">Class Rep</p>
         <p style="margin:2px 0 0; color:#64748b; font-family:'Figtree',Arial,sans-serif; font-size:12px;">LA Emerge 18-2025</p>
@@ -1392,6 +1394,7 @@ export function buildDigestEmailHtml(digest: {
       <div style="background:#314363; padding:16px 20px;">
         <p style="margin:0 0 4px; color:#4EBEE7; font-family:'Figtree',Arial,sans-serif; font-size:10px; font-weight:800; letter-spacing:2px; text-transform:uppercase;">Leadership Austin</p>
         <h2 style="margin:0; color:#ffffff; font-family:'Barlow Condensed',Arial,sans-serif; font-size:26px; line-height:1.05; text-transform:uppercase;">Alumni Happenings</h2>
+          <p style="margin:10px 0 0; padding-left:12px; border-left:3px solid #FFBA01; color:#ffffff; font-family:'Figtree',Arial,sans-serif; font-size:16px; line-height:1.55; font-weight:600;"><span style="color:#FFBA01; font-weight:800;">A pulse</span> on the people, programs, and ideas moving Austin forward.</p>
       </div>
       ${alumniEvents.map((event) => {
         const link = safeHref(event.link);
