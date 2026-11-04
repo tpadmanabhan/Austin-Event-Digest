@@ -31,3 +31,19 @@ describe("generateSampleDigest — Houston onboarding", () => {
     expect(JSON.stringify(digest)).not.toMatch(/Austin|Barton Springs|South Congress|Alamo Drafthouse|Austin City Limits/);
   });
 });
+
+describe("generateSampleDigest — Leadership Austin", () => {
+  it("starts with no imported events and uses date-free alumni copy", () => {
+    const digest = generateSampleDigest(
+      new Date("2026-11-08T12:00:00.000Z"),
+      undefined,
+      { slug: "leadershipaustin", city: "Austin, TX", digestTitle: "Leadership Austin" },
+    );
+
+    expect(digest.subject).toBe("Leadership Austin — Upcoming Events");
+    expect(digest.intro).toContain("Alumni Happenings");
+    expect(digest.events).toEqual([]);
+    expect(digest.subject).not.toMatch(/\b(?:week of|nov(?:ember)?\s+\d)/i);
+    expect(JSON.stringify(digest)).not.toMatch(/Barton Springs|South Congress|Alamo Drafthouse/);
+  });
+});

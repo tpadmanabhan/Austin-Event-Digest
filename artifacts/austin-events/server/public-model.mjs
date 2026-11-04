@@ -156,12 +156,14 @@ export async function loadPublicModel(site, pathname) {
     canonical: origin + pathname, homeUrl: "/", events: [],
     cities: tenants.map(t => {
       const url = `https://${t.slug}.${PLATFORM_DOMAIN}/`;
-        const ethics = CITY_ETHICS_RESOURCES[t.slug];
-        const localEthics = cityAiEthicsData[t.slug];
+      const ethics = CITY_ETHICS_RESOURCES[t.slug];
+      const localEthics = cityAiEthicsData[t.slug];
       return {
         slug: t.slug, name: t.name || t.city, url,
-          ethicsUrl: t.slug === "dallas" ? ethics?.url : localEthics ? `${url}#city-ai-ethics` : ethics?.url || url,
-          ethicsTitle: t.slug === "dallas" ? ethics?.title : localEthics ? `${localEthics.city} AI Ethics reading list` : ethics?.title || `Explore the ${t.city || t.name} edition for local updates`,
+          ...(t.slug !== "leadershipaustin" ? {
+            ethicsUrl: t.slug === "dallas" ? ethics?.url : localEthics ? `${url}#city-ai-ethics` : ethics?.url || url,
+            ethicsTitle: t.slug === "dallas" ? ethics?.title : localEthics ? `${localEthics.city} AI Ethics reading list` : ethics?.title || `Explore the ${t.city || t.name} edition for local updates`,
+          } : {}),
       };
     }).sort((a, b) => {
       const rank = slug => {
@@ -202,10 +204,16 @@ export async function loadPublicModel(site, pathname) {
   const catalog = [...new Map(digests.flatMap(d => d.events || []).reverse().map(e => {
     const event = publicEvent(e, site.slug); return [event.id, event];
   })).values()].filter(e => !e.isPost && !e.isBusinessSpotlight);
+  const isLeadershipAustin = site.slug === "leadershipaustin";
   const cityModel = { ...base, kind: digestMatch ? "digest" : site.slug === "austincares" ? "deals" : "city",
-    noindex: false, title: site.slug === "austincares" ? "AustinCares — Local Deals & Free Services" : digestMatch && digest ? digest.subject : `${tenant.name} | Local Events & Community`,
-    description: site.slug === "austincares" ? "Explore Austin-area curated offers, community-submitted deals, free services, and map-based local discovery." :
-      `Explore curated ${cityName} events, local newsletters, venues, and community activities.`,
+    noindex: false,
+    title: isLeadershipAustin ? "Leadership Austin — Alumni Happenings" :
+      site.slug === "austincares" ? "AustinCares — Local Deals & Free Services" :
+        digestMatch && digest ? digest.subject : `${tenant.name} | Local Events & Community`,
+    description: isLeadershipAustin
+      ? "A place for Leadership Austin alumni to stay connected, share upcoming events, and learn about local community stories."
+      : site.slug === "austincares" ? "Explore Austin-area curated offers, community-submitted deals, free services, and map-based local discovery."
+      : `Explore curated ${cityName} events, local newsletters, venues, and community activities.`,
     intro: digest?.intro || `Explore local activities in ${cityName}. Subscribe on this city's homepage for new editions.`,
     weekOf: digest?.weekOf, editionRange: publicEditionRange(site.slug, digest?.subject), digestId: digest?.id, events,
     editionUrl: digest ? `/digest/${digest.id}` : undefined,
@@ -228,8 +236,11 @@ export async function loadPublicModel(site, pathname) {
       Object.assign(event, verified?.metadata || {});
     }
     return { ...cityModel, kind: "event", event, events: [event],
-      canonical: origin + event.url, title: `${event.title} in ${cityName} | EventCarpooling`,
-      description: `Explore ${event.title} in ${cityName}: event details, venue, official registration, and how to express interest in attending or carpooling.`,
+      canonical: origin + event.url,
+      title: isLeadershipAustin ? `${event.title} | Leadership Austin` : `${event.title} in ${cityName} | EventCarpooling`,
+      description: isLeadershipAustin
+        ? `${event.title}: details and the organizer's source for Leadership Austin alumni.`
+        : `Explore ${event.title} in ${cityName}: event details, venue, official registration, and how to express interest in attending or carpooling.`,
       schema: eventSchema(event, origin) };
   }
   if (pathname.startsWith("/venues/")) {

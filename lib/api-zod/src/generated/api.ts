@@ -156,12 +156,15 @@ export const GetLatestDigestResponse = zod.object({
         venue: zod.string(),
         description: zod.string(),
         link: zod.string().nullish(),
+        linkText: zod.string().optional(),
         category: zod.string(),
         imageUrl: zod.string().nullish(),
         source: zod.string().nullish(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),
+        isAlumniHappening: zod.boolean().optional(),
+        alumniHappeningType: zod.enum(["event", "news"]).optional(),
         deadline: zod.string().nullish(),
         zodiacSigns: zod.array(zod.string()).nullish(),
         lat: zod.number().nullish(),
@@ -200,12 +203,15 @@ export const ListDigestsResponse = zod.object({
           venue: zod.string(),
           description: zod.string(),
           link: zod.string().nullish(),
+          linkText: zod.string().optional(),
           category: zod.string(),
           imageUrl: zod.string().nullish(),
           source: zod.string().nullish(),
           featured: zod.boolean().optional(),
           isPost: zod.boolean().optional(),
           isBusinessSpotlight: zod.boolean().optional(),
+          isAlumniHappening: zod.boolean().optional(),
+          alumniHappeningType: zod.enum(["event", "news"]).optional(),
           deadline: zod.string().nullish(),
           zodiacSigns: zod.array(zod.string()).nullish(),
           lat: zod.number().nullish(),
@@ -255,12 +261,15 @@ export const GenerateDigestResponse = zod.object({
         venue: zod.string(),
         description: zod.string(),
         link: zod.string().nullish(),
+        linkText: zod.string().optional(),
         category: zod.string(),
         imageUrl: zod.string().nullish(),
         source: zod.string().nullish(),
         featured: zod.boolean().optional(),
         isPost: zod.boolean().optional(),
         isBusinessSpotlight: zod.boolean().optional(),
+        isAlumniHappening: zod.boolean().optional(),
+        alumniHappeningType: zod.enum(["event", "news"]).optional(),
         deadline: zod.string().nullish(),
         zodiacSigns: zod.array(zod.string()).nullish(),
         lat: zod.number().nullish(),
@@ -298,6 +307,80 @@ export const SendDigestBody = zod.object({
 export const SendDigestResponse = zod.object({
   success: zod.boolean(),
   message: zod.string(),
+});
+
+/**
+ * @summary Add a manually curated Leadership Austin alumni item (admin)
+ */
+export const AddAlumniHappeningParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const addAlumniHappeningBodyTitleMax = 180;
+
+export const addAlumniHappeningBodyDescriptionMax = 3000;
+
+export const addAlumniHappeningBodyLinkTextMax = 80;
+
+export const addAlumniHappeningBodyDateMax = 160;
+
+export const addAlumniHappeningBodyVenueMax = 240;
+
+export const addAlumniHappeningBodyCategoryMax = 80;
+
+export const AddAlumniHappeningBody = zod.object({
+  type: zod.enum(["event", "news"]),
+  title: zod.string().min(1).max(addAlumniHappeningBodyTitleMax),
+  description: zod.string().max(addAlumniHappeningBodyDescriptionMax),
+  link: zod.string().url().nullish(),
+  linkText: zod.string().max(addAlumniHappeningBodyLinkTextMax).optional(),
+  date: zod.string().max(addAlumniHappeningBodyDateMax).optional(),
+  venue: zod.string().max(addAlumniHappeningBodyVenueMax).optional(),
+  category: zod.string().max(addAlumniHappeningBodyCategoryMax).optional(),
+});
+
+export const AddAlumniHappeningResponse = zod.object({
+  success: zod.boolean(),
+  digest: zod.object({
+    id: zod.number(),
+    weekOf: zod.coerce.date(),
+    subject: zod.string(),
+    intro: zod.string(),
+    events: zod.array(
+      zod.object({
+        eventId: zod.string().optional(),
+        venueId: zod.string().optional(),
+        startDate: zod
+          .string()
+          .optional()
+          .describe("Verified ISO date or timestamp from the event source"),
+        endDate: zod.string().optional(),
+        timezone: zod.string().optional(),
+        venueAddress: zod.string().optional(),
+        title: zod.string(),
+        date: zod.string(),
+        venue: zod.string(),
+        description: zod.string(),
+        link: zod.string().nullish(),
+        linkText: zod.string().optional(),
+        category: zod.string(),
+        imageUrl: zod.string().nullish(),
+        source: zod.string().nullish(),
+        featured: zod.boolean().optional(),
+        isPost: zod.boolean().optional(),
+        isBusinessSpotlight: zod.boolean().optional(),
+        isAlumniHappening: zod.boolean().optional(),
+        alumniHappeningType: zod.enum(["event", "news"]).optional(),
+        deadline: zod.string().nullish(),
+        zodiacSigns: zod.array(zod.string()).nullish(),
+        lat: zod.number().nullish(),
+        lng: zod.number().nullish(),
+      }),
+    ),
+    sentAt: zod.coerce.date().nullish(),
+    sentCount: zod.number(),
+    createdAt: zod.coerce.date(),
+  }),
 });
 
 /**

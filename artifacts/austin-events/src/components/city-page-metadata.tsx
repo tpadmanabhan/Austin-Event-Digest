@@ -30,6 +30,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     const isHouston = citySlug === "houston";
     const isSF = citySlug === "sanfrancisco";
     const isLA = citySlug === "la";
+    const isLeadershipAustin = citySlug === "leadershipaustin";
     const isHoustonDigest = isHouston && path.startsWith("/digest/");
     const isAtlantaDigest = isAtlanta && path.startsWith("/digest/");
     const title = isCares
@@ -43,6 +44,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
       : isLA ? "Los Angeles Events — Pacific Coast, Citywide | IRL"
       : isHoustonDigest ? "Houston Events — Full Citywide Edition | IRL"
       : isHouston ? "Houston Events — The Whole City. Your Next Plan. | IRL"
+      : isLeadershipAustin ? "Leadership Austin — Alumni Happenings"
       : `${tenant.name} | Local Events & Community`;
     const description = isCares
       ? "Find Austin-area food specials, free neighborhood services, health screenings and community resources, organized by day and location."
@@ -56,6 +58,8 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
         ? "Explore Los Angeles events across Tech, Arts, Sports, Civics and Wellness, with local organizer links and a city-specific AI ethics reading list."
         : isHouston
         ? "Explore Houston's citywide events edition: real local plans across innovation, art, sports, civic life and wellness, from the bayou to your neighborhood."
+        : isLeadershipAustin
+        ? "A place for Leadership Austin alumni to stay connected, share upcoming events, and learn about local community stories."
         : `Explore curated ${tenant.city} events, local newsletters, venues, and community activities.`;
 
     document.title = title;

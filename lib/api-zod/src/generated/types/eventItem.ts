@@ -5,6 +5,7 @@
  * API specification for Raj's Austin Events newsletter
  * OpenAPI spec version: 0.1.0
  */
+import type { EventItemAlumniHappeningType } from "./eventItemAlumniHappeningType";
 
 export interface EventItem {
   eventId?: string;
@@ -19,12 +20,15 @@ export interface EventItem {
   venue: string;
   description: string;
   link?: string | null;
+  linkText?: string;
   category: string;
   imageUrl?: string | null;
   source?: string | null;
   featured?: boolean;
   isPost?: boolean;
   isBusinessSpotlight?: boolean;
+  isAlumniHappening?: boolean;
+  alumniHappeningType?: EventItemAlumniHappeningType;
   deadline?: string | null;
   zodiacSigns?: string[] | null;
   lat?: number | null;

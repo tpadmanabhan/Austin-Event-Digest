@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SendDigestBody } from "@workspace/api-zod";
+import { AddAlumniHappeningBody, ListDigestsResponse, SendDigestBody } from "@workspace/api-zod";
 import { selectRecipientDigestEvents } from "./events";
 
 const events = [
@@ -39,6 +39,50 @@ describe("digest send location personalization", () => {
     expect(selectRecipientDigestEvents(events, recipient, true, parsed.personalizeByLocation)).toMatchObject({
       mainEvents: [{ title: "Spotlight" }, { title: "Nearby event" }],
       alsoNearby: [{ title: "Far event" }],
+    });
+  });
+});
+
+describe("digest response contract", () => {
+  it("accepts a custom label for an Alumni Happenings link", () => {
+    const body = AddAlumniHappeningBody.parse({
+      type: "news",
+      title: "Annual Giving Campaign",
+      description: "Support connected, engaged leaders.",
+      link: "https://example.com/campaign",
+      linkText: "Give to the Annual Campaign",
+    });
+
+    expect(body.linkText).toBe("Give to the Annual Campaign");
+  });
+
+  it("preserves Alumni Happenings classification fields", () => {
+    const response = ListDigestsResponse.parse({
+      digests: [{
+        id: 80,
+        weekOf: "2026-11-08T12:00:00.000Z",
+        subject: "Leadership Austin — Upcoming Events",
+        intro: "",
+        events: [{
+          title: "Alumni gathering",
+          date: "Monday, November 16, 2026",
+          venue: "",
+          description: "A manually managed alumni event.",
+          category: "Programs",
+          isAlumniHappening: true,
+          alumniHappeningType: "event",
+          linkText: "View event",
+        }],
+        sentAt: null,
+        sentCount: 0,
+        createdAt: "2026-11-04T12:00:00.000Z",
+      }],
+    });
+
+    expect(response.digests[0]?.events[0]).toMatchObject({
+      isAlumniHappening: true,
+      alumniHappeningType: "event",
+      linkText: "View event",
     });
   });
 });

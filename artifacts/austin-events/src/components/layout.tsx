@@ -27,6 +27,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const isMiami = tenant.slug === "miami";
   const isBoston = tenant.slug === "boston";
   const isLA = tenant.slug === "la";
+  const isLeadershipAustin = tenant.slug === "leadershipaustin";
   const { lang, setLang } = useLanguage();
 
   return (
@@ -37,9 +38,11 @@ export function Layout({ children }: { children: ReactNode }) {
             <Link href="/" className="flex items-center gap-2 group">
               <div
                  className={`shrink-0 rounded-xl flex items-center justify-center text-lg overflow-hidden transition-transform group-hover:-translate-y-0.5 ${isAustinCares ? "h-14 w-36" : isBulverde ? "h-16 w-28" : isAtlanta || isHouston || isSF || isMiami || isBoston || isLA ? "h-11 w-11" : isStLouis || isToky || isOsaka || isManchester || isNYC || isDallas ? "h-10 w-10" : "h-8 w-8"}`}
-                 style={isMiami || isBoston || isLA || isManchester || isNYC || isDallas ? undefined : isAtlanta || isHouston || isSF || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : isOsaka ? { background: "#913f2b", boxShadow: "0 4px 12px rgba(145,63,43,0.28)" } : isToky ? { background: "linear-gradient(135deg, #0A2548, #1B5EA8)", boxShadow: "0 4px 12px rgba(27,94,168,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)", boxShadow: "0 4px 12px rgba(29,78,216,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
+                 style={isLeadershipAustin ? { width: "auto", minWidth: "2.75rem", padding: "0 10px", background: "#314363", borderRadius: "3px" } : isMiami || isBoston || isLA || isManchester || isNYC || isDallas ? undefined : isAtlanta || isHouston || isSF || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : isOsaka ? { background: "#913f2b", boxShadow: "0 4px 12px rgba(145,63,43,0.28)" } : isToky ? { background: "linear-gradient(135deg, #0A2548, #1B5EA8)", boxShadow: "0 4px 12px rgba(27,94,168,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)", boxShadow: "0 4px 12px rgba(29,78,216,0.5)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)", boxShadow: "0 4px 12px rgba(49,46,129,0.4)" }}
               >
-                 {isBoston ? (
+                 {isLeadershipAustin ? (
+                   <span className="text-[9px] font-extrabold uppercase tracking-widest text-white">LA</span>
+                 ) : isBoston ? (
                    <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/boston/mark.svg`} alt="Boston B monogram over the Charles" className="h-full w-full object-contain" />
                  ) : isMiami ? (
                    <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/miami/mark.png`} alt="Miami bayfront sunburst mark" className="h-full w-full object-contain" />
@@ -125,7 +128,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">
-                     {isOsaka ? (lang === "ja" ? "大阪の街から、今週のいい予定を。" : "Good plans, found across Osaka.") : isDallas ? "Dallas / North Texas" : isNYC ? "Five boroughs. One good plan." : isManchester ? "Made here. Happening now." : isLA ? "From the Pacific to your neighborhood." : isBoston ? "Both banks. Your next plan." : isMiami ? "Bayfront plans, in every language" : isSF ? "Fog, hills, and plenty to do." : isHouston ? "The whole city. Your next plan." : isAtlanta ? "Citywide, one good plan at a time." : isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : isToky ? "Tokyo Never Sleeps • 東京のイベント" : tenant.slug === "dc" ? "District of Possibilities" : "Make Austin Weird Again"}
+                      {isLeadershipAustin ? "Lead with Purpose." : isOsaka ? (lang === "ja" ? "大阪の街から、今週のいい予定を。" : "Good plans, found across Osaka.") : isDallas ? "Dallas / North Texas" : isNYC ? "Five boroughs. One good plan." : isManchester ? "Made here. Happening now." : isLA ? "From the Pacific to your neighborhood." : isBoston ? "Both banks. Your next plan." : isMiami ? "Bayfront plans, in every language" : isSF ? "Fog, hills, and plenty to do." : isHouston ? "The whole city. Your next plan." : isAtlanta ? "Citywide, one good plan at a time." : isAustinCares ? "BCRR Weekly Digest" : isBulverde ? "Front Porch of the Texas Hill Country" : tenant.slug === "austincares" ? "Keep Austin Kind" : isPortland ? "Keep Portland Weird" : isSacramento ? "Sac's Best, Curated Weekly" : isStLouis ? "Let's Go Redbirds!" : isToky ? "Tokyo Never Sleeps • 東京のイベント" : tenant.slug === "dc" ? "District of Possibilities" : "Make Austin Weird Again"}
                 </span>
               </div>
             </Link>
@@ -184,9 +187,11 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-3 opacity-80">
               <div
                 className={`shrink-0 rounded-xl flex items-center justify-center text-2xl overflow-hidden ${isAustinCares ? "w-40 h-20" : isBulverde ? "w-28 h-16" : isStLouis ? "w-16 h-16" : "w-10 h-10"}`}
-                 style={isMiami || isBoston || isLA ? undefined : isAtlanta || isHouston || isSF || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
+                 style={isLeadershipAustin ? { background: "#314363", borderRadius: "3px", padding: "8px" } : isMiami || isBoston || isLA ? undefined : isAtlanta || isHouston || isSF || isAustinCares || isPortland || isSacramento || isStLouis ? undefined : isBulverde ? { background: "#162010", padding: "8px", boxShadow: "0 4px 12px rgba(22,32,16,0.5)" } : tenant.slug === "dc" ? { background: "linear-gradient(135deg, #0a1f4e, #1a4a8a)" } : { background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
               >
-                 {isBoston ? (
+                  {isLeadershipAustin ? (
+                    <span className="text-[9px] font-extrabold uppercase tracking-widest text-white">LA</span>
+                  ) : isBoston ? (
                    <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/boston/mark.svg`} alt="Boston B monogram over the Charles" className="h-full w-full object-contain" />
                  ) : isMiami ? (
                    <img src={`${import.meta.env.BASE_URL}api/storage/public-objects/cities/miami/mark.png`} alt="Miami bayfront sunburst mark" className="h-full w-full object-contain" />

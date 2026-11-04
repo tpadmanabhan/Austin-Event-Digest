@@ -10,6 +10,8 @@ import { LaAiEthicsSection } from "./la-ai-ethics-section";
 import { CityAiEthicsSection } from "./city-ai-ethics-section";
 import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "./miami-featured-event";
 import { SpockAboutMention } from "./spock-mascot";
+import { AlumniHappeningsSection } from "./alumni-happenings-section";
+import { AlumniWelcomeNote } from "./alumni-welcome-note";
 
 const wrap = "mx-auto max-w-3xl px-4 py-10 sm:px-6";
 const linkCls = "font-semibold text-green-800 underline underline-offset-2 hover:text-green-700";
@@ -71,10 +73,11 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
 
   const miamiFeatured = model.events?.find((e) => isMiamiFeaturedEvent(e, model.citySlug));
   const isMiamiCity = model.citySlug === "miami";
+  const isLeadershipAustin = model.citySlug === "leadershipaustin";
   const miamiBusiness = isMiamiCity ? (model.events ?? []).filter((e) => e.isBusinessSpotlight) : [];
   const miamiCommunity = isMiamiCity ? (model.events ?? []).filter((e) => e.isPost && !e.isBusinessSpotlight) : [];
   const listEvents = (model.events ?? [])
-    .filter((e) => e !== miamiFeatured && !(isMiamiCity && (e.isBusinessSpotlight || e.isPost)))
+    .filter((e) => e !== miamiFeatured && !(isMiamiCity && (e.isBusinessSpotlight || e.isPost)) && !(isLeadershipAustin && (e as PublicEvent & { isAlumniHappening?: boolean }).isAlumniHappening))
     .sort((a, b) => {
       const rank = (e: PublicEvent) => e.isBusinessSpotlight || e.isPost ? 0 : e.featured ? 1 : 2;
       return rank(a) - rank(b);
@@ -126,18 +129,24 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
   } else if (kind === "city" || kind === "digest" || kind === "deals") {
     body = (
       <>
-        <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">{model.title}</h1>
-        {model.editionRange
+        <h1 className="font-serif text-3xl font-bold text-slate-900 sm:text-4xl">{isLeadershipAustin ? "Leadership Austin" : model.title}</h1>
+        {!isLeadershipAustin && model.editionRange
           ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Upcoming events · ${model.editionRange}`}</p>
-          : model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
-        <p className="mt-3 text-lg text-slate-800">{model.intro || model.description}</p>
-        {model.citySlug === "austin" && <AiEthicsSection className="mt-6" />}
+          : !isLeadershipAustin && model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
+        <p className="mt-3 text-lg text-slate-800">{isLeadershipAustin ? "A practical home for the people, programs, and local stories shaping Austin. Browse alumni gatherings and follow each source for current details." : model.intro || model.description}</p>
+        {isLeadershipAustin && (
+          <div className="mt-8 space-y-5">
+            <AlumniHappeningsSection events={(model.events ?? []) as any[]} compact />
+            <AlumniWelcomeNote />
+          </div>
+        )}
+        {!isLeadershipAustin && model.citySlug === "austin" && <AiEthicsSection className="mt-6" />}
         {model.citySlug === "sanfrancisco" && <SfAiEthicsSection className="mt-6" />}
         {model.citySlug === "sacramento" && <SacramentoAiEthicsSection className="mt-6" />}
         {model.citySlug === "miami" && <MiamiAiEthicsSection className="mt-6" />}
         {model.citySlug === "boston" && <BostonAiEthicsSection className="mt-6" />}
         {model.citySlug === "la" && <LaAiEthicsSection className="mt-6" />}
-        {model.citySlug && <CityAiEthicsSection slug={model.citySlug} className="mt-6" />}
+        {model.citySlug && !isLeadershipAustin && <CityAiEthicsSection slug={model.citySlug} className="mt-6" />}
         {miamiBusiness.length > 0 && (
           <section aria-labelledby="miami-business-h" className="mt-10">
             <h2 id="miami-business-h" className="mb-4 font-serif text-2xl font-bold text-slate-900">Business Spotlight</h2>
@@ -151,7 +160,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           </section>
         )}
         {miamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} digestId={model.digestId} className="mt-10" />}
-        <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : model.editionRange ? "Upcoming events" : "Events this week"}</h2>
+      <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : model.editionRange ? "Upcoming events" : isLeadershipAustin ? "Upcoming programs" : "Events this week"}</h2>
         <EventList events={listEvents} />
         <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
           {model.editionUrl ? <a href={model.editionUrl} className={linkCls}>{`Read the full ${model.cityName || ""} edition`}</a> : null}
@@ -252,7 +261,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-slate-50 text-slate-900">
+    <div data-tenant={isLeadershipAustin ? "leadershipaustin" : undefined} className={`min-h-[100dvh] ${isLeadershipAustin ? "bg-background text-foreground" : "bg-slate-50 text-slate-900"}`}>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:bg-white focus:p-2">Skip to content</a>
       {nav}
       <main id="main" className={wrap}>{body}

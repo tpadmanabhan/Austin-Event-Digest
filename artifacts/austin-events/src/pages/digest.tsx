@@ -8,6 +8,8 @@ import { Calendar, ArrowLeft, Leaf, ExternalLink, Trophy, Loader2 } from "lucide
 import { Link } from "wouter";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
+import { AlumniHappeningsSection } from "@/components/alumni-happenings-section";
+import { AlumniWelcomeNote } from "@/components/alumni-welcome-note";
 import { useLanguage } from "@/contexts/language-context";
 import { JA } from "@/i18n/ja";
 import { EventMap } from "@/components/event-map";
@@ -321,6 +323,7 @@ export default function DigestView() {
   const isMiami = tenant.slug === "miami";
   const isBoston = tenant.slug === "boston";
   const isLA = tenant.slug === "la";
+  const isLeadershipAustin = tenant.slug === "leadershipaustin";
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
@@ -505,7 +508,7 @@ export default function DigestView() {
   return (
     <Layout>
       {/* ANNOUNCEMENT BANNER */}
-      {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && !isLA && !isManchester && !isNYC && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
+      {!isLeadershipAustin && !isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && !isLA && !isManchester && !isNYC && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm">
         <span className="font-semibold text-primary">Coming Soon:</span>{" "}
         <span className="text-foreground/80">Build the local events guide for your city or neighborhood:</span>{" "}
         <a href="https://irl.group" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2 hover:opacity-80">
@@ -530,24 +533,27 @@ export default function DigestView() {
           {isHouston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Houston / The citywide edition</div>}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             {!isAustinCares && <Calendar className="w-4 h-4" />}
-            <span>{isAustinCares ? "Weekly Deals" : `${isOsaka && lang === "ja" ? "イベント" : "Events"}: ${displayEditionDateRange}`}</span>
+            <span>{isLeadershipAustin ? "Alumni & Community" : isAustinCares ? "Weekly Deals" : `${isOsaka && lang === "ja" ? "イベント" : "Events"}: ${displayEditionDateRange}`}</span>
           </div>
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
             {(() => {
+              if (isLeadershipAustin) return "Leadership Austin";
               const emojiMatch = isHouston || isSF || isMiami || isBoston || isLA || isOsaka || isManchester || isNYC ? null : digest.subject.match(/^(\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u200D]*\s*)/u);
               const emoji = emojiMatch ? emojiMatch[1] : "";
               if (isAustinCares) return `${emoji}Austin Cares Weekly Deals`;
                const titleBase = tenant.slug === "austin" && /upcoming events/i.test(digest.subject)
                  ? "Upcoming Events"
                  : tenant.digestTitle || `${cityShortName} Events`;
-               return isOsaka && lang === "ja" ? `大阪のイベント：${displayEditionDateRange}` : `${emoji}${titleBase}: ${displayEditionDateRange}`;
+                return isOsaka && lang === "ja" ? `大阪のイベント：${displayEditionDateRange}` : `${emoji}${titleBase}: ${displayEditionDateRange}`;
             })()}
           </h1>
           
           <div className="prose prose-lg prose-p:text-muted-foreground prose-p:leading-relaxed max-w-none bg-card p-8 rounded-3xl border border-border shadow-sm">
             <p className="whitespace-pre-wrap">
-              {(isJapaneseEdition && lang === "ja" && isOsaka
+              {isLeadershipAustin
+                ? "A practical home for the people and ideas shaping Austin. Browse alumni gatherings and community stories, then follow the organizer's source for current details."
+                : (isJapaneseEdition && lang === "ja" && isOsaka
                 ? (translatedIntros[isLatest ? `latest-${digest.id}` : `digest-${idStr}`] || digest.intro)
                 : digest.intro).split(/(zodiac signs)/i).map((part, i) =>
                 /zodiac signs/i.test(part) ? (
@@ -566,17 +572,23 @@ export default function DigestView() {
               </p>
             )}
           </div>
-          {tenant.slug === "austin" && <AiEthicsSection className="mt-6" />}
+          {!isLeadershipAustin && tenant.slug === "austin" && <AiEthicsSection className="mt-6" />}
           {isSF && <SfAiEthicsSection className="mt-6" />}
           {isSacramento && <SacramentoAiEthicsSection className="mt-6" />}
           {isMiami && <MiamiAiEthicsSection className="mt-6" />}
           {isBoston && <BostonAiEthicsSection className="mt-6" />}
           {isLA && <LaAiEthicsSection className="mt-6" />}
-          <CityAiEthicsSection
+          {!isLeadershipAustin && <CityAiEthicsSection
             slug={tenant.slug}
             lang={isJapaneseEdition && lang === "ja" ? "ja" : "en"}
             className="mt-6"
-          />
+          />}
+          {isLeadershipAustin && (
+            <div className="mt-6 space-y-5">
+              <AlumniHappeningsSection events={digest.events as any[]} compact />
+              <AlumniWelcomeNote />
+            </div>
+          )}
         </header>
 
         {/* Translation unavailable banner — shown when Japanese mode fails */}
@@ -609,7 +621,7 @@ export default function DigestView() {
                       : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   }`}
                 >
-                   <span>{isAtlanta || isHouston || isSF || isBoston || isLA ? "·" : cfg.emoji}</span>
+                   <span>{isLeadershipAustin || isAtlanta || isHouston || isSF || isBoston || isLA ? "·" : cfg.emoji}</span>
                   <span>{catLabel(cat)}</span>
                 </button>
               );
@@ -638,9 +650,9 @@ export default function DigestView() {
                   {geoStatus === "loading" ? (
                     <><Loader2 className="w-3.5 h-3.5 animate-spin" />Getting location…</>
                   ) : geoStatus === "active" ? (
-                      <>{isOsaka && lang === "ja" ? "距離順 ×" : isAtlanta || isHouston || isSF || isBoston || isLA ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
+                      <>{isOsaka && lang === "ja" ? "距離順 ×" : isLeadershipAustin || isAtlanta || isHouston || isSF || isBoston || isLA ? "Sorted by distance ×" : "📍 Sorted by distance ✕"}</>
                   ) : (
-                      <>{isOsaka && lang === "ja" ? "近い順" : isAtlanta || isHouston || isSF || isBoston || isLA ? "Nearest first" : "📍 Nearest first"}</>
+                      <>{isOsaka && lang === "ja" ? "近い順" : isLeadershipAustin || isAtlanta || isHouston || isSF || isBoston || isLA ? "Nearest first" : "📍 Nearest first"}</>
                   )}
                 </button>
                 {geoStatus === "denied" && (
@@ -741,11 +753,12 @@ export default function DigestView() {
 
         {(() => {
           const isAdult = (e: any) => { const t = `${e.title ?? ""} ${e.description ?? ""}`.toLowerCase(); return adultBlocklist.some(p => t.includes(p.toLowerCase())); };
-          const communityPosts = digest.events.filter((e: any) => e.isPost === true && !isAdult(e)).map(translateEvent);
-          const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true && !isAdult(e)).map(translateEvent);
+          const communityPosts = digest.events.filter((e: any) => e.isPost === true && !isAdult(e) && !(isLeadershipAustin && e.isAlumniHappening)).map(translateEvent);
+          const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true && !isAdult(e) && !(isLeadershipAustin && e.isAlumniHappening)).map(translateEvent);
           const staleCount = digest.events.filter((e: any) =>
             !e.isPost &&
             !e.isBusinessSpotlight &&
+            !(isLeadershipAustin && e.isAlumniHappening) &&
             !isMiamiFeaturedEvent(e, tenant.slug) &&
             !isAdult(e) &&
             !isEventTodayOrLater(e.date, e, digest.weekOf)
@@ -756,6 +769,7 @@ export default function DigestView() {
             !isMiamiFeaturedEvent(e, tenant.slug) &&
             !e.isPost &&
             !e.isBusinessSpotlight &&
+            !(isLeadershipAustin && e.isAlumniHappening) &&
             !isAdult(e) &&
             isEventTodayOrLater(e.date, e, digest.weekOf)
           );
@@ -802,7 +816,7 @@ export default function DigestView() {
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-6 flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {isOsaka ? (lang === "ja" ? "大阪のイベントマップ" : "Events across Osaka") : isHouston ? "Across Houston, on the map" : isAtlanta && !hasExtendedRange ? "Around Atlanta this week" : hasExtendedRange ? jt("🗺️ Upcoming events on the map", "🗺️ 今後のイベントマップ") : "🗺️ This week on the map"}
+                    {isLeadershipAustin ? "Where the community gathers" : isOsaka ? (lang === "ja" ? "大阪のイベントマップ" : "Events across Osaka") : isHouston ? "Across Houston, on the map" : isAtlanta && !hasExtendedRange ? "Around Atlanta this week" : hasExtendedRange ? jt("🗺️ Upcoming events on the map", "🗺️ 今後のイベントマップ") : "🗺️ This week on the map"}
                   </h2>
                   <EventMap
                     events={upcomingEvents}
@@ -816,7 +830,7 @@ export default function DigestView() {
               {tenant.slug === "austin" && <PrivacyFirstGroupsFeature className="mb-12" />}
 
               {/* ── Coming Soon: New Features ───────────────────────────────── */}
-              {tenant.slug !== "austin" && !isHouston && <div className="mb-12">
+              {tenant.slug !== "austin" && !isLeadershipAustin && !isHouston && <div className="mb-12">
                 <div
                   className="rounded-3xl p-8 sm:p-10 overflow-hidden relative"
                   style={{ background: "linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#0f3460 100%)" }}
@@ -985,15 +999,15 @@ export default function DigestView() {
                     )}
                     {dimmedByRadius > 0 && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
-                        {isAtlanta || isHouston ? "" : "📍 "}{dimmedByRadius} event{dimmedByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi
+                        {isLeadershipAustin || isAtlanta || isHouston ? "" : "📍 "}{dimmedByRadius} event{dimmedByRadius !== 1 ? "s" : ""} beyond {radiusFilter} mi
                       </span>
                     )}
                   </div>
                 </div>
                 {visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
-                    <p className="text-4xl mb-4">{isAtlanta || isHouston ? "✦" : CAT_CONFIG[categoryFilter].emoji}</p>
-                    <p className="text-xl font-serif font-bold text-foreground mb-2">{hasExtendedRange ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                    <p className="text-4xl mb-4">{isLeadershipAustin || isAtlanta || isHouston ? "•" : CAT_CONFIG[categoryFilter].emoji}</p>
+                    <p className="text-xl font-serif font-bold text-foreground mb-2">{isLeadershipAustin ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}programs` : hasExtendedRange ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                     <p className="text-muted-foreground text-sm mb-6">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     <button
                       onClick={() => setCategoryFilter("All")}

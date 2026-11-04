@@ -101,6 +101,14 @@ export interface SubscribersResponse {
   total: number;
 }
 
+export type EventItemAlumniHappeningType =
+  (typeof EventItemAlumniHappeningType)[keyof typeof EventItemAlumniHappeningType];
+
+export const EventItemAlumniHappeningType = {
+  event: "event",
+  news: "news",
+} as const;
+
 export interface EventItem {
   eventId?: string;
   venueId?: string;
@@ -114,12 +122,15 @@ export interface EventItem {
   venue: string;
   description: string;
   link?: string | null;
+  linkText?: string;
   category: string;
   imageUrl?: string | null;
   source?: string | null;
   featured?: boolean;
   isPost?: boolean;
   isBusinessSpotlight?: boolean;
+  isAlumniHappening?: boolean;
+  alumniHappeningType?: EventItemAlumniHappeningType;
   deadline?: string | null;
   zodiacSigns?: string[] | null;
   lat?: number | null;
@@ -138,6 +149,40 @@ export interface Digest {
 }
 
 export interface DigestResponse {
+  digest: Digest;
+}
+
+export type AlumniHappeningInputType =
+  (typeof AlumniHappeningInputType)[keyof typeof AlumniHappeningInputType];
+
+export const AlumniHappeningInputType = {
+  event: "event",
+  news: "news",
+} as const;
+
+export interface AlumniHappeningInput {
+  type: AlumniHappeningInputType;
+  /**
+   * @minLength 1
+   * @maxLength 180
+   */
+  title: string;
+  /** @maxLength 3000 */
+  description: string;
+  /** @nullable */
+  link?: string | null;
+  /** @maxLength 80 */
+  linkText?: string;
+  /** @maxLength 160 */
+  date?: string;
+  /** @maxLength 240 */
+  venue?: string;
+  /** @maxLength 80 */
+  category?: string;
+}
+
+export interface AlumniHappeningResponse {
+  success: boolean;
   digest: Digest;
 }
 

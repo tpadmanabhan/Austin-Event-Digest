@@ -222,6 +222,43 @@ paths:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
 
+  /events/digest/{id}/alumni-happenings:
+    post:
+      operationId: addAlumniHappening
+      tags: [events]
+      summary: Add a manually curated Leadership Austin alumni item (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlumniHappeningInput"
+      responses:
+        "200":
+          description: Alumni item added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlumniHappeningResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Digest not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /tenant/config:
     get:
       operationId: getTenantConfig
@@ -493,6 +530,8 @@ components:
         link:
           type: string
           nullable: true
+        linkText:
+          type: string
         category:
           type: string
         imageUrl:
@@ -507,6 +546,13 @@ components:
           type: boolean
         isBusinessSpotlight:
           type: boolean
+        isAlumniHappening:
+          type: boolean
+        alumniHappeningType:
+          type: string
+          enum:
+            - event
+            - news
         deadline:
           type: string
           nullable: true
@@ -569,6 +615,45 @@ components:
           $ref: "#/components/schemas/Digest"
       required:
         - digest
+
+    AlumniHappeningInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [event, news]
+        title:
+          type: string
+          minLength: 1
+          maxLength: 180
+        description:
+          type: string
+          maxLength: 3000
+        link:
+          type: ["string", "null"]
+          format: uri
+        linkText:
+          type: string
+          maxLength: 80
+        date:
+          type: string
+          maxLength: 160
+        venue:
+          type: string
+          maxLength: 240
+        category:
+          type: string
+          maxLength: 80
+      required: [type, title, description]
+
+    AlumniHappeningResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        digest:
+          $ref: "#/components/schemas/Digest"
+      required: [success, digest]
 
     DigestListResponse:
       type: object

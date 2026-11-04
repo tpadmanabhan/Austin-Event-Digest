@@ -580,11 +580,14 @@ type DigestEventItem = {
   description: string;
   category: string;
   link?: string | null;
+  linkText?: string | null;
   imageUrl?: string | null;
   source?: string | null;
   featured?: boolean | null;
   isBusinessSpotlight?: boolean | null;
   isPost?: boolean | null;
+  isAlumniHappening?: boolean | null;
+  alumniHappeningType?: "event" | "news" | null;
   deadline?: string | null;
   distanceMi?: number | null;
   lat?: number | null;
@@ -710,7 +713,7 @@ export function buildDigestEmailHtml(digest: {
     ? `${editionRangeMatch[1]} ${editionRangeMatch[2]} – ${editionRangeMatch[3] || editionRangeMatch[1]} ${editionRangeMatch[4]}, ${editionRangeMatch[5]}`
     : null;
   const cityName = tenant?.city?.split(",")[0] ?? "Austin";
-  const greeting = `Hey ${cityName}!`;
+  const greeting = slug === "leadershipaustin" ? "Hey alumni!" : `Hey ${cityName}!`;
   const theme = slug === "la" ? {
     headerGradient: "linear-gradient(135deg, #2d1457 0%, #552583 60%, #7541a8 100%)",
     primary: "#552583", primaryBtn: "#FDB927", primaryDark: "#2d1457",
@@ -1061,6 +1064,28 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(200,16,46,0.35)",
     rideBtnBg: "#fecdd3",
     rideBtnColor: "#152238",
+  } : slug === "leadershipaustin" ? {
+    headerGradient: "linear-gradient(135deg, #314363 0%, #243551 60%, #4EBEE7 100%)",
+    primary: "#314363",
+    primaryBtn: "#FFBA01",
+    primaryDark: "#314363",
+    primaryLight: "#F3F6FA",
+    primaryMuted: "#B0DC5F",
+    textOnDark: "#ffffff",
+    textMutedOnDark: "#e5edf4",
+    textStrong: "#314363",
+    linkColor: "#314363",
+    curatorName: "",
+    curatorUrl: null as string | null,
+    cityGuideText: "Lead with Purpose",
+    digestDisplayName: tenant?.digestTitle || "Leadership Austin",
+    headerEmoji: "",
+    eventBtnColor: "#314363",
+    eventBtnBorder: "#314363",
+    pillText: "#ffffff",
+    pillBorder: "rgba(78,190,231,0.6)",
+    rideBtnBg: "#FFBA01",
+    rideBtnColor: "#314363",
   } : slug === "austin" ? {
     headerGradient: "linear-gradient(135deg, #f1faf4 0%, #e4f3e9 58%, #d4eadb 100%)",
     primary: "#2f855a",
@@ -1286,13 +1311,19 @@ export function buildDigestEmailHtml(digest: {
   const cleanDigestEvents = digest.events.filter(
     e => !isAdultContent(e.title ?? "", e.description ?? ""),
   );
-  const miamiAttendingEvents = slug === "miami"
-    ? cleanDigestEvents.filter(e => e.featured && e.link === "https://www.miamiopen.com/")
+  const alumniHappenings = slug === "leadershipaustin"
+    ? cleanDigestEvents.filter(e => e.isAlumniHappening && (e.alumniHappeningType === "event" || e.alumniHappeningType === "news"))
     : [];
-  const featuredEvents = cleanDigestEvents.filter(e => e.featured && !miamiAttendingEvents.includes(e));
-  const bizSpotlights = cleanDigestEvents.filter(e => !e.featured && e.isBusinessSpotlight);
-  const commSpotlights = cleanDigestEvents.filter(e => !e.featured && e.isPost);
-  const regularEventsRaw = [...cleanDigestEvents.filter(e => !e.featured && !e.isBusinessSpotlight && !e.isPost)];
+  const alumniEvents = alumniHappenings.filter(e => e.alumniHappeningType === "event");
+  const alumniNews = alumniHappenings.filter(e => e.alumniHappeningType === "news");
+  const contentEvents = cleanDigestEvents.filter(e => !e.isAlumniHappening);
+  const miamiAttendingEvents = slug === "miami"
+    ? contentEvents.filter(e => e.featured && e.link === "https://www.miamiopen.com/")
+    : [];
+  const featuredEvents = contentEvents.filter(e => e.featured && !miamiAttendingEvents.includes(e));
+  const bizSpotlights = contentEvents.filter(e => !e.featured && e.isBusinessSpotlight);
+  const commSpotlights = contentEvents.filter(e => !e.featured && e.isPost);
+  const regularEventsRaw = [...contentEvents.filter(e => !e.featured && !e.isBusinessSpotlight && !e.isPost)];
   // Subscriber location can determine which section an event belongs in, but
   // the newsletter sequence stays chronological for every recipient.
   const regularEvents = regularEventsRaw.sort((a, b) => parseSortKey(a.date) - parseSortKey(b.date));
@@ -1303,6 +1334,40 @@ export function buildDigestEmailHtml(digest: {
   const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
   const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
   const alsoNearbyCards = alsoNearby.map(e => buildEventCard(e, false)).join("");
+  const alumniWelcomeHtml = slug === "leadershipaustin" ? `
+    <section style="border-left:4px solid #FFBA01; background:#F3F6FA; border-radius:4px; padding:20px 22px; margin:0 0 24px;">
+      <p style="margin:0 0 6px; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase;">A welcome to all alumni</p>
+      <h2 style="margin:0 0 10px; color:#314363; font-family:'Barlow Condensed',Arial,sans-serif; font-size:27px; line-height:1.05; text-transform:uppercase;">Stay connected. Share what’s next.</h2>
+      <p style="margin:0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.7;">Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
+      <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:700;">Alexandra Robertson</p>
+    </section>` : "";
+  const alumniHappeningsHtml = alumniHappenings.length > 0 ? `
+    <section style="margin:0 0 24px; border-radius:8px; overflow:hidden; border:1px solid #314363;">
+      <div style="background:#314363; padding:16px 20px;">
+        <p style="margin:0 0 4px; color:#4EBEE7; font-family:'Figtree',Arial,sans-serif; font-size:10px; font-weight:800; letter-spacing:2px; text-transform:uppercase;">Leadership Austin</p>
+        <h2 style="margin:0; color:#ffffff; font-family:'Barlow Condensed',Arial,sans-serif; font-size:26px; line-height:1.05; text-transform:uppercase;">Alumni Happenings</h2>
+      </div>
+      ${alumniEvents.map((event) => {
+        const link = safeHref(event.link);
+        return `<article style="padding:18px 20px; border-top:1px solid #e2e8f0; background:#ffffff;">
+          <p style="margin:0 0 6px; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Alumni event</p>
+          <h3 style="margin:0 0 8px; color:#314363; font-family:'Barlow Condensed',Arial,sans-serif; font-size:21px; line-height:1.1;">${link ? `<a href="${link}" style="color:#314363; text-decoration:none;">${escapeHtml(event.title)}</a>` : escapeHtml(event.title)}</h3>
+          ${event.date?.trim() ? `<p style="margin:0 0 6px; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:700;">${escapeHtml(event.date)}</p>` : ""}
+          ${event.venue?.trim() ? `<p style="margin:0 0 8px; color:#64748b; font-family:'Figtree',Arial,sans-serif; font-size:13px;">${escapeHtml(event.venue)}</p>` : ""}
+          ${event.description ? `<p style="margin:0 0 10px; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.65;">${escapeHtml(event.description)}</p>` : ""}
+          ${link ? `<a href="${link}" style="display:inline-block; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:12px; font-weight:800; text-decoration:underline;">${escapeHtml(event.linkText?.trim() || "Event details")}</a>` : ""}
+        </article>`;
+      }).join("")}
+      ${alumniNews.length ? `<ul style="margin:0; padding:8px 24px 20px 42px; background:#ffffff; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:14px; line-height:1.65;">
+        ${alumniNews.map((event) => {
+          const link = safeHref(event.link);
+          const action = link
+            ? ` <a href="${link}" style="color:#314363; font-weight:800; text-decoration:underline;">${escapeHtml(event.linkText?.trim() || "Learn more")}</a>`
+            : "";
+          return `<li style="margin:0 0 14px; padding-left:4px;"><strong style="color:#314363;">${escapeHtml(event.title)}</strong>${event.description ? ` — ${escapeHtml(event.description)}` : ""}${action}</li>`;
+        }).join("")}
+      </ul>` : ""}
+    </section>` : "";
    const miamiAttendingCards = miamiAttendingEvents.map(event => {
      const rsvpLink = digest.digestId && digest.siteUrl && subscriberEmail
        ? buildRsvpUrl(digest.siteUrl, digest.digestId, event.title, subscriberEmail, subscriberName, digest.weekOf)
@@ -1350,8 +1415,18 @@ export function buildDigestEmailHtml(digest: {
   `;
   };
 
-  const bizSpotlightCards = bizSpotlights.map(e => buildSpotlightCard(e, "#0369a1", "Business Spotlight", "💼")).join("");
-  const commSpotlightCards = commSpotlights.map(e => buildSpotlightCard(e, "#15803d", "Community Spotlight", "🙌")).join("");
+  const bizSpotlightCards = bizSpotlights.map(e => buildSpotlightCard(
+    e,
+    slug === "leadershipaustin" ? "#314363" : "#0369a1",
+    "Business Spotlight",
+    slug === "leadershipaustin" ? "" : "💼",
+  )).join("");
+  const commSpotlightCards = commSpotlights.map(e => buildSpotlightCard(
+    e,
+    slug === "leadershipaustin" ? "#314363" : "#15803d",
+    "Community Spotlight",
+    slug === "leadershipaustin" ? "" : "🙌",
+  )).join("");
 
   return `
 <!DOCTYPE html>
@@ -1360,8 +1435,9 @@ export function buildDigestEmailHtml(digest: {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(digest.subject)}</title>
+  ${slug === "leadershipaustin" ? `<style>@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap');h1,h2,h3{font-family:'Barlow Condensed',Arial,sans-serif!important}body,p,a,div{font-family:'Figtree',Arial,sans-serif}</style>` : ""}
 </head>
-<body style="margin:0; padding:0; background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<body style="margin:0; padding:0; background:#ffffff; font-family:${slug === "leadershipaustin" ? "'Figtree',Arial,sans-serif" : "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"};">
   <div style="max-width:600px; margin:0 auto; padding:20px;">
     
     <!-- Header -->
@@ -1371,15 +1447,16 @@ export function buildDigestEmailHtml(digest: {
       ${slug === "nyc" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/nyc-mark.svg", digest.siteUrl).toString() : "https://nyc.irl.group/images/nyc-mark.svg")}" alt="New York City mark" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       ${slug === "dallas" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/dallas-mark.svg", digest.siteUrl).toString() : "https://dallas.irl.group/images/dallas-mark.svg")}" alt="Dallas skyline mark" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
       ${slug === "manchester" ? `<img src="${escapeHtml(digest.siteUrl ? new URL("/images/manchester-mark.svg", digest.siteUrl).toString() : "https://manchester.irl.group/images/manchester-mark.svg")}" alt="Manchester worker bee" width="58" height="58" style="display:block; margin:0 auto 12px; width:58px; height:58px;" />` : ""}
-      <h1 style="margin:0 0 6px; font-size:26px; font-weight:800; letter-spacing:-0.5px;">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:${theme.textOnDark}; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:${theme.textOnDark};">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
-      <div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
+      ${slug === "leadershipaustin" ? `<div aria-hidden="true" style="display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; margin:0 auto 10px; border:1px solid #4EBEE7; color:#ffffff; font-family:'Barlow Condensed',Arial,sans-serif; font-size:20px; font-weight:800; letter-spacing:1px;">LA</div>` : ""}
+      <h1 style="margin:0 0 6px; font-family:${slug === "leadershipaustin" ? "'Barlow Condensed',Arial,sans-serif" : "inherit"}; font-size:30px; font-weight:800; letter-spacing:-0.5px; text-transform:${slug === "leadershipaustin" ? "uppercase" : "none"};">${digest.siteUrl ? `<a href="${escapeHtml(digest.siteUrl)}" style="color:${theme.textOnDark}; text-decoration:none;">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</a>` : `<span style="color:${theme.textOnDark};">${theme.headerEmoji} ${escapeHtml(theme.digestDisplayName)}</span>`}</h1>
+      ${slug !== "leadershipaustin" ? `<div style="display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">
         <div style="display:inline-block; background:${theme.primaryBtn}; border-radius:6px; padding:2px 8px;">
           <span style="color:${theme.primaryDark}; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase;">Beta</span>
         </div>
-      </div>
+      </div>` : ""}
       <p style="margin:0; color:${theme.textOnDark}; font-size:14px;">${theme.cityGuideText}</p>
       ${editionRange ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">${escapeHtml(editionRange)}</p>` : ""}
-      ${slug !== "austin" && !editionRange ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">Week of ${weekDate}</p>` : ""}
+      ${slug !== "austin" && slug !== "leadershipaustin" && !editionRange ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:13px;">Week of ${weekDate}</p>` : ""}
       ${theme.curatorName ? `<p style="margin:8px 0 0; color:${theme.textMutedOnDark}; font-size:12px; font-style:italic;">Curated by ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.textMutedOnDark}; text-decoration:underline;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
     </div>
 
@@ -1389,13 +1466,16 @@ export function buildDigestEmailHtml(digest: {
       ${theme.curatorName ? `<p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
     </div>
 
+    ${alumniWelcomeHtml}
+    ${alumniHappeningsHtml}
+
     ${slug === "austin" ? buildAustinAiEthicsSection() : ""}
     ${slug === "sanfrancisco" ? buildSanFranciscoAiEthicsSection() : ""}
     ${slug === "sacramento" ? buildSacramentoAiEthicsSection() : ""}
     ${slug === "miami" ? buildMiamiAiEthicsSection() : ""}
     ${slug === "boston" ? buildBostonAiEthicsSection() : ""}
     ${slug === "la" ? buildLaAiEthicsSection() : ""}
-    ${buildCityAiEthicsSection(slug ?? "")}
+    ${slug === "leadershipaustin" ? "" : buildCityAiEthicsSection(slug ?? "")}
 
     <!-- Location CTA -->
     ${digest.preferencesUrl ? `
@@ -1439,7 +1519,7 @@ export function buildDigestEmailHtml(digest: {
       <a href="${escapeHtml(digest.siteUrl)}" style="display:inline-block; background:#dc2626; color:#fff; font-size:14px; font-weight:700; text-decoration:none; padding:11px 26px; border-radius:100px; letter-spacing:-0.1px;">View full edition →</a>
     </div>` : ""}
 
-    ${buildStaticMapSection(cleanDigestEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
+    ${buildStaticMapSection(contentEvents, slug ?? undefined, digest.siteUrl ?? undefined, digest.digestId)}
 
     <!-- Austin privacy-first Groups feature -->
     ${slug === "austin" ? `

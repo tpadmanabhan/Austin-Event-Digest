@@ -25,6 +25,8 @@ import { LaAiEthicsSection } from "@/components/la-ai-ethics-section";
 import { CityAiEthicsSection } from "@/components/city-ai-ethics-section";
 import { PrivacyFirstGroupsFeature } from "@/components/privacy-first-groups-feature";
 import { LA_HERO_IMAGE_URL } from "@/lib/city-share-image";
+import { AlumniHappeningsSection } from "@/components/alumni-happenings-section";
+import { AlumniWelcomeNote } from "@/components/alumni-welcome-note";
 
 const SHOW_AUSTIN_CARES = true;
 
@@ -192,6 +194,7 @@ export default function Home() {
   const isManchester = tenant.slug === "manchester";
   const isNYC = tenant.slug === "nyc";
   const isDallas = tenant.slug === "dallas";
+  const isLeadershipAustin = tenant.slug === "leadershipaustin";
   const isJapaneseEdition = isToky || isOsaka;
   const [homeTranslatedMap, setHomeTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
   const [homeTranslating, setHomeTranslating] = useState(false);
@@ -394,7 +397,7 @@ export default function Home() {
       </Dialog>
 
       {/* ANNOUNCEMENT BANNER */}
-      {!isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && !isLA && !isManchester && !isNYC && !isDallas && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm flex items-center justify-center gap-3 flex-wrap">
+      {!isLeadershipAustin && !isAtlanta && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && !isLA && !isManchester && !isNYC && !isDallas && <div className="bg-primary/10 border-b border-primary/20 py-2.5 px-4 text-center text-sm flex items-center justify-center gap-3 flex-wrap">
         <span>
           <span className="font-semibold text-primary">Coming Soon:</span>{" "}
           <span className="text-foreground/80">Build the local events guide for your city or neighborhood:</span>{" "}
@@ -412,7 +415,7 @@ export default function Home() {
       </div>}
 
       {/* HERO SECTION */}
-      <section className={`relative overflow-hidden bg-background py-6 sm:py-10 ${isDallas ? "dallas-home-hero sm:py-16 lg:py-20" : isNYC ? "nyc-home-hero sm:py-16 lg:py-20" : isManchester ? "manchester-home-hero sm:py-16 lg:py-20" : isOsaka ? "osaka-home-hero sm:py-16 lg:py-20" : isHouston ? "houston-home-hero sm:py-16 lg:py-20" : isSF ? "sf-home-hero sm:py-16 lg:py-20" : isMiami ? "miami-home-hero sm:py-16 lg:py-20" : isBoston ? "boston-home-hero sm:py-16 lg:py-20" : isLA ? "la-home-hero sm:py-16 lg:py-20" : ""}`}>
+      <section className={`relative overflow-hidden bg-background py-6 sm:py-10 ${isLeadershipAustin ? "leadership-home-hero sm:py-16 lg:py-20" : isDallas ? "dallas-home-hero sm:py-16 lg:py-20" : isNYC ? "nyc-home-hero sm:py-16 lg:py-20" : isManchester ? "manchester-home-hero sm:py-16 lg:py-20" : isOsaka ? "osaka-home-hero sm:py-16 lg:py-20" : isHouston ? "houston-home-hero sm:py-16 lg:py-20" : isSF ? "sf-home-hero sm:py-16 lg:py-20" : isMiami ? "miami-home-hero sm:py-16 lg:py-20" : isBoston ? "boston-home-hero sm:py-16 lg:py-20" : isLA ? "la-home-hero sm:py-16 lg:py-20" : ""}`}>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--color-primary)_0%,transparent_40%)] opacity-5" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -426,12 +429,14 @@ export default function Home() {
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4 border border-secondary/20">
                 <Sparkles className="w-4 h-4" />
-          <span>{isDallas ? "DALLAS / NORTH TEXAS FIELD GUIDE" : isNYC ? "NEW YORK CITY / FIVE-BOROUGH FIELD GUIDE" : isManchester ? "MANCHESTER / CITYWIDE FIELD GUIDE" : isOsaka ? (lang === "ja" ? "大阪 / 街のイベントガイド" : "OSAKA / THE CITYWIDE FIELD GUIDE") : isLA ? "LOS ANGELES / PACIFIC COAST EDITION" : isBoston ? "BOSTON / CHARLES RIVER EDITION" : isMiami ? "MIAMI / BAYFRONT EDITION" : isSacramento ? "SACRAMENTO / CAPITAL CITY EDITION" : isSF ? "SAN FRANCISCO / FOG CITY EDITION" : isHouston ? "HOUSTON / CITYWIDE FIELD GUIDE" : isAtlanta ? "Citywide, one good plan at a time." : jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
+                <span>{isLeadershipAustin ? "ALUMNI & COMMUNITY · AUSTIN, TEXAS" : isDallas ? "DALLAS / NORTH TEXAS FIELD GUIDE" : isNYC ? "NEW YORK CITY / FIVE-BOROUGH FIELD GUIDE" : isManchester ? "MANCHESTER / CITYWIDE FIELD GUIDE" : isOsaka ? (lang === "ja" ? "大阪 / 街のイベントガイド" : "OSAKA / THE CITYWIDE FIELD GUIDE") : isLA ? "LOS ANGELES / PACIFIC COAST EDITION" : isBoston ? "BOSTON / CHARLES RIVER EDITION" : isMiami ? "MIAMI / BAYFRONT EDITION" : isSacramento ? "SACRAMENTO / CAPITAL CITY EDITION" : isSF ? "SAN FRANCISCO / FOG CITY EDITION" : isHouston ? "HOUSTON / CITYWIDE FIELD GUIDE" : isAtlanta ? "Citywide, one good plan at a time." : jt(`The best of ${cityShortName}, hand-picked for you`, JA.bestOf(cityShortName))}</span>
               </div>
               
-              <h1 className={`text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1] ${isHouston || isSF || isMiami || isBoston || isLA ? "lg:text-[4.5rem]" : ""}`}>
-                {isDallas ? "Dallas, let's go." : isNYC ? "Five boroughs." : isManchester ? "Manchester," : isOsaka ? (lang === "ja" ? "大阪で、" : "Osaka,") : isLA ? "City to the coast." : isBoston ? "Both banks of the river." : isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} <br/>
-                {isDallas ? (
+              <h1 className={`text-4xl sm:text-5xl font-bold font-serif text-balance text-foreground mb-4 leading-[1.1] ${isLeadershipAustin ? "max-w-[11ch]" : ""} ${isHouston || isSF || isMiami || isBoston || isLA ? "lg:text-[4.5rem]" : ""}`}>
+                {isLeadershipAustin ? <>Leadership<br />Austin</> : isDallas ? "Dallas, let's go." : isNYC ? "Five boroughs." : isManchester ? "Manchester," : isOsaka ? (lang === "ja" ? "大阪で、" : "Osaka,") : isLA ? "City to the coast." : isBoston ? "Both banks of the river." : isMiami ? "Salt air. Many languages." : isSacramento ? "Big ideas. Local plans." : isSF ? "Forty-nine square miles." : isHouston ? "Houston doesn't" : isAtlanta ? "Your city is calling." : jt("Stop scrolling.", JA.stopScrolling)} {!isLeadershipAustin && <br/>}
+                {isLeadershipAustin ? (
+                  <>Lead with <span className="text-primary italic">Purpose.</span></>
+                ) : isDallas ? (
                   <>Find your <span className="text-primary italic">next good plan.</span></>
                 ) : isAustinCares ? (
                   <>Start <span className="text-primary italic">helping</span>.</>
@@ -463,7 +468,9 @@ export default function Home() {
               </h1>
               
               <p className="text-base text-muted-foreground mb-5 leading-relaxed max-w-xl">
-                {isDallas
+                {isLeadershipAustin
+                  ? "A practical weekly home for Leadership Austin alumni and neighbors: discover upcoming programs, reconnect with your network, and share the local stories shaping our city."
+                  : isDallas
                   ? "From downtown Dallas to neighborhoods across North Texas, find verified tech, arts, sports, civic and wellness plans for October 23–31, with links back to organizers."
                   : isNYC
                   ? "From Staten Island’s Greenbelt to the Bronx, Queens, Brooklyn and Manhattan, find verified local plans across all five boroughs. October 23–31, 2026."
@@ -500,7 +507,9 @@ export default function Home() {
 
               <div className={`mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl ${isDallas ? "dallas-fieldnote" : ""}`}>
                 <p className="text-foreground/90 leading-relaxed text-base italic whitespace-pre-line">
-                  {isAustinCares
+                  {isLeadershipAustin
+                    ? "A community is built between the big moments. Find a gathering worth making time for, and a story worth passing along."
+                    : isAustinCares
                     ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek."`
                     : isDallas
                     ? "Dallas is a city of neighborhoods and big horizons. This first edition brings together local culture, a Mavericks home opener, outdoor plans and a verified AI and technology meetup, with links to organizers so you can check details before heading out."
@@ -549,16 +558,16 @@ export default function Home() {
                 )}
               </div>
 
-              {tenant.slug === "austin" && <AiEthicsSection className="mb-8 max-w-xl" />}
+              {!isLeadershipAustin && tenant.slug === "austin" && <AiEthicsSection className="mb-8 max-w-xl" />}
               {isLA && <LaAiEthicsSection className="mb-8 max-w-xl" />}
               {isSF && <SfAiEthicsSection className="mb-8 max-w-xl" />}
               {isSacramento && <SacramentoAiEthicsSection className="mb-8 max-w-xl" />}
               {isBoston && <BostonAiEthicsSection className="mb-8 max-w-xl" />}
-              <CityAiEthicsSection
+              {!isLeadershipAustin && <CityAiEthicsSection
                 slug={tenant.slug}
                 lang={isJapaneseEdition && lang === "ja" ? "ja" : "en"}
                 className="mb-8 max-w-xl"
-              />
+              />}
 
               <div id="subscribe" className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/60 scroll-mt-24">
                 <SubscribeForm />
@@ -623,11 +632,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <div className="max-w-2xl">
-              <h2 className="font-serif text-4xl font-bold mb-4">{isDallas ? "Dallas, on your calendar." : isBoston ? "The edition, neighborhood by neighborhood." : isSF ? "The city, block by block." : isHouston ? "The city, on your calendar." : jt("Inside the Latest Issue", JA.insideLatestIssue)}</h2>
+              <h2 className="font-serif text-4xl font-bold mb-4">{isLeadershipAustin ? "The community, in motion." : isDallas ? "Dallas, on your calendar." : isBoston ? "The edition, neighborhood by neighborhood." : isSF ? "The city, block by block." : isHouston ? "The city, on your calendar." : jt("Inside the Latest Issue", JA.insideLatestIssue)}</h2>
               <p className="text-muted-foreground text-lg">
-                {isDallas ? "A first look at the October 23–31 Dallas edition. Filter by category, check the map, and follow each organizer’s link for current details." : isBoston ? "A look inside the Boston edition, October 14 – 31. Filter by category, check the map, and pick a plan in Allston, Eastie, JP or across the river." : isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : latestIssueRange || tenant.slug === "austin" ? jt("A look at the upcoming events in this edition.", "このエディションの今後のイベントをご覧ください。") : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
+                {isLeadershipAustin ? "Find the people, programs, and local ideas you want to keep close." : isDallas ? "A first look at the October 23–31 Dallas edition. Filter by category, check the map, and follow each organizer’s link for current details." : isBoston ? "A look inside the Boston edition, October 14 – 31. Filter by category, check the map, and pick a plan in Allston, Eastie, JP or across the river." : isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : latestIssueRange || tenant.slug === "austin" ? jt("A look at the upcoming events in this edition.", "このエディションの今後のイベントをご覧ください。") : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
               </p>
-              {latestIssueRange && (
+              {latestIssueRange && !isLeadershipAustin && (
                 <p className="mt-3 text-sm font-semibold text-primary">Events: {latestIssueRange}</p>
               )}
             </div>
@@ -673,7 +682,7 @@ export default function Home() {
                           : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                       }`}
                     >
-                       <span>{isOsaka ? "·" : isAtlanta || isHouston || isSF || isBoston ? "·" : cfg.emoji}</span>
+                        <span>{isLeadershipAustin || isOsaka || isAtlanta || isHouston || isSF || isBoston ? "·" : cfg.emoji}</span>
                       <span>{catLabel(cat)}</span>
                     </button>
                   );
@@ -686,10 +695,10 @@ export default function Home() {
           {showMap && latestDigest?.events && (
             <div className="mb-10">
               <h3 className="font-serif text-xl font-bold mb-4 flex items-center gap-2">
-                 {isOsaka ? (lang === "ja" ? "大阪のイベント開催地" : "Where this edition's events are happening") : isDallas ? "Find your way around Dallas" : isBoston ? "Find your way around Boston" : isMiami ? "Find your way around Miami" : isSacramento ? "Find your way around Sacramento" : isSF ? "Find your way around San Francisco" : isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : latestIssueRange ? jt("🗺️ Where this edition's events are happening", "🗺️ このエディションのイベント開催地") : "🗺️ Where this week's events are happening"}
+                  {isLeadershipAustin ? "Where the community gathers" : isOsaka ? (lang === "ja" ? "大阪のイベント開催地" : "Where this edition's events are happening") : isDallas ? "Find your way around Dallas" : isBoston ? "Find your way around Boston" : isMiami ? "Find your way around Miami" : isSacramento ? "Find your way around Sacramento" : isSF ? "Find your way around San Francisco" : isHouston ? "Find your way around Houston" : isAtlanta ? "Find your way around Atlanta" : latestIssueRange ? jt("🗺️ Where this edition's events are happening", "🗺️ このエディションのイベント開催地") : "🗺️ Where this week's events are happening"}
               </h3>
               <EventMap
-                events={latestDigest.events as any[]}
+                events={(latestDigest.events as any[]).filter((event: any) => !(isLeadershipAustin && event.isAlumniHappening))}
                 center={mapCenter}
                 radiusMiles={30}
                 height={340}
@@ -699,8 +708,15 @@ export default function Home() {
 
           {tenant.slug === "austin" && <PrivacyFirstGroupsFeature className="mb-10" />}
 
+          {isLeadershipAustin && (
+            <div className="mb-10 space-y-5">
+              <AlumniHappeningsSection events={(latestDigest?.events ?? []) as any[]} />
+              <AlumniWelcomeNote />
+            </div>
+          )}
+
           {/* ── Coming Soon: New Features ───────────────────────────────── */}
-           {tenant.slug !== "austin" && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && <div className="mb-10">
+           {tenant.slug !== "austin" && !isLeadershipAustin && !isHouston && !isSF && !isSacramento && !isMiami && !isBoston && <div className="mb-10">
             <div
               className="rounded-3xl p-8 sm:p-10 overflow-hidden relative"
               style={{ background: "linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#0f3460 100%)" }}
@@ -751,14 +767,15 @@ export default function Home() {
             </div>
           ) : latestDigest?.events ? (
             (() => {
-              const businessSpotlights = latestDigest.events.filter((e: any) => e.isBusinessSpotlight === true);
-              const communityPosts = latestDigest.events.filter((e: any) => e.isPost === true);
+              const businessSpotlights = latestDigest.events.filter((e: any) => e.isBusinessSpotlight === true && !(isLeadershipAustin && e.isAlumniHappening));
+              const communityPosts = latestDigest.events.filter((e: any) => e.isPost === true && !(isLeadershipAustin && e.isAlumniHappening));
               const miamiFeatured = latestDigest.events.find((e: any) => isMiamiFeaturedEvent(e, tenant.slug));
               const showMiamiFeatured = !!miamiFeatured && (categoryFilter === "All" || categoryFilter === "Sports");
               const upcomingEvents = latestDigest.events.filter((e: any) =>
                 !isMiamiFeaturedEvent(e, tenant.slug) &&
                 !e.isPost &&
                 !e.isBusinessSpotlight &&
+                !(isLeadershipAustin && e.isAlumniHappening) &&
                 isEventTodayOrLater(e.date, e)
               );
               const visibleEvents = categoryFilter === "All"
@@ -943,8 +960,8 @@ export default function Home() {
                     </div>
                   ) : businessSpotlights.length === 0 && communityPosts.length === 0 ? (
                     <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-border">
-                      <p className="text-4xl mb-3">{isAtlanta || isHouston ? "✦" : CAT_CONFIG[categoryFilter].emoji}</p>
-                      <p className="text-lg font-serif font-bold text-foreground mb-2">{latestIssueRange || isHouston || tenant.slug === "austin" ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events in this edition`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                      <p className="text-4xl mb-3">{isLeadershipAustin || isAtlanta || isHouston ? "·" : CAT_CONFIG[categoryFilter].emoji}</p>
+                      <p className="text-lg font-serif font-bold text-foreground mb-2">{isLeadershipAustin ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}programs` : latestIssueRange || isHouston || tenant.slug === "austin" ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events in this edition`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                       <p className="text-muted-foreground text-sm">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     </div>
                   ) : null}
@@ -953,7 +970,7 @@ export default function Home() {
             })()
           ) : (
             <div className="text-center py-20 bg-muted/30 rounded-3xl border border-dashed border-border">
-              <p className="text-muted-foreground">{latestIssueRange ? jt("No upcoming events found for this edition yet.", "このエディションの今後のイベントはまだありません。") : isHouston ? "The next Houston edition is on its way. Check back soon." : tenant.slug === "austin" ? "No upcoming events found for this edition yet." : "No events found for this week yet."}</p>
+              <p className="text-muted-foreground">{isLeadershipAustin ? "New programs will be posted as they are announced." : latestIssueRange ? jt("No upcoming events found for this edition yet.", "このエディションの今後のイベントはまだありません。") : isHouston ? "The next Houston edition is on its way. Check back soon." : tenant.slug === "austin" ? "No upcoming events found for this edition yet." : "No events found for this week yet."}</p>
             </div>
           )}
         </div>

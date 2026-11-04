@@ -16,6 +16,7 @@ import {
   buildWelcomeEmailHtml,
   sendWelcomeEmail,
   translateEventsForEmail,
+  formatCityNewsletterSubject,
 } from "./emailService";
 
 // ---------------------------------------------------------------------------
@@ -816,5 +817,125 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
     expect(html).not.toContain("#3b1f0a");
     // Portland city name should appear
     expect(html).toContain("Portland");
+  });
+});
+
+describe("Leadership Austin newsletter", () => {
+  it("uses alumni branding, keeps event dates, and hides the edition date", () => {
+    const html = buildDigestEmailHtml(
+      {
+        subject: "Leadership Austin — Upcoming Events",
+        intro: "Alumni Happenings, local stories, and community partners.",
+        weekOf: "2026-11-08",
+        siteUrl: "https://leadershipaustin.irl.group",
+        events: [
+          {
+            title: "Difficult Talks: Foundation for Courageous Communication",
+            date: "Monday, November 16, 9:00–11:00 AM CT",
+            venue: "",
+            description: "An expert-led workshop. Open to the community; tuition is $295.",
+            link: "https://leadershipaustin.org/event/difficult-talks-foundation-for-courageous-communication-2/",
+            category: "Programs",
+            isAlumniHappening: true,
+            alumniHappeningType: "event",
+          },
+          {
+            title: "Alumni Holiday Party: Wrapped in Community",
+            date: "Thursday, December 3, 6:00–9:00 PM CT",
+            venue: "KMFA Studio, 41 Navasota Street, Austin, TX 78702",
+            description: "A holiday gathering for Leadership Austin alumni and their guests. Plus-ones are welcome.",
+            link: "https://leadershipaustin.org/event/alumni-holiday-party/",
+            category: "Programs",
+            isAlumniHappening: true,
+            alumniHappeningType: "event",
+          },
+        {
+          title: "Annual Giving Campaign",
+          date: "",
+          venue: "",
+          description: "Leadership Austin’s annual campaign supports connected, engaged leaders who strengthen our community.",
+          link: "https://us.list-manage.com/15OL0q6eXwH?e=9e59768ab0&c2id=b7fc352d4fc12ee0142dd47245ce6312",
+          linkText: "Give to the Annual Campaign",
+          category: "Alumni News",
+          isAlumniHappening: true,
+          alumniHappeningType: "news",
+        },
+        {
+          title: "Two New LeaderLab Cohorts!",
+          date: "",
+          venue: "",
+          description: "HR and Social Impact leaders launched new executive peer circles at their Opening Retreat.",
+          link: "https://us.list-manage.com/ug9pZDQC7Zl?e=9e59768ab0&c2id=b7fc352d4fc12ee0142dd47245ce6312",
+          linkText: "Learn more",
+          category: "Alumni News",
+          isAlumniHappening: true,
+          alumniHappeningType: "news",
+        },
+        {
+          title: "Join Vision Council",
+          date: "",
+          venue: "",
+          description: "Engaged alumni can help shape Leadership Austin’s future.",
+          link: "https://us.list-manage.com/18mu6xbCKzw?e=9e59768ab0&c2id=b7fc352d4fc12ee0142dd47245ce6312",
+          linkText: "Learn More",
+          category: "Alumni News",
+          isAlumniHappening: true,
+          alumniHappeningType: "news",
+        },
+          {
+            title: "Ascension Seton",
+            date: "",
+            venue: "",
+            description: "Proud sponsor of Leadership Austin.",
+            link: "https://healthcare.ascension.org/",
+            category: "Business Spotlight",
+            isBusinessSpotlight: true,
+          },
+          {
+            title: "The Austin Common",
+            date: "",
+            venue: "",
+            description: "Amy Stansbury is a Leadership Austin alum.",
+            link: "https://theaustincommon.com/",
+            category: "Community",
+            isPost: true,
+          },
+        ],
+      },
+      null,
+      null,
+      { slug: "leadershipaustin", name: "Leadership Austin", city: "Austin, TX", digestTitle: "Leadership Austin" },
+    );
+
+    expect(html).toContain("#314363");
+    expect(html).toContain("#4EBEE7");
+    expect(html).toContain("Barlow Condensed");
+    expect(html).toContain("Figtree");
+    expect(html).toContain("Lead with Purpose");
+    expect(html).toContain("Alumni Happenings");
+    expect(html).toContain("<ul style=");
+    expect(html).toContain("Give to the Annual Campaign");
+    expect(html).toContain("Two New LeaderLab Cohorts!");
+    expect(html).toContain("Join Vision Council");
+    expect(html).toContain("Difficult Talks: Foundation for Courageous Communication");
+    expect(html).toContain("Monday, November 16, 9:00–11:00 AM CT");
+    expect(html).toContain("Thursday, December 3, 6:00–9:00 PM CT");
+    expect(html).toContain("KMFA Studio, 41 Navasota Street, Austin, TX 78702");
+    expect(html).toContain("Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.");
+    expect(html).toContain("Alexandra Robertson");
+    expect(html).toContain("Ascension Seton");
+    expect(html).toContain("The Austin Common");
+    expect(html).not.toContain("Week of November 8");
+    expect(html).not.toContain(">Beta<");
+    expect(html).not.toContain("AI Ethics");
+    expect(html.match(/Difficult Talks: Foundation for Courageous Communication/g)).toHaveLength(1);
+  });
+
+  it("formats the subject as upcoming events without an edition date", () => {
+    expect(formatCityNewsletterSubject(
+      "Leadership Austin — Week of November 8, 2026",
+      "leadershipaustin",
+      "2026-11-08",
+    )).toBe("Leadership Austin — Upcoming Events");
   });
 });

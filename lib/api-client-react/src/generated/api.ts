@@ -17,6 +17,8 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AlumniHappeningInput,
+  AlumniHappeningResponse,
   BadgesResponse,
   CityRequestInput,
   CityRequestReceipt,
@@ -870,6 +872,93 @@ export const useSendDigest = <
   TContext
 > => {
   return useMutation(getSendDigestMutationOptions(options));
+};
+
+/**
+ * @summary Add a manually curated Leadership Austin alumni item (admin)
+ */
+export const getAddAlumniHappeningUrl = (id: number) => {
+  return `/api/events/digest/${id}/alumni-happenings`;
+};
+
+export const addAlumniHappening = async (
+  id: number,
+  alumniHappeningInput: AlumniHappeningInput,
+  options?: RequestInit,
+): Promise<AlumniHappeningResponse> => {
+  return customFetch<AlumniHappeningResponse>(getAddAlumniHappeningUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(alumniHappeningInput),
+  });
+};
+
+export const getAddAlumniHappeningMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addAlumniHappening>>,
+    TError,
+    { id: number; data: BodyType<AlumniHappeningInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof addAlumniHappening>>,
+  TError,
+  { id: number; data: BodyType<AlumniHappeningInput> },
+  TContext
+> => {
+  const mutationKey = ["addAlumniHappening"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof addAlumniHappening>>,
+    { id: number; data: BodyType<AlumniHappeningInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return addAlumniHappening(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AddAlumniHappeningMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addAlumniHappening>>
+>;
+export type AddAlumniHappeningMutationBody = BodyType<AlumniHappeningInput>;
+export type AddAlumniHappeningMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Add a manually curated Leadership Austin alumni item (admin)
+ */
+export const useAddAlumniHappening = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addAlumniHappening>>,
+    TError,
+    { id: number; data: BodyType<AlumniHappeningInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof addAlumniHappening>>,
+  TError,
+  { id: number; data: BodyType<AlumniHappeningInput> },
+  TContext
+> => {
+  return useMutation(getAddAlumniHappeningMutationOptions(options));
 };
 
 /**

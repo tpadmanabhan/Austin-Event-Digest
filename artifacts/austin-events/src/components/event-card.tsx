@@ -224,6 +224,7 @@ function slugify(title: string): string {
 // ---------------------------------------------------------------------------
 
 function TellAFriendBox(_props: { event: EventItem; citySlug: string }) {
+  if (_props.citySlug === "leadershipaustin") return null;
   return (
     <div className="mt-2 pt-2.5 border-t border-border/50">
       <div className="w-full text-xs font-semibold text-muted-foreground/50 border border-muted-foreground/15 rounded-lg px-3 py-1.5 flex items-center justify-center gap-1.5 cursor-default select-none">

@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./alumniHappeningInput";
+export * from "./alumniHappeningInputType";
+export * from "./alumniHappeningResponse";
 export * from "./badge";
 export * from "./badgesResponse";
 export * from "./challengeProgress";
@@ -18,6 +21,7 @@ export * from "./digestListResponse";
 export * from "./digestResponse";
 export * from "./errorResponse";
 export * from "./eventItem";
+export * from "./eventItemAlumniHappeningType";
 export * from "./gamificationMeResponse";
 export * from "./generateDigestRequest";
 export * from "./getPublicEventMetadata200";

@@ -13,6 +13,8 @@ import {
   GenerateDigestResponse,
   SendDigestResponse,
   GetPublicEventMetadataResponse,
+  AddAlumniHappeningBody,
+  AddAlumniHappeningResponse,
 } from "@workspace/api-zod";
 import { generateSampleDigest, getStLouisSampleDigest, getNextSunday } from "../lib/digestGenerator";
 import { sendNewsletterEmail, buildDigestEmailHtml, translateEventsForEmail } from "../lib/emailService";
@@ -677,6 +679,90 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
   }
 });
 
+router.post("/digest/:id/alumni-happenings", requireAdmin, async (req, res): Promise<void> => {
+  if (req.tenant?.slug !== "leadershipaustin") {
+    res.status(404).json({ error: "not_found", message: "Alumni Happenings is not available for this tenant" });
+    return;
+  }
+
+  const id = Number.parseInt(req.params["id"] as string, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid digest id" });
+    return;
+  }
+
+  const parsed = AddAlumniHappeningBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: "invalid_request", message: "A valid type, title, and description are required" });
+    return;
+  }
+
+  const input = parsed.data;
+  const title = input.title.trim();
+  const description = input.description.trim();
+  const date = input.date?.trim() ?? "";
+  const venue = input.venue?.trim() ?? "";
+  const link = typeof input.link === "string" && input.link.trim() ? input.link.trim() : null;
+  const linkText = input.linkText?.trim() || undefined;
+  if (!title || !description) {
+    res.status(400).json({ error: "invalid_request", message: "Title and description cannot be empty" });
+    return;
+  }
+  if (input.type === "event" && !date) {
+    res.status(400).json({ error: "invalid_request", message: "An event date is required" });
+    return;
+  }
+  if (link) {
+    try {
+      const parsedUrl = new URL(link);
+      if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") throw new Error("Unsupported URL protocol");
+    } catch {
+      res.status(400).json({ error: "invalid_request", message: "Source link must be a valid HTTP or HTTPS URL" });
+      return;
+    }
+  }
+
+  try {
+    const [existing] = await db
+      .select()
+      .from(digestsTable)
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant.id)))
+      .limit(1);
+    if (!existing) {
+      res.status(404).json({ error: "not_found", message: "Digest not found" });
+      return;
+    }
+
+    const happening: EventItem = {
+      title,
+      date,
+      venue,
+      description,
+      link,
+      linkText,
+      source: link,
+      imageUrl: null,
+      category: input.category?.trim() || (input.type === "event" ? "Programs" : "Alumni News"),
+      featured: false,
+      isAlumniHappening: true,
+      alumniHappeningType: input.type,
+    };
+    const currentEvents = (existing.events as EventItem[]) || [];
+    const updatedEvents = [...currentEvents, happening];
+    const [updated] = await db
+      .update(digestsTable)
+      .set({ events: withPublicEventIds(updatedEvents, req.tenant.id, currentEvents) })
+      .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant.id)))
+      .returning();
+
+    req.log.info({ digestId: id, type: input.type, title }, "Leadership Austin Alumni Happenings item added");
+    res.json(AddAlumniHappeningResponse.parse({ success: true, digest: digestToApi(updated) }));
+  } catch (err) {
+    req.log.error({ err }, "Error adding Leadership Austin Alumni Happenings item");
+    res.status(500).json({ error: "server_error", message: "Failed to add Alumni Happenings item" });
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Parse a single event URL and return structured fields for the admin form
 // ---------------------------------------------------------------------------
@@ -1130,8 +1216,13 @@ router.post("/digest/create-empty", requireAdmin, async (req, res) => {
   try {
     const weekOf = weekOfStr ? new Date(weekOfStr) : getNextSunday();
     const dateLabel = weekOf.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    const subject = `Events — Week of ${dateLabel}`;
-    const intro = `Here's your curated digest for the week of ${dateLabel}.`;
+    const isLeadershipAustin = req.tenant!.slug === "leadershipaustin";
+    const subject = isLeadershipAustin
+      ? "Leadership Austin — Upcoming Events"
+      : `Events — Week of ${dateLabel}`;
+    const intro = isLeadershipAustin
+      ? "Alumni Happenings and community stories will be added here."
+      : `Here's your curated digest for the week of ${dateLabel}.`;
     const [inserted] = await db
       .insert(digestsTable)
       .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: [] })

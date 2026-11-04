@@ -94,6 +94,8 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant
   
   const cityIntro = customNotes
     ? `Here's your curated guide to the best events happening this week.\n\n${customNotes}\n\nGet out there and enjoy ${cityFirst}!`
+    : slug === "leadershipaustin"
+      ? "Alumni Happenings, local stories, and community partners for people who lead with purpose."
     : slug === "atlanta"
       ? `Here's your weekly roundup of Atlanta events across Tech, Arts, Sports, Civics, and Wellness. Get out there and enjoy Atlanta!`
       : slug === "houston"
@@ -107,14 +109,16 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant
       : `Here's your weekly roundup of the best events happening in our city this week.\n\nWe've got an incredible mix — live music, outdoor adventures, arts and culture, and of course great food. Get out there and enjoy it!`;
   const intro = cityIntro;
 
-  const subjectEmoji = slug === "la" || slug === "boston" || slug === "miami" || slug === "sanfrancisco" || slug === "dallas" ? "" : slug === "atlanta" ? "🍑" : slug === "houston" ? "⭐" : slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
+  const subjectEmoji = slug === "la" || slug === "boston" || slug === "miami" || slug === "sanfrancisco" || slug === "dallas" || slug === "leadershipaustin" ? "" : slug === "atlanta" ? "🍑" : slug === "houston" ? "⭐" : slug === "austincares" ? "🏷️" : slug === "stlouis" ? "⚾" : slug === "sacramento" ? "👑" : slug === "portland" ? "🌲" : slug === "bulverde" || slug === "brushycreek" ? "🌿" : slug === "tokyo" ? "🗼" : slug === "dc" ? "🏛️" : "🤠";
 
   return {
-    subject: `${subjectEmoji ? `${subjectEmoji} ` : ""}${digestName}${["la", "atlanta", "houston", "sanfrancisco", "miami", "boston", "dallas"].includes(slug ?? "") ? "" : " Events"} — Week of ${dateRange}`,
+    subject: slug === "leadershipaustin"
+      ? "Leadership Austin — Upcoming Events"
+      : `${subjectEmoji ? `${subjectEmoji} ` : ""}${digestName}${["la", "atlanta", "houston", "sanfrancisco", "miami", "boston", "dallas"].includes(slug ?? "") ? "" : " Events"} — Week of ${dateRange}`,
     intro,
     // The generic sample fixture is Austin-specific. These cities start empty
     // until real city events arrive from source adapters.
-    events: ["la", "atlanta", "houston", "sanfrancisco", "miami", "boston", "dallas"].includes(slug ?? "") ? [] : SAMPLE_EVENTS,
+    events: ["la", "atlanta", "houston", "sanfrancisco", "miami", "boston", "dallas", "leadershipaustin"].includes(slug ?? "") ? [] : SAMPLE_EVENTS,
   };
 }
 

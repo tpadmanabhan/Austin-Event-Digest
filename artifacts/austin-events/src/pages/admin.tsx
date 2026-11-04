@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe, BookmarkCheck, MapPin, RefreshCw, Pencil, Check, X, Star } from "lucide-react";
+import { Users, Mail, Settings2, Plus, Send, CheckCircle2, Trash2, Sparkles, ExternalLink, Tag, Rocket, Eye, Loader2, Car, Trophy, Link, Globe, BookmarkCheck, MapPin, RefreshCw, Pencil, Check, X, Star, Leaf, Calendar } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
@@ -183,6 +183,17 @@ export default function AdminDashboard() {
   const [eventCategory, setEventCategory] = useState("");
   const [isAddingEvent, setIsAddingEvent] = useState(false);
 
+  const [alumniType, setAlumniType] = useState<"event" | "news">("event");
+  const [alumniTitle, setAlumniTitle] = useState("");
+  const [alumniDescription, setAlumniDescription] = useState("");
+  const [alumniLink, setAlumniLink] = useState("");
+  const [alumniLinkText, setAlumniLinkText] = useState("");
+  const [alumniDate, setAlumniDate] = useState("");
+  const [alumniVenue, setAlumniVenue] = useState("");
+  const [alumniCategory, setAlumniCategory] = useState("");
+  const [alumniDigestId, setAlumniDigestId] = useState<number | null>(null);
+  const [isAddingAlumni, setIsAddingAlumni] = useState(false);
+
   const [draftDigestId, setDraftDigestId] = useState<number | null>(null);
   const [sendDialogTarget, setSendDialogTarget] = useState<number | null>(null);
   const [testEmail, setTestEmail] = useState("");
@@ -353,6 +364,18 @@ export default function AdminDashboard() {
         if (p.desc) setCommDesc(p.desc);
         if (p.deadline) setCommDeadline(p.deadline);
       }
+      const savedAlumni = localStorage.getItem(`admin_alumni_happening_${slug}`);
+      if (savedAlumni) {
+        const p = JSON.parse(savedAlumni) as { type?: "event" | "news"; title?: string; description?: string; link?: string; linkText?: string; date?: string; venue?: string; category?: string };
+        if (p.type === "event" || p.type === "news") setAlumniType(p.type);
+        if (p.title) setAlumniTitle(p.title);
+        if (p.description) setAlumniDescription(p.description);
+        if (p.link) setAlumniLink(p.link);
+        if (p.linkText) setAlumniLinkText(p.linkText);
+        if (p.date) setAlumniDate(p.date);
+        if (p.venue) setAlumniVenue(p.venue);
+        if (p.category) setAlumniCategory(p.category);
+      }
     } catch {
       // non-critical — localStorage may be unavailable or corrupt
     }
@@ -396,6 +419,14 @@ export default function AdminDashboard() {
   const handleSaveComm = () => {
     localStorage.setItem(`admin_comm_${tenant.slug}`, JSON.stringify({ url: commUrl, title: commTitle, desc: commDesc, deadline: commDeadline }));
     toast({ title: "Community spotlight saved", description: "URL, title & description will be pre-filled next visit." });
+  };
+
+  const handleSaveAlumniDraft = () => {
+    localStorage.setItem(`admin_alumni_happening_${tenant.slug}`, JSON.stringify({
+      type: alumniType, title: alumniTitle, description: alumniDescription,
+      link: alumniLink, linkText: alumniLinkText, date: alumniDate, venue: alumniVenue, category: alumniCategory,
+    }));
+    toast({ title: "Alumni Happenings draft saved", description: "This draft is saved in this browser for Leadership Austin." });
   };
 
   const onGenerateFromSources = async () => {
@@ -525,6 +556,65 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Failed to add event", description: err instanceof Error ? err.message : String(err) });
     } finally {
       setIsAddingEvent(false);
+    }
+  };
+
+  const onAddAlumniHappening = async () => {
+    if (!alumniTitle.trim() || !alumniDescription.trim()) {
+      toast({ variant: "destructive", title: "Add a title and description" });
+      return;
+    }
+    if (alumniLink.trim() && !/^https?:\/\//i.test(alumniLink.trim())) {
+      toast({ variant: "destructive", title: "Source URL must start with http or https" });
+      return;
+    }
+    setIsAddingAlumni(true);
+    try {
+      const token = sessionStorage.getItem("admin_token");
+      if (!token) throw new Error("Your admin session has expired. Sign in again.");
+      let targetDigestId = alumniDigestId;
+      if (targetDigestId === null) {
+        const createRes = await fetch("/api/events/digest/create-empty", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ weekOf: currentSunday }),
+        });
+        const createData = await createRes.json() as { digest?: { id: number }; message?: string };
+        if (!createRes.ok || !createData.digest?.id) throw new Error(createData.message || "Could not create a new digest");
+        targetDigestId = createData.digest.id;
+      }
+      const body: Record<string, string> = {
+        type: alumniType,
+        title: alumniTitle.trim(),
+        description: alumniDescription.trim(),
+      };
+      if (alumniLink.trim()) body.link = alumniLink.trim();
+      if (alumniLinkText.trim()) body.linkText = alumniLinkText.trim();
+      if (alumniType === "event" && alumniDate) body.date = alumniDate;
+      if (alumniType === "event" && alumniVenue.trim()) body.venue = alumniVenue.trim();
+      if (alumniCategory.trim()) body.category = alumniCategory.trim();
+      const res = await fetch(`/api/events/digest/${targetDigestId}/alumni-happenings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json() as { success?: boolean; digest?: unknown; message?: string };
+      if (!res.ok || data.success === false) throw new Error(data.message || "Failed to add Alumni Happening");
+      setAlumniDigestId(targetDigestId);
+      queryClient.invalidateQueries({ queryKey: ["digests"] });
+      toast({ title: `${alumniType === "event" ? "Alumni event" : "Community story"} added to digest #${targetDigestId}` });
+      setAlumniTitle("");
+      setAlumniDescription("");
+      setAlumniLink("");
+      setAlumniLinkText("");
+      setAlumniDate("");
+      setAlumniVenue("");
+      setAlumniCategory("");
+      localStorage.removeItem(`admin_alumni_happening_${tenant.slug}`);
+    } catch (err: unknown) {
+      toast({ variant: "destructive", title: "Could not add Alumni Happening", description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsAddingAlumni(false);
     }
   };
 
@@ -870,7 +960,7 @@ export default function AdminDashboard() {
                   <Sparkles className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-serif font-bold text-foreground">Welcome to {tenant.name}! 🎉</h2>
+                  <h2 className="text-lg font-serif font-bold text-foreground">{tenant.slug === "leadershipaustin" ? `Welcome to ${tenant.name}` : `Welcome to ${tenant.name}! 🎉`}</h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
                     Generate your first digest to start discovering events in {tenant.city.split(",")[0]}. It only takes a minute.
                   </p>
@@ -988,7 +1078,7 @@ export default function AdminDashboard() {
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-serif font-bold text-foreground">You're all set! 🚀</h2>
+                  <h2 className="text-lg font-serif font-bold text-foreground">{tenant.slug === "leadershipaustin" ? "You're all set" : "You're all set! 🚀"}</h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
                     Your newsletter looks great. Use the <strong>Send…</strong> button on any digest to broadcast to your subscribers whenever you're ready.
                   </p>
@@ -1347,7 +1437,7 @@ export default function AdminDashboard() {
             <div className="bg-card rounded-2xl border border-green-200 dark:border-green-900 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-green-200 dark:border-green-900 bg-green-50/60 dark:bg-green-950/30 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0 text-lg">
-                  🌿
+                  {tenant.slug === "leadershipaustin" ? <Leaf className="h-5 w-5" /> : "🌿"}
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm text-green-800 dark:text-green-200">Community Spotlight</h3>
@@ -1407,7 +1497,7 @@ export default function AdminDashboard() {
                     disabled={isAddingComm || !commUrl.trim()}
                     className="rounded-xl gap-2 bg-green-600 hover:bg-green-700 text-white flex-1"
                   >
-                    {isAddingComm ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>🌿 Add Community Spotlight</>}
+                    {isAddingComm ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>{tenant.slug === "leadershipaustin" ? "Add Community Spotlight" : "🌿 Add Community Spotlight"}</>}
                   </Button>
                   <Button variant="outline" onClick={handleSaveComm} title="Save for next visit" className="rounded-xl shrink-0 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 gap-1.5">
                     <BookmarkCheck className="w-4 h-4" />
@@ -1417,10 +1507,137 @@ export default function AdminDashboard() {
               </div>
             </div>
 
+            {tenant.slug === "leadershipaustin" && (
+              <section className="overflow-hidden rounded-2xl border border-[#314363]/20 bg-card shadow-sm" aria-labelledby="admin-alumni-title">
+                <div className="border-b border-[#314363]/15 bg-[#314363] px-6 py-5 text-white">
+                  <p className="text-[10px] font-bold uppercase tracking-[.24em] text-[#4EBEE7]">Leadership Austin</p>
+                  <h3 id="admin-alumni-title" className="mt-1 text-2xl font-bold uppercase">Alumni Happenings</h3>
+                  <p className="mt-1 max-w-xl text-sm text-white/70">Add a program or local story to the alumni community feed.</p>
+                </div>
+                <div className="space-y-4 p-6">
+                  <div className="space-y-1.5">
+                    <label htmlFor="alumni-digest-picker" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Add to digest</label>
+                    <select
+                      id="alumni-digest-picker"
+                      data-testid="select-alumni-digest"
+                      value={alumniDigestId ?? ""}
+                      onChange={(e) => setAlumniDigestId(e.target.value ? Number(e.target.value) : null)}
+                      className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">Create new digest</option>
+                      {digestsData?.digests?.map((digest) => (
+                        <option key={digest.id} value={digest.id}>
+                          #{digest.id} · {format(parseISO(new Date(digest.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(digest.events) ? digest.events.length : 0} entries
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 rounded-xl bg-muted/60 p-1">
+                    {(["event", "news"] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        data-testid={`button-alumni-type-${type}`}
+                        aria-pressed={alumniType === type}
+                        onClick={() => setAlumniType(type)}
+                        className={`rounded-lg px-3 py-2 text-sm font-semibold capitalize transition-colors ${alumniType === type ? "bg-[#314363] text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        {type === "event" ? "Event" : "News"}
+                      </button>
+                    ))}
+                  </div>
+                  <Input
+                    data-testid="input-alumni-title"
+                    aria-label="Alumni happening title"
+                    placeholder="Title"
+                    value={alumniTitle}
+                    onChange={(e) => setAlumniTitle(e.target.value)}
+                    className="rounded-xl"
+                  />
+                  <Textarea
+                    data-testid="input-alumni-description"
+                    aria-label="Alumni happening description"
+                    placeholder="Description"
+                    value={alumniDescription}
+                    onChange={(e) => setAlumniDescription(e.target.value)}
+                    className="min-h-24 resize-y rounded-xl"
+                  />
+                  <Input
+                    data-testid="input-alumni-source"
+                    type="url"
+                    aria-label="Optional source URL"
+                    placeholder="Source URL (optional)"
+                    value={alumniLink}
+                    onChange={(e) => setAlumniLink(e.target.value)}
+                    className="rounded-xl"
+                  />
+                  <Input
+                    data-testid="input-alumni-link-text"
+                    aria-label="Optional link text"
+                    placeholder="Link label (optional)"
+                    value={alumniLinkText}
+                    maxLength={80}
+                    onChange={(e) => setAlumniLinkText(e.target.value)}
+                    className="rounded-xl"
+                  />
+                  {alumniType === "event" && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input
+                        data-testid="input-alumni-date"
+                        type="text"
+                        maxLength={160}
+                        aria-label="Event date and time"
+                        placeholder="Date and time (e.g. Thursday, December 3 · 6–9 PM CT)"
+                        value={alumniDate}
+                        onChange={(e) => setAlumniDate(e.target.value)}
+                        className="rounded-xl"
+                      />
+                      <Input
+                        data-testid="input-alumni-venue"
+                        aria-label="Event venue"
+                        placeholder="Venue"
+                        value={alumniVenue}
+                        onChange={(e) => setAlumniVenue(e.target.value)}
+                        className="rounded-xl"
+                      />
+                    </div>
+                  )}
+                  <select
+                    data-testid="select-alumni-category"
+                    aria-label="Optional category"
+                    value={alumniCategory}
+                    onChange={(e) => setAlumniCategory(e.target.value)}
+                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">Category (optional)</option>
+                    {tenant.categories.map((category) => <option key={category} value={category}>{category}</option>)}
+                  </select>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      data-testid="button-add-alumni-happening"
+                      onClick={onAddAlumniHappening}
+                      disabled={isAddingAlumni || !alumniTitle.trim() || !alumniDescription.trim()}
+                      className="flex-1 gap-2 rounded-xl bg-[#314363] text-white hover:bg-[#253550]"
+                    >
+                      {isAddingAlumni ? <><Loader2 className="h-4 w-4 animate-spin" /> Adding…</> : <>Add {alumniType === "event" ? "event" : "news"}</>}
+                    </Button>
+                    <Button
+                      data-testid="button-save-alumni-draft"
+                      variant="outline"
+                      onClick={handleSaveAlumniDraft}
+                      className="gap-2 rounded-xl border-[#314363]/25 text-[#314363]"
+                    >
+                      <BookmarkCheck className="h-4 w-4" /> Save draft
+                    </Button>
+                  </div>
+                </div>
+              </section>
+            )}
+
             {/* ADD EVENT FROM URL CARD */}
             <div className="bg-card rounded-2xl border border-orange-200 dark:border-orange-900 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-orange-200 dark:border-orange-900 bg-orange-50/60 dark:bg-orange-950/30 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0 text-lg">🔗</div>
+                <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0 text-lg">{tenant.slug === "leadershipaustin" ? <Calendar className="h-4 w-4" /> : "🔗"}</div>
                 <div>
                   <h3 className="font-semibold text-sm text-orange-800 dark:text-orange-200">Add Event from URL</h3>
                   <p className="text-xs text-orange-600/80 dark:text-orange-400/80 mt-0.5">Add any event (Eventbrite, UTR, Luma, etc.) — appends to existing digest without overwriting</p>
@@ -1484,7 +1701,7 @@ export default function AdminDashboard() {
                   </label>
                 </div>
                 <Button onClick={onAddEvent} disabled={isAddingEvent || !eventUrl.trim()} className="rounded-xl gap-2 bg-orange-500 hover:bg-orange-600 text-white w-full">
-                  {isAddingEvent ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>🔗 Add Event</>}
+                  {isAddingEvent ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <>{tenant.slug === "leadershipaustin" ? "Add Event" : "🔗 Add Event"}</>}
                 </Button>
               </div>
             </div>
@@ -1688,10 +1905,10 @@ export default function AdminDashboard() {
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <span className="text-sm font-semibold text-foreground truncate">{ev.title}</span>
                                               {ev.isBusinessSpotlight && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[10px] font-bold uppercase tracking-wide">🏆 Business</span>
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[10px] font-bold uppercase tracking-wide">{tenant.slug === "leadershipaustin" ? "Business" : "🏆 Business"}</span>
                                               )}
                                               {ev.isPost && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide">🌿 Community</span>
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide">{tenant.slug === "leadershipaustin" ? "Community" : "🌿 Community"}</span>
                                               )}
                                               {ev.featured && (
                                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wide">⭐ Special</span>
@@ -1733,7 +1950,7 @@ export default function AdminDashboard() {
                                                     </span>
                                                   )
                                                 ) : (
-                                                  <span className="text-xs text-muted-foreground">📍 {ev.venue}</span>
+                                                  <span className="text-xs text-muted-foreground">{tenant.slug === "leadershipaustin" ? ev.venue : `📍 ${ev.venue}`}</span>
                                                 )
                                               )}
                                               {ev.category && (

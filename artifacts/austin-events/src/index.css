@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&family=DM+Serif+Display:ital@0;1&family=Noto+Serif+JP:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&family=DM+Serif+Display:ital@0;1&family=Figtree:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -779,6 +779,80 @@
 }
 @media (prefers-reduced-motion: reduce) {
   [data-tenant="dallas"] .dallas-hero-frame img { animation: none; }
+}
+
+/* Leadership Austin: purpose-led alumni field notes, scoped to this tenant only. */
+[data-tenant="leadershipaustin"] {
+  --background: 204 38% 96%;
+  --foreground: 218 36% 22%;
+  --border: 208 23% 83%;
+  --input: 208 23% 83%;
+  --ring: 197 76% 61%;
+  --card: 204 42% 99%;
+  --card-foreground: 218 36% 22%;
+  --card-border: 208 23% 83%;
+  --popover: 204 42% 99%;
+  --popover-foreground: 218 36% 22%;
+  --popover-border: 208 23% 83%;
+  --primary: 218 36% 29%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 197 76% 61%;
+  --secondary-foreground: 218 36% 18%;
+  --muted: 204 29% 91%;
+  --muted-foreground: 216 20% 43%;
+  --accent: 75 61% 62%;
+  --accent-foreground: 218 36% 18%;
+  --sidebar: 204 38% 95%;
+  --sidebar-foreground: 218 36% 22%;
+  --sidebar-border: 208 23% 83%;
+  --sidebar-primary: 218 36% 29%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 204 29% 91%;
+  --sidebar-accent-foreground: 218 36% 22%;
+  --sidebar-ring: 197 76% 61%;
+}
+[data-tenant="leadershipaustin"] *:not(svg) {
+  font-family: "Figtree", sans-serif;
+}
+[data-tenant="leadershipaustin"] h1,
+[data-tenant="leadershipaustin"] h1 *,
+[data-tenant="leadershipaustin"] h2,
+[data-tenant="leadershipaustin"] h2 *,
+[data-tenant="leadershipaustin"] h3,
+[data-tenant="leadershipaustin"] h3 *,
+[data-tenant="leadershipaustin"] h4 {
+  font-family: "Barlow Condensed", sans-serif;
+  letter-spacing: .01em;
+}
+[data-tenant="leadershipaustin"] .leadership-home-hero {
+  background:
+    radial-gradient(ellipse at 86% 12%, hsl(197 76% 61% / .23), transparent 37%),
+    linear-gradient(145deg, hsl(204 38% 96%), hsl(204 38% 91%));
+}
+[data-tenant="leadershipaustin"] .leadership-home-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .22;
+  background-image: radial-gradient(hsl(218 36% 29% / .22) .65px, transparent .65px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(90deg, transparent 20%, black 100%);
+}
+[data-tenant="leadershipaustin"] .leadership-home-hero h1 {
+  font-size: clamp(3.4rem, 7.3vw, 6.8rem);
+  line-height: .91;
+  letter-spacing: -.025em;
+  text-transform: uppercase;
+}
+[data-tenant="leadershipaustin"] .leadership-alumni-panel {
+  border-top: 5px solid #FFBA01;
+  background: linear-gradient(130deg, #314363, #263650);
+  color: #f4f7fa;
+  box-shadow: 0 20px 45px hsl(218 36% 22% / .16);
+}
+[data-tenant="leadershipaustin"] .leadership-alumni-panel h2 {
+  color: #f4f7fa;
 }
 
 @layer base {
