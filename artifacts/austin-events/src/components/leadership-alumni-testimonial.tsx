@@ -1,3 +1,5 @@
+import { RiLinkedinBoxFill } from "react-icons/ri";
+
 export function LeadershipAlumniTestimonial({ className = "" }: { className?: string }) {
   return (
     <section
@@ -24,6 +26,17 @@ export function LeadershipAlumniTestimonial({ className = "" }: { className?: st
           className="mt-2 inline-block text-sm font-semibold text-[#314363] underline underline-offset-2 hover:opacity-80"
         >
           LA 18 WhatsApp group
+        </a>
+        <a
+          href="https://www.linkedin.com/groups/14537139/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Emerge 18 on LinkedIn"
+          data-testid="link-emerge-18-linkedin"
+          className="mt-2 flex w-fit items-center gap-1.5 text-sm font-semibold text-[#314363] underline underline-offset-2 hover:opacity-80"
+        >
+          <RiLinkedinBoxFill aria-hidden="true" className="h-4 w-4 text-[#0A66C2]" />
+          Emerge 18
         </a>
       </div>
     </section>

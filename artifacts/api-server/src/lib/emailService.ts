@@ -1364,6 +1364,7 @@ export function buildDigestEmailHtml(digest: {
         <p style="margin:3px 0 0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:12px; font-weight:700;">Class Rep</p>
         <p style="margin:2px 0 0; color:#64748b; font-family:'Figtree',Arial,sans-serif; font-size:12px;">LA Emerge 18-2025</p>
         <a href="${escapeHtml("https://chat.whatsapp.com/BTUYOWtvqElAqCxD8ZwWGE?s=cl&p=i&mlu=4&ilr=4&iam=2as")}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:8px; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800; text-decoration:underline;">LA 18 WhatsApp group</a>
+        <a href="https://www.linkedin.com/groups/14537139/" target="_blank" rel="noopener noreferrer" aria-label="Emerge 18 on LinkedIn" style="display:block; width:max-content; margin-top:8px; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800; text-decoration:underline;"><span aria-hidden="true" style="display:inline-block; margin-right:5px; padding:1px 3px; border-radius:2px; background:#0A66C2; color:#ffffff; font-family:Arial,sans-serif; font-size:11px; font-weight:700; line-height:14px; text-decoration:none;">in</span>Emerge 18</a>
       </div>` : "";
   const alumniSourcedEventsHtml = slug === "leadershipaustin" && (digest.alumniSourcedEvents ?? []).length > 0
     ? `<section style="margin:0 0 28px;border:1px solid #314363;border-radius:12px;overflow:hidden;background:#fff;">

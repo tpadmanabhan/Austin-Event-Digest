@@ -874,7 +874,7 @@ describe("Leadership Austin newsletter", () => {
     expect(leadershipAustinHtml).not.toContain("Two new features");
   });
 
-  it("includes the LA 18 WhatsApp link below Alexandria only in Leadership Austin emails", () => {
+  it("includes the LA 18 WhatsApp and Emerge 18 LinkedIn links in order only in Leadership Austin emails", () => {
     const leadershipAustinHtml = buildDigestEmailHtml(
       { ...baseDigest, siteUrl: "https://leadershipaustin.irl.group" },
       null,
@@ -889,13 +889,20 @@ describe("Leadership Austin newsletter", () => {
     );
     const alexandriaIndex = leadershipAustinHtml.indexOf("Alexandria Robertson");
     const whatsappLinkIndex = leadershipAustinHtml.indexOf("LA 18 WhatsApp group");
+    const linkedinLinkIndex = leadershipAustinHtml.indexOf('aria-label="Emerge 18 on LinkedIn"');
 
     expect(alexandriaIndex).toBeGreaterThanOrEqual(0);
     expect(whatsappLinkIndex).toBeGreaterThan(alexandriaIndex);
+    expect(linkedinLinkIndex).toBeGreaterThan(whatsappLinkIndex);
     expect(leadershipAustinHtml).toContain(
       'href="https://chat.whatsapp.com/BTUYOWtvqElAqCxD8ZwWGE?s=cl&amp;p=i&amp;mlu=4&amp;ilr=4&amp;iam=2as"',
     );
+    expect(leadershipAustinHtml).toContain(
+      '<a href="https://www.linkedin.com/groups/14537139/" target="_blank" rel="noopener noreferrer" aria-label="Emerge 18 on LinkedIn"',
+    );
+    expect(leadershipAustinHtml).toContain('background:#0A66C2; color:#ffffff;');
     expect(austinHtml).not.toContain("LA 18 WhatsApp group");
+    expect(austinHtml).not.toContain("Emerge 18");
   });
 
   it("uses alumni branding, keeps event dates, and hides the edition date", () => {

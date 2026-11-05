@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Star, Bell, CheckCircle2, Loader2, Trophy, ExternalLink, Leaf, Calendar } from "lucide-react";
+import { RiLinkedinBoxFill } from "react-icons/ri";
 
 import { useLatestDigest, useLeadershipManagedEvents } from "@/hooks/use-events";
 import { Layout } from "@/components/layout";
@@ -589,6 +590,17 @@ export default function Home() {
                       className="mt-2 inline-block text-sm font-semibold text-[#FFBA01] underline underline-offset-2 hover:opacity-80"
                     >
                       LA 18 WhatsApp group
+                    </a>
+                    <a
+                      href="https://www.linkedin.com/groups/14537139/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Emerge 18 on LinkedIn"
+                      data-testid="link-emerge-18-linkedin"
+                      className="mt-2 flex w-fit items-center gap-1.5 text-sm font-semibold text-[#FFBA01] underline underline-offset-2 hover:opacity-80"
+                    >
+                      <RiLinkedinBoxFill aria-hidden="true" className="h-4 w-4 text-[#0A66C2]" />
+                      Emerge 18
                     </a>
                   </div>
                 ) : tenant.curatorName && (
