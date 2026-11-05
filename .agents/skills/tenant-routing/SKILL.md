@@ -1,15 +1,19 @@
 ---
 name: tenant-routing
-description: Understand multi-tenant routing on irl.group (formerly EventCarpooling). Use when adding a city or thematic tenant, debugging tenant resolution, or working on per-tenant branding, email templates, or API routing.
+description: Understand multi-tenant routing on irl.group. Use when adding a city, thematic, or organization-based tenant, debugging tenant resolution, or working on per-tenant branding, email templates, or API routing.
 ---
 
 # Tenant Routing
 
-## Geographic cities and thematic tenants
+## Geographic cities, thematic directories, and organization tenants
 
 First determine whether the requested tenant is a full geographic city edition or a narrowly scoped thematic directory. Apply the city-wide AI Ethics, AI-event, and spotlight defaults to full city editions; for a thematic tenant, follow the user's explicit content scope. Read the digest workflow's “Thematic directories and recurring activities” section when the listings are recurring or evergreen.
 
 The platform homepage's cross-city event feed currently reads the latest digest for each active tenant and displays only entries it can parse as future dated events. Evergreen schedule labels without a calendar date are omitted. Do not invent dates to force recurring activities into this feed; either keep the tenant's own directory as the discovery surface or add explicit recurrence support and verify the feed behavior.
+
+Alumni associations, cohorts, and professional communities are organization-based tenants, not automatically city editions. Read `.agents/skills/alumni-tenant-rollout/SKILL.md` when creating or adapting one. Do not apply city-wide AI-event or AI Ethics defaults, Austin branding, map bounds, or city event adapters unless the organization explicitly needs them.
+
+The current persistent `leadership-managed` event routes and feed are slug-gated to `leadershipaustin`; adding another tenant row does not provision the same event workflow. Generalize tenant configuration, event sourcing, page rendering, and email rendering rather than adding more scattered `slug === ...` checks.
 
 ## New full-city content default: AI events under Tech
 

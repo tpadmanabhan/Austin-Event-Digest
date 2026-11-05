@@ -1,6 +1,6 @@
 ---
 name: digest-workflow
-description: Generate, review, patch, and send city event digests and curate city event pages, including verified local AI events labeled Tech by default. Use for new-city event website/newsletter prompts and creating, curating, refreshing, updating, or sending editions for any city on the platform (Austin, San Francisco, Atlanta, Sacramento, Portland, St. Louis, Brushy Creek, Bulverde, Tokyo, AustinCares, etc.).
+description: Generate, review, patch, and send city or organization event newsletters. Use for city editions, alumni/cohort newsletters, and city event pages; city-wide AI event defaults apply only to geographic city guides.
 ---
 
 # Digest Workflow
@@ -24,6 +24,12 @@ Read [AI event curation](references/ai-event-curation.md) before generating, imp
 The city-wide AI Ethics and AI-event defaults above apply to full geographic city guides. If the user requests a separate, narrowly scoped directory (for example, free recurring wellness activities), honor that boundary instead of adding unrelated city events or sections.
 
 For recurring activities, verify recurrence, time, cost, audience or eligibility, and public location from organizer sources. Prefer evergreen schedule labels without invented end dates; do not invent a cadence or assign synthetic one-time dates. Distinguish free activities from optional donations, RSVP requirements, and eligibility limits. If a calendar has no current dated listing, do not invent one: show only a verified recurring schedule or link the calendar without claiming a cadence. Keep non-public addresses out of event fields, maps, coordinates, and structured data; use the confirmed area and explain when the organizer shares the exact location. Do not geocode an address disclosed only after RSVP.
+
+## Alumni and cohort newsletters
+
+For a non-geographic alumni, cohort, or professional-community tenant, read `.agents/skills/alumni-tenant-rollout/SKILL.md`. Do not apply city-guide research defaults unless the tenant also serves as a geographic city edition.
+
+Some organization event feeds are stored independently from weekly `digests.events` and appended dynamically by the authenticated email preview/send handlers. Inspect the target tenant's actual data path before editing a digest: do not duplicate persistent events in the weekly array, and do not assume an existing tenant-specific feed or email callout is enabled for a new slug. Verify the landing page, full edition, and authenticated email preview separately. Template changes require publication; event-source edits require the tenant-scoped production API.
 
 ## Keep digests readable publicly
 

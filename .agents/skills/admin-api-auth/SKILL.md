@@ -1,6 +1,6 @@
 ---
 name: admin-api-auth
-description: Authenticate with city admin APIs. Use when making admin API calls for any city on the platform — generating digests, sending emails, patching events, etc. Two different token patterns exist depending on the city.
+description: Authenticate with city and organization-tenant admin APIs. Use when making admin API calls for cities, alumni associations, cohorts, or other tenants; inspect the target tenant because authentication patterns can differ.
 ---
 
 # Admin API Auth
@@ -88,12 +88,13 @@ Pass as a Bearer header:
 Authorization: Bearer <token>
 ```
 
-## Which Cities Use Which Pattern
+## Which Tenants Use Which Pattern
 
-| City | Slug | Pattern | Notes |
+| Tenant | Slug | Pattern | Notes |
 |------|------|---------|-------|
 | Austin | `austin` | Password-hash | Re-query the target environment; startup re-hashes when `ADMIN_PASSWORD` is configured |
 | AustinCares | `austincares` | Password-hash | Query the target environment; do not assume Austin's startup hash rotation applies |
+| Leadership Austin | `leadershipaustin` | Email-based HMAC | Current production has a null `password_hash`; re-check the target environment, tenant ID, and admin email before use |
 | Tokyo | `tokyo` | Email-based | Look up target-environment tenant ID and email |
 | Sacramento | `sacramento` | Email-based | null passwordHash |
 | Portland | `portland` | Email-based | null passwordHash |
@@ -102,6 +103,8 @@ Authorization: Bearer <token>
 | Brushy Creek | `brushycreek` | Email-based | null passwordHash |
 | DC | `dc` | Email-based | Look up target-environment tenant ID and email |
 | Atlanta | `atlanta` | Inspect target tenant | Password-hash auth verified for the current development and production tenants; re-query rather than assume |
+
+The Leadership Austin production auth pattern is an observed tenant configuration, not a default for future alumni or cohort tenants. Inspect each target environment and use its configured pattern.
 
 ## Updating Tenant Branding (name, digestTitle, etc.)
 
