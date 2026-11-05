@@ -35,6 +35,7 @@ export * from "./leadershipManagedEvent";
 export * from "./leadershipManagedEventInput";
 export * from "./leadershipManagedEventResponse";
 export * from "./leadershipManagedEventsResponse";
+export * from "./leadershipManagedEventUpdate";
 export * from "./managedEventRsvpCount";
 export * from "./managedEventRsvpRequest";
 export * from "./managedEventRsvpResponse";

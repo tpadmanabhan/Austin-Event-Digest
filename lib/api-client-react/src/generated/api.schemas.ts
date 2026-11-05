@@ -249,6 +249,14 @@ export type LeadershipManagedEvent = EventItem & {
   updatedAt: string;
 };
 
+export interface LeadershipManagedEventUpdate {
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  sourceAlumni: string;
+}
+
 export interface LeadershipManagedEventsResponse {
   events: LeadershipManagedEvent[];
 }

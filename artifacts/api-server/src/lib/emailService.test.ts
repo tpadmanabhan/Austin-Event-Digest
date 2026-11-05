@@ -833,7 +833,7 @@ describe("Leadership Austin newsletter", () => {
       description: "A get-together shared by alumni.",
       link: "https://example.com/alumni-gathering",
       category: "Community",
-      sourceAlumni: "Amy Stansbury",
+      sourceAlumni: "Lizzie Francis",
       managedEventId: 42,
       lat: 30.311664,
       lng: -97.6902159,
@@ -862,6 +862,7 @@ describe("Leadership Austin newsletter", () => {
     expect(austinHtml).toContain("Austin Cares");
     expect(leadershipAustinHtml).toContain(event.title);
     expect(leadershipAustinHtml).toContain("Upcoming community events");
+    expect(leadershipAustinHtml).toContain("Shared by Lizzie Francis");
     expect(leadershipAustinHtml).toContain("✨ Interested?");
     expect(leadershipAustinHtml).toContain("https://leadershipaustin.irl.group/rsvp?m=42");
     expect(leadershipAustinHtml).toContain("Alumni and community event locations in Austin");
@@ -871,6 +872,30 @@ describe("Leadership Austin newsletter", () => {
     expect(austinHtml).not.toContain("Alumni and community event locations in Austin");
     expect(leadershipAustinHtml).not.toContain("Austin Cares");
     expect(leadershipAustinHtml).not.toContain("Two new features");
+  });
+
+  it("includes the LA 18 WhatsApp link below Alexandria only in Leadership Austin emails", () => {
+    const leadershipAustinHtml = buildDigestEmailHtml(
+      { ...baseDigest, siteUrl: "https://leadershipaustin.irl.group" },
+      null,
+      null,
+      { slug: "leadershipaustin", name: "Leadership Austin", city: "Austin, TX" },
+    );
+    const austinHtml = buildDigestEmailHtml(
+      { ...baseDigest, siteUrl: "https://austin.irl.group" },
+      null,
+      null,
+      { slug: "austin", name: "Austin Events", city: "Austin, TX" },
+    );
+    const alexandriaIndex = leadershipAustinHtml.indexOf("Alexandria Robertson");
+    const whatsappLinkIndex = leadershipAustinHtml.indexOf("LA 18 WhatsApp group");
+
+    expect(alexandriaIndex).toBeGreaterThanOrEqual(0);
+    expect(whatsappLinkIndex).toBeGreaterThan(alexandriaIndex);
+    expect(leadershipAustinHtml).toContain(
+      'href="https://chat.whatsapp.com/BTUYOWtvqElAqCxD8ZwWGE?s=cl&amp;p=i&amp;mlu=4&amp;ilr=4&amp;iam=2as"',
+    );
+    expect(austinHtml).not.toContain("LA 18 WhatsApp group");
   });
 
   it("uses alumni branding, keeps event dates, and hides the edition date", () => {

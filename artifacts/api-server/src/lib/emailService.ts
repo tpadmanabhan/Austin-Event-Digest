@@ -1363,6 +1363,7 @@ export function buildDigestEmailHtml(digest: {
         <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800;">Alexandria Robertson</p>
         <p style="margin:3px 0 0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:12px; font-weight:700;">Class Rep</p>
         <p style="margin:2px 0 0; color:#64748b; font-family:'Figtree',Arial,sans-serif; font-size:12px;">LA Emerge 18-2025</p>
+        <a href="${escapeHtml("https://chat.whatsapp.com/BTUYOWtvqElAqCxD8ZwWGE?s=cl&p=i&mlu=4&ilr=4&iam=2as")}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:8px; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800; text-decoration:underline;">LA 18 WhatsApp group</a>
       </div>` : "";
   const alumniSourcedEventsHtml = slug === "leadershipaustin" && (digest.alumniSourcedEvents ?? []).length > 0
     ? `<section style="margin:0 0 28px;border:1px solid #314363;border-radius:12px;overflow:hidden;background:#fff;">

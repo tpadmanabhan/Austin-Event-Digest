@@ -294,6 +294,41 @@ paths:
                 $ref: "#/components/schemas/LeadershipManagedEventsResponse"
 
   /events/leadership-managed/{id}:
+    patch:
+      operationId: updateLeadershipManagedEvent
+      tags: [events]
+      summary: Update the alumni source for a persistent Leadership Austin event (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadershipManagedEventUpdate"
+      responses:
+        "200":
+          description: Event updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadershipManagedEventResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       operationId: archiveLeadershipManagedEvent
       tags: [events]
@@ -878,6 +913,15 @@ components:
               type: string
               format: date-time
           required: [id, isActive, createdAt, updatedAt]
+
+    LeadershipManagedEventUpdate:
+      type: object
+      properties:
+        sourceAlumni:
+          type: string
+          minLength: 1
+          maxLength: 120
+      required: [sourceAlumni]
 
     LeadershipManagedEventsResponse:
       type: object
