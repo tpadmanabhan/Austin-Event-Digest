@@ -420,7 +420,7 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
   const { citySlug } = useDomain();
   const managedEventId = event.managedEventId;
   const cardSlug = slugify(event.title);
-  const cardId = event.eventId || cardSlug;
+  const cardId = managedEventId ? `managed-${managedEventId}` : event.eventId || cardSlug;
   const interestRequested = typeof window !== "undefined" && window.location.hash === `#event-${cardId}`;
   useEffect(() => {
     if (!interestRequested) return;
@@ -516,7 +516,7 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
               event.title
             )}
           </h3>
-          {event.eventId && !event.isPost && !event.isBusinessSpotlight && citySlug !== "austincares" && (
+          {!managedEventId && event.eventId && !event.isPost && !event.isBusinessSpotlight && citySlug !== "austincares" && (
             <a href={`${import.meta.env.BASE_URL}events/${event.eventId}/${cardSlug}`} className="inline-block mt-2 text-sm font-semibold text-primary underline underline-offset-4">
               Event details and venue
             </a>

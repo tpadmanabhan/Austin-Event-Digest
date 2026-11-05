@@ -582,6 +582,14 @@ export default function Home() {
                     <p className="leadership-testimonial-name text-sm font-semibold text-foreground">Alexandria Robertson</p>
                     <p className="leadership-testimonial-meta text-xs font-medium tracking-wide text-muted-foreground">Class Rep</p>
                     <p className="leadership-testimonial-meta text-xs tracking-wide text-muted-foreground">LA Emerge 18-2025</p>
+                    <a
+                      href="https://chat.whatsapp.com/BTUYOWtvqElAqCxD8ZwWGE?s=cl&p=i&mlu=4&ilr=4&iam=2as"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-block text-sm font-semibold text-[#FFBA01] underline underline-offset-2 hover:opacity-80"
+                    >
+                      LA 18 WhatsApp group
+                    </a>
                   </div>
                 ) : tenant.curatorName && (
                   <p className="mt-3 text-sm font-semibold text-primary not-italic">

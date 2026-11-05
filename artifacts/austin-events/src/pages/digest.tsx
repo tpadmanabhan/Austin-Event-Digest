@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
-import { useAllDigests, useLatestDigest } from "@/hooks/use-events";
+import { useAllDigests, useLatestDigest, useLeadershipManagedEvents } from "@/hooks/use-events";
 import { format, parseISO } from "date-fns";
 import { Calendar, ArrowLeft, Leaf, ExternalLink, Trophy, Loader2 } from "lucide-react";
 import { Link } from "wouter";
@@ -253,7 +253,7 @@ function formatJapaneseEditionDateRange(range: string): string {
   return range;
 }
 
-type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";
+type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" | "Programs";
 
 const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
   All:     { label: "All Events", emoji: "✦" },
@@ -262,11 +262,13 @@ const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
   Sports:  { label: "Sports",     emoji: "🏃" },
   Civics:  { label: "Civics",     emoji: "🏛️" },
   Wellness:{ label: "Wellness",   emoji: "🧘" },
+  Programs:{ label: "Programs",   emoji: "📘" },
 };
 
-function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" {
+function getDisplayCategory(event: { category: string; title: string; description?: string }, includePrograms = false): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" | "Programs" {
   const cat = (event.category || "").toLowerCase().trim();
   // Handle both new single-word values and legacy multi-word stored values
+  if (includePrograms && cat.includes("program")) return "Programs";
   if (cat.includes("tech") || cat.includes("business") || cat.includes("startup")) return "Tech";
   if (cat.includes("wellness") || cat.includes("meditation") || cat.includes("mindfulness") || cat.includes("yoga") || cat.includes("pilates")) return "Wellness";
   if (cat.includes("sports") || cat.includes("fitness") || cat.includes("outdoor") || cat.includes("sport")) return "Sports";
@@ -282,6 +284,14 @@ function getDisplayCategory(event: { category: string; title: string; descriptio
 }
 
 function parseEventDateForSort(dateStr: string): number {
+  const isoMatch = dateStr.match(/^\d{4}-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/);
+  if (isoMatch) {
+    const month = Number(isoMatch[1]);
+    const day = Number(isoMatch[2]);
+    const hours = Number(isoMatch[3] ?? 0);
+    const minutes = Number(isoMatch[4] ?? 0);
+    return (month - 1) * 46080 + day * 1440 + hours * 60 + minutes;
+  }
   // Handles: "Sunday, Jun 7", "Wednesday, Jun 10 at 7:00 AM", "Thu, Jun 11 - Fri, Jun 12"
   const match = dateStr.match(/([A-Z][a-z]{2})\s+(\d+)/);
   if (!match) return Number.MAX_SAFE_INTEGER; // undated events sink to bottom
@@ -299,6 +309,23 @@ function parseEventDateForSort(dateStr: string): number {
   }
   // Use 1440 (minutes/day) so any within-day time never outweighs a day difference
   return month * 46080 + day * 1440 + hours * 60 + minutes;
+}
+
+function eventIdentityKey(event: { title?: string; date?: string; startDate?: string }): string {
+  const title = String(event.title ?? "").normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ");
+  const rawDate = String(event.startDate || event.date || "");
+  const isoDate = rawDate.match(/^\d{4}-\d{2}-\d{2}/)?.[0];
+  if (isoDate) return `${title}|${isoDate}`;
+
+  const namedDate = rawDate.match(/\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})\b/i);
+  if (namedDate) {
+    const month = MONTH_MAP[namedDate[1].slice(0, 3).replace(/^./, c => c.toUpperCase())];
+    if (month !== undefined) {
+      const day = String(Number(namedDate[2])).padStart(2, "0");
+      return `${title}|${namedDate[3]}-${String(month + 1).padStart(2, "0")}-${day}`;
+    }
+  }
+  return `${title}|${rawDate.trim().toLowerCase()}`;
 }
 
 export default function DigestView() {
@@ -324,6 +351,7 @@ export default function DigestView() {
   const isBoston = tenant.slug === "boston";
   const isLA = tenant.slug === "la";
   const isLeadershipAustin = tenant.slug === "leadershipaustin";
+  const leadershipManagedEventsQuery = useLeadershipManagedEvents(isLeadershipAustin);
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
@@ -498,6 +526,18 @@ export default function DigestView() {
     return null;
   }
 
+  const managedEvents = isLeadershipAustin ? leadershipManagedEventsQuery.data?.events ?? [] : [];
+  const managedEventKeys = new Set(managedEvents.map(eventIdentityKey));
+  const editionEvents = isLeadershipAustin
+    ? digest.events.filter((event: any) => !managedEventKeys.has(eventIdentityKey(event)))
+    : digest.events;
+  const managedCardEvents: any[] = managedEvents.map((event) => ({
+    ...event,
+    date: event.startDate || event.date,
+  }));
+  const categoryOptions = (Object.keys(CAT_CONFIG) as DisplayCat[])
+    .filter((category) => category !== "Programs" || isLeadershipAustin);
+
   const { label: editionDateRange, extended: hasExtendedRange } =
       getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc" || isManchester || isNYC, isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc" || isManchester || isNYC);
   const displayEditionDateRange = isOsaka && lang === "ja"
@@ -586,7 +626,7 @@ export default function DigestView() {
           />}
           {isLeadershipAustin && (
             <div className="mt-6 space-y-5">
-              <AlumniHappeningsSection events={digest.events as any[]} compact />
+              <AlumniHappeningsSection events={editionEvents as any[]} compact />
             </div>
           )}
         </header>
@@ -608,7 +648,7 @@ export default function DigestView() {
         {/* Category Filter Bar */}
         <div className="mb-10">
           <div className="flex items-center gap-2 flex-wrap">
-            {(Object.keys(CAT_CONFIG) as DisplayCat[]).map(cat => {
+            {categoryOptions.map(cat => {
               const cfg = CAT_CONFIG[cat];
               const isActive = categoryFilter === cat;
               return (
@@ -753,9 +793,9 @@ export default function DigestView() {
 
         {(() => {
           const isAdult = (e: any) => { const t = `${e.title ?? ""} ${e.description ?? ""}`.toLowerCase(); return adultBlocklist.some(p => t.includes(p.toLowerCase())); };
-          const communityPosts = digest.events.filter((e: any) => e.isPost === true && !isAdult(e) && !(isLeadershipAustin && e.isAlumniHappening)).map(translateEvent);
-          const businessSpotlights = digest.events.filter((e: any) => e.isBusinessSpotlight === true && !isAdult(e) && !(isLeadershipAustin && e.isAlumniHappening)).map(translateEvent);
-          const staleCount = digest.events.filter((e: any) =>
+          const communityPosts = editionEvents.filter((e: any) => e.isPost === true && !isAdult(e) && !(isLeadershipAustin && e.isAlumniHappening)).map(translateEvent);
+          const businessSpotlights = editionEvents.filter((e: any) => e.isBusinessSpotlight === true && !isAdult(e) && !(isLeadershipAustin && e.isAlumniHappening)).map(translateEvent);
+          const staleCount = editionEvents.filter((e: any) =>
             !e.isPost &&
             !e.isBusinessSpotlight &&
             !(isLeadershipAustin && e.isAlumniHappening) &&
@@ -763,9 +803,9 @@ export default function DigestView() {
             !isAdult(e) &&
             !isEventTodayOrLater(e.date, e, digest.weekOf)
           ).length;
-          const miamiFeatured = digest.events.find((e: any) => isMiamiFeaturedEvent(e, tenant.slug) && !isAdult(e));
+          const miamiFeatured = editionEvents.find((e: any) => isMiamiFeaturedEvent(e, tenant.slug) && !isAdult(e));
           const showMiamiFeatured = !!miamiFeatured && (categoryFilter === "All" || categoryFilter === "Sports");
-          const upcomingEvents = digest.events.filter((e: any) =>
+          const digestUpcomingEvents = editionEvents.filter((e: any) =>
             !isMiamiFeaturedEvent(e, tenant.slug) &&
             !e.isPost &&
             !e.isBusinessSpotlight &&
@@ -773,12 +813,13 @@ export default function DigestView() {
             !isAdult(e) &&
             isEventTodayOrLater(e.date, e, digest.weekOf)
           );
+          const upcomingEvents = [...digestUpcomingEvents, ...managedCardEvents];
           const catFiltered = categoryFilter === "All"
             ? upcomingEvents
             : upcomingEvents.filter((e: any) => {
                 const cats: string[] = e.categories ?? [];
                 if (cats.length > 0) return cats.includes(categoryFilter);
-                return getDisplayCategory(e) === categoryFilter;
+                return getDisplayCategory(e, isLeadershipAustin) === categoryFilter;
               });
           const geoActive = geoStatus === "active" && userCoords != null;
           // Radius chip = dim events beyond threshold, never hide them
@@ -989,7 +1030,7 @@ export default function DigestView() {
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
                   <h2 className="font-serif text-3xl font-bold flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {hasExtendedRange ? jt("Upcoming Events", "今後のイベント") : geoActive ? jt("Events — Nearest First", JA.eventsNearestFirst) : jt("Upcoming Events", JA.thisWeeksCuratedEvents)}
+                    {isLeadershipAustin || hasExtendedRange ? jt("Upcoming Events", "今後のイベント") : geoActive ? jt("Events — Nearest First", JA.eventsNearestFirst) : jt("Upcoming Events", JA.thisWeeksCuratedEvents)}
                   </h2>
                   <div className="flex items-center gap-2 flex-wrap">
                     {staleCount > 0 && (
@@ -1004,7 +1045,33 @@ export default function DigestView() {
                     )}
                   </div>
                 </div>
-                {visibleEvents.length === 0 ? (
+                {isLeadershipAustin && leadershipManagedEventsQuery.isError && visibleEvents.length > 0 && (
+                  <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
+                    <span>The live alumni event list could not load, so this edition may be incomplete.</span>
+                    <button
+                      onClick={() => { void leadershipManagedEventsQuery.refetch(); }}
+                      className="font-semibold underline underline-offset-2"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+                {visibleEvents.length === 0 && isLeadershipAustin && leadershipManagedEventsQuery.isLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8" role="status" aria-label="Loading upcoming alumni events">
+                    {[1, 2, 3, 4].map(index => <div key={index} className="h-64 animate-pulse rounded-2xl bg-muted" />)}
+                  </div>
+                ) : visibleEvents.length === 0 && isLeadershipAustin && leadershipManagedEventsQuery.isError ? (
+                  <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border" role="status">
+                    <p className="text-xl font-serif font-bold text-foreground mb-2">Alumni events could not load</p>
+                    <p className="text-muted-foreground text-sm mb-6">Try again to load the latest shared events.</p>
+                    <button
+                      onClick={() => { void leadershipManagedEventsQuery.refetch(); }}
+                      className="text-primary text-sm font-medium hover:underline"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                ) : visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
                     <p className="text-4xl mb-4">{isLeadershipAustin || isAtlanta || isHouston ? "•" : CAT_CONFIG[categoryFilter].emoji}</p>
                     <p className="text-xl font-serif font-bold text-foreground mb-2">{isLeadershipAustin ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}programs` : hasExtendedRange ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
@@ -1019,7 +1086,7 @@ export default function DigestView() {
                 ) : (
                   <div className={geoActive ? "flex flex-col gap-6" : "grid grid-cols-1 sm:grid-cols-2 gap-8"}>
                     {regularEvents.map((event: any, i: number) => (
-                      <div key={i} style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
+                      <div key={event.managedEventId ?? event.eventId ?? i} style={beyondRadius(event) ? { opacity: 0.45 } : undefined}>
                         <EventCard event={translateEvent(event)} digestId={digest.id} distanceMiles={getDistanceMiles(event)} translating={isJapaneseEdition && lang === "ja" && translating} />
                       </div>
                     ))}
