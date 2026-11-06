@@ -13,6 +13,7 @@ import storageRouter from "./storage";
 import dealsRouter from "./deals";
 import contentRouter from "./content";
 import platformEventsRouter from "./platformEvents";
+import centinelaRouter from "./centinela";
 import { requireTenant, requirePlatformRoot } from "../middleware/resolveTenant";
 
 const router: IRouter = Router();
@@ -31,6 +32,7 @@ router.use(platformEventsRouter);
 // City-level routes — require a resolved tenant from the subdomain
 router.use("/newsletter", requireTenant, newsletterRouter);
 router.use("/events", requireTenant, eventsRouter);
+router.use("/centinela", requireTenant, centinelaRouter);
 router.use("/rsvp", requireTenant, rsvpRouter);
 router.use("/admin", requireTenant, adminRouter);
 router.use("/gamification", requireTenant, gamificationRouter);

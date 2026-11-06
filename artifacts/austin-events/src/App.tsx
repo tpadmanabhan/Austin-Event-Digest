@@ -1,6 +1,10 @@
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
-import { useEffect } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Redirect } from "wouter";
+import { useEffect, useRef, useState } from "react";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { ClerkProvider, SignIn, SignUp, useClerk, useUser } from "@clerk/react";
+import { publishableKeyFromHost } from "@clerk/react/internal";
+import { shadcn } from "@clerk/themes";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AudioProvider } from "@/components/audio-provider";
@@ -18,6 +22,15 @@ import PreferencesPage from "./pages/preferences";
 import NotFound from "@/pages/not-found";
 import PlatformHome from "./pages/platform-home";
 import MaintenancePage from "./pages/maintenance";
+import CentinelaHome from "./pages/centinela-home";
+import CentinelaResidents from "./pages/centinela-residents";
+import CentinelaAdmin from "./pages/centinela-admin";
+import {
+  CentinelaSignIn,
+  CentinelaSignUp,
+  centinelaClerkAppearance,
+} from "./pages/centinela-auth";
+import type { CentinelaOfficialLinks } from "./pages/centinela-types";
 
 // MAINTENANCE MODE — set to false to restore the platform home
 const MAINTENANCE_MODE = false;
@@ -33,6 +46,207 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const centinelaOfficialLinks: CentinelaOfficialLinks = {
+  community: "https://rossmorganco.com/rmc/centinela-ocean-view/",
+  hoa: "https://rossmorganco.com/user-login/",
+  services: "https://rossmorganco.com/form/request-service/",
+  vendors: "https://rossmorganco.com/preferred-vendors/",
+};
+
+function stripClerkBase(path: string): string {
+  return basePath && path.startsWith(basePath)
+    ? path.slice(basePath.length) || "/"
+    : path;
+}
+
+function ClerkQueryCacheInvalidator() {
+  const { addListener } = useClerk();
+  const client = useQueryClient();
+  const previousUserId = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    const unsubscribe = addListener(({ user }) => {
+      const userId = user?.id ?? null;
+      if (previousUserId.current !== undefined && previousUserId.current !== userId) {
+        client.clear();
+      }
+      previousUserId.current = userId;
+    });
+    return unsubscribe;
+  }, [addListener, client]);
+
+  return null;
+}
+
+function CentinelaClientAuth({
+  children,
+  fallback,
+}: {
+  children: React.ReactNode;
+  fallback: React.ReactNode;
+}) {
+  const [, setLocation] = useLocation();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => setReady(true), []);
+
+  // Keep the server-rendered public page and the first client render identical.
+  if (!ready) return <>{fallback}</>;
+
+  const clerkPubKey = publishableKeyFromHost(
+    window.location.hostname,
+    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+  );
+  const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+
+  if (!clerkPubKey) {
+    throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY for Centinela resident sign-in.");
+  }
+
+  const appearance = {
+    theme: shadcn,
+    cssLayerName: "clerk",
+    options: {
+      logoPlacement: "inside" as const,
+      logoLinkUrl: basePath || "/",
+      logoImageUrl: `${window.location.origin}${basePath}/centinela-logo.svg`,
+    },
+    ...centinelaClerkAppearance,
+  };
+
+  return (
+    <ClerkProvider
+      publishableKey={clerkPubKey}
+      proxyUrl={clerkProxyUrl}
+      appearance={appearance}
+      signInUrl={`${basePath}/sign-in`}
+      signUpUrl={`${basePath}/sign-up`}
+      localization={{
+        signIn: {
+          start: {
+            title: "Welcome home",
+            subtitle: "Your neighbors and community updates are waiting.",
+          },
+        },
+        signUp: {
+          start: {
+            title: "Join your neighbor community",
+            subtitle: "Use an email approved for resident access.",
+          },
+        },
+      }}
+      routerPush={(to) => setLocation(stripClerkBase(to))}
+      routerReplace={(to) => setLocation(stripClerkBase(to), { replace: true })}
+    >
+      <ClerkQueryCacheInvalidator />
+      {children}
+    </ClerkProvider>
+  );
+}
+
+function CentinelaAuthLoading({ message = "Opening the resident space…" }: { message?: string }) {
+  return (
+    <main className="centinela">
+      <div className="cv-container cv-portal">
+        <div className="cv-skeleton" role="status" aria-label={message} />
+      </div>
+    </main>
+  );
+}
+
+function CentinelaHomeRedirect() {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded) return <CentinelaAuthLoading message="Loading community…" />;
+  return isSignedIn
+    ? <Redirect to="/residents" />
+    : <CentinelaHome links={centinelaOfficialLinks} />;
+}
+
+function CentinelaResidentRoute() {
+  const { isLoaded, isSignedIn } = useUser();
+  if (!isLoaded) return <CentinelaAuthLoading />;
+  return isSignedIn
+    ? <CentinelaResidents links={centinelaOfficialLinks} />
+    : <Redirect to="/sign-in" />;
+}
+
+function CentinelaSignInRoute() {
+  return (
+    <CentinelaSignIn>
+      <SignIn
+        routing="path"
+        path={`${basePath}/sign-in`}
+        signUpUrl={`${basePath}/sign-up`}
+      />
+    </CentinelaSignIn>
+  );
+}
+
+function CentinelaSignUpRoute() {
+  return (
+    <CentinelaSignUp>
+      <SignUp
+        routing="path"
+        path={`${basePath}/sign-up`}
+        signInUrl={`${basePath}/sign-in`}
+      />
+    </CentinelaSignUp>
+  );
+}
+
+function CentinelaServerRoutes() {
+  return (
+    <Switch>
+      <Route path="/" component={() => <CentinelaHome links={centinelaOfficialLinks} />} />
+      <Route path="/sign-in/*?" component={() => <CentinelaHome links={centinelaOfficialLinks} />} />
+      <Route path="/sign-up/*?" component={() => <CentinelaHome links={centinelaOfficialLinks} />} />
+      <Route path="/residents" component={() => <CentinelaAuthLoading />} />
+      <Route path="/admin/centinela">
+        <AdminLoginGate><CentinelaAdmin /></AdminLoginGate>
+      </Route>
+      <Route path="/admin">
+        <AdminLoginGate><AdminDashboard /></AdminLoginGate>
+      </Route>
+      <Route path="/digest/:id" component={DigestView} />
+      <Route path="/rsvp" component={RsvpPage} />
+      <Route path="/unsubscribe" component={UnsubscribePage} />
+      <Route path="/preferences" component={PreferencesPage} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function CentinelaBrowserRoutes() {
+  return (
+    <Switch>
+      <Route path="/" component={CentinelaHomeRedirect} />
+      <Route path="/sign-in/*?" component={CentinelaSignInRoute} />
+      <Route path="/sign-up/*?" component={CentinelaSignUpRoute} />
+      <Route path="/residents" component={CentinelaResidentRoute} />
+      <Route path="/admin/centinela">
+        <AdminLoginGate><CentinelaAdmin /></AdminLoginGate>
+      </Route>
+      <Route path="/admin">
+        <AdminLoginGate><AdminDashboard /></AdminLoginGate>
+      </Route>
+      <Route path="/digest/:id" component={DigestView} />
+      <Route path="/rsvp" component={RsvpPage} />
+      <Route path="/unsubscribe" component={UnsubscribePage} />
+      <Route path="/preferences" component={PreferencesPage} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function CentinelaRoutes() {
+  return (
+    <CentinelaClientAuth fallback={<CentinelaServerRoutes />}>
+      <CentinelaBrowserRoutes />
+    </CentinelaClientAuth>
+  );
+}
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -59,20 +273,24 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
     <TenantProvider slug={citySlug}>
       <ScrollToTop />
       <CityPageMetadata citySlug={citySlug} />
-      <Switch>
-        <Route path="/" component={citySlug === "austincares" ? AustinCaresDeals : Home} />
-        <Route path="/full" component={citySlug === "austincares" ? AustinCaresFullEdition : NotFound} />
-        <Route path="/digest/:id" component={DigestView} />
-        <Route path="/admin">
-          <AdminLoginGate>
-            <AdminDashboard />
-          </AdminLoginGate>
-        </Route>
-        <Route path="/rsvp" component={RsvpPage} />
-        <Route path="/unsubscribe" component={UnsubscribePage} />
-        <Route path="/preferences" component={PreferencesPage} />
-        <Route component={NotFound} />
-      </Switch>
+      {citySlug === "centinela" ? (
+        <CentinelaRoutes />
+      ) : (
+        <Switch>
+          <Route path="/" component={citySlug === "austincares" ? AustinCaresDeals : Home} />
+          <Route path="/full" component={citySlug === "austincares" ? AustinCaresFullEdition : NotFound} />
+          <Route path="/digest/:id" component={DigestView} />
+          <Route path="/admin">
+            <AdminLoginGate>
+              <AdminDashboard />
+            </AdminLoginGate>
+          </Route>
+          <Route path="/rsvp" component={RsvpPage} />
+          <Route path="/unsubscribe" component={UnsubscribePage} />
+          <Route path="/preferences" component={PreferencesPage} />
+          <Route component={NotFound} />
+        </Switch>
+      )}
     </TenantProvider>
     </LanguageProvider>
   );
@@ -113,7 +331,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AudioProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <WouterRouter base={basePath}>
             <Router />
           </WouterRouter>
           <Toaster />

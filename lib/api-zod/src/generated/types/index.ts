@@ -6,11 +6,32 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./activityInterestResponse";
+export * from "./activityInterestUpdate";
 export * from "./alumniHappeningInput";
 export * from "./alumniHappeningInputType";
 export * from "./alumniHappeningResponse";
 export * from "./badge";
 export * from "./badgesResponse";
+export * from "./centinelaActivitiesResponse";
+export * from "./centinelaActivity";
+export * from "./centinelaActivityInput";
+export * from "./centinelaActivityPatch";
+export * from "./centinelaActivityPatchStatus";
+export * from "./centinelaActivityResponse";
+export * from "./centinelaActivityStatus";
+export * from "./centinelaLocalEvent";
+export * from "./centinelaLocalEventsResponse";
+export * from "./centinelaResident";
+export * from "./centinelaResidentInput";
+export * from "./centinelaResidentPortalResponse";
+export * from "./centinelaResidentResponse";
+export * from "./centinelaResidentsResponse";
+export * from "./centinelaUpdate";
+export * from "./centinelaUpdateInput";
+export * from "./centinelaUpdatePatch";
+export * from "./centinelaUpdateResponse";
+export * from "./centinelaUpdatesResponse";
 export * from "./challengeProgress";
 export * from "./cityRequestInput";
 export * from "./cityRequestReceipt";
@@ -40,6 +61,8 @@ export * from "./managedEventRsvpCount";
 export * from "./managedEventRsvpRequest";
 export * from "./managedEventRsvpResponse";
 export * from "./messageResponse";
+export * from "./newsletterSubscriptionResponse";
+export * from "./newsletterSubscriptionUpdate";
 export * from "./sendDigestRequest";
 export * from "./streakInfo";
 export * from "./subscriber";

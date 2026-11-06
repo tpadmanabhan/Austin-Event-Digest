@@ -524,6 +524,419 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /centinela/local-events:
+    get:
+      operationId: getCentinelaLocalEvents
+      tags: [events]
+      summary: Get a small selection of upcoming public Santa Monica events
+      responses:
+        "200":
+          description: A short, source-linked preview of upcoming local events
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaLocalEventsResponse"
+        "502":
+          description: The source calendar is temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /centinela/portal:
+    get:
+      operationId: getCentinelaResidentPortal
+      tags: [tenants]
+      summary: Get private Centinela resident updates and proposed activities
+      responses:
+        "200":
+          description: Private resident portal content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaResidentPortalResponse"
+        "401":
+          description: Sign-in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: The signed-in email is not approved for resident access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /centinela/activities/{activityId}/interest:
+    put:
+      operationId: setCentinelaActivityInterest
+      tags: [tenants]
+      summary: Express or remove interest in a resident activity
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityInterestUpdate"
+      responses:
+        "200":
+          description: Updated interest state and count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityInterestResponse"
+        "401":
+          description: Sign-in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Resident approval required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Activity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /centinela/newsletter:
+    put:
+      operationId: setCentinelaNewsletterSubscription
+      tags: [newsletter]
+      summary: Opt an approved resident in or out of Centinela email updates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsletterSubscriptionUpdate"
+      responses:
+        "200":
+          description: Newsletter preference saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsletterSubscriptionResponse"
+        "401":
+          description: Sign-in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Resident approval required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /centinela/admin/residents:
+    get:
+      operationId: listCentinelaResidents
+      tags: [tenants]
+      summary: List approved Centinela resident email addresses for the tenant admin
+      responses:
+        "200":
+          description: Approved resident addresses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaResidentsResponse"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: addCentinelaResident
+      tags: [tenants]
+      summary: Approve a resident email address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CentinelaResidentInput"
+      responses:
+        "201":
+          description: Resident address approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaResidentResponse"
+        "400":
+          description: Invalid email address
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /centinela/admin/residents/{residentId}:
+    delete:
+      operationId: removeCentinelaResident
+      tags: [tenants]
+      summary: Revoke resident access
+      parameters:
+        - name: residentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Resident access revoked
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Resident address not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /centinela/admin/updates:
+    get:
+      operationId: listCentinelaUpdates
+      tags: [tenants]
+      summary: List HOA updates for tenant administration
+      responses:
+        "200":
+          description: HOA updates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaUpdatesResponse"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createCentinelaUpdate
+      tags: [tenants]
+      summary: Publish a private HOA update to approved residents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CentinelaUpdateInput"
+      responses:
+        "201":
+          description: HOA update published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaUpdateResponse"
+        "400":
+          description: Invalid update
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /centinela/admin/updates/{updateId}:
+    patch:
+      operationId: updateCentinelaUpdate
+      tags: [tenants]
+      summary: Edit a private HOA update
+      parameters:
+        - name: updateId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CentinelaUpdatePatch"
+      responses:
+        "200":
+          description: HOA update saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaUpdateResponse"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Update not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteCentinelaUpdate
+      tags: [tenants]
+      summary: Delete a private HOA update
+      parameters:
+        - name: updateId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Update deleted
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Update not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /centinela/admin/activities:
+    get:
+      operationId: listCentinelaActivities
+      tags: [tenants]
+      summary: List resident activity proposals for administration
+      responses:
+        "200":
+          description: Activities
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaActivitiesResponse"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createCentinelaActivity
+      tags: [tenants]
+      summary: Add a resident activity proposal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CentinelaActivityInput"
+      responses:
+        "201":
+          description: Activity proposal created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaActivityResponse"
+        "400":
+          description: Invalid activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /centinela/admin/activities/{activityId}:
+    patch:
+      operationId: updateCentinelaActivity
+      tags: [tenants]
+      summary: Edit or update the status of a resident activity
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CentinelaActivityPatch"
+      responses:
+        "200":
+          description: Activity saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentinelaActivityResponse"
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Activity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteCentinelaActivity
+      tags: [tenants]
+      summary: Delete a resident activity
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Activity deleted
+        "401":
+          description: Admin authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Activity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     CityRequestInput:
@@ -1205,3 +1618,295 @@ components:
         - streak
         - challenges
         - badges
+
+    CentinelaLocalEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: ["string", "null"]
+          format: date-time
+        venue:
+          type: string
+        category:
+          type: ["string", "null"]
+        description:
+          type: string
+        url:
+          type: string
+          format: uri
+        free:
+          type: ["boolean", "null"]
+      required: [id, title, startsAt, endsAt, venue, category, description, url, free]
+
+    CentinelaLocalEventsResponse:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/CentinelaLocalEvent"
+        sourceUrl:
+          type: string
+          format: uri
+        refreshedAt:
+          type: string
+          format: date-time
+      required: [events, sourceUrl, refreshedAt]
+
+    CentinelaUpdate:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        category:
+          type: string
+        pinned:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, body, category, pinned, createdAt]
+
+    CentinelaActivity:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        timingLabel:
+          type: string
+        status:
+          type: string
+          enum: [proposed, archived]
+        isSample:
+          type: boolean
+        interestCount:
+          type: integer
+        interested:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, description, location, timingLabel, status, isSample, interestCount, interested, createdAt]
+
+    CentinelaResident:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, email, createdAt]
+
+    CentinelaResidentPortalResponse:
+      type: object
+      properties:
+        residentEmail:
+          type: string
+          format: email
+        updates:
+          type: array
+          items:
+            $ref: "#/components/schemas/CentinelaUpdate"
+        activities:
+          type: array
+          items:
+            $ref: "#/components/schemas/CentinelaActivity"
+        newsletterSubscribed:
+          type: boolean
+      required: [residentEmail, updates, activities, newsletterSubscribed]
+
+    CentinelaResidentsResponse:
+      type: object
+      properties:
+        residents:
+          type: array
+          items:
+            $ref: "#/components/schemas/CentinelaResident"
+      required: [residents]
+
+    CentinelaResidentResponse:
+      type: object
+      properties:
+        resident:
+          $ref: "#/components/schemas/CentinelaResident"
+      required: [resident]
+
+    CentinelaUpdatesResponse:
+      type: object
+      properties:
+        updates:
+          type: array
+          items:
+            $ref: "#/components/schemas/CentinelaUpdate"
+      required: [updates]
+
+    CentinelaUpdateResponse:
+      type: object
+      properties:
+        update:
+          $ref: "#/components/schemas/CentinelaUpdate"
+      required: [update]
+
+    CentinelaUpdateInput:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        body:
+          type: string
+          minLength: 1
+          maxLength: 6000
+        category:
+          type: string
+          minLength: 1
+          maxLength: 60
+        pinned:
+          type: boolean
+      required: [title, body, category, pinned]
+
+    CentinelaUpdatePatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        body:
+          type: string
+          minLength: 1
+          maxLength: 6000
+        category:
+          type: string
+          minLength: 1
+          maxLength: 60
+        pinned:
+          type: boolean
+
+    CentinelaActivitiesResponse:
+      type: object
+      properties:
+        activities:
+          type: array
+          items:
+            $ref: "#/components/schemas/CentinelaActivity"
+      required: [activities]
+
+    CentinelaActivityResponse:
+      type: object
+      properties:
+        activity:
+          $ref: "#/components/schemas/CentinelaActivity"
+      required: [activity]
+
+    CentinelaActivityInput:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        description:
+          type: string
+          maxLength: 2000
+        location:
+          type: string
+          maxLength: 180
+        timingLabel:
+          type: string
+          minLength: 1
+          maxLength: 120
+      required: [title, description, location, timingLabel]
+
+    CentinelaActivityPatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        description:
+          type: string
+          maxLength: 2000
+        location:
+          type: string
+          maxLength: 180
+        timingLabel:
+          type: string
+          minLength: 1
+          maxLength: 120
+        status:
+          type: string
+          enum: [proposed, archived]
+
+    CentinelaResidentInput:
+      type: object
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+      required: [email]
+
+    ActivityInterestUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        interested:
+          type: boolean
+      required: [interested]
+
+    ActivityInterestResponse:
+      type: object
+      properties:
+        activityId:
+          type: integer
+        interested:
+          type: boolean
+        interestCount:
+          type: integer
+      required: [activityId, interested, interestCount]
+
+    NewsletterSubscriptionUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        subscribed:
+          type: boolean
+      required: [subscribed]
+
+    NewsletterSubscriptionResponse:
+      type: object
+      properties:
+        subscribed:
+          type: boolean
+      required: [subscribed]

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, subscribersTable } from "@workspace/db";
+import { centinelaResidentsTable, db, subscribersTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import {
   SubscribeToNewsletterBody,
@@ -23,6 +23,14 @@ function esc(str: string): string {
 }
 
 router.post("/subscribe", async (req, res) => {
+  if (req.tenant?.slug === "centinela") {
+    res.status(403).json({
+      error: "resident_portal_required",
+      message: "Sign in with an approved resident email to manage Centinela email updates.",
+    });
+    return;
+  }
+
   const captchaOk = await verifyTurnstileToken(req.body?.captchaToken, req.ip);
   if (!captchaOk) {
     res.status(400).json({ error: "captcha_failed", message: "CAPTCHA verification failed. Please try again." });
@@ -210,6 +218,26 @@ router.post("/subscribers/add", requireAdmin, async (req, res) => {
   const tenantId = req.tenant!.id;
 
   try {
+    if (req.tenant?.slug === "centinela") {
+      const [approved] = await db
+        .select({ id: centinelaResidentsTable.id })
+        .from(centinelaResidentsTable)
+        .where(
+          and(
+            eq(centinelaResidentsTable.tenantId, tenantId),
+            eq(centinelaResidentsTable.email, email),
+          ),
+        )
+        .limit(1);
+      if (!approved) {
+        res.status(403).json({
+          error: "resident_access_required",
+          message: "Only approved resident emails can receive Centinela updates.",
+        });
+        return;
+      }
+    }
+
     const existing = await db
       .select()
       .from(subscribersTable)
@@ -249,9 +277,20 @@ router.post("/subscribers/import", requireAdmin, async (req, res) => {
   let imported = 0;
   let skipped = 0;
   try {
+    const approvedEmails = req.tenant?.slug === "centinela"
+      ? new Set(
+          (await db
+            .select({ email: centinelaResidentsTable.email })
+            .from(centinelaResidentsTable)
+            .where(eq(centinelaResidentsTable.tenantId, tenantId)))
+            .map((row) => row.email),
+        )
+      : null;
+
     for (const entry of list) {
       const email = typeof entry.email === "string" ? entry.email.trim().toLowerCase() : null;
       if (!email) { skipped++; continue; }
+      if (approvedEmails && !approvedEmails.has(email)) { skipped++; continue; }
       const name = typeof entry.name === "string" && entry.name.trim() ? entry.name.trim() : null;
       const [existing] = await db.select().from(subscribersTable)
         .where(and(eq(subscribersTable.email, email), eq(subscribersTable.tenantId, tenantId)));

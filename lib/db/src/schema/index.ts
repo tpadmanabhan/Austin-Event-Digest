@@ -8,3 +8,4 @@ export * from "./adminOtps";
 export * from "./submitted-deals";
 export * from "./leadership-events";
 export * from "./leadership-event-rsvps";
+export * from "./centinela";

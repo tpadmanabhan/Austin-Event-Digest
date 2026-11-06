@@ -831,3 +831,284 @@ export const GetGamificationBadgesResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary Get a small selection of upcoming public Santa Monica events
+ */
+export const GetCentinelaLocalEventsResponse = zod.object({
+  events: zod.array(
+    zod.object({
+      id: zod.string(),
+      title: zod.string(),
+      startsAt: zod.coerce.date(),
+      endsAt: zod.coerce.date().nullable(),
+      venue: zod.string(),
+      category: zod.string().nullable(),
+      description: zod.string(),
+      url: zod.string().url(),
+      free: zod.boolean().nullable(),
+    }),
+  ),
+  sourceUrl: zod.string().url(),
+  refreshedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Get private Centinela resident updates and proposed activities
+ */
+export const GetCentinelaResidentPortalResponse = zod.object({
+  residentEmail: zod.string().email(),
+  updates: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      body: zod.string(),
+      category: zod.string(),
+      pinned: zod.boolean(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+  activities: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      description: zod.string(),
+      location: zod.string(),
+      timingLabel: zod.string(),
+      status: zod.enum(["proposed", "archived"]),
+      isSample: zod.boolean(),
+      interestCount: zod.number(),
+      interested: zod.boolean(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+  newsletterSubscribed: zod.boolean(),
+});
+
+/**
+ * @summary Express or remove interest in a resident activity
+ */
+export const SetCentinelaActivityInterestParams = zod.object({
+  activityId: zod.coerce.number(),
+});
+
+export const SetCentinelaActivityInterestBody = zod.object({
+  interested: zod.boolean(),
+});
+
+export const SetCentinelaActivityInterestResponse = zod.object({
+  activityId: zod.number(),
+  interested: zod.boolean(),
+  interestCount: zod.number(),
+});
+
+/**
+ * @summary Opt an approved resident in or out of Centinela email updates
+ */
+export const SetCentinelaNewsletterSubscriptionBody = zod.object({
+  subscribed: zod.boolean(),
+});
+
+export const SetCentinelaNewsletterSubscriptionResponse = zod.object({
+  subscribed: zod.boolean(),
+});
+
+/**
+ * @summary List approved Centinela resident email addresses for the tenant admin
+ */
+export const ListCentinelaResidentsResponse = zod.object({
+  residents: zod.array(
+    zod.object({
+      id: zod.number(),
+      email: zod.string().email(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Approve a resident email address
+ */
+export const addCentinelaResidentBodyEmailMax = 320;
+
+export const AddCentinelaResidentBody = zod.object({
+  email: zod.string().email().max(addCentinelaResidentBodyEmailMax),
+});
+
+/**
+ * @summary Revoke resident access
+ */
+export const RemoveCentinelaResidentParams = zod.object({
+  residentId: zod.coerce.number(),
+});
+
+/**
+ * @summary List HOA updates for tenant administration
+ */
+export const ListCentinelaUpdatesResponse = zod.object({
+  updates: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      body: zod.string(),
+      category: zod.string(),
+      pinned: zod.boolean(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Publish a private HOA update to approved residents
+ */
+export const createCentinelaUpdateBodyTitleMax = 160;
+
+export const createCentinelaUpdateBodyBodyMax = 6000;
+
+export const createCentinelaUpdateBodyCategoryMax = 60;
+
+export const CreateCentinelaUpdateBody = zod.object({
+  title: zod.string().min(1).max(createCentinelaUpdateBodyTitleMax),
+  body: zod.string().min(1).max(createCentinelaUpdateBodyBodyMax),
+  category: zod.string().min(1).max(createCentinelaUpdateBodyCategoryMax),
+  pinned: zod.boolean(),
+});
+
+/**
+ * @summary Edit a private HOA update
+ */
+export const UpdateCentinelaUpdateParams = zod.object({
+  updateId: zod.coerce.number(),
+});
+
+export const updateCentinelaUpdateBodyTitleMax = 160;
+
+export const updateCentinelaUpdateBodyBodyMax = 6000;
+
+export const updateCentinelaUpdateBodyCategoryMax = 60;
+
+export const UpdateCentinelaUpdateBody = zod.object({
+  title: zod.string().min(1).max(updateCentinelaUpdateBodyTitleMax).optional(),
+  body: zod.string().min(1).max(updateCentinelaUpdateBodyBodyMax).optional(),
+  category: zod
+    .string()
+    .min(1)
+    .max(updateCentinelaUpdateBodyCategoryMax)
+    .optional(),
+  pinned: zod.boolean().optional(),
+});
+
+export const UpdateCentinelaUpdateResponse = zod.object({
+  update: zod.object({
+    id: zod.number(),
+    title: zod.string(),
+    body: zod.string(),
+    category: zod.string(),
+    pinned: zod.boolean(),
+    createdAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Delete a private HOA update
+ */
+export const DeleteCentinelaUpdateParams = zod.object({
+  updateId: zod.coerce.number(),
+});
+
+/**
+ * @summary List proposed and scheduled resident activities for administration
+ */
+export const ListCentinelaActivitiesResponse = zod.object({
+  activities: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      description: zod.string(),
+      location: zod.string(),
+      timingLabel: zod.string(),
+      status: zod.enum(["proposed", "archived"]),
+      isSample: zod.boolean(),
+      interestCount: zod.number(),
+      interested: zod.boolean(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Add a resident activity proposal
+ */
+export const createCentinelaActivityBodyTitleMax = 160;
+
+export const createCentinelaActivityBodyDescriptionMax = 2000;
+
+export const createCentinelaActivityBodyLocationMax = 180;
+
+export const createCentinelaActivityBodyTimingLabelMax = 120;
+
+export const CreateCentinelaActivityBody = zod.object({
+  title: zod.string().min(1).max(createCentinelaActivityBodyTitleMax),
+  description: zod.string().max(createCentinelaActivityBodyDescriptionMax),
+  location: zod.string().max(createCentinelaActivityBodyLocationMax),
+  timingLabel: zod
+    .string()
+    .min(1)
+    .max(createCentinelaActivityBodyTimingLabelMax),
+});
+
+/**
+ * @summary Edit or update the status of a resident activity
+ */
+export const UpdateCentinelaActivityParams = zod.object({
+  activityId: zod.coerce.number(),
+});
+
+export const updateCentinelaActivityBodyTitleMax = 160;
+
+export const updateCentinelaActivityBodyDescriptionMax = 2000;
+
+export const updateCentinelaActivityBodyLocationMax = 180;
+
+export const updateCentinelaActivityBodyTimingLabelMax = 120;
+
+export const UpdateCentinelaActivityBody = zod.object({
+  title: zod
+    .string()
+    .min(1)
+    .max(updateCentinelaActivityBodyTitleMax)
+    .optional(),
+  description: zod
+    .string()
+    .max(updateCentinelaActivityBodyDescriptionMax)
+    .optional(),
+  location: zod.string().max(updateCentinelaActivityBodyLocationMax).optional(),
+  timingLabel: zod
+    .string()
+    .min(1)
+    .max(updateCentinelaActivityBodyTimingLabelMax)
+    .optional(),
+  status: zod.enum(["proposed", "archived"]).optional(),
+});
+
+export const UpdateCentinelaActivityResponse = zod.object({
+  activity: zod.object({
+    id: zod.number(),
+    title: zod.string(),
+    description: zod.string(),
+    location: zod.string(),
+    timingLabel: zod.string(),
+    status: zod.enum(["proposed", "archived"]),
+    isSample: zod.boolean(),
+    interestCount: zod.number(),
+    interested: zod.boolean(),
+    createdAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Delete a resident activity
+ */
+export const DeleteCentinelaActivityParams = zod.object({
+  activityId: zod.coerce.number(),
+});

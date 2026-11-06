@@ -1,4 +1,11 @@
-import { db, digestsTable, subscribersTable, rsvpsTable, tenantsTable } from "@workspace/db";
+import {
+  db,
+  digestsTable,
+  subscribersTable,
+  rsvpsTable,
+  tenantsTable,
+  centinelaActivitiesTable,
+} from "@workspace/db";
 import { and, eq, inArray, sql, isNull } from "drizzle-orm";
 import { logger } from "./logger";
 import { hashPassword } from "./passwordHash";
@@ -710,11 +717,76 @@ async function patchHtmlEncodedEventUrls(): Promise<void> {
   }
 }
 
+async function seedCentinelaTenant(): Promise<void> {
+  const created = await db.transaction(async (tx) => {
+    const [tenant] = await tx
+      .insert(tenantsTable)
+      .values({
+        slug: "centinela",
+        name: "Centinela Ocean View",
+        city: "Mar Vista, Los Angeles, CA",
+        accentColor: "#256D70",
+        categories: ["Community"],
+        digestTitle: "Centinela Neighbor Notes",
+        adminEmail: "aiimplementationclubaustin@gmail.com",
+        emailVerified: true,
+        firstRun: false,
+        isActive: true,
+      })
+      .onConflictDoNothing()
+      .returning({ id: tenantsTable.id });
+
+    if (!tenant) return false;
+
+    await tx.insert(centinelaActivitiesTable).values([
+      {
+        tenantId: tenant.id,
+        title: "Coffee and introductions",
+        description: "A low-pressure chance to meet a neighbor and put names to faces.",
+        location: "Location to be decided",
+        timingLabel: "Proposal — date and time to be determined",
+        status: "proposed",
+        isSample: true,
+      },
+      {
+        tenantId: tenant.id,
+        title: "Share a skill or hobby",
+        description: "A neighbor-led gathering for anyone who wants to teach, show, or try something new.",
+        location: "Location to be decided; HOA approval may be needed",
+        timingLabel: "Proposal — date and time to be determined",
+        status: "proposed",
+        isSample: true,
+      },
+      {
+        tenantId: tenant.id,
+        title: "A short neighborhood walk",
+        description: "An easy-paced walk for residents who would enjoy a little fresh air and company.",
+        location: "Starting point and route to be decided",
+        timingLabel: "Proposal — date and time to be determined",
+        status: "proposed",
+        isSample: true,
+      },
+    ]);
+
+    return true;
+  });
+
+  if (created) {
+    logger.info("Centinela tenant created with three resident-led activity proposals");
+  }
+}
+
 export async function runStartupMigration(): Promise<void> {
   try {
     await runTenantMigration();
   } catch (err) {
     logger.warn({ err }, "Tenant migration failed (non-fatal) — DB may already be up-to-date");
+  }
+
+  try {
+    await seedCentinelaTenant();
+  } catch (err) {
+    logger.warn({ err }, "Centinela tenant seed failed (non-fatal)");
   }
 
   try {

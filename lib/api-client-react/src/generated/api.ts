@@ -17,9 +17,24 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ActivityInterestResponse,
+  ActivityInterestUpdate,
   AlumniHappeningInput,
   AlumniHappeningResponse,
   BadgesResponse,
+  CentinelaActivitiesResponse,
+  CentinelaActivityInput,
+  CentinelaActivityPatch,
+  CentinelaActivityResponse,
+  CentinelaLocalEventsResponse,
+  CentinelaResidentInput,
+  CentinelaResidentPortalResponse,
+  CentinelaResidentResponse,
+  CentinelaResidentsResponse,
+  CentinelaUpdateInput,
+  CentinelaUpdatePatch,
+  CentinelaUpdateResponse,
+  CentinelaUpdatesResponse,
   CityRequestInput,
   CityRequestReceipt,
   DigestListResponse,
@@ -40,6 +55,8 @@ import type {
   ManagedEventRsvpRequest,
   ManagedEventRsvpResponse,
   MessageResponse,
+  NewsletterSubscriptionResponse,
+  NewsletterSubscriptionUpdate,
   SendDigestRequest,
   SubscribeRequest,
   SubscribeResponse,
@@ -1990,3 +2007,1274 @@ export function useGetGamificationBadges<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get a small selection of upcoming public Santa Monica events
+ */
+export const getGetCentinelaLocalEventsUrl = () => {
+  return `/api/centinela/local-events`;
+};
+
+export const getCentinelaLocalEvents = async (
+  options?: RequestInit,
+): Promise<CentinelaLocalEventsResponse> => {
+  return customFetch<CentinelaLocalEventsResponse>(
+    getGetCentinelaLocalEventsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetCentinelaLocalEventsQueryKey = () => {
+  return [`/api/centinela/local-events`] as const;
+};
+
+export const getGetCentinelaLocalEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCentinelaLocalEvents>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCentinelaLocalEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetCentinelaLocalEventsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCentinelaLocalEvents>>
+  > = ({ signal }) => getCentinelaLocalEvents({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCentinelaLocalEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCentinelaLocalEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCentinelaLocalEvents>>
+>;
+export type GetCentinelaLocalEventsQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get a small selection of upcoming public Santa Monica events
+ */
+
+export function useGetCentinelaLocalEvents<
+  TData = Awaited<ReturnType<typeof getCentinelaLocalEvents>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCentinelaLocalEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCentinelaLocalEventsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get private Centinela resident updates and proposed activities
+ */
+export const getGetCentinelaResidentPortalUrl = () => {
+  return `/api/centinela/portal`;
+};
+
+export const getCentinelaResidentPortal = async (
+  options?: RequestInit,
+): Promise<CentinelaResidentPortalResponse> => {
+  return customFetch<CentinelaResidentPortalResponse>(
+    getGetCentinelaResidentPortalUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetCentinelaResidentPortalQueryKey = () => {
+  return [`/api/centinela/portal`] as const;
+};
+
+export const getGetCentinelaResidentPortalQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCentinelaResidentPortal>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCentinelaResidentPortal>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetCentinelaResidentPortalQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCentinelaResidentPortal>>
+  > = ({ signal }) => getCentinelaResidentPortal({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCentinelaResidentPortal>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCentinelaResidentPortalQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCentinelaResidentPortal>>
+>;
+export type GetCentinelaResidentPortalQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get private Centinela resident updates and proposed activities
+ */
+
+export function useGetCentinelaResidentPortal<
+  TData = Awaited<ReturnType<typeof getCentinelaResidentPortal>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCentinelaResidentPortal>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCentinelaResidentPortalQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Express or remove interest in a resident activity
+ */
+export const getSetCentinelaActivityInterestUrl = (activityId: number) => {
+  return `/api/centinela/activities/${activityId}/interest`;
+};
+
+export const setCentinelaActivityInterest = async (
+  activityId: number,
+  activityInterestUpdate: ActivityInterestUpdate,
+  options?: RequestInit,
+): Promise<ActivityInterestResponse> => {
+  return customFetch<ActivityInterestResponse>(
+    getSetCentinelaActivityInterestUrl(activityId),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(activityInterestUpdate),
+    },
+  );
+};
+
+export const getSetCentinelaActivityInterestMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCentinelaActivityInterest>>,
+    TError,
+    { activityId: number; data: BodyType<ActivityInterestUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setCentinelaActivityInterest>>,
+  TError,
+  { activityId: number; data: BodyType<ActivityInterestUpdate> },
+  TContext
+> => {
+  const mutationKey = ["setCentinelaActivityInterest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setCentinelaActivityInterest>>,
+    { activityId: number; data: BodyType<ActivityInterestUpdate> }
+  > = (props) => {
+    const { activityId, data } = props ?? {};
+
+    return setCentinelaActivityInterest(activityId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetCentinelaActivityInterestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setCentinelaActivityInterest>>
+>;
+export type SetCentinelaActivityInterestMutationBody =
+  BodyType<ActivityInterestUpdate>;
+export type SetCentinelaActivityInterestMutationError =
+  ErrorType<ErrorResponse>;
+
+/**
+ * @summary Express or remove interest in a resident activity
+ */
+export const useSetCentinelaActivityInterest = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCentinelaActivityInterest>>,
+    TError,
+    { activityId: number; data: BodyType<ActivityInterestUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setCentinelaActivityInterest>>,
+  TError,
+  { activityId: number; data: BodyType<ActivityInterestUpdate> },
+  TContext
+> => {
+  return useMutation(getSetCentinelaActivityInterestMutationOptions(options));
+};
+
+/**
+ * @summary Opt an approved resident in or out of Centinela email updates
+ */
+export const getSetCentinelaNewsletterSubscriptionUrl = () => {
+  return `/api/centinela/newsletter`;
+};
+
+export const setCentinelaNewsletterSubscription = async (
+  newsletterSubscriptionUpdate: NewsletterSubscriptionUpdate,
+  options?: RequestInit,
+): Promise<NewsletterSubscriptionResponse> => {
+  return customFetch<NewsletterSubscriptionResponse>(
+    getSetCentinelaNewsletterSubscriptionUrl(),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(newsletterSubscriptionUpdate),
+    },
+  );
+};
+
+export const getSetCentinelaNewsletterSubscriptionMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCentinelaNewsletterSubscription>>,
+    TError,
+    { data: BodyType<NewsletterSubscriptionUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setCentinelaNewsletterSubscription>>,
+  TError,
+  { data: BodyType<NewsletterSubscriptionUpdate> },
+  TContext
+> => {
+  const mutationKey = ["setCentinelaNewsletterSubscription"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setCentinelaNewsletterSubscription>>,
+    { data: BodyType<NewsletterSubscriptionUpdate> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return setCentinelaNewsletterSubscription(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetCentinelaNewsletterSubscriptionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setCentinelaNewsletterSubscription>>
+>;
+export type SetCentinelaNewsletterSubscriptionMutationBody =
+  BodyType<NewsletterSubscriptionUpdate>;
+export type SetCentinelaNewsletterSubscriptionMutationError =
+  ErrorType<ErrorResponse>;
+
+/**
+ * @summary Opt an approved resident in or out of Centinela email updates
+ */
+export const useSetCentinelaNewsletterSubscription = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCentinelaNewsletterSubscription>>,
+    TError,
+    { data: BodyType<NewsletterSubscriptionUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setCentinelaNewsletterSubscription>>,
+  TError,
+  { data: BodyType<NewsletterSubscriptionUpdate> },
+  TContext
+> => {
+  return useMutation(
+    getSetCentinelaNewsletterSubscriptionMutationOptions(options),
+  );
+};
+
+/**
+ * @summary List approved Centinela resident email addresses for the tenant admin
+ */
+export const getListCentinelaResidentsUrl = () => {
+  return `/api/centinela/admin/residents`;
+};
+
+export const listCentinelaResidents = async (
+  options?: RequestInit,
+): Promise<CentinelaResidentsResponse> => {
+  return customFetch<CentinelaResidentsResponse>(
+    getListCentinelaResidentsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListCentinelaResidentsQueryKey = () => {
+  return [`/api/centinela/admin/residents`] as const;
+};
+
+export const getListCentinelaResidentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCentinelaResidents>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCentinelaResidents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListCentinelaResidentsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCentinelaResidents>>
+  > = ({ signal }) => listCentinelaResidents({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCentinelaResidents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCentinelaResidentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCentinelaResidents>>
+>;
+export type ListCentinelaResidentsQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary List approved Centinela resident email addresses for the tenant admin
+ */
+
+export function useListCentinelaResidents<
+  TData = Awaited<ReturnType<typeof listCentinelaResidents>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCentinelaResidents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCentinelaResidentsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Approve a resident email address
+ */
+export const getAddCentinelaResidentUrl = () => {
+  return `/api/centinela/admin/residents`;
+};
+
+export const addCentinelaResident = async (
+  centinelaResidentInput: CentinelaResidentInput,
+  options?: RequestInit,
+): Promise<CentinelaResidentResponse> => {
+  return customFetch<CentinelaResidentResponse>(getAddCentinelaResidentUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(centinelaResidentInput),
+  });
+};
+
+export const getAddCentinelaResidentMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addCentinelaResident>>,
+    TError,
+    { data: BodyType<CentinelaResidentInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof addCentinelaResident>>,
+  TError,
+  { data: BodyType<CentinelaResidentInput> },
+  TContext
+> => {
+  const mutationKey = ["addCentinelaResident"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof addCentinelaResident>>,
+    { data: BodyType<CentinelaResidentInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return addCentinelaResident(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AddCentinelaResidentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addCentinelaResident>>
+>;
+export type AddCentinelaResidentMutationBody = BodyType<CentinelaResidentInput>;
+export type AddCentinelaResidentMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Approve a resident email address
+ */
+export const useAddCentinelaResident = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addCentinelaResident>>,
+    TError,
+    { data: BodyType<CentinelaResidentInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof addCentinelaResident>>,
+  TError,
+  { data: BodyType<CentinelaResidentInput> },
+  TContext
+> => {
+  return useMutation(getAddCentinelaResidentMutationOptions(options));
+};
+
+/**
+ * @summary Revoke resident access
+ */
+export const getRemoveCentinelaResidentUrl = (residentId: number) => {
+  return `/api/centinela/admin/residents/${residentId}`;
+};
+
+export const removeCentinelaResident = async (
+  residentId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRemoveCentinelaResidentUrl(residentId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRemoveCentinelaResidentMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeCentinelaResident>>,
+    TError,
+    { residentId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeCentinelaResident>>,
+  TError,
+  { residentId: number },
+  TContext
+> => {
+  const mutationKey = ["removeCentinelaResident"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeCentinelaResident>>,
+    { residentId: number }
+  > = (props) => {
+    const { residentId } = props ?? {};
+
+    return removeCentinelaResident(residentId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveCentinelaResidentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeCentinelaResident>>
+>;
+
+export type RemoveCentinelaResidentMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Revoke resident access
+ */
+export const useRemoveCentinelaResident = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeCentinelaResident>>,
+    TError,
+    { residentId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof removeCentinelaResident>>,
+  TError,
+  { residentId: number },
+  TContext
+> => {
+  return useMutation(getRemoveCentinelaResidentMutationOptions(options));
+};
+
+/**
+ * @summary List HOA updates for tenant administration
+ */
+export const getListCentinelaUpdatesUrl = () => {
+  return `/api/centinela/admin/updates`;
+};
+
+export const listCentinelaUpdates = async (
+  options?: RequestInit,
+): Promise<CentinelaUpdatesResponse> => {
+  return customFetch<CentinelaUpdatesResponse>(getListCentinelaUpdatesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListCentinelaUpdatesQueryKey = () => {
+  return [`/api/centinela/admin/updates`] as const;
+};
+
+export const getListCentinelaUpdatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCentinelaUpdates>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCentinelaUpdates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListCentinelaUpdatesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCentinelaUpdates>>
+  > = ({ signal }) => listCentinelaUpdates({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCentinelaUpdates>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCentinelaUpdatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCentinelaUpdates>>
+>;
+export type ListCentinelaUpdatesQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary List HOA updates for tenant administration
+ */
+
+export function useListCentinelaUpdates<
+  TData = Awaited<ReturnType<typeof listCentinelaUpdates>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCentinelaUpdates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCentinelaUpdatesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Publish a private HOA update to approved residents
+ */
+export const getCreateCentinelaUpdateUrl = () => {
+  return `/api/centinela/admin/updates`;
+};
+
+export const createCentinelaUpdate = async (
+  centinelaUpdateInput: CentinelaUpdateInput,
+  options?: RequestInit,
+): Promise<CentinelaUpdateResponse> => {
+  return customFetch<CentinelaUpdateResponse>(getCreateCentinelaUpdateUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(centinelaUpdateInput),
+  });
+};
+
+export const getCreateCentinelaUpdateMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCentinelaUpdate>>,
+    TError,
+    { data: BodyType<CentinelaUpdateInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCentinelaUpdate>>,
+  TError,
+  { data: BodyType<CentinelaUpdateInput> },
+  TContext
+> => {
+  const mutationKey = ["createCentinelaUpdate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCentinelaUpdate>>,
+    { data: BodyType<CentinelaUpdateInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createCentinelaUpdate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCentinelaUpdateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCentinelaUpdate>>
+>;
+export type CreateCentinelaUpdateMutationBody = BodyType<CentinelaUpdateInput>;
+export type CreateCentinelaUpdateMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Publish a private HOA update to approved residents
+ */
+export const useCreateCentinelaUpdate = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCentinelaUpdate>>,
+    TError,
+    { data: BodyType<CentinelaUpdateInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCentinelaUpdate>>,
+  TError,
+  { data: BodyType<CentinelaUpdateInput> },
+  TContext
+> => {
+  return useMutation(getCreateCentinelaUpdateMutationOptions(options));
+};
+
+/**
+ * @summary Edit a private HOA update
+ */
+export const getUpdateCentinelaUpdateUrl = (updateId: number) => {
+  return `/api/centinela/admin/updates/${updateId}`;
+};
+
+export const updateCentinelaUpdate = async (
+  updateId: number,
+  centinelaUpdatePatch: CentinelaUpdatePatch,
+  options?: RequestInit,
+): Promise<CentinelaUpdateResponse> => {
+  return customFetch<CentinelaUpdateResponse>(
+    getUpdateCentinelaUpdateUrl(updateId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(centinelaUpdatePatch),
+    },
+  );
+};
+
+export const getUpdateCentinelaUpdateMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCentinelaUpdate>>,
+    TError,
+    { updateId: number; data: BodyType<CentinelaUpdatePatch> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCentinelaUpdate>>,
+  TError,
+  { updateId: number; data: BodyType<CentinelaUpdatePatch> },
+  TContext
+> => {
+  const mutationKey = ["updateCentinelaUpdate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCentinelaUpdate>>,
+    { updateId: number; data: BodyType<CentinelaUpdatePatch> }
+  > = (props) => {
+    const { updateId, data } = props ?? {};
+
+    return updateCentinelaUpdate(updateId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCentinelaUpdateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCentinelaUpdate>>
+>;
+export type UpdateCentinelaUpdateMutationBody = BodyType<CentinelaUpdatePatch>;
+export type UpdateCentinelaUpdateMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Edit a private HOA update
+ */
+export const useUpdateCentinelaUpdate = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCentinelaUpdate>>,
+    TError,
+    { updateId: number; data: BodyType<CentinelaUpdatePatch> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCentinelaUpdate>>,
+  TError,
+  { updateId: number; data: BodyType<CentinelaUpdatePatch> },
+  TContext
+> => {
+  return useMutation(getUpdateCentinelaUpdateMutationOptions(options));
+};
+
+/**
+ * @summary Delete a private HOA update
+ */
+export const getDeleteCentinelaUpdateUrl = (updateId: number) => {
+  return `/api/centinela/admin/updates/${updateId}`;
+};
+
+export const deleteCentinelaUpdate = async (
+  updateId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteCentinelaUpdateUrl(updateId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteCentinelaUpdateMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCentinelaUpdate>>,
+    TError,
+    { updateId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteCentinelaUpdate>>,
+  TError,
+  { updateId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteCentinelaUpdate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteCentinelaUpdate>>,
+    { updateId: number }
+  > = (props) => {
+    const { updateId } = props ?? {};
+
+    return deleteCentinelaUpdate(updateId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteCentinelaUpdateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteCentinelaUpdate>>
+>;
+
+export type DeleteCentinelaUpdateMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a private HOA update
+ */
+export const useDeleteCentinelaUpdate = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCentinelaUpdate>>,
+    TError,
+    { updateId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteCentinelaUpdate>>,
+  TError,
+  { updateId: number },
+  TContext
+> => {
+  return useMutation(getDeleteCentinelaUpdateMutationOptions(options));
+};
+
+/**
+ * @summary List proposed and scheduled resident activities for administration
+ */
+export const getListCentinelaActivitiesUrl = () => {
+  return `/api/centinela/admin/activities`;
+};
+
+export const listCentinelaActivities = async (
+  options?: RequestInit,
+): Promise<CentinelaActivitiesResponse> => {
+  return customFetch<CentinelaActivitiesResponse>(
+    getListCentinelaActivitiesUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListCentinelaActivitiesQueryKey = () => {
+  return [`/api/centinela/admin/activities`] as const;
+};
+
+export const getListCentinelaActivitiesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCentinelaActivities>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCentinelaActivities>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListCentinelaActivitiesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCentinelaActivities>>
+  > = ({ signal }) => listCentinelaActivities({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCentinelaActivities>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCentinelaActivitiesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCentinelaActivities>>
+>;
+export type ListCentinelaActivitiesQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary List proposed and scheduled resident activities for administration
+ */
+
+export function useListCentinelaActivities<
+  TData = Awaited<ReturnType<typeof listCentinelaActivities>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCentinelaActivities>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCentinelaActivitiesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add a resident activity proposal
+ */
+export const getCreateCentinelaActivityUrl = () => {
+  return `/api/centinela/admin/activities`;
+};
+
+export const createCentinelaActivity = async (
+  centinelaActivityInput: CentinelaActivityInput,
+  options?: RequestInit,
+): Promise<CentinelaActivityResponse> => {
+  return customFetch<CentinelaActivityResponse>(
+    getCreateCentinelaActivityUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(centinelaActivityInput),
+    },
+  );
+};
+
+export const getCreateCentinelaActivityMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCentinelaActivity>>,
+    TError,
+    { data: BodyType<CentinelaActivityInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCentinelaActivity>>,
+  TError,
+  { data: BodyType<CentinelaActivityInput> },
+  TContext
+> => {
+  const mutationKey = ["createCentinelaActivity"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCentinelaActivity>>,
+    { data: BodyType<CentinelaActivityInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createCentinelaActivity(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCentinelaActivityMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCentinelaActivity>>
+>;
+export type CreateCentinelaActivityMutationBody =
+  BodyType<CentinelaActivityInput>;
+export type CreateCentinelaActivityMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Add a resident activity proposal
+ */
+export const useCreateCentinelaActivity = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCentinelaActivity>>,
+    TError,
+    { data: BodyType<CentinelaActivityInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCentinelaActivity>>,
+  TError,
+  { data: BodyType<CentinelaActivityInput> },
+  TContext
+> => {
+  return useMutation(getCreateCentinelaActivityMutationOptions(options));
+};
+
+/**
+ * @summary Edit or update the status of a resident activity
+ */
+export const getUpdateCentinelaActivityUrl = (activityId: number) => {
+  return `/api/centinela/admin/activities/${activityId}`;
+};
+
+export const updateCentinelaActivity = async (
+  activityId: number,
+  centinelaActivityPatch: CentinelaActivityPatch,
+  options?: RequestInit,
+): Promise<CentinelaActivityResponse> => {
+  return customFetch<CentinelaActivityResponse>(
+    getUpdateCentinelaActivityUrl(activityId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(centinelaActivityPatch),
+    },
+  );
+};
+
+export const getUpdateCentinelaActivityMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCentinelaActivity>>,
+    TError,
+    { activityId: number; data: BodyType<CentinelaActivityPatch> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCentinelaActivity>>,
+  TError,
+  { activityId: number; data: BodyType<CentinelaActivityPatch> },
+  TContext
+> => {
+  const mutationKey = ["updateCentinelaActivity"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCentinelaActivity>>,
+    { activityId: number; data: BodyType<CentinelaActivityPatch> }
+  > = (props) => {
+    const { activityId, data } = props ?? {};
+
+    return updateCentinelaActivity(activityId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCentinelaActivityMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCentinelaActivity>>
+>;
+export type UpdateCentinelaActivityMutationBody =
+  BodyType<CentinelaActivityPatch>;
+export type UpdateCentinelaActivityMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Edit or update the status of a resident activity
+ */
+export const useUpdateCentinelaActivity = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCentinelaActivity>>,
+    TError,
+    { activityId: number; data: BodyType<CentinelaActivityPatch> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCentinelaActivity>>,
+  TError,
+  { activityId: number; data: BodyType<CentinelaActivityPatch> },
+  TContext
+> => {
+  return useMutation(getUpdateCentinelaActivityMutationOptions(options));
+};
+
+/**
+ * @summary Delete a resident activity
+ */
+export const getDeleteCentinelaActivityUrl = (activityId: number) => {
+  return `/api/centinela/admin/activities/${activityId}`;
+};
+
+export const deleteCentinelaActivity = async (
+  activityId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteCentinelaActivityUrl(activityId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteCentinelaActivityMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCentinelaActivity>>,
+    TError,
+    { activityId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteCentinelaActivity>>,
+  TError,
+  { activityId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteCentinelaActivity"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteCentinelaActivity>>,
+    { activityId: number }
+  > = (props) => {
+    const { activityId } = props ?? {};
+
+    return deleteCentinelaActivity(activityId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteCentinelaActivityMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteCentinelaActivity>>
+>;
+
+export type DeleteCentinelaActivityMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a resident activity
+ */
+export const useDeleteCentinelaActivity = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCentinelaActivity>>,
+    TError,
+    { activityId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteCentinelaActivity>>,
+  TError,
+  { activityId: number },
+  TContext
+> => {
+  return useMutation(getDeleteCentinelaActivityMutationOptions(options));
+};

@@ -383,6 +383,198 @@ export interface GamificationMeResponse {
   badges: Badge[];
 }
 
+export interface CentinelaLocalEvent {
+  id: string;
+  title: string;
+  startsAt: string;
+  /** @nullable */
+  endsAt: string | null;
+  venue: string;
+  /** @nullable */
+  category: string | null;
+  description: string;
+  url: string;
+  /** @nullable */
+  free: boolean | null;
+}
+
+export interface CentinelaLocalEventsResponse {
+  events: CentinelaLocalEvent[];
+  sourceUrl: string;
+  refreshedAt: string;
+}
+
+export interface CentinelaUpdate {
+  id: number;
+  title: string;
+  body: string;
+  category: string;
+  pinned: boolean;
+  createdAt: string;
+}
+
+export type CentinelaActivityStatus =
+  (typeof CentinelaActivityStatus)[keyof typeof CentinelaActivityStatus];
+
+export const CentinelaActivityStatus = {
+  proposed: "proposed",
+  archived: "archived",
+} as const;
+
+export interface CentinelaActivity {
+  id: number;
+  title: string;
+  description: string;
+  location: string;
+  timingLabel: string;
+  status: CentinelaActivityStatus;
+  isSample: boolean;
+  interestCount: number;
+  interested: boolean;
+  createdAt: string;
+}
+
+export interface CentinelaResident {
+  id: number;
+  email: string;
+  createdAt: string;
+}
+
+export interface CentinelaResidentPortalResponse {
+  residentEmail: string;
+  updates: CentinelaUpdate[];
+  activities: CentinelaActivity[];
+  newsletterSubscribed: boolean;
+}
+
+export interface CentinelaResidentsResponse {
+  residents: CentinelaResident[];
+}
+
+export interface CentinelaResidentResponse {
+  resident: CentinelaResident;
+}
+
+export interface CentinelaUpdatesResponse {
+  updates: CentinelaUpdate[];
+}
+
+export interface CentinelaUpdateResponse {
+  update: CentinelaUpdate;
+}
+
+export interface CentinelaUpdateInput {
+  /**
+   * @minLength 1
+   * @maxLength 160
+   */
+  title: string;
+  /**
+   * @minLength 1
+   * @maxLength 6000
+   */
+  body: string;
+  /**
+   * @minLength 1
+   * @maxLength 60
+   */
+  category: string;
+  pinned: boolean;
+}
+
+export interface CentinelaUpdatePatch {
+  /**
+   * @minLength 1
+   * @maxLength 160
+   */
+  title?: string;
+  /**
+   * @minLength 1
+   * @maxLength 6000
+   */
+  body?: string;
+  /**
+   * @minLength 1
+   * @maxLength 60
+   */
+  category?: string;
+  pinned?: boolean;
+}
+
+export interface CentinelaActivitiesResponse {
+  activities: CentinelaActivity[];
+}
+
+export interface CentinelaActivityResponse {
+  activity: CentinelaActivity;
+}
+
+export interface CentinelaActivityInput {
+  /**
+   * @minLength 1
+   * @maxLength 160
+   */
+  title: string;
+  /** @maxLength 2000 */
+  description: string;
+  /** @maxLength 180 */
+  location: string;
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  timingLabel: string;
+}
+
+export type CentinelaActivityPatchStatus =
+  (typeof CentinelaActivityPatchStatus)[keyof typeof CentinelaActivityPatchStatus];
+
+export const CentinelaActivityPatchStatus = {
+  proposed: "proposed",
+  archived: "archived",
+} as const;
+
+export interface CentinelaActivityPatch {
+  /**
+   * @minLength 1
+   * @maxLength 160
+   */
+  title?: string;
+  /** @maxLength 2000 */
+  description?: string;
+  /** @maxLength 180 */
+  location?: string;
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  timingLabel?: string;
+  status?: CentinelaActivityPatchStatus;
+}
+
+export interface CentinelaResidentInput {
+  /** @maxLength 320 */
+  email: string;
+}
+
+export interface ActivityInterestUpdate {
+  interested: boolean;
+}
+
+export interface ActivityInterestResponse {
+  activityId: number;
+  interested: boolean;
+  interestCount: number;
+}
+
+export interface NewsletterSubscriptionUpdate {
+  subscribed: boolean;
+}
+
+export interface NewsletterSubscriptionResponse {
+  subscribed: boolean;
+}
+
 export type GetPublicEventMetadata200Metadata = {
   startDate?: string;
   timezone?: string;

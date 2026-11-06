@@ -11,6 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@clerk/express": "^2.1.87",
+    "@clerk/shared": "^4.44.0",
     "@google-cloud/storage": "^7.21.0",
     "@replit/connectors-sdk": "^0.4.2",
     "@workspace/api-zod": "workspace:*",
@@ -20,6 +22,7 @@
     "drizzle-orm": "catalog:",
     "express": "^5",
     "google-auth-library": "^11.0.0",
+    "http-proxy-middleware": "^4.2.1",
     "imapflow": "^1.2.18",
     "mailparser": "^3.9.6",
     "nodemailer": "^8.0.4",
