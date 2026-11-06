@@ -102,7 +102,7 @@
 .cv-icon-button--danger { color:#a1473c; }
 .cv-auth { display:grid; grid-template-columns:1.05fr .95fr; min-height:100dvh; }
 .cv-auth-story { display:flex; flex-direction:column; justify-content:space-between; padding:clamp(28px,7vw,88px); color:#f8f3e5; background:var(--cv-sea-dark); }
-.cv-auth-story h1 { max-width:570px; margin:70px 0 22px; font:clamp(48px,7vw,82px)/.95 "DM Serif Display",serif; letter-spacing:-.04em; }
+.cv-auth-story h1 { max-width:570px; margin:70px 0 22px; color:#f8f3e5; font:clamp(48px,7vw,82px)/.95 "DM Serif Display",serif; letter-spacing:-.04em; }
 .cv-auth-story p { max-width:430px; color:#d8e4dc; font-size:15px; line-height:1.8; }
 .cv-auth-form { display:grid; place-items:center; padding:32px; background:var(--cv-paper); }
 .cv-auth-form-inner { width:min(100%,460px); }

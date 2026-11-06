@@ -79,7 +79,12 @@ http.createServer(async (req, res) => {
       const xml = await sitemap(site);
       return send(res, xml ? 200 : 404, xml ? "application/xml" : "text/plain", xml || "Unknown site");
     }
-    const privateRoute = /^\/(?:admin|rsvp|preferences|unsubscribe)(?:\/|$)/.test(pathname);
+    // Centinela auth and resident routes use the SPA shell; keep them out of
+    // public SEO documents while allowing direct loads and Clerk OAuth callbacks.
+    const centinelaClientRoute = site.slug === "centinela" &&
+      /^\/(?:sign-in|sign-up|residents)(?:\/|$)/.test(pathname);
+    const privateRoute = /^\/(?:admin|rsvp|preferences|unsubscribe)(?:\/|$)/.test(pathname) ||
+      centinelaClientRoute;
     if (privateRoute && (!site.slug || !(await publicApiForTenant(site)))) {
       return send(res, 404, "text/plain", "Unknown site or private route", { "X-Robots-Tag": "noindex" });
     }
