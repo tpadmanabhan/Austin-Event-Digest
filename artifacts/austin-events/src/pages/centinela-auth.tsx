@@ -53,7 +53,7 @@ export function CentinelaAuthShell({ mode, children }: { mode: "sign-in" | "sign
   const isSignIn = mode === "sign-in";
   return <main className="centinela cv-auth">
     <section className="cv-auth-story">
-      <Link href="/" className="cv-brand" data-testid="link-auth-centinela-home"><span className="cv-mark" aria-hidden="true">C</span><span>Centinela Ocean View</span></Link>
+      <Link href="/" className="cv-brand" data-testid="link-auth-centinela-home"><span className="cv-mark" aria-hidden="true">C</span><span className="cv-brand-name">Centinela Ocean View</span><span className="cv-pilot-badge">Pilot</span></Link>
        <div><div className="cv-eyebrow" style={{ color: "#e5b965" }}>A home in Mar Vista</div><h1>{isSignIn ? "Come back to your community." : "There’s room at the table."}</h1><p>{isSignIn ? "Catch up on community notes, neighborhood ideas, and the small things that help us look out for one another." : "Create your account with an email approved for Centinela Ocean View resident access."}</p></div>
       <span className="cv-visually-muted" style={{ color: "#d8e4dc" }}>Centinela Ocean View · Resident community</span>
     </section>

@@ -29,7 +29,7 @@ export default function CentinelaHome({ links = {} }: { links?: CentinelaOfficia
   return <main className="centinela">
     <div className="cv-container">
       <header className="cv-header">
-        <Link href="/" className="cv-brand" data-testid="link-centinela-home"><span className="cv-mark" aria-hidden="true">C</span><span>Centinela Ocean View</span></Link>
+        <Link href="/" className="cv-brand" data-testid="link-centinela-home"><span className="cv-mark" aria-hidden="true">C</span><span className="cv-brand-name">Centinela Ocean View</span><span className="cv-pilot-badge">Pilot</span></Link>
         <nav className="cv-nav" aria-label="Main navigation">
           <a href="#community" data-testid="link-community">Our community</a>
           <a href="#around-us" data-testid="link-local-events">Around us</a>

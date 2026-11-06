@@ -124,7 +124,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     </span>
                   </span>
                   <span className="inline-flex items-center rounded-full bg-amber-400 px-2 py-0.5 leading-none">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-900">{isLeadershipAustin ? "Pilot" : "Beta"}</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-900">{isLeadershipAustin || tenant.slug === "centinela" ? "Pilot" : "Beta"}</span>
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">

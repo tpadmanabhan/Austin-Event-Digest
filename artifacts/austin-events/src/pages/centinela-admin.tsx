@@ -80,7 +80,7 @@ export default function CentinelaAdmin() {
   };
 
   return <main className="centinela"><div className="cv-container cv-admin">
-    <header className="cv-admin-header"><div><div className="cv-eyebrow">Centinela Ocean View</div><h1>Community desk</h1></div><span className="cv-tag">Tenant admin</span></header>
+    <header className="cv-admin-header"><div><div className="cv-eyebrow">Centinela Ocean View <span className="cv-pilot-badge">Pilot</span></div><h1>Community desk</h1></div><span className="cv-tag">Tenant admin</span></header>
     <p className="cv-section-intro">Keep neighbors informed, manage resident access, and share ideas for gathering. Proposals remain proposals unless separately confirmed.</p>
     {message && <div className="cv-success" role="status" data-testid="status-admin-success">{message}</div>}
     {error && <div className="cv-error" role="alert" data-testid="error-admin-action">{error}</div>}

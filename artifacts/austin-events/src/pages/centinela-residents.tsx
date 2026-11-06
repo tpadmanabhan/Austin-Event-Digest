@@ -40,7 +40,7 @@ export default function CentinelaResidents({ links = {} }: { links?: CentinelaOf
 
   return <main className="centinela"><div className="cv-container cv-portal">
     <header className="cv-header">
-      <Link href="/" className="cv-brand" data-testid="link-resident-home"><span className="cv-mark" aria-hidden="true">C</span><span>Centinela Ocean View</span></Link>
+      <Link href="/" className="cv-brand" data-testid="link-resident-home"><span className="cv-mark" aria-hidden="true">C</span><span className="cv-brand-name">Centinela Ocean View</span><span className="cv-pilot-badge">Pilot</span></Link>
       <nav className="cv-nav" aria-label="Resident navigation"><Link href="/" data-testid="link-portal-public-home"><ArrowLeft size={14} /> Community home</Link><button type="button" onClick={() => { const path = import.meta.env.BASE_URL.replace(/\/$/, "") || "/"; void signOut({ redirectUrl: path }); }} data-testid="button-resident-sign-out">Sign out</button></nav>
     </header>
     {portal.isLoading ? <><div className="cv-skeleton" /><div className="cv-skeleton" /><div className="cv-skeleton" /></> :
