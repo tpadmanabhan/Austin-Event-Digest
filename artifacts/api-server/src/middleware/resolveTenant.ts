@@ -2,6 +2,7 @@ import { type Request, type Response, type NextFunction } from "express";
 import { db, tenantsTable } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { parseAdminEmails } from "./requireAdmin";
 
 /**
  * Returns true for known development/preview hosts where subdomain-based tenant routing
@@ -93,7 +94,12 @@ export async function resolveTenant(
       return;
     }
 
-    req.tenant = tenant;
+    const adminEmails = parseAdminEmails(tenant.adminEmail);
+    req.tenant = {
+      ...tenant,
+      adminEmail: adminEmails[0] ?? tenant.adminEmail,
+      adminEmails,
+    };
     next();
   } catch (err) {
     logger.error({ err, slug }, "Error resolving tenant");

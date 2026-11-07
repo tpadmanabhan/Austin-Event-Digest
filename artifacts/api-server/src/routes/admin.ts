@@ -6,7 +6,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 import { createHash, randomInt } from "crypto";
 import { sendRsvpGroupNotification, buildDigestEmailHtml, sendWelcomeEmail, sendEmail } from "../lib/emailService";
 import { verifyTurnstileToken } from "../lib/turnstile";
-import { requireAdmin, adminTokenForHash, adminTokenForEmail } from "../middleware/requireAdmin";
+import { requireAdmin, adminTokenForHash, adminTokenForEmail, parseAdminEmails } from "../middleware/requireAdmin";
 import { verifyPassword } from "../lib/passwordHash";
 import { publicTenantUrl } from "../lib/publicUrls";
 import { listUpcomingLeadershipEvents } from "../lib/leadershipAustinManagedEvents";
@@ -76,10 +76,15 @@ router.post("/verify", (req, res) => {
     }
   }
 
-  // Check email-based token (managed cities without a password hash)
-  if (req.tenant?.adminEmail && req.tenant.id) {
-    const expected = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
-    if (expected && token === expected) { res.json({ valid: true }); return; }
+  // Check email-based tokens for any configured tenant admin.
+  const adminEmails = req.tenant?.adminEmails?.length
+    ? req.tenant.adminEmails
+    : parseAdminEmails(req.tenant?.adminEmail);
+  if (req.tenant?.id) {
+    for (const email of adminEmails) {
+      const expected = adminTokenForEmail(email, req.tenant.id);
+      if (expected && token === expected) { res.json({ valid: true }); return; }
+    }
   }
 
   res.status(401).json({ valid: false });
@@ -110,7 +115,7 @@ function isVerifyAttemptLimited(key: string): boolean {
   return false;
 }
 
-// Request OTP — sends a 6-digit code to the tenant's adminEmail
+// Request OTP — sends a 6-digit code to an authorized tenant admin
 router.post("/request-otp", async (req, res) => {
   if (!req.tenant) {
     res.status(404).json({ error: "not_found", message: "Admin login requires a city subdomain" });
@@ -138,7 +143,11 @@ router.post("/request-otp", async (req, res) => {
   }
 
   // Always return success to prevent email enumeration
-  if (!req.tenant.adminEmail || email.toLowerCase() !== req.tenant.adminEmail.toLowerCase()) {
+  const requestedEmail = email.trim().toLowerCase();
+  const allowedEmails = req.tenant.adminEmails?.length
+    ? req.tenant.adminEmails
+    : parseAdminEmails(req.tenant.adminEmail);
+  if (!allowedEmails.includes(requestedEmail)) {
     req.log.info({ tenantId: req.tenant.id }, "OTP requested for non-admin email (ignored)");
     res.json({ success: true });
     return;
@@ -147,7 +156,7 @@ router.post("/request-otp", async (req, res) => {
   try {
     // Generate 6-digit code
     const code = String(randomInt(100000, 999999));
-    const otpHash = createHash("sha256").update(code).digest("hex");
+    const otpHash = createHash("sha256").update(`${requestedEmail}:${code}`).digest("hex");
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Atomically upsert — unique index on tenant_id enforces single active OTP
@@ -161,7 +170,7 @@ router.post("/request-otp", async (req, res) => {
     // Send OTP email
     const cityName = req.tenant.name;
     await sendEmail({
-      to: req.tenant.adminEmail,
+      to: requestedEmail,
       subject: `Your ${cityName} admin login code: ${code}`,
       html: `
         <!DOCTYPE html>
@@ -213,7 +222,11 @@ router.post("/verify-otp", async (req, res) => {
     return;
   }
 
-  if (!req.tenant.adminEmail || email.toLowerCase() !== req.tenant.adminEmail.toLowerCase()) {
+  const requestedEmail = email.trim().toLowerCase();
+  const allowedEmails = req.tenant.adminEmails?.length
+    ? req.tenant.adminEmails
+    : parseAdminEmails(req.tenant.adminEmail);
+  if (!allowedEmails.includes(requestedEmail)) {
     res.status(401).json({ error: "unauthorized", message: "Invalid code" });
     return;
   }
@@ -239,7 +252,7 @@ router.post("/verify-otp", async (req, res) => {
       return;
     }
 
-    const submittedHash = createHash("sha256").update(otp.trim()).digest("hex");
+    const submittedHash = createHash("sha256").update(`${requestedEmail}:${otp.trim()}`).digest("hex");
     if (submittedHash !== stored.otpHash) {
       res.status(401).json({ error: "unauthorized", message: "Invalid code" });
       return;
@@ -248,7 +261,7 @@ router.post("/verify-otp", async (req, res) => {
     // Consume the OTP (single-use)
     await db.delete(adminOtpsTable).where(eq(adminOtpsTable.id, stored.id));
 
-    const token = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
+    const token = adminTokenForEmail(requestedEmail, req.tenant.id);
     if (!token) {
       req.log.error({ tenantId: req.tenant.id }, "RSVP_HMAC_SECRET not set — email admin login disabled");
       res.status(500).json({ error: "server_error", message: "Email admin login is not configured on this server" });
@@ -506,11 +519,15 @@ router.patch("/settings", requireAdmin, async (req, res) => {
   }
 
   if (adminEmail !== undefined) {
-    if (typeof adminEmail !== "string" || !adminEmail.includes("@")) {
-      res.status(400).json({ error: "invalid_request", message: "adminEmail must be a valid email address" });
+    const emails = typeof adminEmail === "string"
+      ? adminEmail.split(",").map((email: string) => email.trim().toLowerCase())
+      : [];
+    const isValidEmail = (email: string) => /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/.test(email);
+    if (emails.length === 0 || emails.some((email: string) => !isValidEmail(email))) {
+      res.status(400).json({ error: "invalid_request", message: "adminEmail must contain valid email addresses separated by commas" });
       return;
     }
-    updates.adminEmail = adminEmail.trim().toLowerCase();
+    updates.adminEmail = [...new Set(emails)].join(",");
   }
 
   if (digestTitle !== undefined) {

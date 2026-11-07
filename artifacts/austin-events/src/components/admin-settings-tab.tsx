@@ -218,21 +218,21 @@ export function AdminSettingsTab() {
         />
       </div>
 
-      {/* Admin email */}
+      {/* Admin emails */}
       <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Mail className="w-5 h-5 text-primary" />
-          <h3 className="font-serif font-bold text-lg">Admin email</h3>
+          <h3 className="font-serif font-bold text-lg">Admin emails</h3>
         </div>
         <p className="text-sm text-muted-foreground -mt-2">
-          Used for admin login and as the default address when sending yourself a draft digest.
+          Admins can sign in with any listed address. Separate addresses with commas; the first stays the default contact.
         </p>
         <Input
-          type="email"
+          type="text"
           value={adminEmail}
           onChange={e => setAdminEmail(e.target.value)}
-          className="rounded-xl max-w-sm"
-          placeholder="you@example.com"
+          className="rounded-xl max-w-lg"
+          placeholder="you@example.com, another@example.com"
         />
       </div>
 

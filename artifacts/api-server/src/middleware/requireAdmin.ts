@@ -24,6 +24,13 @@ export function adminTokenForEmail(adminEmail: string, tenantId: number): string
     .digest("hex");
 }
 
+export function parseAdminEmails(value: string | null | undefined): string[] {
+  return [...new Set((value ?? "")
+    .split(",")
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean))];
+}
+
 function verifyAdminToken(token: string | undefined, req: Request): boolean {
   if (!token) return false;
 
@@ -34,9 +41,14 @@ function verifyAdminToken(token: string | undefined, req: Request): boolean {
   }
 
   // Email-based admin (requires RSVP_HMAC_SECRET to be configured)
-  if (req.tenant?.adminEmail && req.tenant.id) {
-    const expected = adminTokenForEmail(req.tenant.adminEmail, req.tenant.id);
-    if (expected && token === expected) return true;
+  const adminEmails = req.tenant?.adminEmails?.length
+    ? req.tenant.adminEmails
+    : parseAdminEmails(req.tenant?.adminEmail);
+  if (req.tenant?.id) {
+    for (const email of adminEmails) {
+      const expected = adminTokenForEmail(email, req.tenant.id);
+      if (expected && token === expected) return true;
+    }
   }
 
   return false;

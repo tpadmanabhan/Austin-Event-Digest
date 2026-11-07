@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { adminTokenForHash, adminTokenForEmail } from "../middleware/requireAdmin";
+import { adminTokenForHash, adminTokenForEmail, parseAdminEmails } from "../middleware/requireAdmin";
 
 describe("admin auth token round-trip", () => {
   const FAKE_HASH = "$scrypt$N=32768,r=8,p=1$fakesalt$fakehashedbytes";
@@ -47,5 +47,10 @@ describe("admin auth token round-trip", () => {
       // Secret absent in test environment — verify route correctly skips this branch
       expect(emailToken).toBeNull();
     }
+  });
+
+  it("parses and normalizes multiple admin emails without duplicates", () => {
+    expect(parseAdminEmails(" First@Example.com, second@example.com,first@example.com "))
+      .toEqual(["first@example.com", "second@example.com"]);
   });
 });
