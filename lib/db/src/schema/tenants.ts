@@ -1,5 +1,16 @@
 import { pgTable, text, serial, timestamp, jsonb, boolean } from "drizzle-orm/pg-core";
 
+export interface LeadershipClassProfile {
+  id: string;
+  className: string;
+  classRepName: string;
+  classRepLinkedInUrl: string;
+  teamWhatsAppUrl: string;
+  teamLinkedInUrl: string;
+  classPhotoUrl: string | null;
+  classRepPhotoUrl: string | null;
+}
+
 export const tenantsTable = pgTable("tenants", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
@@ -13,6 +24,7 @@ export const tenantsTable = pgTable("tenants", {
   adminEmail: text("admin_email"),
   heroImageUrl: text("hero_image_url"),
   brandIconUrl: text("brand_icon_url"),
+  leadershipClassProfiles: jsonb("leadership_class_profiles").$type<LeadershipClassProfile[]>().notNull().default([]),
   emailVerified: boolean("email_verified").notNull().default(false),
   firstRun: boolean("first_run").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),

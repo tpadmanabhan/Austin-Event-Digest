@@ -128,6 +128,7 @@ export async function resolveCityGeo(city: string): Promise<CityGeo | null> {
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   Tech: ["tech", "software", "startup", "AI", "developer", "coding", "hackathon", "entrepreneur", "venture", "SaaS", "fintech"],
+  Education: ["education", "class", "lecture", "seminar", "workshop", "school", "university", "learning"],
   Music: ["music", "concert", "live music", "band", "jazz", "blues", "rock", "festival", "DJ", "open mic", "hip hop", "indie"],
   Food: ["food", "dining", "restaurant", "taco", "BBQ", "farmers market", "cooking", "dinner", "brunch", "culinary", "craft beer", "wine"],
   Wellness: ["yoga", "fitness", "run", "hike", "bike", "outdoor", "wellness", "meditation", "pilates", "gym", "health", "trail"],
@@ -205,10 +206,10 @@ export function deduplicateEvents(events: EventItem[]): EventItem[] {
 }
 
 // Maps DB category names (canonical + aliases) to their guessCategory() equivalents
-// guessCategory() now returns exactly one of: "Tech", "Arts", "Sports", "Civics", "Wellness"
 const TENANT_TO_GUESS_CATEGORIES: Record<string, string[]> = {
   "Tech": ["Tech"],
   "Tech & Business": ["Tech"],
+  "Education": ["Education"],
   "Music": ["Arts"],
   "Food": ["Arts"],
   "Food & Drink": ["Arts"],
@@ -217,7 +218,7 @@ const TENANT_TO_GUESS_CATEGORIES: Record<string, string[]> = {
   "Civics": ["Civics"],
   "Community": ["Civics"],
   "Arts & Culture": ["Arts"],
-  "Learning": ["Arts"],
+  "Learning": ["Education"],
 };
 
 // Collapses aliased category names to a single canonical form used by adapters
@@ -279,9 +280,10 @@ export function decodeHtmlEntities(str: string | null | undefined): string | nul
     .replace(/&#x2F;/g, "/");
 }
 
-// Returns exactly one of the 5 display categories: Tech, Arts, Sports, Civics, Wellness
+// Returns one of the display categories used by event filters.
 export function guessCategory(text: string): string {
   const lower = text.toLowerCase();
+  if (/education|lecture|seminar|workshop|school|university|learning|curriculum|teacher|student/.test(lower)) return "Education";
   if (/tech|startup|ai\b|code|developer|hackathon|entrepreneur|venture|founder|saas|software|product hunt/.test(lower)) return "Tech";
   if (/yoga|meditation|mindfulness|pilates|wellness|health retreat/.test(lower)) return "Wellness";
   if (/run|hike|bike|fitness|gym|outdoor|trail|swim|sport|cycling|crossfit/.test(lower)) return "Sports";

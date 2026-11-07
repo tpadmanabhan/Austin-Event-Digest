@@ -134,7 +134,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Upcoming events · ${model.editionRange}`}</p>
           : !isLeadershipAustin && model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
         <p className="mt-3 text-lg text-slate-800">{isLeadershipAustin ? "A practical home for the people, programs, and local stories shaping Austin. Browse alumni gatherings and follow each source for current details." : model.intro || model.description}</p>
-        {isLeadershipAustin && <LeadershipAlumniTestimonial />}
+        {isLeadershipAustin && <LeadershipAlumniTestimonial profiles={model.leadershipClassProfiles} />}
         {isLeadershipAustin && (
           <div className="mt-8 space-y-5">
             <AlumniHappeningsSection events={(model.events ?? []) as any[]} compact />

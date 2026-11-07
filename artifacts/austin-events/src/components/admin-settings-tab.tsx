@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTenant } from "@/contexts/tenant-context";
 import { useQueryClient } from "@tanstack/react-query";
+import { LeadershipClassSettings } from "@/components/leadership-class-settings";
 import { Save, Palette, Check, Tag, Mail, ImageIcon, Loader2, X, User } from "lucide-react";
 
 const ALL_CATEGORIES = [
@@ -14,10 +15,20 @@ const ALL_CATEGORIES = [
   { name: "Civics",   emoji: "🏛️", description: "City council, neighborhood events, volunteering." },
 ];
 
+const LEADERSHIP_CATEGORIES = [
+  { name: "Tech", emoji: "💻", description: "Technology, startups, and innovation." },
+  { name: "Arts", emoji: "🎨", description: "Arts, culture, music, and creative events." },
+  { name: "Sports", emoji: "🏃", description: "Sports, fitness, and outdoor activities." },
+  { name: "Civics", emoji: "🏛️", description: "Civic life, volunteering, and community action." },
+  { name: "Wellness", emoji: "🧘", description: "Wellness, health, and mindful movement." },
+  { name: "Education", emoji: "📚", description: "Classes, lectures, workshops, and learning programs." },
+];
+
 export function AdminSettingsTab() {
   const { toast } = useToast();
   const tenant = useTenant();
   const queryClient = useQueryClient();
+  const categoryOptions = tenant.slug === "leadershipaustin" ? LEADERSHIP_CATEGORIES : ALL_CATEGORIES;
 
   const [name, setName] = useState(tenant.name);
   const [accentColor, setAccentColor] = useState(tenant.accentColor);
@@ -272,7 +283,7 @@ export function AdminSettingsTab() {
           We'll discover and filter events matching these categories.
         </p>
         <div className="space-y-2">
-          {ALL_CATEGORIES.map(cat => {
+          {categoryOptions.map(cat => {
             const checked = categories.includes(cat.name);
             return (
               <button
@@ -305,6 +316,8 @@ export function AdminSettingsTab() {
           <p className="text-xs text-destructive">Select at least one category.</p>
         )}
       </div>
+
+      {tenant.slug === "leadershipaustin" && <LeadershipClassSettings />}
 
       {/* Hero image + brand icon */}
       <div className="bg-card border border-border rounded-2xl p-6 space-y-6">

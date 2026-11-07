@@ -13,6 +13,7 @@ import type { SourceAdapter } from "./types";
 // Keyed by canonical category names only — aliases are resolved via canonicalizeCategory()
 export const CATEGORY_SOURCES: Record<string, SourceAdapter[]> = {
   "Tech":           [stationAustinAdapter, atlTechEventsAdapter, eventbriteWebAdapter, lumaAdapter, meetupAdapter, eventbriteAdapter, ticketmasterAdapter],
+  "Education":      [eventbriteWebAdapter, lumaAdapter, meetupAdapter, eventbriteAdapter],
   "Music":          [bandsintownAdapter, songkickAdapter, eventbriteAdapter, ticketmasterAdapter],
   "Food":           [lumaAdapter, eventbriteAdapter, eventbriteWebAdapter],
   "Wellness":       [lumaAdapter, meetupAdapter, eventbriteAdapter, ticketmasterAdapter],

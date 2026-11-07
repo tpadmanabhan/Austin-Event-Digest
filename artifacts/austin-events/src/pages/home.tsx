@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Star, Bell, CheckCircle2, Loader2, Trophy, ExternalLink, Leaf, Calendar } from "lucide-react";
-import { RiLinkedinBoxFill } from "react-icons/ri";
 
 import { useLatestDigest, useLeadershipManagedEvents } from "@/hooks/use-events";
 import { Layout } from "@/components/layout";
@@ -28,10 +27,11 @@ import { CityAiEthicsSection } from "@/components/city-ai-ethics-section";
 import { PrivacyFirstGroupsFeature } from "@/components/privacy-first-groups-feature";
 import { LA_HERO_IMAGE_URL } from "@/lib/city-share-image";
 import { AlumniHappeningsSection } from "@/components/alumni-happenings-section";
+import { LeadershipClassProfiles } from "@/components/leadership-class-profiles";
 
 const SHOW_AUSTIN_CARES = true;
 
-type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness";
+type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" | "Education";
 
 const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
   All:     { label: "All Events", emoji: "✦" },
@@ -40,6 +40,7 @@ const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
   Sports:  { label: "Sports",     emoji: "🏃" },
   Civics:  { label: "Civics",     emoji: "🏛️" },
   Wellness:{ label: "Wellness",   emoji: "🧘" },
+  Education:{ label: "Education", emoji: "📚" },
 };
 
 const OSAKA_UI: Record<string, string> = {
@@ -54,8 +55,9 @@ const OSAKA_UI: Record<string, string> = {
   "Apply Now": "詳細を見る",
 };
 
-function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" {
+function getDisplayCategory(event: { category: string; title: string; description?: string }): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" | "Education" {
   const cat = (event.category || "").toLowerCase().trim();
+  if (cat.includes("education") || cat.includes("school") || cat.includes("university") || cat.includes("learning")) return "Education";
   // Handle both new single-word values and legacy multi-word stored values
   if (cat.includes("tech") || cat.includes("business") || cat.includes("startup")) return "Tech";
   if (cat.includes("wellness") || cat.includes("meditation") || cat.includes("mindfulness") || cat.includes("yoga") || cat.includes("pilates")) return "Wellness";
@@ -64,6 +66,7 @@ function getDisplayCategory(event: { category: string; title: string; descriptio
   if (cat.includes("arts") || cat.includes("music") || cat.includes("culture") || cat.includes("entertainment") || cat.includes("food") || cat.includes("learning")) return "Arts";
   // Title-based fallbacks
   const titleOnly = (event.title || "").toLowerCase();
+  if (titleOnly.includes("education") || titleOnly.includes("school") || titleOnly.includes("university") || titleOnly.includes("lecture") || titleOnly.includes("seminar")) return "Education";
   if (titleOnly.includes("tech") || titleOnly.includes("startup") || titleOnly.includes("ai ") || titleOnly.includes("developer")) return "Tech";
   if (titleOnly.includes("yoga") || titleOnly.includes("meditation") || titleOnly.includes("wellness")) return "Wellness";
   if (titleOnly.includes("fitness") || titleOnly.includes("hike") || titleOnly.includes("sport") || titleOnly.includes("cycling")) return "Sports";
@@ -249,7 +252,7 @@ export default function Home() {
 
   // Japanese helper: returns JA string when Tokyo+ja, else English
   const jt = (en: string, ja: string) => (isJapaneseEdition && lang === "ja") ? (isOsaka ? (OSAKA_UI[en] ?? ja) : ja) : en;
-  const JA_CAT: Record<string, string> = { All: JA.catAll, Tech: JA.catTech, Arts: JA.catArts, Sports: JA.catSports, Civics: JA.catCivics, Wellness: JA.catWellness };
+  const JA_CAT: Record<string, string> = { All: JA.catAll, Tech: JA.catTech, Arts: JA.catArts, Sports: JA.catSports, Civics: JA.catCivics, Wellness: JA.catWellness, Education: "教育" };
   const catLabel = (cat: string) => (isJapaneseEdition && lang === "ja") ? (JA_CAT[cat] ?? cat) : (CAT_CONFIG[cat as keyof typeof CAT_CONFIG]?.label ?? cat);
 
   const MAP_CENTERS: Record<string, [number, number]> = {
@@ -579,30 +582,7 @@ export default function Home() {
                   </p>
                 )}
                 {isLeadershipAustin ? (
-                  <div className="mt-4 border-t border-border/60 pt-3 not-italic">
-                    <p className="leadership-testimonial-name text-sm font-semibold text-foreground">Alexandria Robertson</p>
-                    <p className="leadership-testimonial-meta text-xs font-medium tracking-wide text-muted-foreground">Class Rep</p>
-                    <p className="leadership-testimonial-meta text-xs tracking-wide text-muted-foreground">LA Emerge 18-2025</p>
-                    <a
-                      href="https://chat.whatsapp.com/BTUYOWtvqElAqCxD8ZwWGE?s=cl&p=i&mlu=4&ilr=4&iam=2as"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 inline-block text-sm font-semibold text-[#FFBA01] underline underline-offset-2 hover:opacity-80"
-                    >
-                      LA 18 WhatsApp group
-                    </a>
-                    <a
-                      href="https://www.linkedin.com/groups/14537139/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="Emerge 18 on LinkedIn"
-                      data-testid="link-emerge-18-linkedin"
-                      className="mt-2 flex w-fit items-center gap-1.5 text-sm font-semibold text-[#FFBA01] underline underline-offset-2 hover:opacity-80"
-                    >
-                      <RiLinkedinBoxFill aria-hidden="true" className="h-4 w-4 text-[#0A66C2]" />
-                      Emerge 18
-                    </a>
-                  </div>
+                  <LeadershipClassProfiles profiles={tenant.leadershipClassProfiles} variant="dark" />
                 ) : tenant.curatorName && (
                   <p className="mt-3 text-sm font-semibold text-primary not-italic">
                     —{" "}

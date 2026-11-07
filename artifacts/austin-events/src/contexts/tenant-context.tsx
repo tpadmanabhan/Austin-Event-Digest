@@ -1,5 +1,6 @@
 import { createContext, useContext, useLayoutEffect, ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import type { LeadershipClassProfile } from "../../../../shared/leadership-class-profiles";
 
 export interface TenantConfig {
   slug: string;
@@ -13,6 +14,7 @@ export interface TenantConfig {
   hasEmailAdmin: boolean;
   hasHeroImage?: boolean;
   hasBrandIcon?: boolean;
+  leadershipClassProfiles?: LeadershipClassProfile[];
 }
 
 const TenantContext = createContext<TenantConfig | null>(null);

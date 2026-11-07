@@ -469,6 +469,7 @@ router.get("/rsvps", requireAdmin, async (req, res) => {
         adminEmail: tenantsTable.adminEmail,
         heroImageUrl: tenantsTable.heroImageUrl,
         brandIconUrl: tenantsTable.brandIconUrl,
+        leadershipClassProfiles: tenantsTable.leadershipClassProfiles,
       })
       .from(tenantsTable)
       .where(eq(tenantsTable.id, tenantId))
@@ -488,7 +489,7 @@ router.get("/rsvps", requireAdmin, async (req, res) => {
 
 // Update tenant settings (name, accentColor, categories, curatorName, etc.)
 router.patch("/settings", requireAdmin, async (req, res) => {
-  const { name, accentColor, categories, adminEmail, digestTitle, curatorName, heroImageUrl, brandIconUrl } = req.body ?? {};
+  const { name, accentColor, categories, adminEmail, digestTitle, curatorName, heroImageUrl, brandIconUrl, leadershipClassProfiles } = req.body ?? {};
   const tenantId = req.tenant!.id;
 
   const updates: Record<string, unknown> = {};
@@ -509,7 +510,7 @@ router.patch("/settings", requireAdmin, async (req, res) => {
     updates.accentColor = accentColor;
   }
 
-  const allowed = new Set(["Tech", "Music", "Food", "Wellness", "Civics", "Sports"]);
+  const allowed = new Set(["Tech", "Arts", "Sports", "Wellness", "Civics", "Music", "Food", "Education"]);
   if (categories !== undefined) {
     if (!Array.isArray(categories) || categories.length === 0 || !categories.every((c: unknown) => typeof c === "string" && allowed.has(c))) {
       res.status(400).json({ error: "invalid_request", message: "categories must be a non-empty array of valid category names" });
@@ -562,6 +563,52 @@ router.patch("/settings", requireAdmin, async (req, res) => {
     updates.brandIconUrl = brandIconUrl;
   }
 
+  if (leadershipClassProfiles !== undefined) {
+    const isSafeUrl = (value: unknown, allowObjectPath = false): value is string => {
+      if (typeof value !== "string" || value.length > 2048) return false;
+      if (!value) return true;
+      if (allowObjectPath && value.startsWith("/api/storage/objects/")) return true;
+      try {
+        const url = new URL(value);
+        return url.protocol === "https:" || url.protocol === "http:";
+      } catch {
+        return false;
+      }
+    };
+    const isValidProfile = (profile: any) =>
+      profile && typeof profile === "object" &&
+      typeof profile.id === "string" && profile.id.trim().length > 0 && profile.id.length <= 100 &&
+      typeof profile.className === "string" && profile.className.trim().length > 0 && profile.className.length <= 120 &&
+      typeof profile.classRepName === "string" && profile.classRepName.trim().length > 0 && profile.classRepName.length <= 120 &&
+      isSafeUrl(profile.classRepLinkedInUrl) &&
+      isSafeUrl(profile.teamWhatsAppUrl) &&
+      isSafeUrl(profile.teamLinkedInUrl) &&
+      (profile.classPhotoUrl === null || isSafeUrl(profile.classPhotoUrl, true)) &&
+      (profile.classRepPhotoUrl === null || isSafeUrl(profile.classRepPhotoUrl, true));
+
+    if (req.tenant!.slug !== "leadershipaustin" || !Array.isArray(leadershipClassProfiles) ||
+      leadershipClassProfiles.length < 1 || leadershipClassProfiles.length > 20 ||
+      !leadershipClassProfiles.every(isValidProfile) ||
+      new Set(leadershipClassProfiles.map((profile: any) => profile.id)).size !== leadershipClassProfiles.length) {
+      res.status(400).json({
+        error: "invalid_request",
+        message: "leadershipClassProfiles must contain 1–20 valid, uniquely identified Leadership Austin class profiles",
+      });
+      return;
+    }
+
+    updates.leadershipClassProfiles = leadershipClassProfiles.map((profile: any) => ({
+      id: profile.id.trim(),
+      className: profile.className.trim(),
+      classRepName: profile.classRepName.trim(),
+      classRepLinkedInUrl: profile.classRepLinkedInUrl.trim(),
+      teamWhatsAppUrl: profile.teamWhatsAppUrl.trim(),
+      teamLinkedInUrl: profile.teamLinkedInUrl.trim(),
+      classPhotoUrl: profile.classPhotoUrl,
+      classRepPhotoUrl: profile.classRepPhotoUrl,
+    }));
+  }
+
   if (Object.keys(updates).length === 0) {
     res.status(400).json({ error: "invalid_request", message: "No valid fields to update" });
     return;
@@ -582,6 +629,7 @@ router.patch("/settings", requireAdmin, async (req, res) => {
         curatorName: tenantsTable.curatorName,
         heroImageUrl: tenantsTable.heroImageUrl,
         brandIconUrl: tenantsTable.brandIconUrl,
+        leadershipClassProfiles: tenantsTable.leadershipClassProfiles,
       });
     res.json({ tenant: updated });
   } catch (err) {

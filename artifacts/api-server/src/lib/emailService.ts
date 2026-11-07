@@ -12,6 +12,10 @@ import { buildLaAiEthicsSection } from "./laAiEthics";
 import { buildCityAiEthicsSection } from "./cityAiEthics";
 import { signManagedEventRsvpParams, signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
 import { publicTenantUrl } from "./publicUrls";
+import {
+  leadershipClassProfilesOrDefault,
+  type LeadershipClassProfile,
+} from "../../../../shared/leadership-class-profiles";
 
 const FROM_NAME = process.env.FROM_NAME || "Raj's Austin Events";
 const NEWSLETTER_FROM_EMAIL = "raj@eventcarpooling.com";
@@ -498,6 +502,7 @@ export async function sendWelcomeEmail(to: string, name?: string | null, tenant?
 // Maps any stored category value to one of the 5 display labels
 function normalizeCategory(raw: string): string {
   const c = (raw || "").toLowerCase();
+  if (c.includes("education") || c.includes("school") || c.includes("university") || c.includes("learning")) return "Education";
   if (c.includes("tech") || c.includes("business") || c.includes("startup")) return "Tech";
   if (c.includes("wellness") || c.includes("meditation") || c.includes("yoga") || c.includes("mindfulness") || c.includes("pilates")) return "Wellness";
   if (c.includes("sport") || c.includes("fitness") || c.includes("outdoor")) return "Sports";
@@ -514,6 +519,7 @@ function categoryBadgeStyle(raw: string): string {
     Sports:  "background:#f97316; color:#fff;",
     Civics:  "background:#0ea5e9; color:#fff;",
     Wellness:"background:#22c55e; color:#fff;",
+    Education:"background:#7c3aed; color:#fff;",
   };
   return styles[cat] ?? "background:#6b7280; color:#fff;";
 }
@@ -719,7 +725,14 @@ export function buildDigestEmailHtml(digest: {
   alsoNearby?: DigestEventItem[];
   alumniSourcedEvents?: DigestEventItem[];
   preferencesUrl?: string | null;
-}, subscriberName?: string | null, subscriberEmail?: string | null, tenant?: { slug?: string | null; name?: string | null; city?: string | null; digestTitle?: string | null; curatorName?: string | null }): string {
+}, subscriberName?: string | null, subscriberEmail?: string | null, tenant?: {
+  slug?: string | null;
+  name?: string | null;
+  city?: string | null;
+  digestTitle?: string | null;
+  curatorName?: string | null;
+  leadershipClassProfiles?: LeadershipClassProfile[] | null;
+}): string {
   const weekDate = new Date(digest.weekOf).toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -1356,15 +1369,48 @@ export function buildDigestEmailHtml(digest: {
   const featuredCards = featuredEvents.map(e => buildEventCard(e, true)).join("");
   const eventCards = regularEvents.map(e => buildEventCard(e, false)).join("");
   const alsoNearbyCards = alsoNearby.map(e => buildEventCard(e, false)).join("");
+  const safeLeadershipLink = (value: string): string | null => {
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+    } catch {
+      return null;
+    }
+  };
+  const absoluteLeadershipImage = (value: string | null, siteUrl?: string): string | null => {
+    if (!value) return null;
+    if (/^https?:\/\//i.test(value)) return value;
+    return value.startsWith("/") && siteUrl ? `${siteUrl}${value}` : null;
+  };
+  const leadershipProfilesHtml = leadershipClassProfilesOrDefault(tenant?.leadershipClassProfiles)
+    .map((profile: LeadershipClassProfile) => {
+      const classPhoto = absoluteLeadershipImage(profile.classPhotoUrl, digest.siteUrl);
+      const repPhoto = absoluteLeadershipImage(profile.classRepPhotoUrl, digest.siteUrl);
+      const repLinkedIn = safeLeadershipLink(profile.classRepLinkedInUrl);
+      const whatsapp = safeLeadershipLink(profile.teamWhatsAppUrl);
+      const linkedinGroup = safeLeadershipLink(profile.teamLinkedInUrl);
+      return `
+        ${classPhoto ? `<img src="${escapeHtml(classPhoto)}" alt="${escapeHtml(profile.className)} class photo" style="display:block;width:auto;max-width:100%;height:auto;max-height:130px;object-fit:contain;background:#e9f1f8;border-radius:6px;margin:12px 0 10px;" />` : ""}
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin-top:8px;border-top:1px solid #e2e8f0;padding-top:10px;">
+          <tr>
+            ${repPhoto ? `<td valign="middle" style="width:62px;padding-right:10px;"><img src="${escapeHtml(repPhoto)}" alt="${escapeHtml(profile.classRepName)}" width="52" height="52" style="display:block;width:52px;height:52px;object-fit:cover;border-radius:50%;border:2px solid #FFBA01;" /></td>` : ""}
+            <td valign="middle">
+              <p style="margin:0;color:#314363;font-family:'Figtree',Arial,sans-serif;font-size:13px;font-weight:800;">${escapeHtml(profile.classRepName)}</p>
+              <p style="margin:3px 0 0;color:#475569;font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:700;">Class Rep · ${escapeHtml(profile.className)}</p>
+            </td>
+          </tr>
+        </table>
+        <div style="margin-top:8px;">
+          ${repLinkedIn ? `<a href="${escapeHtml(repLinkedIn)}" target="_blank" rel="noopener noreferrer" aria-label="Class rep LinkedIn profile" style="display:inline-block;margin:0 12px 7px 0;color:#314363;font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:800;text-decoration:underline;"><span aria-hidden="true" style="display:inline-block;margin-right:4px;padding:1px 3px;border-radius:2px;background:#0A66C2;color:#ffffff;font-family:Arial,sans-serif;font-size:10px;font-weight:700;">in</span>Class rep profile</a>` : ""}
+          ${whatsapp ? `<a href="${escapeHtml(whatsapp)}" target="_blank" rel="noopener noreferrer" aria-label="Team WhatsApp group" style="display:inline-block;margin:0 12px 7px 0;color:#314363;font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:800;text-decoration:underline;"><span aria-hidden="true" style="display:inline-block;margin-right:4px;padding:1px 4px;border-radius:50%;background:#25D366;color:#ffffff;font-family:Arial,sans-serif;font-size:9px;font-weight:700;">WA</span>Team WhatsApp group</a>` : ""}
+          ${linkedinGroup ? `<a href="${escapeHtml(linkedinGroup)}" target="_blank" rel="noopener noreferrer" aria-label="Team LinkedIn group" style="display:inline-block;margin:0 12px 7px 0;color:#314363;font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:800;text-decoration:underline;"><span aria-hidden="true" style="display:inline-block;margin-right:4px;padding:1px 3px;border-radius:2px;background:#0A66C2;color:#ffffff;font-family:Arial,sans-serif;font-size:10px;font-weight:700;">in</span>Team LinkedIn group</a>` : ""}
+        </div>`;
+    }).join("");
   const leadershipTestimonialHtml = slug === "leadershipaustin" ? `
       <div style="margin-top:18px; border-top:1px solid #e2e8f0; padding-top:16px;">
         <p style="margin:0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:16px; line-height:1.7; font-style:italic; font-weight:600;">Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along.</p>
         <p style="margin:12px 0 0; padding:12px 14px; border-left:4px solid #FFBA01; border-radius:4px; background:#f7f4ef; color:#334155; font-family:'Figtree',Arial,sans-serif; font-size:16px; line-height:1.65; font-weight:600;"><span style="color:#a94832; font-weight:800;">Hey, all alumni.</span> We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
-        <p style="margin:10px 0 0; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800;">Alexandria Robertson</p>
-        <p style="margin:3px 0 0; color:#475569; font-family:'Figtree',Arial,sans-serif; font-size:12px; font-weight:700;">Class Rep</p>
-        <p style="margin:2px 0 0; color:#64748b; font-family:'Figtree',Arial,sans-serif; font-size:12px;">LA Emerge 18-2025</p>
-        <a href="${escapeHtml("https://chat.whatsapp.com/BTUYOWtvqElAqCxD8ZwWGE?s=cl&p=i&mlu=4&ilr=4&iam=2as")}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:8px; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800; text-decoration:underline;">LA 18 WhatsApp group</a>
-        <a href="https://www.linkedin.com/groups/14537139/" target="_blank" rel="noopener noreferrer" aria-label="Emerge 18 on LinkedIn" style="display:block; width:max-content; margin-top:8px; color:#314363; font-family:'Figtree',Arial,sans-serif; font-size:13px; font-weight:800; text-decoration:underline;"><span aria-hidden="true" style="display:inline-block; margin-right:5px; padding:1px 3px; border-radius:2px; background:#0A66C2; color:#ffffff; font-family:Arial,sans-serif; font-size:11px; font-weight:700; line-height:14px; text-decoration:none;">in</span>Emerge 18</a>
+        ${leadershipProfilesHtml}
       </div>` : "";
   const alumniSourcedEventsHtml = slug === "leadershipaustin" && (digest.alumniSourcedEvents ?? []).length > 0
     ? `<section style="margin:0 0 28px;border:1px solid #314363;border-radius:12px;overflow:hidden;background:#fff;">

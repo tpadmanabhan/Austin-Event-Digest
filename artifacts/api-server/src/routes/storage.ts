@@ -2,7 +2,7 @@ import { Readable } from "stream";
 import { z } from "zod";
 import { Router, type IRouter, type Request, type Response } from "express";
 import { ObjectNotFoundError, ObjectStorageService } from "../lib/objectStorage";
-import { db, submittedDealsTable } from "@workspace/db";
+import { db, submittedDealsTable, tenantsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
@@ -115,7 +115,16 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
       .where(eq(submittedDealsTable.imageUrl, imageUrl))
       .limit(1);
 
-    if (!row) {
+    const tenantsWithProfiles = await db
+      .select({ leadershipClassProfiles: tenantsTable.leadershipClassProfiles })
+      .from(tenantsTable);
+    const referencedByLeadershipProfile = tenantsWithProfiles.some(({ leadershipClassProfiles }) =>
+      leadershipClassProfiles.some((profile) =>
+        profile.classPhotoUrl === imageUrl || profile.classRepPhotoUrl === imageUrl,
+      ),
+    );
+
+    if (!row && !referencedByLeadershipProfile) {
       res.status(404).json({ error: "Object not found" });
       return;
     }

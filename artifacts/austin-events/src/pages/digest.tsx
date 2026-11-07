@@ -253,7 +253,7 @@ function formatJapaneseEditionDateRange(range: string): string {
   return range;
 }
 
-type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" | "Programs";
+type DisplayCat = "All" | "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" | "Education" | "Programs";
 
 const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
   All:     { label: "All Events", emoji: "✦" },
@@ -262,13 +262,15 @@ const CAT_CONFIG: Record<DisplayCat, { label: string; emoji: string }> = {
   Sports:  { label: "Sports",     emoji: "🏃" },
   Civics:  { label: "Civics",     emoji: "🏛️" },
   Wellness:{ label: "Wellness",   emoji: "🧘" },
+  Education:{ label: "Education", emoji: "📚" },
   Programs:{ label: "Programs",   emoji: "📘" },
 };
 
-function getDisplayCategory(event: { category: string; title: string; description?: string }, includePrograms = false): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" | "Programs" {
+function getDisplayCategory(event: { category: string; title: string; description?: string }, includePrograms = false): "Tech" | "Arts" | "Sports" | "Civics" | "Wellness" | "Education" | "Programs" {
   const cat = (event.category || "").toLowerCase().trim();
   // Handle both new single-word values and legacy multi-word stored values
   if (includePrograms && cat.includes("program")) return "Programs";
+  if (cat.includes("education") || cat.includes("school") || cat.includes("university") || cat.includes("learning")) return "Education";
   if (cat.includes("tech") || cat.includes("business") || cat.includes("startup")) return "Tech";
   if (cat.includes("wellness") || cat.includes("meditation") || cat.includes("mindfulness") || cat.includes("yoga") || cat.includes("pilates")) return "Wellness";
   if (cat.includes("sports") || cat.includes("fitness") || cat.includes("outdoor") || cat.includes("sport")) return "Sports";
@@ -276,6 +278,7 @@ function getDisplayCategory(event: { category: string; title: string; descriptio
   if (cat.includes("arts") || cat.includes("music") || cat.includes("culture") || cat.includes("entertainment") || cat.includes("food") || cat.includes("learning")) return "Arts";
   // Title-based fallbacks
   const titleOnly = (event.title || "").toLowerCase();
+  if (titleOnly.includes("education") || titleOnly.includes("school") || titleOnly.includes("university") || titleOnly.includes("lecture") || titleOnly.includes("seminar")) return "Education";
   if (titleOnly.includes("tech") || titleOnly.includes("startup") || titleOnly.includes("ai ") || titleOnly.includes("coding") || titleOnly.includes("forum")) return "Tech";
   if (titleOnly.includes("yoga") || titleOnly.includes("meditation") || titleOnly.includes("wellness")) return "Wellness";
   if (titleOnly.includes("fitness") || titleOnly.includes("hike") || titleOnly.includes("sport") || titleOnly.includes("cycling") || titleOnly.includes("swim")) return "Sports";
@@ -499,7 +502,7 @@ export default function DigestView() {
     "Don't miss the next one": "次の号もお楽しみに",
   };
   const jt = (en: string, ja: string) => (isJapaneseEdition && lang === "ja") ? (isOsaka ? (osakaDigestCopy[en] ?? ja) : ja) : en;
-  const JA_CAT: Record<string, string> = { All: JA.catAll, Tech: JA.catTech, Arts: JA.catArts, Sports: JA.catSports, Civics: JA.catCivics, Wellness: JA.catWellness };
+  const JA_CAT: Record<string, string> = { All: JA.catAll, Tech: JA.catTech, Arts: JA.catArts, Sports: JA.catSports, Civics: JA.catCivics, Wellness: JA.catWellness, Education: "教育" };
   const catLabel = (cat: string) => (isJapaneseEdition && lang === "ja") ? (JA_CAT[cat] ?? cat) : (CAT_CONFIG[cat as keyof typeof CAT_CONFIG]?.label ?? cat);
 
   if (isLoading) {

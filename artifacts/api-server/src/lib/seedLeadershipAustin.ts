@@ -3,6 +3,7 @@ import { db, digestsTable, tenantsTable, EventItemSchema } from "@workspace/db";
 import edition from "./editions/leadershipaustin-2026-11-08.json";
 import { hashPassword } from "./passwordHash";
 import { withPublicEventIds } from "./publicEventIdentity";
+import { DEFAULT_LEADERSHIP_CLASS_PROFILES } from "../../../../shared/leadership-class-profiles";
 
 /** Add only the requested first edition; never replace edited or sent data. */
 export async function seedLeadershipAustin(): Promise<void> {
@@ -19,7 +20,8 @@ export async function seedLeadershipAustin(): Promise<void> {
       name: "Leadership Austin",
       city: "Austin, TX",
       accentColor: "#314363",
-      categories: ["Programs", "Alumni News"],
+      categories: ["Arts", "Sports", "Tech", "Civics", "Wellness", "Education"],
+      leadershipClassProfiles: DEFAULT_LEADERSHIP_CLASS_PROFILES,
       digestTitle: "Leadership Austin",
       adminEmail: "aiimplementationclubaustin@gmail.com",
       passwordHash,

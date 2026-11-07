@@ -60,6 +60,7 @@ function getCitySlug(city: string): string | null {
 /** Category → Eventbrite path keywords, in priority order */
 const CATEGORY_PATHS: Record<string, string[]> = {
   Tech:            ["tech--events", "ai--technology--events", "startup--events"],
+  Education:       ["education--events", "classes--events"],
   Food:            ["food--events"],
   Music:           ["music--events"],
   Wellness:        ["fitness--events", "wellness--events"],

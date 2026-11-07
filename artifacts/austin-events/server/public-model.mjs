@@ -205,6 +205,9 @@ export async function loadPublicModel(site, pathname) {
     const event = publicEvent(e, site.slug); return [event.id, event];
   })).values()].filter(e => !e.isPost && !e.isBusinessSpotlight);
   const isLeadershipAustin = site.slug === "leadershipaustin";
+  const leadershipSettings = isLeadershipAustin
+    ? await publicApi(site, `/tenant/config?slug=${encodeURIComponent(site.slug)}`)
+    : null;
   const cityModel = { ...base, kind: digestMatch ? "digest" : site.slug === "austincares" ? "deals" : "city",
     noindex: false,
     title: isLeadershipAustin ? "Leadership Austin — Alumni Happenings" :
@@ -216,6 +219,7 @@ export async function loadPublicModel(site, pathname) {
       : `Explore curated ${cityName} events, local newsletters, venues, and community activities.`,
     intro: digest?.intro || `Explore local activities in ${cityName}. Subscribe on this city's homepage for new editions.`,
     weekOf: digest?.weekOf, editionRange: publicEditionRange(site.slug, digest?.subject), digestId: digest?.id, events,
+    ...(isLeadershipAustin ? { leadershipClassProfiles: leadershipSettings?.tenant?.leadershipClassProfiles || [] } : {}),
     editionUrl: digest ? `/digest/${digest.id}` : undefined,
   };
   if (cityModel.kind === "deals") {

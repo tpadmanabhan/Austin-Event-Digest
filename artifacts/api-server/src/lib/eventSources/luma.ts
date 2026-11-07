@@ -6,6 +6,7 @@ import { logger } from "../logger";
 // Keyed by canonical category names (after canonicalizeCategory is applied upstream)
 const LUMA_TAG_MAP: Record<string, string[]> = {
   "Tech": ["tech", "startup", "ai"],
+  "Education": ["education", "learning"],
   "Food": ["food", "foodie"],
   "Wellness": ["wellness", "yoga", "fitness"],
   "Arts & Culture": ["art", "culture", "music"],

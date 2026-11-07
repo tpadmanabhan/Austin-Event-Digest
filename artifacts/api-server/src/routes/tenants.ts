@@ -51,6 +51,7 @@ router.get("/tenant/config", async (req, res) => {
         adminEmail: tenantsTable.adminEmail,
         heroImageUrl: tenantsTable.heroImageUrl,
         brandIconUrl: tenantsTable.brandIconUrl,
+        leadershipClassProfiles: tenantsTable.leadershipClassProfiles,
       })
       .from(tenantsTable)
       .where(eq(tenantsTable.slug, slug))

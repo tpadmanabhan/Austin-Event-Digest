@@ -874,7 +874,7 @@ describe("Leadership Austin newsletter", () => {
     expect(leadershipAustinHtml).not.toContain("Two new features");
   });
 
-  it("includes the LA 18 WhatsApp and Emerge 18 LinkedIn links in order only in Leadership Austin emails", () => {
+  it("includes configurable class WhatsApp and LinkedIn links only in Leadership Austin emails", () => {
     const leadershipAustinHtml = buildDigestEmailHtml(
       { ...baseDigest, siteUrl: "https://leadershipaustin.irl.group" },
       null,
@@ -888,8 +888,8 @@ describe("Leadership Austin newsletter", () => {
       { slug: "austin", name: "Austin Events", city: "Austin, TX" },
     );
     const alexandriaIndex = leadershipAustinHtml.indexOf("Alexandria Robertson");
-    const whatsappLinkIndex = leadershipAustinHtml.indexOf("LA 18 WhatsApp group");
-    const linkedinLinkIndex = leadershipAustinHtml.indexOf('aria-label="Emerge 18 on LinkedIn"');
+    const whatsappLinkIndex = leadershipAustinHtml.indexOf("Team WhatsApp group");
+    const linkedinLinkIndex = leadershipAustinHtml.indexOf('aria-label="Team LinkedIn group"');
 
     expect(alexandriaIndex).toBeGreaterThanOrEqual(0);
     expect(whatsappLinkIndex).toBeGreaterThan(alexandriaIndex);
@@ -898,11 +898,59 @@ describe("Leadership Austin newsletter", () => {
       'href="https://chat.whatsapp.com/BTUYOWtvqElAqCxD8ZwWGE?s=cl&amp;p=i&amp;mlu=4&amp;ilr=4&amp;iam=2as"',
     );
     expect(leadershipAustinHtml).toContain(
-      '<a href="https://www.linkedin.com/groups/14537139/" target="_blank" rel="noopener noreferrer" aria-label="Emerge 18 on LinkedIn"',
+      '<a href="https://www.linkedin.com/groups/14537139/" target="_blank" rel="noopener noreferrer" aria-label="Team LinkedIn group"',
     );
-    expect(leadershipAustinHtml).toContain('background:#0A66C2; color:#ffffff;');
-    expect(austinHtml).not.toContain("LA 18 WhatsApp group");
+    expect(leadershipAustinHtml).toContain('background:#0A66C2;color:#ffffff;');
+    expect(austinHtml).not.toContain("Team WhatsApp group");
     expect(austinHtml).not.toContain("Emerge 18");
+  });
+
+  it("renders configured class and rep photos in the email profile block", () => {
+    const html = buildDigestEmailHtml(
+      { ...baseDigest, siteUrl: "https://leadershipaustin.irl.group" },
+      null,
+      null,
+      {
+        slug: "leadershipaustin",
+        name: "Leadership Austin",
+        city: "Austin, TX",
+        leadershipClassProfiles: [{
+          id: "class-19",
+          className: "Emerge 19",
+          classRepName: "Taylor Example",
+          classRepLinkedInUrl: "https://www.linkedin.com/in/taylor-example/",
+          teamWhatsAppUrl: "https://chat.whatsapp.com/example",
+          teamLinkedInUrl: "https://www.linkedin.com/groups/example/",
+          classPhotoUrl: "/api/storage/objects/class-photo",
+          classRepPhotoUrl: "/api/storage/objects/rep-photo",
+        }],
+      },
+    );
+
+    expect(html).toContain('src="https://leadershipaustin.irl.group/api/storage/objects/class-photo"');
+    expect(html).toContain('src="https://leadershipaustin.irl.group/api/storage/objects/rep-photo"');
+    expect(html.indexOf("Hey, all alumni.")).toBeLessThan(html.indexOf("Emerge 19 class photo"));
+    expect(html).toContain("Taylor Example");
+    expect(html).toContain("Class rep profile");
+    expect(html).toContain("Team WhatsApp group");
+    expect(html).toContain("Team LinkedIn group");
+  });
+
+  it("shows Education as an email category", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      events: [{
+        title: "Education Workshop",
+        date: "Monday, November 9 at 6:00 PM",
+        venue: "Austin, TX",
+        description: "A public learning event.",
+        link: "https://example.com/education",
+        category: "Education",
+      }],
+    });
+
+    expect(html).toContain(">Education</div>");
+    expect(html).toContain("background:#7c3aed; color:#fff;");
   });
 
   it("uses alumni branding, keeps event dates, and hides the edition date", () => {

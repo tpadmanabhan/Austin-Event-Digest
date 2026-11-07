@@ -17,6 +17,7 @@ import { seedNYC } from "./seedNYC";
 import { seedDallas } from "./seedDallas";
 import { seedLeadershipAustin } from "./seedLeadershipAustin";
 import { seedLeadershipAustinManagedEvents } from "./leadershipAustinManagedEvents";
+import { DEFAULT_LEADERSHIP_CLASS_PROFILES } from "../../../../shared/leadership-class-profiles";
 
 const MARCH_29_EVENTS = [
   {
@@ -299,6 +300,13 @@ async function runTenantMigration(): Promise<void> {
   // Task #81: hero and brand icon image URLs per tenant
   await db.execute(sql`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS hero_image_url TEXT`);
   await db.execute(sql`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS brand_icon_url TEXT`);
+  await db.execute(sql`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS leadership_class_profiles JSONB NOT NULL DEFAULT '[]'::jsonb`);
+  await db.execute(sql`
+    UPDATE tenants
+    SET leadership_class_profiles = ${JSON.stringify(DEFAULT_LEADERSHIP_CLASS_PROFILES)}::jsonb
+    WHERE slug = 'leadershipaustin'
+      AND (leadership_class_profiles IS NULL OR leadership_class_profiles = '[]'::jsonb)
+  `);
   await db.execute(sql`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS curator_name TEXT`);
   // Backfill curator names for existing cities so they are not lost after this migration
   await db.execute(sql`UPDATE tenants SET curator_name = 'Raj'          WHERE slug = 'austin'      AND curator_name IS NULL`);
@@ -1094,12 +1102,14 @@ export async function runStartupMigration(): Promise<void> {
     }
   }
 
-  // Enforce canonical 5-category scheme across all tenants
+  // Keep non-alumni tenant categories canonical; Leadership Austin admins manage
+  // their category selection and may enable Education.
   try {
     await db.execute(sql`
       UPDATE tenants
       SET categories = '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb
-      WHERE categories::text != '["Arts","Sports","Tech","Civics","Wellness"]'
+      WHERE slug <> 'leadershipaustin'
+        AND categories::text != '["Arts","Sports","Tech","Civics","Wellness"]'
     `);
     logger.info("Canonical categories enforced on all tenants");
   } catch (err) {

@@ -1,3 +1,5 @@
+import type { LeadershipClassProfile } from "../../../../shared/leadership-class-profiles";
+
 export interface PublicEvent {
   id: string;
   title: string;
@@ -31,6 +33,7 @@ export interface PublicDocumentModel {
   weekOf?: string;
   editionRange?: string;
   digestId?: number;
+  leadershipClassProfiles?: LeadershipClassProfile[];
   events: PublicEvent[];
   event?: PublicEvent;
   venueName?: string;

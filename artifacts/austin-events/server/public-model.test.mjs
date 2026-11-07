@@ -10,6 +10,7 @@ import { resolveSite, legacyRedirectHost, eventSchema, validIsoDate, venueIdenti
 const cities = ["nyc", "dallas", "la", "austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
   "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston", "boston", "miami", "osaka", "manchester"];
 const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
+const leadershipAustinTenant = { slug: "leadershipaustin", id: 20, name: "Leadership Austin", city: "Austin, TX" };
 const eventId = city => `ev-${String(cities.indexOf(city) + 1).padStart(24, "0")}`;
 const fixture = city => ({
   id: cities.indexOf(city) + 10,
@@ -33,8 +34,23 @@ before(async () => {
     const city = host.split(".")[0];
     res.setHeader("Content-Type", "application/json");
     if (failed) { res.writeHead(500); return res.end('{"error":"test_failure"}'); }
-    if (!cities.includes(city) && host !== "irl.group") { res.writeHead(404); return res.end("{}"); }
-    if (req.url === "/api/tenants/list") return res.end(JSON.stringify({ tenants }));
+    if (!cities.includes(city) && city !== "leadershipaustin" && host !== "irl.group") { res.writeHead(404); return res.end("{}"); }
+    if (req.url === "/api/tenants/list") {
+      const hostTenants = city === "leadershipaustin" ? [...tenants, leadershipAustinTenant] : tenants;
+      return res.end(JSON.stringify({ tenants: hostTenants }));
+    }
+    if (req.url === "/api/tenant/config?slug=leadershipaustin") {
+      return res.end(JSON.stringify({ tenant: { leadershipClassProfiles: [{
+        id: "emerge-18",
+        className: "LA Emerge 18-2025",
+        classRepName: "Alexandria Robertson",
+        classRepLinkedInUrl: "",
+        teamWhatsAppUrl: "https://chat.whatsapp.com/example",
+        teamLinkedInUrl: "https://www.linkedin.com/groups/example/",
+        classPhotoUrl: "/api/storage/objects/class-photo",
+        classRepPhotoUrl: "/api/storage/objects/rep-photo",
+      }] } }));
+    }
     if (req.url === "/api/deals/submitted") return res.end(JSON.stringify({ deals: [
       { id: 1, business: "Test approved community offer", deal: "A test offer", locationName: "Test shop", locationAddress: "2 Test Street" },
     ] }));
@@ -82,7 +98,7 @@ const modelOf = body => JSON.parse(body.match(/<script id="public-document" type
 test("Austin community spotlight links say Visit on both pages and retain city-specific behavior", () => {
   for (const page of ["home.tsx", "digest.tsx"]) {
     const source = readFileSync(new URL(`../src/pages/${page}`, import.meta.url), "utf8");
-    const cta = '{tenant.slug === "austin" ? "Visit" : jt("Apply Now", JA.applyNow)}';
+    const cta = 'tenant.slug === "austin" ? "Visit" : jt("Apply Now", JA.applyNow)';
     const ctaIndex = source.indexOf(cta);
     assert.notEqual(ctaIndex, -1, `${page} should use the Austin-only Visit label`);
 
@@ -94,6 +110,18 @@ test("Austin community spotlight links say Visit on both pages and retain city-s
     assert.match(anchor, /rel="noopener noreferrer"/);
     assert.match(source.slice(ctaIndex, ctaIndex + cta.length), /jt\("Apply Now", JA\.applyNow\)/);
   }
+});
+
+test("Leadership Austin's public edition renders its configured class and rep photos", async () => {
+  const { response, body } = await document("leadershipaustin.irl.group");
+  assert.equal(response.status, 200);
+  const model = modelOf(body);
+  assert.equal(model.leadershipClassProfiles[0].className, "LA Emerge 18-2025");
+  assert.match(body, /src="\/api\/storage\/objects\/class-photo"/);
+  assert.match(body, /src="\/api\/storage\/objects\/rep-photo"/);
+  assert.match(body, /Alexandria Robertson/);
+  assert.match(body, /Team WhatsApp group/);
+  assert.match(body, /Team LinkedIn group/);
 });
 
 test("host resolution never defaults an unknown production host to Austin", () => {
