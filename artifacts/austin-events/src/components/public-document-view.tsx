@@ -162,6 +162,24 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         {miamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} digestId={model.digestId} className="mt-10" />}
       <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : model.editionRange ? "Upcoming events" : isLeadershipAustin ? "Upcoming programs" : "Events this week"}</h2>
         <EventList events={listEvents} />
+        {isLeadershipAustin && kind === "digest" && (
+          <section aria-labelledby="public-event-contribution-title" className="mt-8 flex flex-col gap-4 rounded-2xl border border-[#314363]/20 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 id="public-event-contribution-title" className="font-serif text-xl font-bold text-[#314363]">
+                Know an event the community should see?
+              </h2>
+              <p className="mt-1 text-sm text-slate-700">
+                Active Leadership Austin subscribers can suggest events for admin review.
+              </p>
+            </div>
+            <a
+              href={`${model.homeUrl.replace(/\/+$/, "")}${model.digestId ? `/digest/${model.digestId}` : ""}#add-event`}
+              className="inline-flex shrink-0 items-center justify-center rounded-lg bg-[#314363] px-5 py-3 text-sm font-bold text-white no-underline"
+            >
+              Suggest a community event
+            </a>
+          </section>
+        )}
         <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
           {model.editionUrl ? (
             <a
@@ -180,19 +198,6 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           ) : null}
           <a href={subscribe} className={linkCls}>Subscribe to the newsletter</a>
         </p>
-        {isLeadershipAustin && kind === "digest" && (
-          <section aria-labelledby="public-event-contribution-title" className="mt-10 rounded-2xl border border-[#314363]/20 bg-slate-50 p-5">
-            <h2 id="public-event-contribution-title" className="font-serif text-2xl font-bold text-slate-900">
-              Suggest a community event
-            </h2>
-            <p className="mt-2 text-slate-700">
-              Active Leadership Austin newsletter subscribers can suggest public events. An admin reviews each suggestion before it appears in the event list or newsletter.
-            </p>
-            <p className="mt-3">
-              <a href={`${model.canonical}#add-event`} className={linkCls}>Open the interactive event suggestion form</a>
-            </p>
-          </section>
-        )}
       </>
     );
   } else if (kind === "platform") {

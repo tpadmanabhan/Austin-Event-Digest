@@ -120,6 +120,14 @@ export function LeadershipEventContribution() {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    if (window.location.hash !== "#add-event") return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById("add-event")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   const setField = (field: keyof ContributionForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
     setMessage("");

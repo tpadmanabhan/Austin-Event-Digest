@@ -874,9 +874,28 @@ describe("Leadership Austin newsletter", () => {
     expect(leadershipAustinHtml).not.toContain("Two new features");
   });
 
-  it("places the subscriber event suggestion prompt at the end of Leadership Austin emails only", () => {
+  it("places the subscriber event suggestion prompt after the event listings in Leadership Austin emails only", () => {
     const leadershipAustinHtml = buildDigestEmailHtml(
-      { ...baseDigest, siteUrl: "https://leadershipaustin.irl.group" },
+      {
+        ...baseDigest,
+        siteUrl: "https://leadershipaustin.irl.group",
+        events: [{
+          title: "Primary event listing marker",
+          date: "November 8, 2026 at 6:00 PM",
+          venue: "Austin, TX",
+          description: "A community event.",
+          category: "Community",
+          link: "https://example.com/primary-event",
+        }],
+        alsoNearby: [{
+          title: "Nearby event listing marker",
+          date: "November 9, 2026 at 6:00 PM",
+          venue: "Round Rock, TX",
+          description: "A nearby event.",
+          category: "Community",
+          link: "https://example.com/nearby-event",
+        }],
+      },
       "Preview Reader",
       "reader@example.com",
       { slug: "leadershipaustin", name: "Leadership Austin", city: "Austin, TX" },
@@ -892,8 +911,10 @@ describe("Leadership Austin newsletter", () => {
     expect(leadershipAustinHtml).toContain(
       'href="https://leadershipaustin.irl.group/digest/1#add-event"',
     );
-    expect(leadershipAustinHtml.indexOf("Suggest a community event"))
-      .toBeLessThan(leadershipAustinHtml.indexOf("Curated with"));
+    const promptIndex = leadershipAustinHtml.indexOf("Suggest a community event");
+    expect(promptIndex).toBeGreaterThan(leadershipAustinHtml.indexOf("Primary event listing marker"));
+    expect(promptIndex).toBeGreaterThan(leadershipAustinHtml.indexOf("Nearby event listing marker"));
+    expect(promptIndex).toBeLessThan(leadershipAustinHtml.indexOf("Curated with"));
     expect(austinHtml).not.toContain("Suggest a community event");
   });
 

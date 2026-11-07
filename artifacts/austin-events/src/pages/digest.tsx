@@ -1101,6 +1101,28 @@ export default function DigestView() {
           );
         })()}
 
+        {isLeadershipAustin && (
+          <section
+            aria-labelledby="leadership-event-contribution-cta-title"
+            className="mt-8 flex flex-col gap-4 rounded-2xl border border-[#314363]/20 bg-[#f6f8fb] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+          >
+            <div>
+              <h2 id="leadership-event-contribution-cta-title" className="font-serif text-xl font-bold text-[#314363]">
+                Know an event the community should see?
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Active Leadership Austin subscribers can suggest events for admin review.
+              </p>
+            </div>
+            <a
+              href="#add-event"
+              className="inline-flex shrink-0 items-center justify-center rounded-lg bg-[#314363] px-5 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#253550] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4EBEE7] focus-visible:ring-offset-2"
+            >
+              Suggest a community event
+            </a>
+          </section>
+        )}
+
         {/* AustinCares launch promo — shown on every city digest except AustinCares itself */}
         {tenant.slug !== "austincares" && !isHouston && (
           <section className="mt-16 px-4 sm:px-0">

@@ -10,3 +10,9 @@ Participant-facing notifications share event details and current interest counts
 **Why:** The user selected both notifications and website subscription, then clarified that Austin.irl.group must remain unchanged. Contact sharing was not requested, so participant identity stays private.
 
 **How to apply:** Keep the alumni interest feed and email content scoped to Leadership Austin; preserve the subscription behavior and privacy boundary there.
+
+Place the subscriber event-suggestion call to action immediately after the event listings in both the full edition and its email, rather than after newsletter signup or footer content.
+
+**Why:** The user could not find the contribution feature when its prompt was separated from the event listings.
+
+**How to apply:** Keep the full-edition button and newsletter button after all relevant event cards, and make both point to the actual subscriber-verification form.

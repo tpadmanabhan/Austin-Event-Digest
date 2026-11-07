@@ -1737,6 +1737,13 @@ export function buildDigestEmailHtml(digest: {
       ${alsoNearbyCards}
     </div>` : ""}
 
+    ${slug === "leadershipaustin" && digest.siteUrl && digest.digestId ? `
+    <div style="background:linear-gradient(135deg,#f6f8fb 0%,#ffffff 100%); border:1.5px solid #d8e0ec; border-radius:16px; padding:22px; margin:28px 0 24px; text-align:center;">
+      <p style="margin:0 0 7px; color:#314363; font-family:Georgia,'Times New Roman',serif; font-size:21px; font-weight:700;">Know an event the community should see?</p>
+      <p style="margin:0 auto 16px; max-width:460px; color:#64748b; font-size:13px; line-height:1.6;">Active Leadership Austin subscribers can suggest a public event. Admins review every suggestion before it appears.</p>
+      <a href="${escapeHtml(`${digest.siteUrl.replace(/\/+$/, "")}/digest/${digest.digestId}#add-event`)}" style="display:inline-block; padding:11px 20px; border-radius:7px; background:#314363; color:#fff; font-size:13px; font-weight:700; text-decoration:none;">Suggest a community event</a>
+    </div>` : ""}
+
     <!-- Austin Event Discovery Positioning -->
     ${slug === "austin" ? `
     <div style="background:linear-gradient(135deg,#f0fdf4 0%,#ffffff 58%,#f6fbf7 100%); border:1.5px solid #cfe8d6; border-radius:16px; padding:24px 22px; margin:28px 0 24px;">
@@ -1749,13 +1756,6 @@ export function buildDigestEmailHtml(digest: {
       <p style="margin:0; color:#66766c; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.7;">
         We build custom event discovery websites and newsletters that help your audience find the right events at the right time. Combine location-based discovery, interest-based curation, and an automated email digest to turn your event calendar into a personalized marketing channel.
       </p>
-    </div>` : ""}
-
-    ${slug === "leadershipaustin" && digest.siteUrl && digest.digestId ? `
-    <div style="background:linear-gradient(135deg,#f6f8fb 0%,#ffffff 100%); border:1.5px solid #d8e0ec; border-radius:16px; padding:22px; margin:28px 0 24px; text-align:center;">
-      <p style="margin:0 0 7px; color:#314363; font-family:Georgia,'Times New Roman',serif; font-size:21px; font-weight:700;">Know an event the community should see?</p>
-      <p style="margin:0 auto 16px; max-width:460px; color:#64748b; font-size:13px; line-height:1.6;">Active Leadership Austin subscribers can suggest a public event. Admins review every suggestion before it appears.</p>
-      <a href="${escapeHtml(`${digest.siteUrl.replace(/\/+$/, "")}/digest/${digest.digestId}#add-event`)}" style="display:inline-block; padding:11px 20px; border-radius:7px; background:#314363; color:#fff; font-size:13px; font-weight:700; text-decoration:none;">Suggest a community event</a>
     </div>` : ""}
 
     <!-- Footer -->
