@@ -51,3 +51,4 @@
 - [React SSR footer image loading](react-ssr-footer-image-loading.md) — lazy-load footer logos so React SSR does not inject a preload node into the public hydration root.
 - [Mobile city-grid sizing](mobile-city-grid-sizing.md) — use explicit single-column base tracks; implicit grid columns can preserve desktop-sized content and clip it on phones.
 - [Alumni event interest](leadership-event-interest.md) — keep the alumni feed and signup notifications on Leadership Austin; Austin.irl.group remains separate.
+- [Leadership Austin newsletter hold](leadership-newsletter-hold.md) — do not email edition 155 until the user explicitly lifts the hold.
