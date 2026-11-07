@@ -439,6 +439,161 @@ export const ListAllLeadershipManagedEventsResponse = zod.object({
 });
 
 /**
+ * @summary Email a contributor access link to an active Leadership Austin subscriber
+ */
+export const requestLeadershipEventContributionAccessBodyEmailMax = 320;
+
+export const RequestLeadershipEventContributionAccessBody = zod.object({
+  email: zod
+    .string()
+    .email()
+    .max(requestLeadershipEventContributionAccessBodyEmailMax),
+  captchaToken: zod.string().min(1),
+});
+
+export const RequestLeadershipEventContributionAccessResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string(),
+});
+
+/**
+ * @summary Check the verified subscriber session for event contributions
+ */
+export const GetLeadershipEventContributionSessionResponse = zod.object({
+  authenticated: zod.boolean(),
+  name: zod.string().nullable(),
+});
+
+/**
+ * @summary Verify a subscriber email link and open the contribution form
+ */
+export const VerifyLeadershipEventContributionAccessQueryParams = zod.object({
+  token: zod.coerce.string(),
+});
+
+/**
+ * @summary Auto-fill event fields from a verified subscriber's public event link
+ */
+export const parseLeadershipEventContributionUrlBodyUrlMax = 2000;
+
+export const ParseLeadershipEventContributionUrlBody = zod.object({
+  url: zod.string().url().max(parseLeadershipEventContributionUrlBodyUrlMax),
+});
+
+export const ParseLeadershipEventContributionUrlResponse = zod.object({
+  event: zod.object({
+    title: zod.string(),
+    date: zod.string(),
+    startDate: zod.coerce.date().nullable(),
+    venue: zod.string(),
+    description: zod.string(),
+    link: zod.string().url(),
+  }),
+});
+
+/**
+ * @summary Submit a Leadership Austin event for admin review
+ */
+export const submitLeadershipEventContributionBodyNameMax = 120;
+
+export const submitLeadershipEventContributionBodyUrlMax = 2000;
+
+export const submitLeadershipEventContributionBodyTitleMax = 180;
+
+export const submitLeadershipEventContributionBodyDateMax = 180;
+
+export const submitLeadershipEventContributionBodyVenueMax = 200;
+
+export const submitLeadershipEventContributionBodyDescriptionMax = 2000;
+
+export const SubmitLeadershipEventContributionBody = zod.object({
+  name: zod.string().min(1).max(submitLeadershipEventContributionBodyNameMax),
+  url: zod.string().url().max(submitLeadershipEventContributionBodyUrlMax),
+  title: zod.string().min(1).max(submitLeadershipEventContributionBodyTitleMax),
+  date: zod.string().min(1).max(submitLeadershipEventContributionBodyDateMax),
+  startDate: zod.coerce.date(),
+  venue: zod.string().min(1).max(submitLeadershipEventContributionBodyVenueMax),
+  description: zod
+    .string()
+    .max(submitLeadershipEventContributionBodyDescriptionMax),
+});
+
+/**
+ * @summary List subscriber event submissions awaiting admin review
+ */
+export const ListPendingLeadershipEventContributionsResponse = zod.object({
+  contributions: zod.array(
+    zod
+      .object({
+        eventId: zod.string().optional(),
+        venueId: zod.string().optional(),
+        startDate: zod
+          .string()
+          .optional()
+          .describe("Verified ISO date or timestamp from the event source"),
+        endDate: zod.string().optional(),
+        timezone: zod.string().optional(),
+        venueAddress: zod.string().optional(),
+        title: zod.string(),
+        date: zod.string(),
+        venue: zod.string(),
+        description: zod.string(),
+        link: zod.string().nullish(),
+        linkText: zod.string().optional(),
+        category: zod.string(),
+        imageUrl: zod.string().nullish(),
+        source: zod.string().nullish(),
+        sourceName: zod.string().optional(),
+        sourceUrl: zod.string().nullish(),
+        sourceAlumni: zod.string().optional(),
+        isPersistentManaged: zod.boolean().optional(),
+        managedEventId: zod.number().optional(),
+        featured: zod.boolean().optional(),
+        isPost: zod.boolean().optional(),
+        isBusinessSpotlight: zod.boolean().optional(),
+        isAlumniHappening: zod.boolean().optional(),
+        alumniHappeningType: zod.enum(["event", "news"]).optional(),
+        deadline: zod.string().nullish(),
+        zodiacSigns: zod.array(zod.string()).nullish(),
+        lat: zod.number().nullish(),
+        lng: zod.number().nullish(),
+      })
+      .and(
+        zod.object({
+          id: zod.number(),
+          organizer: zod.string().nullish(),
+          sourceUrl: zod.string().nullish(),
+          isActive: zod.boolean(),
+          createdAt: zod.coerce.date(),
+          updatedAt: zod.coerce.date(),
+        }),
+      )
+      .and(
+        zod.object({
+          submitterName: zod.string(),
+          submitterEmail: zod.string().email(),
+        }),
+      ),
+  ),
+});
+
+/**
+ * @summary Approve or reject a subscriber event submission
+ */
+export const ReviewLeadershipEventContributionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ReviewLeadershipEventContributionBody = zod.object({
+  decision: zod.enum(["approve", "reject"]),
+});
+
+export const ReviewLeadershipEventContributionResponse = zod.object({
+  success: zod.boolean(),
+  status: zod.enum(["approved", "rejected"]),
+});
+
+/**
  * @summary Update the alumni source for a persistent Leadership Austin event (admin)
  */
 export const UpdateLeadershipManagedEventParams = zod.object({
@@ -1017,7 +1172,7 @@ export const DeleteCentinelaUpdateParams = zod.object({
 });
 
 /**
- * @summary List proposed and scheduled resident activities for administration
+ * @summary List resident activity proposals for administration
  */
 export const ListCentinelaActivitiesResponse = zod.object({
   activities: zod.array(

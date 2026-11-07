@@ -173,7 +173,11 @@ export async function listUpcomingLeadershipEvents() {
   const rows = await db
     .select()
     .from(leadershipEventsTable)
-    .where(and(eq(leadershipEventsTable.tenantId, tenant.id), eq(leadershipEventsTable.isActive, true)))
+    .where(and(
+      eq(leadershipEventsTable.tenantId, tenant.id),
+      eq(leadershipEventsTable.isActive, true),
+      eq(leadershipEventsTable.submissionStatus, "approved"),
+    ))
     .orderBy(asc(leadershipEventsTable.startDate), asc(leadershipEventsTable.id));
   const today = localDay(new Date(), "America/Chicago");
   const upcoming = rows.filter((row) => {

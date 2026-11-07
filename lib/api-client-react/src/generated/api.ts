@@ -47,6 +47,16 @@ import type {
   GetTenantConfigParams,
   HealthStatus,
   LeaderboardResponse,
+  LeadershipEventContributionAccessInput,
+  LeadershipEventContributionAccessResponse,
+  LeadershipEventContributionInput,
+  LeadershipEventContributionParseInput,
+  LeadershipEventContributionParseResponse,
+  LeadershipEventContributionPendingResponse,
+  LeadershipEventContributionResponse,
+  LeadershipEventContributionReviewInput,
+  LeadershipEventContributionReviewResponse,
+  LeadershipEventContributionSession,
   LeadershipManagedEventInput,
   LeadershipManagedEventResponse,
   LeadershipManagedEventUpdate,
@@ -64,6 +74,7 @@ import type {
   TenantConfigResponse,
   TenantsListResponse,
   UnsubscribeRequest,
+  VerifyLeadershipEventContributionAccessParams,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -1173,6 +1184,655 @@ export function useListAllLeadershipManagedEvents<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Email a contributor access link to an active Leadership Austin subscriber
+ */
+export const getRequestLeadershipEventContributionAccessUrl = () => {
+  return `/api/events/leadership-event-contributions/access`;
+};
+
+export const requestLeadershipEventContributionAccess = async (
+  leadershipEventContributionAccessInput: LeadershipEventContributionAccessInput,
+  options?: RequestInit,
+): Promise<LeadershipEventContributionAccessResponse> => {
+  return customFetch<LeadershipEventContributionAccessResponse>(
+    getRequestLeadershipEventContributionAccessUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(leadershipEventContributionAccessInput),
+    },
+  );
+};
+
+export const getRequestLeadershipEventContributionAccessMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestLeadershipEventContributionAccess>>,
+    TError,
+    { data: BodyType<LeadershipEventContributionAccessInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof requestLeadershipEventContributionAccess>>,
+  TError,
+  { data: BodyType<LeadershipEventContributionAccessInput> },
+  TContext
+> => {
+  const mutationKey = ["requestLeadershipEventContributionAccess"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof requestLeadershipEventContributionAccess>>,
+    { data: BodyType<LeadershipEventContributionAccessInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return requestLeadershipEventContributionAccess(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RequestLeadershipEventContributionAccessMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof requestLeadershipEventContributionAccess>>
+  >;
+export type RequestLeadershipEventContributionAccessMutationBody =
+  BodyType<LeadershipEventContributionAccessInput>;
+export type RequestLeadershipEventContributionAccessMutationError =
+  ErrorType<void>;
+
+/**
+ * @summary Email a contributor access link to an active Leadership Austin subscriber
+ */
+export const useRequestLeadershipEventContributionAccess = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestLeadershipEventContributionAccess>>,
+    TError,
+    { data: BodyType<LeadershipEventContributionAccessInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof requestLeadershipEventContributionAccess>>,
+  TError,
+  { data: BodyType<LeadershipEventContributionAccessInput> },
+  TContext
+> => {
+  return useMutation(
+    getRequestLeadershipEventContributionAccessMutationOptions(options),
+  );
+};
+
+/**
+ * @summary Check the verified subscriber session for event contributions
+ */
+export const getGetLeadershipEventContributionSessionUrl = () => {
+  return `/api/events/leadership-event-contributions/session`;
+};
+
+export const getLeadershipEventContributionSession = async (
+  options?: RequestInit,
+): Promise<LeadershipEventContributionSession> => {
+  return customFetch<LeadershipEventContributionSession>(
+    getGetLeadershipEventContributionSessionUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetLeadershipEventContributionSessionQueryKey = () => {
+  return [`/api/events/leadership-event-contributions/session`] as const;
+};
+
+export const getGetLeadershipEventContributionSessionQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLeadershipEventContributionSession>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLeadershipEventContributionSession>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetLeadershipEventContributionSessionQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getLeadershipEventContributionSession>>
+  > = ({ signal }) =>
+    getLeadershipEventContributionSession({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLeadershipEventContributionSession>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetLeadershipEventContributionSessionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getLeadershipEventContributionSession>>
+>;
+export type GetLeadershipEventContributionSessionQueryError =
+  ErrorType<unknown>;
+
+/**
+ * @summary Check the verified subscriber session for event contributions
+ */
+
+export function useGetLeadershipEventContributionSession<
+  TData = Awaited<ReturnType<typeof getLeadershipEventContributionSession>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLeadershipEventContributionSession>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions =
+    getGetLeadershipEventContributionSessionQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Verify a subscriber email link and open the contribution form
+ */
+export const getVerifyLeadershipEventContributionAccessUrl = (
+  params: VerifyLeadershipEventContributionAccessParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/events/leadership-event-contributions/verify?${stringifiedParams}`
+    : `/api/events/leadership-event-contributions/verify`;
+};
+
+export const verifyLeadershipEventContributionAccess = async (
+  params: VerifyLeadershipEventContributionAccessParams,
+  options?: RequestInit,
+): Promise<unknown> => {
+  return customFetch<unknown>(
+    getVerifyLeadershipEventContributionAccessUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getVerifyLeadershipEventContributionAccessQueryKey = (
+  params?: VerifyLeadershipEventContributionAccessParams,
+) => {
+  return [
+    `/api/events/leadership-event-contributions/verify`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getVerifyLeadershipEventContributionAccessQueryOptions = <
+  TData = Awaited<ReturnType<typeof verifyLeadershipEventContributionAccess>>,
+  TError = ErrorType<void>,
+>(
+  params: VerifyLeadershipEventContributionAccessParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof verifyLeadershipEventContributionAccess>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getVerifyLeadershipEventContributionAccessQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof verifyLeadershipEventContributionAccess>>
+  > = ({ signal }) =>
+    verifyLeadershipEventContributionAccess(params, {
+      signal,
+      ...requestOptions,
+    });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof verifyLeadershipEventContributionAccess>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type VerifyLeadershipEventContributionAccessQueryResult = NonNullable<
+  Awaited<ReturnType<typeof verifyLeadershipEventContributionAccess>>
+>;
+export type VerifyLeadershipEventContributionAccessQueryError = ErrorType<void>;
+
+/**
+ * @summary Verify a subscriber email link and open the contribution form
+ */
+
+export function useVerifyLeadershipEventContributionAccess<
+  TData = Awaited<ReturnType<typeof verifyLeadershipEventContributionAccess>>,
+  TError = ErrorType<void>,
+>(
+  params: VerifyLeadershipEventContributionAccessParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof verifyLeadershipEventContributionAccess>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getVerifyLeadershipEventContributionAccessQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Auto-fill event fields from a verified subscriber's public event link
+ */
+export const getParseLeadershipEventContributionUrlUrl = () => {
+  return `/api/events/leadership-event-contributions/parse`;
+};
+
+export const parseLeadershipEventContributionUrl = async (
+  leadershipEventContributionParseInput: LeadershipEventContributionParseInput,
+  options?: RequestInit,
+): Promise<LeadershipEventContributionParseResponse> => {
+  return customFetch<LeadershipEventContributionParseResponse>(
+    getParseLeadershipEventContributionUrlUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(leadershipEventContributionParseInput),
+    },
+  );
+};
+
+export const getParseLeadershipEventContributionUrlMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof parseLeadershipEventContributionUrl>>,
+    TError,
+    { data: BodyType<LeadershipEventContributionParseInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof parseLeadershipEventContributionUrl>>,
+  TError,
+  { data: BodyType<LeadershipEventContributionParseInput> },
+  TContext
+> => {
+  const mutationKey = ["parseLeadershipEventContributionUrl"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof parseLeadershipEventContributionUrl>>,
+    { data: BodyType<LeadershipEventContributionParseInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return parseLeadershipEventContributionUrl(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ParseLeadershipEventContributionUrlMutationResult = NonNullable<
+  Awaited<ReturnType<typeof parseLeadershipEventContributionUrl>>
+>;
+export type ParseLeadershipEventContributionUrlMutationBody =
+  BodyType<LeadershipEventContributionParseInput>;
+export type ParseLeadershipEventContributionUrlMutationError = ErrorType<void>;
+
+/**
+ * @summary Auto-fill event fields from a verified subscriber's public event link
+ */
+export const useParseLeadershipEventContributionUrl = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof parseLeadershipEventContributionUrl>>,
+    TError,
+    { data: BodyType<LeadershipEventContributionParseInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof parseLeadershipEventContributionUrl>>,
+  TError,
+  { data: BodyType<LeadershipEventContributionParseInput> },
+  TContext
+> => {
+  return useMutation(
+    getParseLeadershipEventContributionUrlMutationOptions(options),
+  );
+};
+
+/**
+ * @summary Submit a Leadership Austin event for admin review
+ */
+export const getSubmitLeadershipEventContributionUrl = () => {
+  return `/api/events/leadership-event-contributions`;
+};
+
+export const submitLeadershipEventContribution = async (
+  leadershipEventContributionInput: LeadershipEventContributionInput,
+  options?: RequestInit,
+): Promise<LeadershipEventContributionResponse> => {
+  return customFetch<LeadershipEventContributionResponse>(
+    getSubmitLeadershipEventContributionUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(leadershipEventContributionInput),
+    },
+  );
+};
+
+export const getSubmitLeadershipEventContributionMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitLeadershipEventContribution>>,
+    TError,
+    { data: BodyType<LeadershipEventContributionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof submitLeadershipEventContribution>>,
+  TError,
+  { data: BodyType<LeadershipEventContributionInput> },
+  TContext
+> => {
+  const mutationKey = ["submitLeadershipEventContribution"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof submitLeadershipEventContribution>>,
+    { data: BodyType<LeadershipEventContributionInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return submitLeadershipEventContribution(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SubmitLeadershipEventContributionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof submitLeadershipEventContribution>>
+>;
+export type SubmitLeadershipEventContributionMutationBody =
+  BodyType<LeadershipEventContributionInput>;
+export type SubmitLeadershipEventContributionMutationError = ErrorType<void>;
+
+/**
+ * @summary Submit a Leadership Austin event for admin review
+ */
+export const useSubmitLeadershipEventContribution = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitLeadershipEventContribution>>,
+    TError,
+    { data: BodyType<LeadershipEventContributionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof submitLeadershipEventContribution>>,
+  TError,
+  { data: BodyType<LeadershipEventContributionInput> },
+  TContext
+> => {
+  return useMutation(
+    getSubmitLeadershipEventContributionMutationOptions(options),
+  );
+};
+
+/**
+ * @summary List subscriber event submissions awaiting admin review
+ */
+export const getListPendingLeadershipEventContributionsUrl = () => {
+  return `/api/events/leadership-event-contributions/pending`;
+};
+
+export const listPendingLeadershipEventContributions = async (
+  options?: RequestInit,
+): Promise<LeadershipEventContributionPendingResponse> => {
+  return customFetch<LeadershipEventContributionPendingResponse>(
+    getListPendingLeadershipEventContributionsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListPendingLeadershipEventContributionsQueryKey = () => {
+  return [`/api/events/leadership-event-contributions/pending`] as const;
+};
+
+export const getListPendingLeadershipEventContributionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPendingLeadershipEventContributions>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listPendingLeadershipEventContributions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getListPendingLeadershipEventContributionsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listPendingLeadershipEventContributions>>
+  > = ({ signal }) =>
+    listPendingLeadershipEventContributions({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPendingLeadershipEventContributions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListPendingLeadershipEventContributionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listPendingLeadershipEventContributions>>
+>;
+export type ListPendingLeadershipEventContributionsQueryError = ErrorType<void>;
+
+/**
+ * @summary List subscriber event submissions awaiting admin review
+ */
+
+export function useListPendingLeadershipEventContributions<
+  TData = Awaited<ReturnType<typeof listPendingLeadershipEventContributions>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listPendingLeadershipEventContributions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions =
+    getListPendingLeadershipEventContributionsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Approve or reject a subscriber event submission
+ */
+export const getReviewLeadershipEventContributionUrl = (id: number) => {
+  return `/api/events/leadership-event-contributions/${id}/review`;
+};
+
+export const reviewLeadershipEventContribution = async (
+  id: number,
+  leadershipEventContributionReviewInput: LeadershipEventContributionReviewInput,
+  options?: RequestInit,
+): Promise<LeadershipEventContributionReviewResponse> => {
+  return customFetch<LeadershipEventContributionReviewResponse>(
+    getReviewLeadershipEventContributionUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(leadershipEventContributionReviewInput),
+    },
+  );
+};
+
+export const getReviewLeadershipEventContributionMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reviewLeadershipEventContribution>>,
+    TError,
+    { id: number; data: BodyType<LeadershipEventContributionReviewInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof reviewLeadershipEventContribution>>,
+  TError,
+  { id: number; data: BodyType<LeadershipEventContributionReviewInput> },
+  TContext
+> => {
+  const mutationKey = ["reviewLeadershipEventContribution"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof reviewLeadershipEventContribution>>,
+    { id: number; data: BodyType<LeadershipEventContributionReviewInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return reviewLeadershipEventContribution(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReviewLeadershipEventContributionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof reviewLeadershipEventContribution>>
+>;
+export type ReviewLeadershipEventContributionMutationBody =
+  BodyType<LeadershipEventContributionReviewInput>;
+export type ReviewLeadershipEventContributionMutationError = ErrorType<void>;
+
+/**
+ * @summary Approve or reject a subscriber event submission
+ */
+export const useReviewLeadershipEventContribution = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reviewLeadershipEventContribution>>,
+    TError,
+    { id: number; data: BodyType<LeadershipEventContributionReviewInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof reviewLeadershipEventContribution>>,
+  TError,
+  { id: number; data: BodyType<LeadershipEventContributionReviewInput> },
+  TContext
+> => {
+  return useMutation(
+    getReviewLeadershipEventContributionMutationOptions(options),
+  );
+};
 
 /**
  * @summary Update the alumni source for a persistent Leadership Austin event (admin)
@@ -2936,7 +3596,7 @@ export const useDeleteCentinelaUpdate = <
 };
 
 /**
- * @summary List proposed and scheduled resident activities for administration
+ * @summary List resident activity proposals for administration
  */
 export const getListCentinelaActivitiesUrl = () => {
   return `/api/centinela/admin/activities`;
@@ -2991,7 +3651,7 @@ export type ListCentinelaActivitiesQueryResult = NonNullable<
 export type ListCentinelaActivitiesQueryError = ErrorType<ErrorResponse>;
 
 /**
- * @summary List proposed and scheduled resident activities for administration
+ * @summary List resident activity proposals for administration
  */
 
 export function useListCentinelaActivities<

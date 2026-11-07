@@ -163,9 +163,36 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
       <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : model.editionRange ? "Upcoming events" : isLeadershipAustin ? "Upcoming programs" : "Events this week"}</h2>
         <EventList events={listEvents} />
         <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-          {model.editionUrl ? <a href={model.editionUrl} className={linkCls}>{`Read the full ${model.cityName || ""} edition`}</a> : null}
+          {model.editionUrl ? (
+            <a
+              href={model.editionUrl}
+              className={isLeadershipAustin && kind === "city"
+                ? "inline-flex w-full items-center justify-center rounded-2xl border-2 border-[#4EBEE7] bg-[#314363] px-8 py-4 text-lg font-extrabold text-white shadow-xl shadow-[#314363]/25 sm:w-auto"
+                : linkCls}
+            >
+              {isLeadershipAustin && kind === "city" ? (
+                <span className="flex flex-col items-start leading-tight">
+                  <span className="mb-1 text-[10px] font-bold uppercase tracking-[.2em] text-[#8bd8f0]">Latest edition</span>
+                  <span>{`Read the full ${model.cityName || ""} edition`}</span>
+                </span>
+              ) : `Read the full ${model.cityName || ""} edition`}
+            </a>
+          ) : null}
           <a href={subscribe} className={linkCls}>Subscribe to the newsletter</a>
         </p>
+        {isLeadershipAustin && kind === "digest" && (
+          <section aria-labelledby="public-event-contribution-title" className="mt-10 rounded-2xl border border-[#314363]/20 bg-slate-50 p-5">
+            <h2 id="public-event-contribution-title" className="font-serif text-2xl font-bold text-slate-900">
+              Suggest a community event
+            </h2>
+            <p className="mt-2 text-slate-700">
+              Active Leadership Austin newsletter subscribers can suggest public events. An admin reviews each suggestion before it appears in the event list or newsletter.
+            </p>
+            <p className="mt-3">
+              <a href={`${model.canonical}#add-event`} className={linkCls}>Open the interactive event suggestion form</a>
+            </p>
+          </section>
+        )}
       </>
     );
   } else if (kind === "platform") {

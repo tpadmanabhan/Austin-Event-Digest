@@ -874,6 +874,29 @@ describe("Leadership Austin newsletter", () => {
     expect(leadershipAustinHtml).not.toContain("Two new features");
   });
 
+  it("places the subscriber event suggestion prompt at the end of Leadership Austin emails only", () => {
+    const leadershipAustinHtml = buildDigestEmailHtml(
+      { ...baseDigest, siteUrl: "https://leadershipaustin.irl.group" },
+      "Preview Reader",
+      "reader@example.com",
+      { slug: "leadershipaustin", name: "Leadership Austin", city: "Austin, TX" },
+    );
+    const austinHtml = buildDigestEmailHtml(
+      { ...baseDigest, siteUrl: "https://austin.irl.group" },
+      "Preview Reader",
+      "reader@example.com",
+      { slug: "austin", name: "Austin Events", city: "Austin, TX" },
+    );
+
+    expect(leadershipAustinHtml).toContain("Active Leadership Austin subscribers can suggest a public event");
+    expect(leadershipAustinHtml).toContain(
+      'href="https://leadershipaustin.irl.group/digest/1#add-event"',
+    );
+    expect(leadershipAustinHtml.indexOf("Suggest a community event"))
+      .toBeLessThan(leadershipAustinHtml.indexOf("Curated with"));
+    expect(austinHtml).not.toContain("Suggest a community event");
+  });
+
   it("includes configurable class WhatsApp and LinkedIn links only in Leadership Austin emails", () => {
     const leadershipAustinHtml = buildDigestEmailHtml(
       { ...baseDigest, siteUrl: "https://leadershipaustin.irl.group" },

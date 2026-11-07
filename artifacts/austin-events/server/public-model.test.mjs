@@ -122,6 +122,16 @@ test("Leadership Austin's public edition renders its configured class and rep ph
   assert.match(body, /Alexandria Robertson/);
   assert.match(body, /Team WhatsApp group/);
   assert.match(body, /Team LinkedIn group/);
+  assert.match(body, /Read the full .* edition/);
+  assert.match(body, /bg-\[#314363\]/);
+});
+
+test("Leadership Austin full editions end with a subscriber event contribution prompt", async () => {
+  const { response, body } = await document("leadershipaustin.irl.group", "/digest/9");
+  assert.equal(response.status, 200);
+  assert.match(body, /Suggest a community event/);
+  assert.match(body, /Active Leadership Austin newsletter subscribers can suggest public events/);
+  assert.match(body, /Open the interactive event suggestion form/);
 });
 
 test("host resolution never defaults an unknown production host to Austin", () => {

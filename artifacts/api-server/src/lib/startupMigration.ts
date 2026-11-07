@@ -1315,10 +1315,19 @@ export async function runStartupMigration(): Promise<void> {
         source_url TEXT,
         source_alumni TEXT NOT NULL,
         image_url TEXT,
+        submission_status TEXT NOT NULL DEFAULT 'approved',
+        submitter_name TEXT,
+        submitter_email TEXT,
         is_active BOOLEAN NOT NULL DEFAULT TRUE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
+    `);
+    await db.execute(sql`
+      ALTER TABLE leadership_events
+        ADD COLUMN IF NOT EXISTS submission_status TEXT NOT NULL DEFAULT 'approved',
+        ADD COLUMN IF NOT EXISTS submitter_name TEXT,
+        ADD COLUMN IF NOT EXISTS submitter_email TEXT
     `);
     await db.execute(sql`
       CREATE UNIQUE INDEX IF NOT EXISTS leadership_events_tenant_seed_key_uq
@@ -1327,6 +1336,11 @@ export async function runStartupMigration(): Promise<void> {
     await db.execute(sql`
       CREATE INDEX IF NOT EXISTS leadership_events_tenant_active_start_idx
       ON leadership_events (tenant_id, is_active, start_date)
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS leadership_events_pending_review_idx
+      ON leadership_events (tenant_id, created_at DESC)
+      WHERE submission_status = 'pending'
     `);
   } catch (err) {
     logger.warn({ err }, "Persistent Leadership Austin event table migration failed");

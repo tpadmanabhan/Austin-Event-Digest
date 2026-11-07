@@ -1,10 +1,10 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request } from "express";
 import { withPublicEventIds } from "../lib/publicEventIdentity";
 import { verifiedEventMetadata } from "../lib/verifiedEventMetadata";
 import { parseEventLink } from "../lib/eventLink";
 import { createHmac } from "node:crypto";
 import { db, digestsTable, leadershipEventsTable, subscribersTable, type EventItem, EventItemSchema } from "@workspace/db";
-import { eq, desc, asc, and } from "drizzle-orm";
+import { eq, desc, asc, and, sql } from "drizzle-orm";
 import {
   GenerateDigestBody,
   SendDigestBody,
@@ -17,9 +17,18 @@ import {
   AddAlumniHappeningResponse,
   CreateLeadershipManagedEventBody,
   UpdateLeadershipManagedEventBody,
+  RequestLeadershipEventContributionAccessBody,
+  ParseLeadershipEventContributionUrlBody,
+  SubmitLeadershipEventContributionBody,
+  ReviewLeadershipEventContributionBody,
 } from "@workspace/api-zod";
 import { generateSampleDigest, getStLouisSampleDigest, getNextSunday } from "../lib/digestGenerator";
-import { sendNewsletterEmail, buildDigestEmailHtml, translateEventsForEmail } from "../lib/emailService";
+import {
+  sendNewsletterEmail,
+  buildDigestEmailHtml,
+  translateEventsForEmail,
+  sendLeadershipEventContributionAccessEmail,
+} from "../lib/emailService";
 import { fetchEventsFromGmail, isEmailReaderConfigured, debugFetchEmails } from "../lib/emailReader";
 import { fetchEventsForTenant, deduplicateEvents, filterByTenantCategories } from "../lib/eventSources";
 import { isAdultContent } from "../lib/contentFilter";
@@ -34,6 +43,12 @@ import { prewarmTranslationCache } from "../lib/translationPrewarm";
 import { signSubscriberToken } from "../lib/subscriberToken";
 import { publicTenantUrl } from "../lib/publicUrls";
 import { listUpcomingLeadershipEvents } from "../lib/leadershipAustinManagedEvents";
+import { verifyTurnstileToken } from "../lib/turnstile";
+import {
+  LEADERSHIP_CONTRIBUTOR_COOKIE,
+  signLeadershipContributionToken,
+  verifyLeadershipContributionToken,
+} from "../lib/leadershipEventContributionAuth";
 
 // ---------------------------------------------------------------------------
 // Production tenant auth — email-based HMAC for managed (null-passwordHash) cities
@@ -145,6 +160,33 @@ function normalizedHttpUrl(value: string | null | undefined): string | null {
   } catch {
     return null;
   }
+}
+
+function cookieValue(cookieHeader: string | undefined, name: string): string | null {
+  if (!cookieHeader) return null;
+  for (const item of cookieHeader.split(";")) {
+    const separator = item.indexOf("=");
+    if (separator < 0) continue;
+    if (item.slice(0, separator).trim() === name) return item.slice(separator + 1).trim();
+  }
+  return null;
+}
+
+const contributionRateLimits = new Map<string, number[]>();
+function allowContributionAttempt(key: string, max: number, windowMs: number): boolean {
+  const now = Date.now();
+  const active = (contributionRateLimits.get(key) ?? []).filter((time) => now - time < windowMs);
+  if (active.length >= max) {
+    contributionRateLimits.set(key, active);
+    return false;
+  }
+  contributionRateLimits.set(key, [...active, now]);
+  if (contributionRateLimits.size > 5000) {
+    for (const [candidate, times] of contributionRateLimits) {
+      if (times.every((time) => now - time >= windowMs)) contributionRateLimits.delete(candidate);
+    }
+  }
+  return true;
 }
 
 /**
@@ -342,6 +384,338 @@ router.get("/digest/latest", async (req, res) => {
   }
 });
 
+async function getLeadershipContributor(req: Request): Promise<{ email: string; name: string | null } | null> {
+  if (req.tenant?.slug !== "leadershipaustin") return null;
+  const token = cookieValue(req.headers.cookie, LEADERSHIP_CONTRIBUTOR_COOKIE);
+  if (!token) return null;
+  const claims = verifyLeadershipContributionToken(token, "session", req.tenant.id);
+  if (!claims) return null;
+
+  const [subscriber] = await db
+    .select({ email: subscribersTable.email, name: subscribersTable.name })
+    .from(subscribersTable)
+    .where(and(
+      eq(subscribersTable.tenantId, req.tenant.id),
+      eq(subscribersTable.email, claims.email),
+      eq(subscribersTable.isActive, true),
+    ))
+    .limit(1);
+  return subscriber ? { email: subscriber.email, name: subscriber.name } : null;
+}
+
+function isLeadershipAustinRequest(req: Request): boolean {
+  return req.tenant?.slug === "leadershipaustin";
+}
+
+router.post("/leadership-event-contributions/access", async (req, res): Promise<void> => {
+  if (!isLeadershipAustinRequest(req)) {
+    res.status(404).json({ error: "not_found" });
+    return;
+  }
+  const parsed = RequestLeadershipEventContributionAccessBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: "invalid_request", message: "Enter a valid subscriber email and complete the security check." });
+    return;
+  }
+  const captchaOk = await verifyTurnstileToken(parsed.data.captchaToken, req.ip);
+  if (!captchaOk) {
+    res.status(400).json({ error: "captcha_failed", message: "Security check failed. Please try again." });
+    return;
+  }
+
+  const email = parsed.data.email.trim().toLowerCase();
+  const windowMs = 15 * 60 * 1000;
+  const ipKey = `access-ip:${req.ip || "unknown"}`;
+  const emailKey = `access-email:${email}`;
+  if (!allowContributionAttempt(ipKey, 10, windowMs) || !allowContributionAttempt(emailKey, 3, windowMs)) {
+    res.status(429).json({ error: "rate_limited", message: "Please wait before requesting another link." });
+    return;
+  }
+
+  const [subscriber] = await db
+    .select({ email: subscribersTable.email, name: subscribersTable.name })
+    .from(subscribersTable)
+    .where(and(
+      eq(subscribersTable.tenantId, req.tenant!.id),
+      eq(subscribersTable.email, email),
+      eq(subscribersTable.isActive, true),
+    ))
+    .limit(1);
+
+  if (subscriber) {
+    const verificationToken = signLeadershipContributionToken({
+      email: subscriber.email,
+      tenantId: req.tenant!.id,
+      purpose: "verify",
+      expiresAt: Date.now() + 20 * 60 * 1000,
+    });
+    if (verificationToken) {
+      const siteUrl = process.env.NODE_ENV === "production"
+        ? publicTenantUrl("leadershipaustin")
+        : `${req.protocol}://${req.get("host")}`;
+      const verificationUrl = `${siteUrl}/api/events/leadership-event-contributions/verify?token=${encodeURIComponent(verificationToken)}`;
+      const result = await sendLeadershipEventContributionAccessEmail(subscriber.email, subscriber.name, verificationUrl);
+      if (!result.success) req.log.warn({ error: result.error }, "Could not send Leadership Austin contributor verification email");
+    } else {
+      req.log.error("Contributor verification is unavailable because no signing secret is configured");
+    }
+  }
+
+  res.json({
+    success: true,
+    message: "If that address is an active Leadership Austin subscriber, a verification link is on its way.",
+  });
+});
+
+router.get("/leadership-event-contributions/verify", async (req, res): Promise<void> => {
+  res.set("Cache-Control", "no-store");
+  res.set("Referrer-Policy", "no-referrer");
+  if (!isLeadershipAustinRequest(req)) {
+    res.status(404).send("Not found");
+    return;
+  }
+  const token = typeof req.query.token === "string" ? req.query.token : "";
+  const claims = verifyLeadershipContributionToken(token, "verify", req.tenant!.id);
+  if (!claims) {
+    res.status(400).send("This verification link is invalid or expired. Request a new link from Leadership Austin.");
+    return;
+  }
+  const [subscriber] = await db
+    .select({ email: subscribersTable.email })
+    .from(subscribersTable)
+    .where(and(
+      eq(subscribersTable.tenantId, req.tenant!.id),
+      eq(subscribersTable.email, claims.email),
+      eq(subscribersTable.isActive, true),
+    ))
+    .limit(1);
+  if (!subscriber) {
+    res.status(403).send("This email is not an active Leadership Austin subscriber.");
+    return;
+  }
+
+  const sessionToken = signLeadershipContributionToken({
+    email: subscriber.email,
+    tenantId: req.tenant!.id,
+    purpose: "session",
+    expiresAt: Date.now() + 14 * 24 * 60 * 60 * 1000,
+  });
+  if (!sessionToken) {
+    res.status(503).send("Subscriber verification is temporarily unavailable.");
+    return;
+  }
+  res.cookie(LEADERSHIP_CONTRIBUTOR_COOKIE, sessionToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 14 * 24 * 60 * 60 * 1000,
+    path: "/api/events/leadership-event-contributions",
+  });
+  const [latestDigest] = await db
+    .select({ id: digestsTable.id })
+    .from(digestsTable)
+    .where(eq(digestsTable.tenantId, req.tenant!.id))
+    .orderBy(desc(digestsTable.weekOf), desc(digestsTable.id))
+    .limit(1);
+  res.redirect(303, latestDigest ? `/digest/${latestDigest.id}#add-event` : "/");
+});
+
+router.get("/leadership-event-contributions/session", async (req, res): Promise<void> => {
+  if (!isLeadershipAustinRequest(req)) {
+    res.status(404).json({ error: "not_found" });
+    return;
+  }
+  const contributor = await getLeadershipContributor(req);
+  res.json({ authenticated: !!contributor, name: contributor?.name ?? null });
+});
+
+router.post("/leadership-event-contributions/parse", async (req, res): Promise<void> => {
+  if (!isLeadershipAustinRequest(req)) {
+    res.status(404).json({ error: "not_found" });
+    return;
+  }
+  const contributor = await getLeadershipContributor(req);
+  if (!contributor) {
+    res.status(401).json({ error: "subscriber_verification_required", message: "Verify your active subscriber email before adding an event." });
+    return;
+  }
+  const parsed = ParseLeadershipEventContributionUrlBody.safeParse(req.body ?? {});
+  if (!parsed.success || !normalizedHttpUrl(parsed.data.url)) {
+    res.status(400).json({ error: "invalid_request", message: "Enter a public HTTP or HTTPS event link." });
+    return;
+  }
+  if (!allowContributionAttempt(`parse:${contributor.email}`, 20, 60 * 60 * 1000)) {
+    res.status(429).json({ error: "rate_limited", message: "Please wait before parsing more links." });
+    return;
+  }
+  try {
+    const parsedEvent = await parseEventUrlDetails(parsed.data.url);
+    res.json({
+      event: {
+        title: parsedEvent.title,
+        date: parsedEvent.date,
+        startDate: parsedEvent.startDate,
+        venue: parsedEvent.venue,
+        description: parsedEvent.description,
+        link: parsedEvent.link,
+      },
+    });
+  } catch (err) {
+    req.log.warn({ err }, "Leadership Austin subscriber event URL could not be parsed");
+    res.status(400).json({ error: "invalid_request", message: "This event link could not be read safely." });
+  }
+});
+
+router.post("/leadership-event-contributions", async (req, res): Promise<void> => {
+  if (!isLeadershipAustinRequest(req)) {
+    res.status(404).json({ error: "not_found" });
+    return;
+  }
+  const contributor = await getLeadershipContributor(req);
+  if (!contributor) {
+    res.status(401).json({ error: "subscriber_verification_required", message: "Verify your active subscriber email before adding an event." });
+    return;
+  }
+  const parsed = SubmitLeadershipEventContributionBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: "invalid_request", message: "Review the event name, date, venue, and public event link." });
+    return;
+  }
+
+  const input = parsed.data;
+  const title = input.title.trim();
+  const name = input.name.trim();
+  const venue = input.venue.trim();
+  const link = normalizedHttpUrl(input.url);
+  const startDate = new Date(input.startDate).toISOString();
+  const startDay = eventDayInTimezone(startDate, "America/Chicago");
+  if (!link || !title || !name || !venue || !startDay) {
+    res.status(400).json({ error: "invalid_request", message: "Event details or date are invalid." });
+    return;
+  }
+  if (!allowContributionAttempt(`submit:${contributor.email}`, 5, 24 * 60 * 60 * 1000)) {
+    res.status(429).json({ error: "rate_limited", message: "You have reached today's event submission limit." });
+    return;
+  }
+
+  try {
+    const existing = await db
+      .select()
+      .from(leadershipEventsTable)
+      .where(and(
+        eq(leadershipEventsTable.tenantId, req.tenant!.id),
+        sql`${leadershipEventsTable.submissionStatus} <> 'rejected'`,
+      ));
+    const normalizedLink = normalizedHttpUrl(link);
+    const duplicate = existing.some((row) =>
+      (normalizedLink && normalizedHttpUrl(row.link) === normalizedLink)
+      || (
+        normalizedEventTitle(row.title) === normalizedEventTitle(title)
+        && eventDayInTimezone(row.startDate, row.timezone) === startDay
+      ),
+    );
+    if (duplicate) {
+      res.status(409).json({ error: "duplicate_event", message: "This event is already in the Leadership Austin event list." });
+      return;
+    }
+
+    await db.insert(leadershipEventsTable).values({
+      tenantId: req.tenant!.id,
+      title,
+      date: input.date.trim(),
+      startDate,
+      timezone: "America/Chicago",
+      venue,
+      description: input.description.trim(),
+      link,
+      category: "Community",
+      sourceName: "Leadership Austin community",
+      sourceUrl: link,
+      sourceAlumni: name,
+      imageUrl: null,
+      submissionStatus: "pending",
+      submitterName: name,
+      submitterEmail: contributor.email,
+      isActive: false,
+    });
+    res.status(201).json({
+      success: true,
+      message: "Your event is with the Leadership Austin team for review. It will appear after approval.",
+    });
+  } catch (err) {
+    req.log.error({ err }, "Error saving Leadership Austin subscriber event contribution");
+    res.status(500).json({ error: "server_error", message: "Could not submit the event." });
+  }
+});
+
+router.get("/leadership-event-contributions/pending", requireAdmin, async (req, res): Promise<void> => {
+  if (!isLeadershipAustinRequest(req)) {
+    res.status(404).json({ error: "not_found" });
+    return;
+  }
+  try {
+    const rows = await db
+      .select()
+      .from(leadershipEventsTable)
+      .where(and(
+        eq(leadershipEventsTable.tenantId, req.tenant!.id),
+        eq(leadershipEventsTable.submissionStatus, "pending"),
+      ))
+      .orderBy(asc(leadershipEventsTable.createdAt), asc(leadershipEventsTable.id));
+    res.json({
+      contributions: rows.map((row) => ({
+        ...leadershipEventToApi(row),
+        submitterName: row.submitterName ?? row.sourceAlumni,
+        submitterEmail: row.submitterEmail ?? "",
+      })),
+    });
+  } catch (err) {
+    req.log.error({ err }, "Error listing pending Leadership Austin event contributions");
+    res.status(500).json({ error: "server_error", message: "Could not load pending submissions." });
+  }
+});
+
+router.patch("/leadership-event-contributions/:id/review", requireAdmin, async (req, res): Promise<void> => {
+  if (!isLeadershipAustinRequest(req)) {
+    res.status(404).json({ error: "not_found" });
+    return;
+  }
+  const id = Number.parseInt(String(req.params.id), 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ error: "invalid_request", message: "Invalid submission ID." });
+    return;
+  }
+  const parsed = ReviewLeadershipEventContributionBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: "invalid_request", message: "Choose approve or reject." });
+    return;
+  }
+  try {
+    const approved = parsed.data.decision === "approve";
+    const [updated] = await db
+      .update(leadershipEventsTable)
+      .set({
+        submissionStatus: approved ? "approved" : "rejected",
+        isActive: approved,
+        updatedAt: new Date(),
+      })
+      .where(and(
+        eq(leadershipEventsTable.id, id),
+        eq(leadershipEventsTable.tenantId, req.tenant!.id),
+        eq(leadershipEventsTable.submissionStatus, "pending"),
+      ))
+      .returning({ id: leadershipEventsTable.id });
+    if (!updated) {
+      res.status(404).json({ error: "not_found", message: "Pending submission not found." });
+      return;
+    }
+    res.json({ success: true, status: approved ? "approved" : "rejected" });
+  } catch (err) {
+    req.log.error({ err, id }, "Error reviewing Leadership Austin event contribution");
+    res.status(500).json({ error: "server_error", message: "Could not review the submission." });
+  }
+});
+
 router.get("/leadership-managed/admin", requireAdmin, async (req, res) => {
   if (req.tenant?.slug !== "leadershipaustin") {
     res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
@@ -351,7 +725,10 @@ router.get("/leadership-managed/admin", requireAdmin, async (req, res) => {
     const rows = await db
       .select()
       .from(leadershipEventsTable)
-      .where(eq(leadershipEventsTable.tenantId, req.tenant.id))
+      .where(and(
+        eq(leadershipEventsTable.tenantId, req.tenant.id),
+        eq(leadershipEventsTable.submissionStatus, "approved"),
+      ))
       .orderBy(asc(leadershipEventsTable.startDate), asc(leadershipEventsTable.id));
     res.json({ events: rows.map(leadershipEventToApi) });
   } catch (err) {
@@ -877,6 +1254,113 @@ async function fetchUrlMeta(url: string): Promise<{ title: string; description: 
   }
 }
 
+type ParsedEventUrlDetails = {
+  title: string;
+  date: string;
+  startDate: string | null;
+  venue: string;
+  description: string;
+  imageUrl: string | null;
+  link: string;
+};
+
+async function parseEventUrlDetails(rawUrl: string): Promise<ParsedEventUrlDetails> {
+  const url = normalizedHttpUrl(rawUrl);
+  if (!url) throw new Error("Enter a valid public HTTP or HTTPS event link.");
+
+  let html = "";
+  const page = await safeOutboundFetch(url, { timeoutMs: 12_000 });
+  if (page.ok) html = (await page.text()).slice(0, 2_000_000);
+
+  const matchesEvent = (value: unknown): value is Record<string, unknown> => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const node = value as Record<string, unknown>;
+    const types = Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]];
+    return types.some((type) => ["Event", "MusicEvent", "SportsEvent", "SocialEvent"].includes(String(type)));
+  };
+  let eventNode: Record<string, unknown> | null = null;
+  const jsonLdPattern = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  for (const match of html.matchAll(jsonLdPattern)) {
+    try {
+      const parsed = JSON.parse(match[1] ?? "") as unknown;
+      const nodes = Array.isArray(parsed)
+        ? parsed
+        : parsed && typeof parsed === "object" && Array.isArray((parsed as Record<string, unknown>)["@graph"])
+          ? (parsed as Record<string, unknown>)["@graph"] as unknown[]
+          : [parsed];
+      eventNode = nodes.find(matchesEvent) ?? null;
+      if (eventNode) break;
+    } catch {
+      // Ignore malformed JSON-LD and continue looking for another event block.
+    }
+  }
+
+  let title = "", date = "", venue = "", description = "", startDate: string | null = null;
+  let imageUrl: string | null = null;
+  if (eventNode) {
+    title = typeof eventNode["name"] === "string" ? eventNode["name"] : "";
+    description = typeof eventNode["description"] === "string"
+      ? eventNode["description"].replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").slice(0, 2000)
+      : "";
+    const image = eventNode["image"];
+    imageUrl = Array.isArray(image)
+      ? (typeof image[0] === "string" ? image[0] : null)
+      : typeof image === "string" ? image : null;
+
+    const rawStartDate = typeof eventNode["startDate"] === "string" ? eventNode["startDate"] : "";
+    const parsedStartDate = rawStartDate ? new Date(rawStartDate) : null;
+    if (parsedStartDate && Number.isFinite(parsedStartDate.getTime())) {
+      startDate = parsedStartDate.toISOString();
+      date = new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: "America/Chicago",
+      }).format(parsedStartDate);
+    }
+
+    const location = eventNode["location"];
+    const firstLocation = Array.isArray(location) ? location[0] : location;
+    if (typeof firstLocation === "string") {
+      venue = firstLocation;
+    } else if (firstLocation && typeof firstLocation === "object") {
+      const locationObject = firstLocation as Record<string, unknown>;
+      const address = locationObject["address"];
+      const addressObject = address && typeof address === "object"
+        ? address as Record<string, unknown>
+        : null;
+      const addressText = typeof address === "string" ? address : [
+        addressObject?.["streetAddress"],
+        addressObject?.["addressLocality"],
+        addressObject?.["addressRegion"],
+      ].filter((part): part is string => typeof part === "string" && !!part.trim()).join(", ");
+      venue = [locationObject["name"], addressText]
+        .filter((part): part is string => typeof part === "string" && !!part.trim())
+        .join(", ");
+    }
+  }
+
+  if (!title || !description || !imageUrl) {
+    const metadata = await fetchUrlMeta(url);
+    if (!title) title = metadata.title;
+    if (!description) description = metadata.description;
+    if (!imageUrl) imageUrl = metadata.imageUrl;
+  }
+
+  return {
+    title: title.trim().slice(0, 180),
+    date,
+    startDate,
+    venue: venue.trim().slice(0, 200),
+    description: description.trim().slice(0, 2000),
+    imageUrl,
+    link: url,
+  };
+}
+
 router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
   const id = parseInt(req.params["id"] as string, 10);
   if (isNaN(id)) {
@@ -1038,81 +1522,16 @@ router.post("/digest/:id/alumni-happenings", requireAdmin, async (req, res): Pro
 // ---------------------------------------------------------------------------
 router.post("/digest/:id/parse-event-url", requireAdmin, async (req, res) => {
   const { url } = req.body || {};
-  if (typeof url !== "string" || !url.startsWith("http")) {
-    res.status(400).json({ error: "invalid_request", message: "url is required" });
+  if (typeof url !== "string" || !normalizedHttpUrl(url)) {
+    res.status(400).json({ error: "invalid_request", message: "A public HTTP or HTTPS event URL is required" });
     return;
   }
   try {
-    let html = "";
-    try {
-      const pageRes = await safeOutboundFetch(url, { timeoutMs: 12000 });
-      if (pageRes.ok) html = await pageRes.text();
-    } catch { /* fall through to og fallback */ }
-
-    // Try JSON-LD Schema.org Event first
-    const jldRe = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-    let jldParsed: Record<string, unknown> | null = null;
-    for (const m of html.matchAll(jldRe)) {
-      try {
-        const d = JSON.parse(m[1]) as Record<string, unknown>;
-        const t = d["@type"];
-        if (t === "Event" || t === "MusicEvent" || t === "SportsEvent" || t === "SocialEvent") {
-          jldParsed = d; break;
-        }
-      } catch { /* skip malformed */ }
-    }
-
-    let title = "", date = "", venue = "", description = "", imageUrl: string | null = null;
-
-    if (jldParsed) {
-      title = String(jldParsed["name"] || "");
-      description = typeof jldParsed["description"] === "string"
-        ? jldParsed["description"].replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").slice(0, 400)
-        : "";
-      const img = jldParsed["image"];
-      imageUrl = Array.isArray(img) ? String(img[0]) : (typeof img === "string" ? img : null);
-
-      // Parse startDate into human-readable format
-      if (jldParsed["startDate"]) {
-        try {
-          const d = new Date(String(jldParsed["startDate"]));
-          if (!isNaN(d.getTime())) {
-            const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-            const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-            const hr = d.getHours(), min = String(d.getMinutes()).padStart(2, "0");
-            const ampm = hr >= 12 ? "PM" : "AM";
-            const hr12 = hr % 12 || 12;
-            date = `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()} at ${hr12}:${min} ${ampm}`;
-          }
-        } catch { /* ignore */ }
-      }
-
-      // Extract venue from location
-      const loc = jldParsed["location"] as Record<string, unknown> | string | undefined;
-      if (typeof loc === "string") {
-        venue = loc;
-      } else if (loc && typeof loc === "object") {
-        const locName = String((loc as any)["name"] || "");
-        const addr = (loc as any)["address"] as Record<string, unknown> | string | undefined;
-        const street = typeof addr === "string" ? addr : String((addr as any)?.["streetAddress"] || "");
-        const city   = typeof addr === "object" ? String((addr as any)?.["addressLocality"] || "") : "";
-        const state  = typeof addr === "object" ? String((addr as any)?.["addressRegion"] || "") : "";
-        venue = [locName, street, city, state].filter(Boolean).join(", ");
-      }
-    }
-
-    // Fallback to og/meta tags
-    if (!title || !description) {
-      const meta = await fetchUrlMeta(url);
-      if (!title) title = meta.title;
-      if (!description) description = meta.description;
-      if (!imageUrl) imageUrl = meta.imageUrl;
-    }
-
-    res.json({ success: true, event: { title, date, venue, description, imageUrl, link: url } });
+    const event = await parseEventUrlDetails(url);
+    res.json({ success: true, event });
   } catch (err) {
-    req.log.warn({ url, err }, "Failed to parse event URL");
-    res.status(500).json({ error: "server_error", message: "Failed to parse URL" });
+    req.log.warn({ err }, "Failed to parse event URL");
+    res.status(400).json({ error: "invalid_request", message: "This event link could not be read safely." });
   }
 });
 

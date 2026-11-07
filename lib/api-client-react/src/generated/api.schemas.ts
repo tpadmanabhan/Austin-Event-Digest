@@ -261,6 +261,110 @@ export interface LeadershipManagedEventsResponse {
   events: LeadershipManagedEvent[];
 }
 
+export interface LeadershipEventContributionAccessInput {
+  /** @maxLength 320 */
+  email: string;
+  /** @minLength 1 */
+  captchaToken: string;
+}
+
+export interface LeadershipEventContributionAccessResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface LeadershipEventContributionSession {
+  authenticated: boolean;
+  /** @nullable */
+  name: string | null;
+}
+
+export interface LeadershipEventContributionParseInput {
+  /** @maxLength 2000 */
+  url: string;
+}
+
+export interface LeadershipEventContributionParsedEvent {
+  title: string;
+  date: string;
+  /** @nullable */
+  startDate: string | null;
+  venue: string;
+  description: string;
+  link: string;
+}
+
+export interface LeadershipEventContributionParseResponse {
+  event: LeadershipEventContributionParsedEvent;
+}
+
+export interface LeadershipEventContributionInput {
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  name: string;
+  /** @maxLength 2000 */
+  url: string;
+  /**
+   * @minLength 1
+   * @maxLength 180
+   */
+  title: string;
+  /**
+   * @minLength 1
+   * @maxLength 180
+   */
+  date: string;
+  startDate: string;
+  /**
+   * @minLength 1
+   * @maxLength 200
+   */
+  venue: string;
+  /** @maxLength 2000 */
+  description: string;
+}
+
+export interface LeadershipEventContributionResponse {
+  success: boolean;
+  message: string;
+}
+
+export type LeadershipEventContributionPending = LeadershipManagedEvent & {
+  submitterName: string;
+  submitterEmail: string;
+};
+
+export interface LeadershipEventContributionPendingResponse {
+  contributions: LeadershipEventContributionPending[];
+}
+
+export type LeadershipEventContributionReviewInputDecision =
+  (typeof LeadershipEventContributionReviewInputDecision)[keyof typeof LeadershipEventContributionReviewInputDecision];
+
+export const LeadershipEventContributionReviewInputDecision = {
+  approve: "approve",
+  reject: "reject",
+} as const;
+
+export interface LeadershipEventContributionReviewInput {
+  decision: LeadershipEventContributionReviewInputDecision;
+}
+
+export type LeadershipEventContributionReviewResponseStatus =
+  (typeof LeadershipEventContributionReviewResponseStatus)[keyof typeof LeadershipEventContributionReviewResponseStatus];
+
+export const LeadershipEventContributionReviewResponseStatus = {
+  approved: "approved",
+  rejected: "rejected",
+} as const;
+
+export interface LeadershipEventContributionReviewResponse {
+  success: boolean;
+  status: LeadershipEventContributionReviewResponseStatus;
+}
+
 export interface LeadershipManagedEventResponse {
   success: boolean;
   event: LeadershipManagedEvent;
@@ -587,6 +691,10 @@ export type GetPublicEventMetadata200 = {
 
 export type GetLeadershipEventRsvpCountParams = {
   managedEventId: number;
+};
+
+export type VerifyLeadershipEventContributionAccessParams = {
+  token: string;
 };
 
 export type GetTenantConfigParams = {

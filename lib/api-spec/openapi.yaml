@@ -293,6 +293,151 @@ paths:
               schema:
                 $ref: "#/components/schemas/LeadershipManagedEventsResponse"
 
+  /events/leadership-event-contributions/access:
+    post:
+      operationId: requestLeadershipEventContributionAccess
+      tags: [events]
+      summary: Email a contributor access link to an active Leadership Austin subscriber
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadershipEventContributionAccessInput"
+      responses:
+        "200":
+          description: Generic response that does not reveal whether an address is subscribed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadershipEventContributionAccessResponse"
+        "400":
+          description: Invalid email or CAPTCHA
+        "429":
+          description: Request limit reached
+
+  /events/leadership-event-contributions/session:
+    get:
+      operationId: getLeadershipEventContributionSession
+      tags: [events]
+      summary: Check the verified subscriber session for event contributions
+      responses:
+        "200":
+          description: Current contributor session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadershipEventContributionSession"
+
+  /events/leadership-event-contributions/verify:
+    get:
+      operationId: verifyLeadershipEventContributionAccess
+      tags: [events]
+      summary: Verify a subscriber email link and open the contribution form
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "303":
+          description: Sets an HttpOnly contributor session cookie and redirects to the form
+        "400":
+          description: Invalid or expired verification link
+
+  /events/leadership-event-contributions/parse:
+    post:
+      operationId: parseLeadershipEventContributionUrl
+      tags: [events]
+      summary: Auto-fill event fields from a verified subscriber's public event link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadershipEventContributionParseInput"
+      responses:
+        "200":
+          description: Parsed event details for review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadershipEventContributionParseResponse"
+        "400":
+          description: Invalid or unsupported event URL
+        "401":
+          description: Subscriber email verification required
+
+  /events/leadership-event-contributions:
+    post:
+      operationId: submitLeadershipEventContribution
+      tags: [events]
+      summary: Submit a Leadership Austin event for admin review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadershipEventContributionInput"
+      responses:
+        "201":
+          description: Event received and held for admin approval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadershipEventContributionResponse"
+        "400":
+          description: Invalid event details
+        "401":
+          description: Subscriber email verification required
+        "409":
+          description: Event is already in the Leadership Austin list
+
+  /events/leadership-event-contributions/pending:
+    get:
+      operationId: listPendingLeadershipEventContributions
+      tags: [events]
+      summary: List subscriber event submissions awaiting admin review
+      responses:
+        "200":
+          description: Pending submissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadershipEventContributionPendingResponse"
+        "403":
+          description: Admin access required
+
+  /events/leadership-event-contributions/{id}/review:
+    patch:
+      operationId: reviewLeadershipEventContribution
+      tags: [events]
+      summary: Approve or reject a subscriber event submission
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadershipEventContributionReviewInput"
+      responses:
+        "200":
+          description: Submission reviewed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadershipEventContributionReviewResponse"
+        "400":
+          description: Invalid review decision
+        "404":
+          description: Pending submission not found
+
   /events/leadership-managed/{id}:
     patch:
       operationId: updateLeadershipManagedEvent
@@ -1344,6 +1489,150 @@ components:
           items:
             $ref: "#/components/schemas/LeadershipManagedEvent"
       required: [events]
+
+    LeadershipEventContributionAccessInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        captchaToken:
+          type: string
+          minLength: 1
+      required: [email, captchaToken]
+
+    LeadershipEventContributionAccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success, message]
+
+    LeadershipEventContributionSession:
+      type: object
+      properties:
+        authenticated:
+          type: boolean
+        name:
+          type: ["string", "null"]
+      required: [authenticated, name]
+
+    LeadershipEventContributionParseInput:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          maxLength: 2000
+      required: [url]
+
+    LeadershipEventContributionParsedEvent:
+      type: object
+      properties:
+        title:
+          type: string
+        date:
+          type: string
+        startDate:
+          type: ["string", "null"]
+          format: date-time
+        venue:
+          type: string
+        description:
+          type: string
+        link:
+          type: string
+          format: uri
+      required: [title, date, startDate, venue, description, link]
+
+    LeadershipEventContributionParseResponse:
+      type: object
+      properties:
+        event:
+          $ref: "#/components/schemas/LeadershipEventContributionParsedEvent"
+      required: [event]
+
+    LeadershipEventContributionInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        url:
+          type: string
+          format: uri
+          maxLength: 2000
+        title:
+          type: string
+          minLength: 1
+          maxLength: 180
+        date:
+          type: string
+          minLength: 1
+          maxLength: 180
+        startDate:
+          type: string
+          format: date-time
+        venue:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+      required: [name, url, title, date, startDate, venue, description]
+
+    LeadershipEventContributionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success, message]
+
+    LeadershipEventContributionPending:
+      allOf:
+        - $ref: "#/components/schemas/LeadershipManagedEvent"
+        - type: object
+          properties:
+            submitterName:
+              type: string
+            submitterEmail:
+              type: string
+              format: email
+          required: [submitterName, submitterEmail]
+
+    LeadershipEventContributionPendingResponse:
+      type: object
+      properties:
+        contributions:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeadershipEventContributionPending"
+      required: [contributions]
+
+    LeadershipEventContributionReviewInput:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject]
+      required: [decision]
+
+    LeadershipEventContributionReviewResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        status:
+          type: string
+          enum: [approved, rejected]
+      required: [success, status]
 
     LeadershipManagedEventResponse:
       type: object

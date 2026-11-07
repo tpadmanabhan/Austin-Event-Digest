@@ -10,6 +10,7 @@ import { SubscribeForm } from "@/components/subscribe-form";
 import { useTenant } from "@/contexts/tenant-context";
 import { AlumniHappeningsSection } from "@/components/alumni-happenings-section";
 import { LeadershipAlumniTestimonial } from "@/components/leadership-alumni-testimonial";
+import { LeadershipEventContribution } from "@/components/leadership-event-contribution";
 import { useLanguage } from "@/contexts/language-context";
 import { JA } from "@/i18n/ja";
 import { EventMap } from "@/components/event-map";
@@ -1162,6 +1163,7 @@ export default function DigestView() {
             </div>
           </div>
         </section>
+        {isLeadershipAustin && <LeadershipEventContribution />}
       </article>
     </Layout>
   );

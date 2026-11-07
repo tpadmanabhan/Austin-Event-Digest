@@ -680,10 +680,19 @@ export default function Home() {
             {latestDigest && (
               <Link 
                 href={`/digest/${latestDigest.id}`}
-                className="inline-flex items-center gap-2 text-primary font-semibold hover:text-primary/80 transition-colors group"
+                className={isLeadershipAustin
+                  ? "group inline-flex w-full shrink-0 items-center justify-center gap-5 rounded-2xl border-2 border-[#4EBEE7] bg-[#314363] px-9 py-5 text-xl font-extrabold text-white shadow-xl shadow-[#314363]/30 ring-2 ring-[#314363]/10 ring-offset-2 transition-all hover:-translate-y-0.5 hover:bg-[#253550] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4EBEE7]/50 sm:w-auto"
+                  : "inline-flex items-center gap-2 text-primary font-semibold hover:text-primary/80 transition-colors group"}
               >
-                {jt("Read full edition", JA.readFullEdition)}
-                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                {isLeadershipAustin ? (
+                  <span className="flex flex-col items-start leading-tight">
+                    <span className="mb-1 text-[10px] font-bold uppercase tracking-[.2em] text-[#8bd8f0]">Latest edition</span>
+                    <span>{jt("Read full edition", JA.readFullEdition)}</span>
+                  </span>
+                ) : jt("Read full edition", JA.readFullEdition)}
+                <ArrowRight className={isLeadershipAustin
+                  ? "h-7 w-7 transition-transform group-hover:translate-x-1"
+                  : "w-5 h-5 transition-transform group-hover:translate-x-1"} />
               </Link>
             )}
           </div>

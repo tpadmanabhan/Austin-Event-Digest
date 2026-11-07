@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, CalendarPlus, Loader2 } from "lucide-react";
+import { Archive, CalendarPlus, Check, Loader2, X } from "lucide-react";
 import type { LeadershipManagedEvent } from "@/hooks/use-events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 type AdminEvent = LeadershipManagedEvent & {
   isActive: boolean;
   createdAt: string;
+};
+
+type PendingSubmission = AdminEvent & {
+  submitterName: string;
+  submitterEmail: string;
 };
 
 type FormState = {
@@ -55,6 +60,13 @@ async function loadAdminEvents(): Promise<AdminEvent[]> {
   return data.events as AdminEvent[];
 }
 
+async function loadPendingSubmissions(): Promise<PendingSubmission[]> {
+  const response = await fetch("/api/events/leadership-event-contributions/pending", { headers: adminHeaders() });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || "Could not load pending submissions.");
+  return data.contributions as PendingSubmission[];
+}
+
 export function LeadershipManagedEventsAdmin() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<FormState>(initialForm);
@@ -64,6 +76,11 @@ export function LeadershipManagedEventsAdmin() {
     queryKey: ["admin-leadership-managed-events"],
     queryFn: loadAdminEvents,
     staleTime: 30_000,
+  });
+  const pendingQuery = useQuery({
+    queryKey: ["admin-leadership-event-contributions"],
+    queryFn: loadPendingSubmissions,
+    staleTime: 15_000,
   });
 
   const createMutation = useMutation({
@@ -119,6 +136,30 @@ export function LeadershipManagedEventsAdmin() {
     onError: (cause) => setError(cause instanceof Error ? cause.message : "Could not archive the event."),
   });
 
+  const reviewMutation = useMutation({
+    mutationFn: async ({ eventId, decision }: { eventId: number; decision: "approve" | "reject" }) => {
+      const response = await fetch(`/api/events/leadership-event-contributions/${eventId}/review`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...adminHeaders() },
+        body: JSON.stringify({ decision }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Could not review the submission.");
+      return { eventId, decision };
+    },
+    onSuccess: ({ decision }) => {
+      setMessage(decision === "approve" ? "Event approved and added to the public list." : "Event submission rejected.");
+      setError("");
+      queryClient.invalidateQueries({ queryKey: ["admin-leadership-event-contributions"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-leadership-managed-events"] });
+      queryClient.invalidateQueries({ queryKey: ["leadership-managed-events"] });
+    },
+    onError: (cause) => {
+      setError(cause instanceof Error ? cause.message : "Could not review the submission.");
+      setMessage("");
+    },
+  });
+
   const setField = (field: keyof FormState, value: string) => {
     setForm(current => ({ ...current, [field]: value }));
     setMessage("");
@@ -134,6 +175,76 @@ export function LeadershipManagedEventsAdmin() {
       </div>
 
       <div className="space-y-6 p-6">
+        <section aria-labelledby="leadership-event-submissions-title" className="space-y-3">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h4 id="leadership-event-submissions-title" className="text-sm font-bold text-foreground">
+                Community submissions awaiting approval
+              </h4>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Approved events are added to the public feed and receive the usual “Interested?” button.
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={() => pendingQuery.refetch()}>
+              Refresh
+            </Button>
+          </div>
+          {pendingQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading submissions…</p>
+          ) : pendingQuery.isError ? (
+            <p className="text-sm text-destructive" role="alert">{pendingQuery.error.message}</p>
+          ) : pendingQuery.data?.length ? (
+            <ul className="divide-y divide-border rounded-xl border border-border">
+              {pendingQuery.data.map((event) => (
+                <li key={event.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 space-y-1">
+                    <p className="font-semibold text-foreground">{event.title}</p>
+                    <p className="text-xs text-muted-foreground">{event.date} · {event.venue}</p>
+                    {event.description && <p className="text-sm text-muted-foreground">{event.description}</p>}
+                    {event.link && (
+                      <a href={event.link} target="_blank" rel="noopener noreferrer" className="break-all text-xs font-medium text-primary underline">
+                        Open event page
+                      </a>
+                    )}
+                    <p className="pt-1 text-xs text-muted-foreground">
+                      Submitted by {event.submitterName} · <a className="underline" href={`mailto:${event.submitterEmail}`}>{event.submitterEmail}</a>
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={reviewMutation.isPending}
+                      onClick={() => reviewMutation.mutate({ eventId: event.id, decision: "approve" })}
+                    >
+                      {reviewMutation.isPending && reviewMutation.variables?.eventId === event.id && reviewMutation.variables.decision === "approve"
+                        ? <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                        : <Check className="mr-1 h-4 w-4" />}
+                      Approve
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={reviewMutation.isPending}
+                      onClick={() => reviewMutation.mutate({ eventId: event.id, decision: "reject" })}
+                    >
+                      {reviewMutation.isPending && reviewMutation.variables?.eventId === event.id && reviewMutation.variables.decision === "reject"
+                        ? <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                        : <X className="mr-1 h-4 w-4" />}
+                      Reject
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+              No pending community events.
+            </p>
+          )}
+        </section>
+
         <form
           className="space-y-3"
           onSubmit={(event) => {
