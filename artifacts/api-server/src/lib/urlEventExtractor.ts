@@ -279,9 +279,18 @@ export interface ExtractedSourceResult {
   error?: string;
 }
 
-export async function extractEventsFromUrl(url: string, weekOf: Date): Promise<ExtractedSourceResult> {
-  const { start, end } = getWeekBounds(weekOf);
-  const weekLabel = `${formatDate(start)} through ${formatDate(end)}`;
+export async function extractEventsFromUrl(url: string, weekOf: Date, rangeEnd?: Date): Promise<ExtractedSourceResult> {
+  const { start: weekStart, end: weekEnd } = getWeekBounds(weekOf);
+  const start = new Date(weekStart);
+  const end = rangeEnd ? new Date(rangeEnd) : weekEnd;
+  if (rangeEnd) {
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+  }
+  const dateRangeLabel = `${formatDate(start)} through ${formatDate(end)}`;
+  const dateRangeDescription = rangeEnd
+    ? `the selected date range (${dateRangeLabel})`
+    : `the week of ${dateRangeLabel} (Sunday through Saturday inclusive)`;
 
   // --- Special case: Eventbrite single-event URL ---
   const ebSingleMatch = url.match(/eventbrite\.com\/e\/[^/?#]+-(\d{8,})/i);
@@ -313,7 +322,7 @@ export async function extractEventsFromUrl(url: string, weekOf: Date): Promise<E
     return { url, events: [], error: `Failed to fetch page: ${err}` };
   }
 
-  const prompt = `You are an event extraction assistant. Given the text content from an event website or calendar page, extract all events that fall within the week of ${weekLabel} (Sunday through Saturday inclusive).
+  const prompt = `You are an event extraction assistant. Given the text content from an event website or calendar page, extract all events happening during ${dateRangeDescription}.
 
 SOURCE URL: ${url}
 
@@ -321,7 +330,7 @@ PAGE TEXT:
 ${pageText}
 
 Instructions:
-- Extract only events happening during ${weekLabel}.
+- Extract only events happening during ${dateRangeLabel}, inclusive.
 - For each event, find the most specific event page URL you can. If an event has its own URL, use that. Otherwise use the source URL: ${url}
 - Format dates as: "DayOfWeek, Mon DD at H:MM AM/PM" (e.g. "Wednesday, Jul 2 at 7:00 PM")
 - If no specific time is mentioned, use "12:00 PM"
@@ -342,7 +351,7 @@ Return a JSON array like:
   }
 ]
 
-If no events are found for this week, return an empty array: []`;
+If no events are found within this date range, return an empty array: []`;
 
   try {
     const response = await client.chat.completions.create({
@@ -375,11 +384,11 @@ If no events are found for this week, return an empty array: []`;
   }
 }
 
-export async function extractEventsFromSources(urls: string[], weekOf: Date): Promise<{ events: EventItem[]; results: ExtractedSourceResult[] }> {
+export async function extractEventsFromSources(urls: string[], weekOf: Date, rangeEnd?: Date): Promise<{ events: EventItem[]; results: ExtractedSourceResult[] }> {
   const validUrls = urls.filter(u => u && u.startsWith("http"));
   if (validUrls.length === 0) return { events: [], results: [] };
 
-  const results = await Promise.all(validUrls.map(url => extractEventsFromUrl(url, weekOf)));
+  const results = await Promise.all(validUrls.map(url => extractEventsFromUrl(url, weekOf, rangeEnd)));
 
   const seen = new Set<string>();
   const events: EventItem[] = [];

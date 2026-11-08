@@ -169,7 +169,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
                 Know an event the community should see?
               </h2>
               <p className="mt-1 text-sm text-slate-700">
-                Active Leadership Austin subscribers can suggest events for admin review.
+                Active subscribers can submit public events for review. Approved events may appear on this site and in a future newsletter.
               </p>
             </div>
             <a

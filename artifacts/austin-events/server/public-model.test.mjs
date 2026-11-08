@@ -130,8 +130,9 @@ test("Leadership Austin full editions end with a subscriber event contribution p
   const { response, body } = await document("leadershipaustin.irl.group", "/digest/9");
   assert.equal(response.status, 200);
   assert.match(body, /Suggest a community event/);
-  assert.match(body, /Active Leadership Austin newsletter subscribers can suggest public events/);
-  assert.match(body, /Open the interactive event suggestion form/);
+  assert.match(body, /Active subscribers can submit public events for review/);
+  assert.match(body, /Approved events may appear on this site and in a future newsletter/);
+  assert.match(body, /href="[^"]*#add-event"/);
 });
 
 test("host resolution never defaults an unknown production host to Austin", () => {

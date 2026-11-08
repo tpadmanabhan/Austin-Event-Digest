@@ -14,3 +14,9 @@ Every city page must show its own branding from the first visible frame and in s
 **Why:** The user reported a subsecond simplified-page preview on eventcarpooling.com and requested its removal. Public HTML readability remains a separate project requirement.
 
 **How to apply:** Verify initial rendering with delayed JavaScript as well as normal loading. Preserve readable content with JavaScript disabled and a usable fallback when startup fails. If implementing full visual server rendering later, render and hydrate matching views rather than replacing one visibly different layout with another.
+
+Leadership Austin edition messaging has separate interactive and public-document renderers. Keep subscriber event-suggestion copy and links consistent across both.
+
+**Why:** The full edition must serve browser visitors and no-JavaScript readers; changing only one renderer silently diverges.
+
+**How to apply:** When changing Leadership Austin edition language or contribution links, update and test both renderers.

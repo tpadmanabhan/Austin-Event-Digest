@@ -8,6 +8,7 @@ import {
   Trophy,
   Settings2,
   HelpCircle,
+  CalendarPlus,
 } from "lucide-react";
 
 interface Section {
@@ -70,10 +71,10 @@ const SECTIONS: Section[] = [
         <GuideList
           items={[
             { label: "Total Subscribers", detail: "How many people are signed up for your newsletter." },
-            { label: "Digests Created", detail: "Total number of weekly digests you've generated." },
-            { label: "Generate new digest", detail: "Pick a week, add optional notes, and let AI pull events from your city's newsletter sources." },
-            { label: "Quick Send Draft", detail: "Send the latest digest to your own email as a preview before blasting it to subscribers." },
-            { label: "First-run onboarding", detail: "A guided walkthrough the first time you set up your city — generates, previews, and tests your first digest." },
+            { label: "Editions Created", detail: "Total number of newsletter editions you've created." },
+            { label: "Create a newsletter edition", detail: "Choose a date anchor, add optional notes, and create a draft from your tenant's event sources." },
+            { label: "Quick Send Draft", detail: "Send the latest edition to your own email as a preview before sending it to subscribers." },
+            { label: "First-run onboarding", detail: "A guided walkthrough to create, preview, and test your first newsletter edition." },
           ]}
         />
       </div>
@@ -81,7 +82,7 @@ const SECTIONS: Section[] = [
   },
   {
     icon: <Mail className="w-5 h-5" />,
-    title: "Weekly Digests",
+    title: "Newsletter Editions",
     content: (
       <div className="space-y-6">
         <p className="text-sm text-muted-foreground">
@@ -92,8 +93,8 @@ const SECTIONS: Section[] = [
           <p className="text-sm font-semibold text-foreground">Generate from event sources</p>
           <GuideList
             items={[
-              { label: "Source URLs", detail: "Paste up to 10 event listing URLs (Luma, Eventbrite, Meetup, etc.) and the system extracts events automatically." },
-              { label: "Target digest", detail: "Merge extracted events into an existing digest or create a new one." },
+              { label: "Source URLs", detail: "Paste up to 10 event listing URLs (Luma, Eventbrite, Meetup, etc.) and the system extracts events for the selected date window." },
+              { label: "Target edition", detail: "Add extracted events to an existing edition or create a new one." },
               { label: "Save URLs", detail: "Your source URLs are remembered automatically and pre-filled next visit." },
             ]}
           />
@@ -105,22 +106,22 @@ const SECTIONS: Section[] = [
             items={[
               { label: "Business Spotlight", detail: "Paste a URL and write a title + blurb to highlight a local business." },
               { label: "Community Spotlight", detail: "Same as above, for community events or causes. You can add an optional deadline." },
-              { label: "Single event from URL", detail: "Paste any event URL and hit Auto-fill to pre-populate title, date, venue, and description. Check ⭐ Special Event to pin it at the top of the digest." },
+              { label: "Single event from URL", detail: "Paste any event URL and hit Auto-fill to pre-populate title, date, venue, and description. Check ⭐ Special Event to feature it in the newsletter." },
             ]}
           />
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-foreground">Managing events inside a digest</p>
+          <p className="text-sm font-semibold text-foreground">Managing events inside an edition</p>
           <GuideList
             items={[
-              { label: "Expand a digest row", detail: "Click a digest to see all its events in a list." },
-              { label: "Toggle Special Event (⭐)", detail: "Mark any event as featured — it appears at the top of the digest email." },
+              { label: "Expand an edition row", detail: "Click an edition to see all its events in a list." },
+              { label: "Toggle Special Event (⭐)", detail: "Mark any event as featured — it appears at the top of the newsletter email." },
               { label: "Edit event details", detail: "Inline editing for title, description, date, venue, and category." },
               { label: "Remove past events", detail: "An amber warning appears if any events have already passed. One click removes all of them." },
-              { label: "Send test email", detail: "Sends the digest to your own admin email so you can review it before publishing." },
-              { label: "Send to all subscribers", detail: "Blasts the digest to your full subscriber list. A confirmation dialog shows coverage stats before you confirm." },
-              { label: "Delete a digest", detail: "Permanently removes the digest and all its events." },
+              { label: "Send test email", detail: "Sends the edition to your own admin email so you can review it before sending." },
+              { label: "Send to all subscribers", detail: "Sends the edition to your full subscriber list after a confirmation step." },
+              { label: "Delete an edition", detail: "Permanently removes the edition and all its events." },
             ]}
           />
         </div>
@@ -208,7 +209,31 @@ const SECTIONS: Section[] = [
   },
 ];
 
-export function AdminHelpTab() {
+export function AdminHelpTab({ isLeadershipAustin = false }: { isLeadershipAustin?: boolean }) {
+  const leadershipSection: Section = {
+    icon: <CalendarPlus className="w-5 h-5" />,
+    title: "Subscriber event suggestions",
+    content: (
+      <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Active newsletter subscribers can suggest public events from the full edition page. Suggestions stay unpublished until an admin reviews them.
+        </p>
+        <GuideList
+          items={[
+            { label: "Review the queue", detail: "Open the subscriber event suggestions section at the top of Newsletter Editions. Check the date, venue, description, submitter, and public event link." },
+            { label: "Approve or reject", detail: "Approval adds the event to the Leadership Austin site and future newsletter editions. It does not send an email. Rejected suggestions stay unpublished." },
+            { label: "Add an event yourself", detail: "Enter the title, Central Time start, venue, category, source, and person or team to credit. The display date is created automatically; optional details are grouped separately." },
+            { label: "Archive an event", detail: "Archiving removes it from the active public list without deleting its record." },
+          ]}
+        />
+      </div>
+    ),
+  };
+
+  const sections = isLeadershipAustin
+    ? [...SECTIONS.slice(0, 2), leadershipSection, ...SECTIONS.slice(2).filter(section => section.title !== "Carpoolers")]
+    : SECTIONS;
+
   return (
     <div className="max-w-2xl space-y-6">
       {/* Header */}
@@ -219,14 +244,14 @@ export function AdminHelpTab() {
         <div>
           <h2 className="font-serif font-bold text-xl text-foreground">Admin Guide</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Everything you can do as a city admin — click any section to expand it.
+            Everything you can do as an admin — click any section to expand it.
           </p>
         </div>
       </div>
 
       {/* Accordion sections */}
       <div className="space-y-3">
-        {SECTIONS.map(section => (
+        {sections.map(section => (
           <Accordion key={section.title} section={section} />
         ))}
       </div>

@@ -195,7 +195,8 @@ function allowContributionAttempt(key: string, max: number, windowMs: number): b
  * events are left unchanged. Explicit featured:false is an editor's decision,
  * not an invitation to auto-tag a later event.
  */
-function autoTagFutureEvents(events: EventItem[], weekOf: Date): EventItem[] {
+function autoTagFutureEvents(events: EventItem[], weekOf: Date, tenantSlug?: string): EventItem[] {
+  if (tenantSlug === "leadershipaustin") return events;
   const MONTH_IDX: Record<string, number> = {
     Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11,
   };
@@ -217,6 +218,13 @@ function autoTagFutureEvents(events: EventItem[], weekOf: Date): EventItem[] {
     if (eventDate > weekEnd) return { ...event, featured: true } as EventItem;
     return event;
   });
+}
+
+function parseAdminDateAnchor(value?: string): Date {
+  if (!value) return getNextSunday();
+  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T12:00:00`)
+    : new Date(value);
 }
 
 /**
@@ -924,12 +932,22 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
   }
 
   const { weekOf: weekOfStr, customNotes } = parseResult.data;
+  const isLeadershipAustin = req.tenant!.slug === "leadershipaustin";
   // weekEnd is not in the Zod schema (admin-only extension) — read directly
   const weekEndStr = (req.body as Record<string, unknown>)?.weekEnd as string | undefined;
 
   try {
-    const weekOf = weekOfStr ? new Date(weekOfStr) : getNextSunday();
-    const weekEnd = weekEndStr ? new Date(weekEndStr) : undefined;
+    const weekOf = parseAdminDateAnchor(weekOfStr);
+    const weekEnd = weekEndStr
+      ? new Date(weekEndStr)
+      : isLeadershipAustin
+        ? (() => {
+            const end = new Date(weekOf);
+            end.setHours(0, 0, 0, 0);
+            end.setDate(end.getDate() + 30);
+            return end;
+          })()
+        : undefined;
 
     let subject: string;
     let intro: string;
@@ -984,7 +1002,9 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     const mergedEvents = filterByTenantCategories(deduped, tenantCategories);
 
     // Build subject line
-    if (weekEnd) {
+    if (isLeadershipAustin) {
+      subject = fallback.subject;
+    } else if (weekEnd) {
       const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
       const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
       const _s = req.tenant!.slug;
@@ -1039,11 +1059,11 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       req.log.info({ carried: carried.map((e: EventItem) => e.title) }, "Carried forward featured events from previous digest");
     }
 
-    const taggedEvents = autoTagFutureEvents(
-      applyTenantCategoryRestriction(req.tenant!.slug, eventsWithCarried)
-        .filter((e: EventItem) => !isAdultContent(e.title, e.description ?? "")),
-      weekOf,
-    );
+    const contentCheckedEvents = applyTenantCategoryRestriction(req.tenant!.slug, eventsWithCarried)
+      .filter((e: EventItem) => !isAdultContent(e.title, e.description ?? ""));
+    const taggedEvents = isLeadershipAustin
+      ? contentCheckedEvents
+      : autoTagFutureEvents(contentCheckedEvents, weekOf, req.tenant!.slug);
 
     const [digest] = await db
       .insert(digestsTable)
@@ -1151,7 +1171,7 @@ router.patch("/digest/:id/events", requireAdmin, async (req, res) => {
       .where(and(eq(digestsTable.id, id), eq(digestsTable.tenantId, req.tenant!.id)))
       .limit(1);
     const taggedEvents = existing
-      ? autoTagFutureEvents(applyTenantCategoryRestriction(req.tenant!.slug, normalised), new Date(existing.weekOf))
+      ? autoTagFutureEvents(applyTenantCategoryRestriction(req.tenant!.slug, normalised), new Date(existing.weekOf), req.tenant!.slug)
       : applyTenantCategoryRestriction(req.tenant!.slug, normalised);
     const [updated] = await db
       .update(digestsTable)
@@ -1417,7 +1437,7 @@ router.post("/digest/:id/spotlight", requireAdmin, async (req, res) => {
     } as EventItem;
 
     const currentEvents = (existing.events as EventItem[]) || [];
-    const updatedEvents = autoTagFutureEvents([...currentEvents, spotlight], new Date(existing.weekOf));
+    const updatedEvents = autoTagFutureEvents([...currentEvents, spotlight], new Date(existing.weekOf), req.tenant!.slug);
 
     const [updated] = await db
       .update(digestsTable)
@@ -1623,7 +1643,7 @@ router.post("/digest/:id/scrape-event", requireAdmin, async (req, res) => {
     } as EventItem;
 
     const currentEvents = (existing.events as EventItem[]) || [];
-    const updatedEvents = autoTagFutureEvents([...currentEvents, event], new Date(existing.weekOf));
+    const updatedEvents = autoTagFutureEvents([...currentEvents, event], new Date(existing.weekOf), req.tenant!.slug);
 
     await db
       .update(digestsTable)
@@ -1785,7 +1805,7 @@ router.patch("/digest/:id/events/:idx", requireAdmin, async (req, res) => {
 
     // A URL correction must not re-tag other events or recompute their metadata.
     const onlyLink = Object.keys(updates).every(field => field === "link");
-    const taggedEvents = onlyLink ? finalEvents : autoTagFutureEvents(finalEvents as EventItem[], new Date(digest.weekOf));
+    const taggedEvents = onlyLink ? finalEvents : autoTagFutureEvents(finalEvents as EventItem[], new Date(digest.weekOf), req.tenant!.slug);
 
     const [updated] = await db
       .update(digestsTable)
@@ -1903,7 +1923,7 @@ router.get("/debug/emails", requireAdmin, async (req, res) => {
 router.post("/digest/create-empty", requireAdmin, async (req, res) => {
   const { weekOf: weekOfStr } = req.body as { weekOf?: string };
   try {
-    const weekOf = weekOfStr ? new Date(weekOfStr) : getNextSunday();
+    const weekOf = parseAdminDateAnchor(weekOfStr);
     const dateLabel = weekOf.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     const isLeadershipAustin = req.tenant!.slug === "leadershipaustin";
     const subject = isLeadershipAustin
@@ -1940,8 +1960,14 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
   }
 
   try {
-    const weekOf = weekOfStr ? new Date(weekOfStr) : getNextSunday();
-    const { events, results } = await extractEventsFromSources(validUrls, weekOf);
+    const weekOf = parseAdminDateAnchor(weekOfStr);
+    const isLeadershipAustin = req.tenant!.slug === "leadershipaustin";
+    const rangeEnd = isLeadershipAustin ? new Date(weekOf) : undefined;
+    if (rangeEnd) {
+      rangeEnd.setDate(rangeEnd.getDate() + 29);
+      rangeEnd.setHours(23, 59, 59, 999);
+    }
+    const { events, results } = await extractEventsFromSources(validUrls, weekOf, rangeEnd);
 
     const tenantCategories = (req.tenant!.categories as string[]) || [];
     const deduped = deduplicateEvents(events);
@@ -1990,17 +2016,28 @@ router.post("/digest/generate-from-sources", requireAdmin, async (req, res) => {
       const weekEnd = new Date(weekOf.getTime() + 6 * 24 * 60 * 60 * 1000);
       const label = `${weekOf.toLocaleDateString("en-US", opts)}–${weekEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
       const isAustinCares = req.tenant!.slug === "austincares";
-      const subjectEmoji2 = isAustinCares ? "🏷️" : req.tenant!.slug === "dallas" ? "" : "🤠";
-      const subject = `${subjectEmoji2 ? `${subjectEmoji2} ` : ""}${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
-      const intro = isAustinCares
-        ? `Happy Sunday, Austin! Here are this week's best local deals — from Tuesday lunch specials to all-week savings at your favorite spots.\n\nThese deals are hand-picked from Austin restaurants and local businesses. Tap any deal below to claim it.`
-        : req.tenant!.slug === "dallas"
-        ? `Here are upcoming Dallas and North Texas plans across Tech, Arts, Sports, Civics, and Wellness. Check each organizer’s link for current details and registration.`
-        : `Hey ${req.tenant!.city.split(",")[0]}! I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest — get out there and enjoy it! 🤠`;
+      const subjectEmoji2 = isAustinCares ? "🏷️" : req.tenant!.slug === "dallas" || isLeadershipAustin ? "" : "🤠";
+      const subject = isLeadershipAustin
+        ? "Leadership Austin — Upcoming Events"
+        : `${subjectEmoji2 ? `${subjectEmoji2} ` : ""}${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
+      const intro = isLeadershipAustin
+        ? "Upcoming events for the Leadership Austin community."
+        : isAustinCares
+          ? `Happy Sunday, Austin! Here are this week's best local deals — from Tuesday lunch specials to all-week savings at your favorite spots.\n\nThese deals are hand-picked from Austin restaurants and local businesses. Tap any deal below to claim it.`
+          : req.tenant!.slug === "dallas"
+            ? `Here are upcoming Dallas and North Texas plans across Tech, Arts, Sports, Civics, and Wellness. Check each organizer’s link for current details and registration.`
+            : `Hey ${req.tenant!.city.split(",")[0]}! I combed through various event newsletters and hand-picked some cool events happening around the city. Here's your curated digest — get out there and enjoy it! 🤠`;
 
       const [newDigest] = await db
         .insert(digestsTable)
-        .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: autoTagFutureEvents(finalEvents as EventItem[], weekOf), sentCount: 0 })
+        .values({
+          tenantId: req.tenant!.id,
+          weekOf,
+          subject,
+          intro,
+          events: isLeadershipAustin ? finalEvents as EventItem[] : autoTagFutureEvents(finalEvents as EventItem[], weekOf, req.tenant!.slug),
+          sentCount: 0,
+        })
         .returning();
 
       digest = newDigest;
@@ -2042,6 +2079,7 @@ router.post("/digest/import", requireAdmin, async (req, res) => {
       applyTenantCategoryRestriction(req.tenant!.slug, events as EventItem[])
         .filter((e: EventItem) => !isAdultContent(e.title, e.description ?? "")),
       weekOf,
+      req.tenant!.slug,
     );
 
     const [digest] = await db

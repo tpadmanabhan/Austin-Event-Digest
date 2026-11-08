@@ -22,10 +22,11 @@ async function fetchAdminRsvps(): Promise<{ rsvps: AdminRsvp[]; total: number }>
   return res.json() as Promise<{ rsvps: AdminRsvp[]; total: number }>;
 }
 
-export function useAdminRsvps() {
+export function useAdminRsvps(enabled = true) {
   return useQuery({
     queryKey: ["admin-rsvps"],
     queryFn: fetchAdminRsvps,
     refetchInterval: 30_000,
+    enabled,
   });
 }

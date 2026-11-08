@@ -5,6 +5,7 @@ import type { LeadershipManagedEvent } from "@/hooks/use-events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { centralDateTimeIso, formatCentralDateLabel } from "@/lib/leadership-event-dates";
 
 type AdminEvent = LeadershipManagedEvent & {
   isActive: boolean;
@@ -18,7 +19,6 @@ type PendingSubmission = AdminEvent & {
 
 type FormState = {
   title: string;
-  date: string;
   startDate: string;
   endDate: string;
   venue: string;
@@ -28,25 +28,24 @@ type FormState = {
   organizer: string;
   link: string;
   sourceName: string;
-  sourceUrl: string;
   sourceAlumni: string;
 };
 
-const initialForm: FormState = {
-  title: "",
-  date: "",
-  startDate: "",
-  endDate: "",
-  venue: "",
-  venueAddress: "",
-  description: "",
-  category: "Community",
-  organizer: "",
-  link: "",
-  sourceName: "The Austin Common",
-  sourceUrl: "https://theaustincommon.com/events/",
-  sourceAlumni: "Amy Stansbury",
-};
+function initialForm(categories: string[]): FormState {
+  return {
+    title: "",
+    startDate: "",
+    endDate: "",
+    venue: "",
+    venueAddress: "",
+    description: "",
+    category: categories.includes("Community") ? "Community" : categories[0] ?? "",
+    organizer: "",
+    link: "",
+    sourceName: "Leadership Austin",
+    sourceAlumni: "",
+  };
+}
 
 function adminHeaders(): Record<string, string> {
   const token = sessionStorage.getItem("admin_token");
@@ -67,9 +66,9 @@ async function loadPendingSubmissions(): Promise<PendingSubmission[]> {
   return data.contributions as PendingSubmission[];
 }
 
-export function LeadershipManagedEventsAdmin() {
+export function LeadershipManagedEventsAdmin({ categories }: { categories: string[] }) {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<FormState>(initialForm);
+  const [form, setForm] = useState<FormState>(() => initialForm(categories));
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const eventsQuery = useQuery({
@@ -85,21 +84,27 @@ export function LeadershipManagedEventsAdmin() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const start = new Date(form.startDate);
-      const end = form.endDate ? new Date(form.endDate) : null;
-      if (!Number.isFinite(start.getTime()) || (end && !Number.isFinite(end.getTime()))) {
-        throw new Error("Enter a valid start and end time.");
-      }
+      const startDate = centralDateTimeIso(form.startDate);
+      const endDate = form.endDate ? centralDateTimeIso(form.endDate) : null;
+      if (!startDate || (form.endDate && !endDate)) throw new Error("Enter a valid date and time in Austin’s Central Time zone.");
+      if (endDate && Date.parse(endDate) < Date.parse(startDate)) throw new Error("The end time must be after the start time.");
       const response = await fetch("/api/events/leadership-managed", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...adminHeaders() },
         body: JSON.stringify({
-          ...form,
-          startDate: start.toISOString(),
-          ...(end ? { endDate: end.toISOString() } : {}),
+          title: form.title,
+          date: formatCentralDateLabel(startDate, endDate),
+          startDate,
+          ...(endDate ? { endDate } : {}),
           timezone: "America/Chicago",
+          venue: form.venue,
+          venueAddress: form.venueAddress || undefined,
+          description: form.description,
+          category: form.category,
+          organizer: form.organizer || undefined,
           link: form.link || null,
-          sourceUrl: form.sourceUrl || null,
+          sourceName: form.sourceName,
+          sourceAlumni: form.sourceAlumni,
         }),
       });
       const data = await response.json();
@@ -107,9 +112,9 @@ export function LeadershipManagedEventsAdmin() {
       return data;
     },
     onSuccess: () => {
-      setMessage("Event added to the persistent alumni list.");
+      setMessage("Event added to the Leadership Austin event list.");
       setError("");
-      setForm(initialForm);
+      setForm(initialForm(categories));
       queryClient.invalidateQueries({ queryKey: ["admin-leadership-managed-events"] });
       queryClient.invalidateQueries({ queryKey: ["leadership-managed-events"] });
     },
@@ -169,9 +174,9 @@ export function LeadershipManagedEventsAdmin() {
   return (
     <section className="overflow-hidden rounded-2xl border border-[#314363]/20 bg-card shadow-sm" aria-labelledby="admin-managed-events-title">
       <div className="border-b border-[#314363]/15 bg-[#314363] px-6 py-5 text-white">
-        <p className="text-[10px] font-bold uppercase tracking-[.24em] text-[#4EBEE7]">Persistent event list</p>
-        <h3 id="admin-managed-events-title" className="mt-1 text-2xl font-bold uppercase">Alumni-sourced upcoming events</h3>
-        <p className="mt-1 max-w-2xl text-sm text-white/70">These events stay separate from Leadership Austin programs and appear on Austin’s community feed.</p>
+        <p className="text-[10px] font-bold uppercase tracking-[.24em] text-[#4EBEE7]">Leadership Austin event list</p>
+        <h3 id="admin-managed-events-title" className="mt-1 text-2xl font-bold uppercase">Upcoming events</h3>
+        <p className="mt-1 max-w-2xl text-sm text-white/70">Approved subscriber suggestions and admin-added events appear on the Leadership Austin site and in future newsletter editions.</p>
       </div>
 
       <div className="space-y-6 p-6">
@@ -179,10 +184,15 @@ export function LeadershipManagedEventsAdmin() {
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>
               <h4 id="leadership-event-submissions-title" className="text-sm font-bold text-foreground">
-                Community submissions awaiting approval
+                Subscriber event suggestions
               </h4>
+              {!pendingQuery.isLoading && !pendingQuery.isError && (
+                <span className="mt-1 inline-flex rounded-full bg-[#314363]/10 px-2 py-0.5 text-[10px] font-semibold text-[#314363]">
+                  {pendingQuery.data?.length ?? 0} awaiting review
+                </span>
+              )}
               <p className="mt-1 text-xs text-muted-foreground">
-                Approved events are added to the public feed and receive the usual “Interested?” button.
+                Review the event and submitter, then approve or reject it. Approval adds the event to the site and future newsletter previews; it does not send an email.
               </p>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={() => pendingQuery.refetch()}>
@@ -240,7 +250,7 @@ export function LeadershipManagedEventsAdmin() {
             </ul>
           ) : (
             <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-              No pending community events.
+              No subscriber event suggestions are waiting for review.
             </p>
           )}
         </section>
@@ -252,31 +262,49 @@ export function LeadershipManagedEventsAdmin() {
             createMutation.mutate();
           }}
         >
+          <h4 className="text-sm font-bold text-foreground">Add an event to the public list</h4>
           <div className="grid gap-3 sm:grid-cols-2">
             <Input aria-label="Event title" placeholder="Event title" value={form.title} required onChange={e => setField("title", e.target.value)} />
-            <Input aria-label="Event date label" placeholder="Date and time shown to visitors" value={form.date} required onChange={e => setField("date", e.target.value)} />
-            <Input aria-label="Event start time" type="datetime-local" value={form.startDate} required onChange={e => setField("startDate", e.target.value)} />
-            <Input aria-label="Event end time" type="datetime-local" value={form.endDate} onChange={e => setField("endDate", e.target.value)} />
+            <div>
+              <label htmlFor="managed-event-start-date" className="mb-1.5 block text-xs font-medium text-muted-foreground">Start date and time (Austin, Central Time)</label>
+              <Input id="managed-event-start-date" type="datetime-local" value={form.startDate} required onChange={e => setField("startDate", e.target.value)} />
+            </div>
             <Input aria-label="Venue" placeholder="Venue" value={form.venue} required onChange={e => setField("venue", e.target.value)} />
-            <Input aria-label="Venue address" placeholder="Venue address (optional)" value={form.venueAddress} onChange={e => setField("venueAddress", e.target.value)} />
-            <Input aria-label="Category" placeholder="Category" value={form.category} required onChange={e => setField("category", e.target.value)} />
-            <Input aria-label="Organizer" placeholder="Organizer (optional)" value={form.organizer} onChange={e => setField("organizer", e.target.value)} />
-            <Input aria-label="Event link" type="url" placeholder="Event details URL (optional)" value={form.link} onChange={e => setField("link", e.target.value)} />
+            <select
+              aria-label="Category"
+              value={form.category}
+              required
+              onChange={e => setField("category", e.target.value)}
+              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              {categories.map(category => <option key={category} value={category}>{category}</option>)}
+            </select>
             <Input aria-label="Source name" placeholder="Source publication" value={form.sourceName} required onChange={e => setField("sourceName", e.target.value)} />
-            <Input aria-label="Source URL" type="url" placeholder="Source list URL (optional)" value={form.sourceUrl} onChange={e => setField("sourceUrl", e.target.value)} />
-            <Input aria-label="Alumni source" placeholder="Alumni source person" value={form.sourceAlumni} required onChange={e => setField("sourceAlumni", e.target.value)} />
+            <Input aria-label="Person or team to credit" placeholder="Person or team to credit" value={form.sourceAlumni} required onChange={e => setField("sourceAlumni", e.target.value)} />
           </div>
           <Textarea aria-label="Event description" placeholder="Short event description" value={form.description} required onChange={e => setField("description", e.target.value)} className="min-h-24" />
+          <details className="rounded-xl border border-border px-4 py-3">
+            <summary className="cursor-pointer text-sm font-medium text-foreground">More details (optional)</summary>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="managed-event-end-date" className="mb-1.5 block text-xs font-medium text-muted-foreground">End date and time (Austin, Central Time)</label>
+                <Input id="managed-event-end-date" type="datetime-local" value={form.endDate} onChange={e => setField("endDate", e.target.value)} />
+              </div>
+              <Input aria-label="Venue address" placeholder="Venue address" value={form.venueAddress} onChange={e => setField("venueAddress", e.target.value)} />
+              <Input aria-label="Organizer" placeholder="Organizer" value={form.organizer} onChange={e => setField("organizer", e.target.value)} />
+              <Input aria-label="Event link" type="url" placeholder="Event details URL" value={form.link} onChange={e => setField("link", e.target.value)} />
+            </div>
+          </details>
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           {message && <p role="status" className="text-sm text-emerald-700">{message}</p>}
           <Button type="submit" disabled={createMutation.isPending} className="gap-2 bg-[#314363] text-white hover:bg-[#253550]">
             {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus className="h-4 w-4" />}
-            Add persistent event
+            Add event
           </Button>
         </form>
 
         <div>
-          <h4 className="mb-3 text-sm font-bold text-foreground">Saved events</h4>
+          <h4 className="mb-3 text-sm font-bold text-foreground">Current and archived events</h4>
           {eventsQuery.isLoading ? (
             <p className="text-sm text-muted-foreground">Loading saved events…</p>
           ) : eventsQuery.isError ? (

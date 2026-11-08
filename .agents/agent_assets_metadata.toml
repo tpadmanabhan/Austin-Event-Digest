@@ -444,13 +444,13 @@ id = "eRTlmGZG3-onw8ImAyz9f"
 uri = "file://generated-artifacts/leadership-austin-admin-guide.pdf"
 type = "pdf"
 title = "Leadership Austin Admin Guide"
-description = "Two-page PDF guide to signing in, managing alumni events and weekly digests, using subscriber and settings tools, and sending email safely. The Superconnector section is omitted."
+description = "Updated two-page guide for monthly newsletter editions, subscriber event review, admin-added events, and careful sending."
 logical_id = "1a35d48c-cc43-4795-b166-07f38df8fe26"
-content_hash = "sha256:d061652f8cb12ec7c5abce186141777843bfc158aeec9c8aaf12d5808f4e97df"
-size = 91178
-mtime_ms = 1793806577880
-storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/1a35d48c-cc43-4795-b166-07f38df8fe26/4869b384-2dbd-4d92-9148-4986f694cc39"
-storage_version_token = "1793806598327315"
+content_hash = "sha256:94d37f64d11fa1f7bce898096da973a11dca79c154445084ec6927764dabf3f0"
+size = 84358
+mtime_ms = 1794138176145
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/1a35d48c-cc43-4795-b166-07f38df8fe26/5d0630f4-9780-4e9b-be32-aeab638e5de2"
+storage_version_token = "1794138925376736"
 content_type = "application/pdf"
 
 [[outputs]]
@@ -465,4 +465,18 @@ size = 82779
 mtime_ms = 1793807712660
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/00d69b72-fff3-457c-b6b5-af1253034b35/db33bab2-e544-4810-a58a-38a74815c0a9"
 storage_version_token = "1793807735381725"
+content_type = "application/pdf"
+
+[[outputs]]
+id = "V29tALBIrgqKawrvLVm6y"
+uri = "file://generated-artifacts/leadership-austin-guide.pdf"
+type = "pdf"
+title = "Leadership Austin Guide PDF"
+description = "Download the updated two-page Leadership Austin Guide."
+logical_id = "6dfdf674-93ba-4d0d-a0db-9f0a5161ab55"
+content_hash = "sha256:e07949014f6049ddefe8600bba39e4e6c8e78b70f0d5da18e97068779d6bf0ef"
+size = 83729
+mtime_ms = 1794139006776
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/6dfdf674-93ba-4d0d-a0db-9f0a5161ab55/a9fb80ce-12de-4965-aba3-e0c503654a41"
+storage_version_token = "1794139022181489"
 content_type = "application/pdf"

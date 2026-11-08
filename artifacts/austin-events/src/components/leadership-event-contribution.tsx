@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TurnstileWidget } from "@/components/turnstile-widget";
+import { centralDateTimeInput, centralDateTimeIso, formatCentralDateLabel } from "@/lib/leadership-event-dates";
 
 type ContributorSession = {
   authenticated: boolean;
@@ -14,7 +15,6 @@ type ContributionForm = {
   name: string;
   url: string;
   title: string;
-  date: string;
   startDate: string;
   venue: string;
   description: string;
@@ -24,61 +24,10 @@ const emptyForm: ContributionForm = {
   name: "",
   url: "",
   title: "",
-  date: "",
   startDate: "",
   venue: "",
   description: "",
 };
-
-function centralDateTimeInput(iso: string): string {
-  const date = new Date(iso);
-  if (!Number.isFinite(date.getTime())) return "";
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Chicago",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(date);
-  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
-  return `${values["year"]}-${values["month"]}-${values["day"]}T${values["hour"]}:${values["minute"]}`;
-}
-
-function centralDateTimeIso(value: string): string | null {
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
-  if (!match) return null;
-  const [, year, month, day, hour, minute] = match;
-  const targetUtc = Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
-  let instant = new Date(targetUtc);
-
-  // Convert the Austin wall-clock time into an actual timestamp, independent
-  // of the contributor's browser timezone.
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const parts = new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/Chicago",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).formatToParts(instant);
-    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
-    const observedUtc = Date.UTC(
-      Number(values["year"]),
-      Number(values["month"]) - 1,
-      Number(values["day"]),
-      Number(values["hour"]),
-      Number(values["minute"]),
-    );
-    instant = new Date(instant.getTime() + targetUtc - observedUtc);
-  }
-
-  const check = centralDateTimeInput(instant.toISOString());
-  return check === value ? instant.toISOString() : null;
-}
 
 async function readJson(response: Response): Promise<Record<string, any>> {
   return response.json().catch(() => ({}));
@@ -174,7 +123,6 @@ export function LeadershipEventContribution() {
       setForm((current) => ({
         ...current,
         title: event.title || current.title,
-        date: event.date || current.date,
         startDate: event.startDate ? centralDateTimeInput(event.startDate) : current.startDate,
         venue: event.venue || current.venue,
         description: event.description || current.description,
@@ -205,7 +153,7 @@ export function LeadershipEventContribution() {
           name: form.name.trim(),
           url: form.url.trim(),
           title: form.title.trim(),
-          date: form.date.trim(),
+          date: formatCentralDateLabel(startDate),
           startDate,
           venue: form.venue.trim(),
           description: form.description.trim(),
@@ -237,7 +185,7 @@ export function LeadershipEventContribution() {
           Suggest an event
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/80">
-          Active Leadership Austin subscribers can share public community events. Every suggestion is reviewed by an admin before it appears in the event list or newsletter.
+          Active subscribers can suggest public events. Admins review each suggestion before it appears on the Leadership Austin site or in a future newsletter; approval does not send an email.
         </p>
       </div>
 
@@ -285,14 +233,6 @@ export function LeadershipEventContribution() {
                 value={form.title}
                 onChange={(e) => setField("title", e.target.value)}
               />
-              <Input
-                aria-label="Event date and time label"
-                placeholder="Date and time shown to visitors"
-                maxLength={180}
-                required
-                value={form.date}
-                onChange={(e) => setField("date", e.target.value)}
-              />
               <div className="sm:col-span-2">
                 <label htmlFor="leadership-event-start-date" className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   Start date and time (Austin, Central Time)
@@ -305,6 +245,9 @@ export function LeadershipEventContribution() {
                   value={form.startDate}
                   onChange={(e) => setField("startDate", e.target.value)}
                 />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The visitor-facing date label is created from this time.
+                </p>
               </div>
               <Input
                 aria-label="Event venue"

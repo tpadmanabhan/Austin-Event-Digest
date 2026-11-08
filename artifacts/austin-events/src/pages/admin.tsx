@@ -20,6 +20,13 @@ import { LeadershipManagedEventsAdmin } from "@/components/leadership-managed-ev
 
 type FirstRunStep = "generate" | "preview" | "ready";
 
+function addDaysToDateInput(value: string, days: number): string {
+  const date = new Date(`${value}T12:00:00`);
+  if (!Number.isFinite(date.getTime())) return value;
+  date.setDate(date.getDate() + days);
+  return format(date, "yyyy-MM-dd");
+}
+
 // ---------------------------------------------------------------------------
 // Geocode coverage badge — Austin only
 // ---------------------------------------------------------------------------
@@ -93,11 +100,12 @@ function GeocovBadge({ digestId }: { digestId: number }) {
 export default function AdminDashboard() {
   const { toast } = useToast();
   const tenant = useTenant();
+  const isLeadershipAustin = tenant.slug === "leadershipaustin";
   const queryClient = useQueryClient();
   const { data: subsData, isLoading: loadingSubs } = useNewsletterSubscriptions();
   const { data: digestsData, isLoading: loadingDigests } = useAllDigests();
   
-  const { data: rsvpsData, isLoading: loadingRsvps } = useAdminRsvps();
+  const { data: rsvpsData, isLoading: loadingRsvps } = useAdminRsvps(!isLeadershipAustin);
   const { mutate: generate, isPending: isGenerating } = useGenerateDigest();
   const { mutate: send, isPending: isSending } = useSendDigest();
   const { mutate: deleteDigest, isPending: isDeleting } = useDeleteDigest();
@@ -156,10 +164,10 @@ export default function AdminDashboard() {
 
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [customNotes, setCustomNotes] = useState("");
-  const [weekOfInput, setWeekOfInput] = useState(currentSunday);
+  const [weekOfInput, setWeekOfInput] = useState(isLeadershipAustin ? format(new Date(), "yyyy-MM-dd") : currentSunday);
 
   const [sourceUrls, setSourceUrls] = useState<string[]>(new Array(10).fill(""));
-  const [sourceWeekOf, setSourceWeekOf] = useState(currentSunday);
+  const [sourceWeekOf, setSourceWeekOf] = useState(isLeadershipAustin ? format(new Date(), "yyyy-MM-dd") : currentSunday);
   const [sourceTargetDigestId, setSourceTargetDigestId] = useState<number | null>(null);
   const [isGeneratingFromSources, setIsGeneratingFromSources] = useState(false);
   const [sourceResults, setSourceResults] = useState<Array<{ url: string; eventCount: number; error?: string }> | null>(null);
@@ -292,7 +300,9 @@ export default function AdminDashboard() {
       if (!res.ok) throw new Error(data.message || "Failed to add event");
       queryClient.invalidateQueries({ queryKey: ["digests"] });
       const geocodeNote = data.event?.lat != null ? " · geocoded ✓" : "";
-      toast({ title: `Event added to digest #${addEventDigestId}${geocodeNote}` });
+      toast({ title: isLeadershipAustin
+        ? `Event added to edition #${addEventDigestId}${geocodeNote}`
+        : `Event added to digest #${addEventDigestId}${geocodeNote}` });
       setAddEventDigestId(null);
     } catch (err: unknown) {
       toast({ variant: "destructive", title: "Failed to add event", description: err instanceof Error ? err.message : String(err) });
@@ -441,6 +451,7 @@ export default function AdminDashboard() {
     try {
       const token = sessionStorage.getItem("admin_token");
       const body: Record<string, unknown> = { urls, weekOf: sourceWeekOf };
+      if (isLeadershipAustin) body.weekEnd = addDaysToDateInput(sourceWeekOf, 29);
       if (sourceTargetDigestId !== null) body.digestId = sourceTargetDigestId;
       const res = await fetch("/api/events/digest/generate-from-sources", {
         method: "POST",
@@ -457,7 +468,9 @@ export default function AdminDashboard() {
         const digestId = data.digest?.id ?? null;
         if (digestId !== null) setLastGeneratedDigest({ eventCount: eventsFound, digestId });
         queryClient.invalidateQueries({ queryKey: ["digests"] });
-        const action = sourceTargetDigestId !== null ? "merged into digest" : "new digest created";
+        const action = isLeadershipAustin
+          ? sourceTargetDigestId !== null ? "added to this edition" : "new edition created"
+          : sourceTargetDigestId !== null ? "merged into digest" : "new digest created";
         toast({ title: `${eventsFound} event${eventsFound !== 1 ? "s" : ""} extracted — ${action}!` });
       }
     } catch (err: unknown) {
@@ -506,7 +519,9 @@ export default function AdminDashboard() {
       const data = await res.json() as { success?: boolean; message?: string };
       if (!res.ok) throw new Error(data.message || "Failed to add spotlight");
       queryClient.invalidateQueries({ queryKey: ["digests"] });
-      toast({ title: `${type === "business" ? "Business" : "Community"} spotlight added to digest #${targetDigestId}!` });
+      toast({ title: isLeadershipAustin
+        ? `${type === "business" ? "Business" : "Community"} spotlight added to edition #${targetDigestId}.`
+        : `${type === "business" ? "Business" : "Community"} spotlight added to digest #${targetDigestId}!` });
       if (type === "business") { setBizUrl(""); setBizTitle(""); setBizDesc(""); }
       else { setCommUrl(""); setCommTitle(""); setCommDesc(""); setCommDeadline(""); }
     } catch (err: unknown) {
@@ -551,7 +566,7 @@ export default function AdminDashboard() {
       const data = await res.json() as { success?: boolean; message?: string };
       if (!res.ok) throw new Error(data.message || "Failed to add event");
       queryClient.invalidateQueries({ queryKey: ["digests"] });
-      toast({ title: `Event added to digest #${targetDigestId}!` });
+      toast({ title: isLeadershipAustin ? `Event added to edition #${targetDigestId}.` : `Event added to digest #${targetDigestId}!` });
       setEventUrl(""); setEventTitle(""); setEventDesc(""); setEventDate(""); setEventVenue(""); setEventCategory(""); setEventFeatured(false);
     } catch (err: unknown) {
       toast({ variant: "destructive", title: "Failed to add event", description: err instanceof Error ? err.message : String(err) });
@@ -603,7 +618,9 @@ export default function AdminDashboard() {
       if (!res.ok || data.success === false) throw new Error(data.message || "Failed to add Alumni Happening");
       setAlumniDigestId(targetDigestId);
       queryClient.invalidateQueries({ queryKey: ["digests"] });
-      toast({ title: `${alumniType === "event" ? "Alumni event" : "Community story"} added to digest #${targetDigestId}` });
+      toast({ title: isLeadershipAustin
+        ? `${alumniType === "event" ? "Alumni event" : "Community story"} added to edition #${targetDigestId}`
+        : `${alumniType === "event" ? "Alumni event" : "Community story"} added to digest #${targetDigestId}` });
       setAlumniTitle("");
       setAlumniDescription("");
       setAlumniLink("");
@@ -839,7 +856,7 @@ export default function AdminDashboard() {
           const eventCount = Array.isArray(data?.digest?.events) ? (data.digest.events as unknown[]).length : 0;
           const digestId = typeof data?.digest?.id === "number" ? data.digest.id : null;
           if (digestId !== null) setLastGeneratedDigest({ eventCount, digestId });
-          toast({ title: "Digest generated successfully!" });
+          toast({ title: isLeadershipAustin ? "Newsletter edition created." : "Digest generated successfully!" });
           if (tenant.firstRun) {
             const newDigestId = data.digest.id;
             setFirstRunDigestId(newDigestId);
@@ -901,7 +918,7 @@ export default function AdminDashboard() {
         onSuccess: () => {
           setSendDialogTarget(null);
           setSendConfirmPending(false);
-          toast({ title: isTest ? "Test email sent!" : "Digest sent to all subscribers!" });
+          toast({ title: isTest ? "Test email sent!" : isLeadershipAustin ? "Newsletter edition sent to all subscribers!" : "Digest sent to all subscribers!" });
         },
         onError: (err) => {
           setSendConfirmPending(false);
@@ -913,7 +930,7 @@ export default function AdminDashboard() {
 
   const stats = [
     { label: "Total Subscribers", value: subsData?.total || 0, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Digests Created", value: digestsData?.digests?.length || 0, icon: Mail, color: "text-primary", bg: "bg-primary/10" },
+    { label: isLeadershipAustin ? "Editions Created" : "Digests Created", value: digestsData?.digests?.length || 0, icon: Mail, color: "text-primary", bg: "bg-primary/10" },
   ];
 
   const MANAGED_CITIES = [
@@ -927,27 +944,29 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* City switcher — quick nav between managed subdomains */}
-        <div className="flex items-center gap-1 mb-8 p-1 bg-muted/50 border border-border rounded-xl w-fit">
-          {MANAGED_CITIES.map(city => {
-            const isActive = tenant.slug === city.slug;
-            return isActive ? (
-              <span
-                key={city.slug}
-                className="px-4 py-1.5 rounded-lg text-sm font-semibold bg-card shadow-sm text-foreground border border-border/60"
-              >
-                {city.label}
-              </span>
-            ) : (
-              <a
-                key={city.slug}
-                href={`https://${city.slug}.irl.group/admin`}
-                className="px-4 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-card/60 transition-colors"
-              >
-                {city.label}
-              </a>
-            );
-          })}
-        </div>
+        {!isLeadershipAustin && (
+          <div className="flex items-center gap-1 mb-8 p-1 bg-muted/50 border border-border rounded-xl w-fit">
+            {MANAGED_CITIES.map(city => {
+              const isActive = tenant.slug === city.slug;
+              return isActive ? (
+                <span
+                  key={city.slug}
+                  className="px-4 py-1.5 rounded-lg text-sm font-semibold bg-card shadow-sm text-foreground border border-border/60"
+                >
+                  {city.label}
+                </span>
+              ) : (
+                <a
+                  key={city.slug}
+                  href={`https://${city.slug}.irl.group/admin`}
+                  className="px-4 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-card/60 transition-colors"
+                >
+                  {city.label}
+                </a>
+              );
+            })}
+          </div>
+        )}
 
         {/* FIRST-RUN BANNER — prompt state */}
         {tenant.firstRun && (
@@ -963,7 +982,9 @@ export default function AdminDashboard() {
                 <div className="flex-1 min-w-0">
                   <h2 className="text-lg font-serif font-bold text-foreground">{tenant.slug === "leadershipaustin" ? `Welcome to ${tenant.name}` : `Welcome to ${tenant.name}! 🎉`}</h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    Generate your first digest to start discovering events in {tenant.city.split(",")[0]}. It only takes a minute.
+                    {isLeadershipAustin
+                      ? "Create your first newsletter edition and add upcoming events."
+                      : `Generate your first digest to start discovering events in ${tenant.city.split(",")[0]}. It only takes a minute.`}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -971,7 +992,7 @@ export default function AdminDashboard() {
                     onClick={() => setIsGenerateOpen(true)}
                     className="rounded-xl shadow-md gap-2 bg-primary hover:bg-primary/90"
                   >
-                    <Plus className="w-4 h-4" /> Generate first digest
+                    <Plus className="w-4 h-4" /> {isLeadershipAustin ? "Create first edition" : "Generate first digest"}
                   </Button>
                   <a
                     href={`https://${tenant.slug}.irl.group`}
@@ -1243,15 +1264,17 @@ export default function AdminDashboard() {
 
         <Tabs defaultValue="digests" className="w-full">
           <TabsList className="mb-8 bg-muted/50 p-1 rounded-xl">
-            <TabsTrigger value="digests" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Weekly Digests</TabsTrigger>
+            <TabsTrigger value="digests" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">{isLeadershipAustin ? "Newsletter Editions" : "Weekly Digests"}</TabsTrigger>
             <TabsTrigger value="subscribers" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">Subscribers List</TabsTrigger>
-            <TabsTrigger value="carpoolers" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
-              <Car className="w-3.5 h-3.5 mr-1.5" />
-              Carpoolers
-              {rsvpsData && rsvpsData.total > 0 && (
-                <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-amber-950 text-xs font-bold">{rsvpsData.total}</span>
-              )}
-            </TabsTrigger>
+            {!isLeadershipAustin && (
+              <TabsTrigger value="carpoolers" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                <Car className="w-3.5 h-3.5 mr-1.5" />
+                Carpoolers
+                {rsvpsData && rsvpsData.total > 0 && (
+                  <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-400 text-amber-950 text-xs font-bold">{rsvpsData.total}</span>
+                )}
+              </TabsTrigger>
+            )}
             <TabsTrigger value="superconnector" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <Trophy className="w-3.5 h-3.5 mr-1.5 text-amber-500" />
               Superconnector
@@ -1261,6 +1284,8 @@ export default function AdminDashboard() {
           </TabsList>
           
           <TabsContent value="digests" className="space-y-6 mt-0">
+            {isLeadershipAustin && <LeadershipManagedEventsAdmin categories={tenant.categories} />}
+
             {/* SOURCE URL FORM */}
             <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-border flex items-center gap-3">
@@ -1269,7 +1294,11 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">Generate from Event Sources</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Paste up to 10 event page URLs (Luma, Eventbrite, Meetup, org sites, etc.) and we'll extract this week's events</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {isLeadershipAustin
+                      ? "Paste up to 10 event page URLs to find upcoming events in the next 30 days."
+                      : "Paste up to 10 event page URLs (Luma, Eventbrite, Meetup, org sites, etc.) and we'll extract this week's events"}
+                  </p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
@@ -1302,35 +1331,46 @@ export default function AdminDashboard() {
 
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end pt-2 border-t border-border">
                   <div className="space-y-1.5 flex-1">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Week (Sunday)</label>
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {isLeadershipAustin ? "Start date" : "Week (Sunday)"}
+                    </label>
                     <Input
                       type="date"
+                      min={isLeadershipAustin ? format(new Date(), "yyyy-MM-dd") : undefined}
                       value={sourceWeekOf}
                       onChange={e => setSourceWeekOf(e.target.value)}
                       className="rounded-xl w-44"
                     />
                     {sourceWeekOf && (
                       <p className="text-xs text-muted-foreground">
-                        Events from <strong>{format(new Date(sourceWeekOf + "T12:00:00"), "MMM d")}</strong> – <strong>{format(new Date(new Date(sourceWeekOf + "T12:00:00").getTime() + 6 * 24 * 60 * 60 * 1000), "MMM d, yyyy")}</strong>
+                        {isLeadershipAustin ? (
+                          <>Upcoming events through <strong>{format(new Date(addDaysToDateInput(sourceWeekOf, 29) + "T12:00:00"), "MMM d, yyyy")}</strong></>
+                        ) : (
+                          <>Events from <strong>{format(new Date(sourceWeekOf + "T12:00:00"), "MMM d")}</strong> – <strong>{format(new Date(new Date(sourceWeekOf + "T12:00:00").getTime() + 6 * 24 * 60 * 60 * 1000), "MMM d, yyyy")}</strong></>
+                        )}
                       </p>
                     )}
                   </div>
                   <div className="space-y-1.5 flex-1">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add to existing digest (optional)</label>
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {isLeadershipAustin ? "Add to existing edition (optional)" : "Add to existing digest (optional)"}
+                    </label>
                     <select
                       value={sourceTargetDigestId ?? ""}
                       onChange={e => setSourceTargetDigestId(e.target.value ? Number(e.target.value) : null)}
                       className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
-                      <option value="">— Create new digest —</option>
-                      {digestsData?.digests?.map(d => (
+                      <option value="">{isLeadershipAustin ? "— Create new edition —" : "— Create new digest —"}</option>
+                      {digestsData?.digests?.filter(d => !d.sentAt).map(d => (
                         <option key={d.id} value={d.id}>
                           #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
                         </option>
                       ))}
                     </select>
                     {sourceTargetDigestId !== null && (
-                      <p className="text-xs text-muted-foreground">Extracted events will be merged into digest #{sourceTargetDigestId}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {isLeadershipAustin ? "Extracted events will be added to this edition." : `Extracted events will be merged into digest #${sourceTargetDigestId}`}
+                      </p>
                     )}
                   </div>
                   <Button
@@ -1380,21 +1420,23 @@ export default function AdminDashboard() {
               </div>
               <div className="p-6 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add to Digest</label>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{isLeadershipAustin ? "Add to edition" : "Add to Digest"}</label>
                   <select
                     value={spotlightDigestId ?? ""}
                     onChange={e => setSpotlightDigestId(e.target.value ? Number(e.target.value) : null)}
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="">— Create new digest —</option>
-                    {digestsData?.digests?.map(d => (
+                    <option value="">{isLeadershipAustin ? "— Create new edition —" : "— Create new digest —"}</option>
+                    {digestsData?.digests?.filter(d => !d.sentAt).map(d => (
                       <option key={d.id} value={d.id}>
                         #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
                       </option>
                     ))}
                   </select>
                   {spotlightDigestId === null && (
-                    <p className="text-xs text-muted-foreground">A new digest for the week of {currentSunday} will be created automatically.</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isLeadershipAustin ? "A new edition will be created automatically." : `A new digest for the week of ${currentSunday} will be created automatically.`}
+                    </p>
                   )}
                 </div>
                 <Input
@@ -1447,22 +1489,19 @@ export default function AdminDashboard() {
               </div>
               <div className="p-6 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add to Digest</label>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{isLeadershipAustin ? "Add to edition" : "Add to Digest"}</label>
                   <select
                     value={spotlightDigestId ?? ""}
                     onChange={e => setSpotlightDigestId(e.target.value ? Number(e.target.value) : null)}
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="">— Create new digest —</option>
-                    {digestsData?.digests?.map(d => (
+                    <option value="">{isLeadershipAustin ? "— Create new edition —" : "— Create new digest —"}</option>
+                    {digestsData?.digests?.filter(d => !d.sentAt).map(d => (
                       <option key={d.id} value={d.id}>
                         #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
                       </option>
                     ))}
                   </select>
-                  {spotlightDigestId === null && (
-                    <p className="text-xs text-muted-foreground">A new digest for the week of {currentSunday} will be created automatically.</p>
-                  )}
                 </div>
                 <Input
                   type="url"
@@ -1509,21 +1548,15 @@ export default function AdminDashboard() {
             </div>
 
             {tenant.slug === "leadershipaustin" && (
-              <div className="mb-6">
-                <LeadershipManagedEventsAdmin />
-              </div>
-            )}
-
-            {tenant.slug === "leadershipaustin" && (
               <section className="overflow-hidden rounded-2xl border border-[#314363]/20 bg-card shadow-sm" aria-labelledby="admin-alumni-title">
                 <div className="border-b border-[#314363]/15 bg-[#314363] px-6 py-5 text-white">
                   <p className="text-[10px] font-bold uppercase tracking-[.24em] text-[#4EBEE7]">Leadership Austin</p>
                   <h3 id="admin-alumni-title" className="mt-1 text-2xl font-bold uppercase">Alumni Happenings</h3>
-                  <p className="mt-1 max-w-xl text-sm text-white/70">Add a program or local story to the alumni community feed.</p>
+                  <p className="mt-1 max-w-xl text-sm text-white/70">Add a one-time event or community story to a selected newsletter edition.</p>
                 </div>
                 <div className="space-y-4 p-6">
                   <div className="space-y-1.5">
-                    <label htmlFor="alumni-digest-picker" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Add to digest</label>
+                    <label htmlFor="alumni-digest-picker" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{isLeadershipAustin ? "Add to edition" : "Add to digest"}</label>
                     <select
                       id="alumni-digest-picker"
                       data-testid="select-alumni-digest"
@@ -1531,8 +1564,8 @@ export default function AdminDashboard() {
                       onChange={(e) => setAlumniDigestId(e.target.value ? Number(e.target.value) : null)}
                       className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
-                      <option value="">Create new digest</option>
-                      {digestsData?.digests?.map((digest) => (
+                      <option value="">{isLeadershipAustin ? "Create new edition" : "Create new digest"}</option>
+                        {digestsData?.digests?.filter((digest) => !digest.sentAt).map((digest) => (
                         <option key={digest.id} value={digest.id}>
                           #{digest.id} · {format(parseISO(new Date(digest.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(digest.events) ? digest.events.length : 0} entries
                         </option>
@@ -1647,18 +1680,20 @@ export default function AdminDashboard() {
                 <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0 text-lg">{tenant.slug === "leadershipaustin" ? <Calendar className="h-4 w-4" /> : "🔗"}</div>
                 <div>
                   <h3 className="font-semibold text-sm text-orange-800 dark:text-orange-200">Add Event from URL</h3>
-                  <p className="text-xs text-orange-600/80 dark:text-orange-400/80 mt-0.5">Add any event (Eventbrite, UTR, Luma, etc.) — appends to existing digest without overwriting</p>
+                  <p className="text-xs text-orange-600/80 dark:text-orange-400/80 mt-0.5">
+                    {isLeadershipAustin ? "Add one event from a public listing to this edition without replacing its other content." : "Add any event (Eventbrite, UTR, Luma, etc.) — appends to existing digest without overwriting"}
+                  </p>
                 </div>
               </div>
               <div className="p-6 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Add to Digest</label>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{isLeadershipAustin ? "Add to edition" : "Add to Digest"}</label>
                   <select
                     value={spotlightDigestId ?? ""}
                     onChange={e => setSpotlightDigestId(e.target.value ? Number(e.target.value) : null)}
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="">— Create new digest —</option>
+                  <option value="">{isLeadershipAustin ? "— Create new edition —" : "— Create new digest —"}</option>
                     {digestsData?.digests?.map(d => (
                       <option key={d.id} value={d.id}>
                         #{d.id} · {format(parseISO(new Date(d.weekOf).toISOString().substring(0, 10)), "MMM d, yyyy")} · {Array.isArray(d.events) ? d.events.length : 0} events
@@ -1715,12 +1750,12 @@ export default function AdminDashboard() {
 
             <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
               <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-muted/30">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Digest List</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{isLeadershipAustin ? "Edition List" : "Digest List"}</span>
                 <button
                   onClick={onCleanLatestDigest}
                   disabled={isCleaningLatest}
                   className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted/60 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors"
-                  title="Remove past events from the latest digest now (runs automatically every Sunday)"
+                  title={isLeadershipAustin ? "Remove expired events from the latest edition now" : "Remove past events from the latest digest now (runs automatically every Sunday)"}
                 >
                   {isCleaningLatest ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                   Clean up past events
@@ -1730,7 +1765,7 @@ export default function AdminDashboard() {
                 <table className="w-full text-left text-sm whitespace-nowrap">
                   <thead className="bg-muted/50 text-muted-foreground uppercase text-xs tracking-wider">
                     <tr>
-                      <th className="px-6 py-4 font-medium">Week Of</th>
+                      <th className="px-6 py-4 font-medium">{isLeadershipAustin ? "Edition date" : "Week Of"}</th>
                       <th className="px-6 py-4 font-medium">Subject</th>
                       <th className="px-6 py-4 font-medium">Events</th>
                       <th className="px-6 py-4 font-medium">Status</th>
@@ -2174,40 +2209,47 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="help" className="mt-0">
-            <AdminHelpTab />
+            <AdminHelpTab isLeadershipAustin={isLeadershipAustin} />
           </TabsContent>
         </Tabs>
       </div>
 
       {/* GENERATE DIALOG */}
-      <Dialog open={isGenerateOpen} onOpenChange={(o) => { setIsGenerateOpen(o); if (!o) { setWeekOfInput(currentSunday); setCustomNotes(""); } }}>
+      <Dialog open={isGenerateOpen} onOpenChange={(o) => { setIsGenerateOpen(o); if (!o) { setWeekOfInput(isLeadershipAustin ? format(new Date(), "yyyy-MM-dd") : currentSunday); setCustomNotes(""); } }}>
         <DialogContent className="sm:max-w-lg rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl">Generate Digest</DialogTitle>
+            <DialogTitle className="font-serif text-2xl">{isLeadershipAustin ? "Create Newsletter Edition" : "Generate Digest"}</DialogTitle>
             <DialogDescription>
-              Pulls the latest event newsletters from Gmail and creates a curated digest for the selected week.
+              {isLeadershipAustin
+                ? "Creates a draft edition for upcoming events. Public copy stays date-free."
+                : "Pulls the latest event newsletters from Gmail and creates a curated digest for the selected week."}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-semibold">Week Starting (Sunday)</label>
+              <label className="text-sm font-semibold">{isLeadershipAustin ? "Edition anchor date" : "Week Starting (Sunday)"}</label>
               <Input
                 type="date"
+                min={isLeadershipAustin ? format(new Date(), "yyyy-MM-dd") : undefined}
                 value={weekOfInput}
                 onChange={e => setWeekOfInput(e.target.value)}
                 className="rounded-xl"
               />
               {weekOfInput && (
                 <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2 space-y-1">
-                  <p>📬 Searches newsletters received from <strong>{format(new Date(new Date(weekOfInput).getTime() - 14 * 24 * 60 * 60 * 1000 + 86400000), "MMM d")}</strong> onwards</p>
-                  <p>📅 Shows only events happening <strong>{format(new Date(weekOfInput + "T12:00:00"), "MMM d")}–{format(new Date(new Date(weekOfInput + "T12:00:00").getTime() + 6 * 24 * 60 * 60 * 1000), "MMM d, yyyy")}</strong></p>
+                  {isLeadershipAustin
+                    ? <p>The date organizes the draft; the edition focuses on upcoming events.</p>
+                    : <>
+                        <p>📬 Searches newsletters received from <strong>{format(new Date(new Date(weekOfInput).getTime() - 14 * 24 * 60 * 60 * 1000 + 86400000), "MMM d")}</strong> onwards</p>
+                        <p>📅 Shows only events happening <strong>{format(new Date(weekOfInput + "T12:00:00"), "MMM d")}–{format(new Date(new Date(weekOfInput + "T12:00:00").getTime() + 6 * 24 * 60 * 60 * 1000), "MMM d, yyyy")}</strong></p>
+                      </>}
                 </div>
               )}
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold">Custom Intro Notes (Optional)</label>
+              <label className="text-sm font-semibold">{isLeadershipAustin ? "Optional intro note" : "Custom Intro Notes (Optional)"}</label>
               <Textarea 
-                placeholder="Add a personal note to this week's intro..."
+                placeholder={isLeadershipAustin ? "Add an optional introductory note..." : "Add a personal note to this week's intro..."}
                 value={customNotes}
                 onChange={e => setCustomNotes(e.target.value)}
                 className="min-h-[100px] rounded-xl resize-none"
@@ -2215,9 +2257,9 @@ export default function AdminDashboard() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsGenerateOpen(false); setWeekOfInput(currentSunday); setCustomNotes(""); }} className="rounded-xl">Cancel</Button>
+            <Button variant="outline" onClick={() => { setIsGenerateOpen(false); setWeekOfInput(isLeadershipAustin ? format(new Date(), "yyyy-MM-dd") : currentSunday); setCustomNotes(""); }} className="rounded-xl">Cancel</Button>
             <Button onClick={onGenerate} disabled={isGenerating} className="rounded-xl bg-primary hover:bg-primary/90">
-              {isGenerating ? "Generating from Gmail…" : "Generate Draft"}
+              {isGenerating ? isLeadershipAustin ? "Creating…" : "Generating from Gmail…" : isLeadershipAustin ? "Create Draft" : "Generate Draft"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2252,7 +2294,7 @@ export default function AdminDashboard() {
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl">Add Event from URL</DialogTitle>
             <DialogDescription>
-              Paste an event URL — fields will be auto-filled from the page. Review and save to append to digest #{addEventDigestId}.
+              Paste an event URL — fields will be auto-filled from the page. Review and save to append to {isLeadershipAustin ? "edition" : "digest"} #{addEventDigestId}.
             </DialogDescription>
           </DialogHeader>
           <div className="py-3 space-y-3">
@@ -2339,7 +2381,7 @@ export default function AdminDashboard() {
               disabled={isSavingAddEvent || !addEventUrl.trim().startsWith("http")}
               className="rounded-xl gap-2 bg-orange-500 hover:bg-orange-600 text-white"
             >
-              {isSavingAddEvent ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <><Plus className="w-4 h-4" /> Add to Digest</>}
+              {isSavingAddEvent ? <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</> : <><Plus className="w-4 h-4" /> {isLeadershipAustin ? "Add to edition" : "Add to Digest"}</>}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2349,9 +2391,9 @@ export default function AdminDashboard() {
       <Dialog open={sendDialogTarget !== null} onOpenChange={(o) => { if (!o) { setSendDialogTarget(null); setSendConfirmPending(false); } }}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl">Send Digest</DialogTitle>
+            <DialogTitle className="font-serif text-2xl">{isLeadershipAustin ? "Send Newsletter Edition" : "Send Digest"}</DialogTitle>
             <DialogDescription>
-              Send this digest to your subscribers or send a test email first.
+              {isLeadershipAustin ? "Review this edition and choose whether to send a test or email it to subscribers." : "Send this digest to your subscribers or send a test email first."}
             </DialogDescription>
           </DialogHeader>
           <div className="py-6 space-y-6">
@@ -2363,14 +2405,14 @@ export default function AdminDashboard() {
                   <div className="text-sm leading-snug">
                     {prodStatus.hasDigest === false ? (
                       <>
-                        <span className="font-semibold">⚠️ {prodStatus.prodUrl.replace("https://", "")} has no published digest</span>
-                        {" "}— visitors who click email links will see an empty site. Push this digest to production first.
+                        <span className="font-semibold">⚠️ {prodStatus.prodUrl.replace("https://", "")} has no published {isLeadershipAustin ? "edition" : "digest"}</span>
+                        {" "}— visitors who click email links will see an empty site. Push this {isLeadershipAustin ? "edition" : "digest"} to production first.
                       </>
                     ) : (
                       <>
-                        <span className="font-semibold">⚠️ {prodStatus.prodUrl.replace("https://", "")} is showing a different week</span>
+                        <span className="font-semibold">⚠️ {prodStatus.prodUrl.replace("https://", "")} is showing {isLeadershipAustin ? "a different edition" : "a different week"}</span>
                         {" "}(prod: <code className="font-mono text-xs">{prodStatus.prodWeekOf ?? "unknown"}</code>, this digest: <code className="font-mono text-xs">{prodStatus.localWeekOf ?? "unknown"}</code>).
-                        {" "}Visitors who click links will land on last week's events. Push to production to sync.
+                        {" "}{isLeadershipAustin ? "Visitors may land on a previous edition. Push to production to sync." : "Visitors who click links will land on last week's events. Push to production to sync."}
                       </>
                     )}
                   </div>
@@ -2393,7 +2435,7 @@ export default function AdminDashboard() {
                           });
                           const data = await res.json() as { success?: boolean; message?: string };
                           if (!res.ok) throw new Error(data.message || "Push failed");
-                          toast({ title: "Digest pushed to production! ✓" });
+                          toast({ title: isLeadershipAustin ? "Edition pushed to production." : "Digest pushed to production! ✓" });
                           // Mark as matched so the warning clears
                           setProdStatus(prev => prev ? { ...prev, hasDigest: true, matched: true, prodWeekOf: prev.localWeekOf } : prev);
                         } catch (err: unknown) {

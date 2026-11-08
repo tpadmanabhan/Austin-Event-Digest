@@ -1111,7 +1111,7 @@ export default function DigestView() {
                 Know an event the community should see?
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Active Leadership Austin subscribers can suggest events for admin review.
+                Active subscribers can submit public events for review. Approved events may appear on this site and in a future newsletter.
               </p>
             </div>
             <a
