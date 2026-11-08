@@ -9,9 +9,15 @@
         {
           "label": "Read the IBTimes article",
           "url": "https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416"
-        },
+        }
+      ]
+    },
+    {
+      "title": "Gina Hinojosa on data centers and immigration",
+      "description": "A New York Times video interview with Texas Governor-elect Gina Hinojosa, published alongside coverage of data-center policy and immigration.",
+      "links": [
         {
-          "label": "Watch the New York Times video on data centers and immigration",
+          "label": "Watch the New York Times video",
           "url": "https://www.nytimes.com/video/us/politics/100000011266333/gina-hinojosa-data-centers-immigration-texas.html"
         }
       ]
@@ -23,64 +29,6 @@
         {
           "label": "Read the MSN story",
           "url": "https://www.msn.com/en-us/news/other/new-carpool-program-aims-to-reduce-congestion-offers-incentive-for-i-35-commuters-in-austin-area/ar-AA2gPBgP"
-        }
-      ]
-    },
-    {
-      "title": "Texas data-center governance, permits, and air quality",
-      "description": "Three Texas updates surface the stakes of data-center growth: Rick Perry lost a board reelection vote at Fermi; watchdog concerns led officials to disable an online permit filing system; and a Houston Advanced Research Center analysis warns that growth could reverse air-quality gains, especially with on-site natural-gas power.",
-      "links": [
-        {
-          "label": "Fermi board update",
-          "url": "https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/"
-        },
-        {
-          "label": "Texas permit filing update",
-          "url": "https://www.texastribune.org/2026/10/21/data-center-permits-tceq-texas/"
-        },
-        {
-          "label": "Air-quality analysis",
-          "url": "https://www.texastribune.org/2026/10/20/data-centers-texas-air-quality-report-pollution-health-risks/"
-        }
-      ]
-    },
-    {
-      "title": "We are telling AI chatbots our biggest secrets, but Proton warns our privacy is at huge risk",
-      "description": "Proton's survey found 66% of UK AI users had discussed at least one sensitive topic with a chatbot, while 42% had little or no trust in AI companies to protect their data—a gap between disclosure and confidence.",
-      "links": [
-        {
-          "label": "Read the Yahoo Tech article",
-          "url": "https://tech.yahoo.com/cybersecurity/articles/telling-ai-chatbots-biggest-secrets-144603184.html"
-        }
-      ]
-    },
-    {
-      "title": "Meta's AI shopping agent threatens Amazon's lucrative advertising business",
-      "description": "Meta's AI shopping assistant Muse could threaten Amazon's retail and advertising dominance, showing how AI agents may shift power across digital commerce platforms.",
-      "links": [
-        {
-          "label": "Read the Seeking Alpha article",
-          "url": "https://seekingalpha.com/news/4661876-metas-ai-shopping-agent-threatens-amazons-lucrative-advertising-business"
-        }
-      ]
-    },
-    {
-      "title": "Proton's CTO wrote a manifesto for the AI coding age. It struck a nerve with engineers.",
-      "description": "Proton's CTO argues that AI has fundamentally changed software engineering, prompting engineers to debate how coding work and roles will evolve.",
-      "links": [
-        {
-          "label": "Read the AOL article",
-          "url": "https://www.aol.com/articles/protons-cto-wrote-manifesto-ai-083701000.html"
-        }
-      ]
-    },
-    {
-      "title": "Spurs² Hackathon at UT Austin",
-      "description": "Raj participated in the hackathon; his recap shares the project notes and work.",
-      "links": [
-        {
-          "label": "Read Raj’s recap",
-          "url": "https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/"
         }
       ]
     },
@@ -101,16 +49,6 @@
         {
           "label": "Explore IRL.group",
           "url": "https://irl.group/"
-        }
-      ]
-    },
-    {
-      "title": "Why Every Election Matters to Democracy with Stacey Abrams",
-      "description": "Guy Kawasaki and Stacey Abrams discuss voting rights, democracy, and persistence. It connects to a core technology value: digital tools should make voting easier to access, not create new barriers.",
-      "links": [
-        {
-          "label": "Listen on Apple Podcasts",
-          "url": "https://podcasts.apple.com/us/podcast/guy-kawasakis-remarkable-people/id1483081827?i=1000797951025"
         }
       ]
     }

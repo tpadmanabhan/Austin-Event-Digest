@@ -257,21 +257,17 @@ test("Austin's public city and edition documents render current content in one A
     assert.equal(response.status, 200);
     assert.ok(body.includes("A test newsletter introduction."));
     assert.equal((body.match(/<h2[^>]*>AI Ethics<\/h2>/g) || []).length, 1);
-    assert.ok(body.includes("Texas data-center governance, permits, and air quality"));
-    assert.ok(body.includes("https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/"));
-    assert.ok(body.includes("https://www.texastribune.org/2026/10/21/data-center-permits-tceq-texas/"));
-    assert.ok(body.includes("https://www.texastribune.org/2026/10/20/data-centers-texas-air-quality-report-pollution-health-risks/"));
-    assert.ok(body.includes("We are telling AI chatbots our biggest secrets"));
-    assert.ok(body.includes("https://tech.yahoo.com/cybersecurity/articles/telling-ai-chatbots-biggest-secrets-144603184.html"));
-    assert.ok(body.includes("AI shopping agent threatens Amazon"));
-    assert.ok(body.includes("https://seekingalpha.com/news/4661876-metas-ai-shopping-agent-threatens-amazons-lucrative-advertising-business"));
-    assert.ok(body.includes("manifesto for the AI coding age"));
-    assert.ok(body.includes("https://www.aol.com/articles/protons-cto-wrote-manifesto-ai-083701000.html"));
-    assert.ok(body.includes("Spurs² Hackathon at UT Austin"));
-    assert.ok(body.includes("https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/"));
+    assert.ok(body.includes("What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S."));
+    assert.ok(body.includes("https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416"));
+    assert.ok(body.indexOf("What Texas Turning Blue Could Mean") < body.indexOf("Gina Hinojosa on data centers and immigration"));
+    assert.ok(body.includes("https://www.nytimes.com/video/us/politics/100000011266333/gina-hinojosa-data-centers-immigration-texas.html"));
+    assert.ok(body.includes("dumb carpooling idea"));
+    assert.ok(body.includes("https://www.msn.com/en-us/news/other/new-carpool-program-aims-to-reduce-congestion-offers-incentive-for-i-35-commuters-in-austin-area/ar-AA2gPBgP"));
+    assert.ok(body.includes("The problem with IRL: Is any of it real?"));
+    assert.ok(body.includes("AI-generated slop and apps with outlandish claims"));
+    assert.ok(body.includes("https://mashable.com/article/irl-shuts-down-20-million-users-bots"));
     assert.ok(body.includes("IRL.group: a home for local creators"));
-    assert.ok(body.includes("Why Every Election Matters to Democracy with Stacey Abrams"));
-    assert.ok(body.includes("https://podcasts.apple.com/us/podcast/guy-kawasakis-remarkable-people/id1483081827?i=1000797951025"));
+    assert.ok(body.includes("commercial and nonprofit pilots to help fine-tune the project"));
     const removedItems = [
       "ServiceSpace and Awakin Circles",
       "https://nipun.servicespace.org/",
@@ -285,6 +281,18 @@ test("Austin's public city and edition documents render current content in one A
       "Faith leaders and AI guardrails",
       "https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/",
       "IRL’s upcoming Groups feature applies privacy-first thinking to local community",
+      "Texas data-center governance, permits, and air quality",
+      "https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/",
+      "We are telling AI chatbots our biggest secrets",
+      "https://tech.yahoo.com/cybersecurity/articles/telling-ai-chatbots-biggest-secrets-144603184.html",
+      "Meta's AI shopping agent threatens Amazon",
+      "https://seekingalpha.com/news/4661876-metas-ai-shopping-agent-threatens-amazons-lucrative-advertising-business",
+      "Proton's CTO wrote a manifesto for the AI coding age",
+      "https://www.aol.com/articles/protons-cto-wrote-manifesto-ai-083701000.html",
+      "Spurs² Hackathon at UT Austin",
+      "https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/",
+      "Why Every Election Matters to Democracy with Stacey Abrams",
+      "https://podcasts.apple.com/us/podcast/guy-kawasaki",
     ];
     for (const item of removedItems) assert.ok(!body.includes(item), `removed item remains in AI Ethics section: ${item}`);
     assert.ok(body.indexOf("AI Ethics") < body.indexOf("IRL.group: a home for local creators"));
@@ -420,6 +428,11 @@ test("Austin carpooling story stays local and no city uses legacy carpooling bra
         assert.match(visibleHtml, /AI-generated slop and apps with outlandish claims/i, `${city}${pathname} IRL trust context`);
         assert.match(visibleHtml, /dot-com bust/i, `${city}${pathname} AI hype question`);
         assert.match(visibleHtml, /nytimes\.com\/video\/us\/politics\/100000011266333/i, `${city}${pathname} NYT video`);
+        const texasArticlePosition = visibleHtml.indexOf("What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.");
+        const nytVideoPosition = visibleHtml.indexOf("Gina Hinojosa on data centers and immigration");
+        assert.ok(texasArticlePosition >= 0 && nytVideoPosition > texasArticlePosition, `${city}${pathname} NYT video follows Texas blue article`);
+        assert.match(visibleHtml, /commercial and nonprofit pilots to help fine-tune the project/i, `${city}${pathname} current IRL.group pilot context`);
+        assert.doesNotMatch(visibleHtml, /Texas data-center governance, permits, and air quality|We are telling AI chatbots our biggest secrets|Meta's AI shopping agent threatens Amazon|Proton's CTO wrote a manifesto|Spurs² Hackathon|Why Every Election Matters to Democracy with Stacey Abrams/i, `${city}${pathname} stale AI Ethics items`);
       } else {
         assert.doesNotMatch(visibleHtml, /carpool/i, `${city}${pathname}`);
       }
