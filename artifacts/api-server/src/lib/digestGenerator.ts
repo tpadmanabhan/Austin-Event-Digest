@@ -93,7 +93,7 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant
   ];
   
   const cityIntro = slug === "leadershipaustin"
-    ? `A monthly newsletter of upcoming events for the Leadership Austin community.${customNotes ? `\n\n${customNotes}` : ""}`
+    ? `Upcoming events for the Leadership Austin community.${customNotes ? `\n\n${customNotes}` : ""}`
     : customNotes
       ? `Here's your curated guide to the best events happening this week.\n\n${customNotes}\n\nGet out there and enjoy ${cityFirst}!`
     : slug === "atlanta"

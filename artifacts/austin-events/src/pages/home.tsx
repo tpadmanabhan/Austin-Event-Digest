@@ -537,7 +537,7 @@ export default function Home() {
               <div className={`mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl ${isDallas ? "dallas-fieldnote" : ""} ${isLeadershipAustin ? "leadership-alumni-panel" : ""}`}>
                 <p className={`text-foreground/90 leading-relaxed text-base italic whitespace-pre-line ${isLeadershipAustin ? "leadership-testimonial-copy" : ""}`}>
                   {isLeadershipAustin
-                    ? "A monthly look at upcoming events for Leadership Austin alumni and the Austin community."
+                    ? "A place for Leadership Austin alumni to connect and discover upcoming events across Austin."
                     : isAustinCares
                     ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek."`
                     : isDallas
@@ -578,7 +578,7 @@ export default function Home() {
                 {isLeadershipAustin && (
                   <p className="mt-4 border-l-2 border-[#FFBA01] pl-4 text-base font-medium leading-relaxed text-white sm:text-lg not-italic">
                     <span className="font-bold text-[#FFBA01]">Hey, all alumni.</span>{" "}
-                    We share monthly updates about upcoming events with the Emerge Class 18 community.
+                    We share upcoming events with the Emerge Class 18 community.
                   </p>
                 )}
                 {isLeadershipAustin ? (
@@ -671,7 +671,7 @@ export default function Home() {
             <div className="max-w-2xl">
               <h2 className="font-serif text-4xl font-bold mb-4">{isLeadershipAustin ? "The community, in motion." : isDallas ? "Dallas, on your calendar." : isBoston ? "The edition, neighborhood by neighborhood." : isSF ? "The city, block by block." : isHouston ? "The city, on your calendar." : jt("Inside the Latest Issue", JA.insideLatestIssue)}</h2>
               <p className="text-muted-foreground text-lg">
-                {isLeadershipAustin ? "A monthly newsletter of upcoming events for Leadership Austin alumni and the Austin community." : isDallas ? "A first look at the October 23–31 Dallas edition. Filter by category, check the map, and follow each organizer’s link for current details." : isBoston ? "A look inside the Boston edition, October 14 – 31. Filter by category, check the map, and pick a plan in Allston, Eastie, JP or across the river." : isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : latestIssueRange || tenant.slug === "austin" ? jt("A look at the upcoming events in this edition.", "このエディションの今後のイベントをご覧ください。") : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
+                {isLeadershipAustin ? "Explore upcoming events across the Leadership Austin alumni community." : isDallas ? "A first look at the October 23–31 Dallas edition. Filter by category, check the map, and follow each organizer’s link for current details." : isBoston ? "A look inside the Boston edition, October 14 – 31. Filter by category, check the map, and pick a plan in Allston, Eastie, JP or across the river." : isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : latestIssueRange || tenant.slug === "austin" ? jt("A look at the upcoming events in this edition.", "このエディションの今後のイベントをご覧ください。") : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
               </p>
               {latestIssueRange && !isLeadershipAustin && (
                 <p className="mt-3 text-sm font-semibold text-primary">Events: {latestIssueRange}</p>

@@ -451,10 +451,10 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
     <!-- Main card -->
     <div style="background:#ffffff;border:1px solid #e7e5e4;border-radius:16px;padding:32px;margin-bottom:16px;">
       <p style="margin:0 0 16px;color:#44403c;font-size:15px;line-height:1.75;">
-        ${isLeadershipAustin ? "You're subscribed to Leadership Austin's monthly newsletter of upcoming events. 🎉" : `You're officially on the list for ${escapeHtml(cityLabel)}'s most interesting week-ahead digest. 🎉`}
+        ${isLeadershipAustin ? "You're subscribed to updates from Leadership Austin. 🎉" : `You're officially on the list for ${escapeHtml(cityLabel)}'s most interesting week-ahead digest. 🎉`}
       </p>
       <p style="margin:0 0 24px;color:#44403c;font-size:15px;line-height:1.75;">
-        ${isLeadershipAustin ? "You'll receive a monthly email with upcoming events." : "<strong>Every Sunday</strong> you'll get a hand-picked roundup of the best things happening <strong>Sunday through Saturday</strong> — so you can plan your whole week before it starts."}
+        ${isLeadershipAustin ? "Watch your inbox for upcoming events and community news." : "<strong>Every Sunday</strong> you'll get a hand-picked roundup of the best things happening <strong>Sunday through Saturday</strong> — so you can plan your whole week before it starts."}
       </p>
 
       <!-- What to expect -->
@@ -769,6 +769,12 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const slug = tenant?.slug;
+  const renderedIntro = slug === "leadershipaustin"
+    ? digest.intro.replace(
+      /^A monthly newsletter of upcoming events for (?:the )?Leadership Austin(?: alumni(?: and the Austin community)?| community)\./i,
+      "Upcoming events for the Leadership Austin community.",
+    )
+    : digest.intro;
   const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento" || slug === "miami" || slug === "boston" || slug === "la" || slug === "manchester" || slug === "nyc" || slug === "dallas"
     ? digest.subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s*(?:to|[-–—])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),\s*(\d{4})\s*$/i)
     : null;
@@ -1588,7 +1594,7 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Intro -->
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:16px;">
-      <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(digest.intro).replace(/\n/g, "<br>")}</p>
+      <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(renderedIntro).replace(/\n/g, "<br>")}</p>
       ${theme.curatorName ? `<p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
       ${leadershipTestimonialHtml}
     </div>

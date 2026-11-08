@@ -750,7 +750,7 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
     expect(html).not.toContain("#fbbf24");
   });
 
-  it("Leadership Austin welcome email promises monthly upcoming-event updates, not a Sunday digest", () => {
+  it("Leadership Austin welcome email states its monthly cadence once", () => {
     const html = buildWelcomeEmailHtml(
       "Test",
       { slug: "leadershipaustin", name: "Leadership Austin", city: "Austin, TX", digestTitle: null },
@@ -758,7 +758,9 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
     );
 
     expect(html).toContain("Monthly newsletter · Upcoming events");
-    expect(html).toContain("monthly email with upcoming events");
+    const welcomeVisibleText = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    expect(welcomeVisibleText.match(/\bmonthly\b/gi) ?? []).toHaveLength(1);
+    expect(welcomeVisibleText).toContain("Watch your inbox for upcoming events and community news.");
     expect(html).toContain("Browse upcoming events");
     expect(html).not.toMatch(/weekly|sunday|week-ahead/i);
   });
@@ -1014,7 +1016,7 @@ describe("Leadership Austin newsletter", () => {
     const html = buildDigestEmailHtml(
       {
         subject: "Leadership Austin — Upcoming Events",
-        intro: "Alumni Happenings, local stories, and community partners.",
+        intro: "A monthly newsletter of upcoming events for the Leadership Austin community.\n\nAlumni Happenings, local stories, and community partners.",
         weekOf: "2026-11-08",
         siteUrl: "https://leadershipaustin.irl.group",
         events: [
@@ -1113,6 +1115,9 @@ describe("Leadership Austin newsletter", () => {
     expect(html).toContain("KMFA Studio, 41 Navasota Street, Austin, TX 78702");
     expect(html).toContain("Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along.");
     const visibleText = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    expect(visibleText.match(/\bmonthly\b/gi) ?? []).toHaveLength(1);
+    expect(visibleText).toContain("Upcoming events for the Leadership Austin community.");
+    expect(visibleText).toContain("Alumni Happenings, local stories, and community partners.");
     expect(visibleText).toContain("Hey, all alumni. We created this space to stay connected with our Emerge Class 18 community and share upcoming events.");
     expect(visibleText).toContain("A pulse on the people, programs, and ideas moving Austin forward.");
     expect(html).toContain('font-size:16px; line-height:1.65; font-weight:600;');

@@ -1910,7 +1910,7 @@ router.post("/digest/create-empty", requireAdmin, async (req, res) => {
       ? "Leadership Austin — Upcoming Events"
       : `Events — Week of ${dateLabel}`;
     const intro = isLeadershipAustin
-      ? "A monthly newsletter of upcoming events for the Leadership Austin community."
+      ? "Upcoming events for the Leadership Austin community."
       : `Here's your curated digest for the week of ${dateLabel}.`;
     const [inserted] = await db
       .insert(digestsTable)

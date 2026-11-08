@@ -41,7 +41,8 @@ describe("generateSampleDigest — Leadership Austin", () => {
     );
 
     expect(digest.subject).toBe("Leadership Austin — Upcoming Events");
-    expect(digest.intro).toContain("monthly newsletter of upcoming events");
+    expect(digest.intro).toBe("Upcoming events for the Leadership Austin community.");
+    expect(digest.intro).not.toMatch(/monthly/i);
     expect(digest.intro).not.toMatch(/weekly|sunday|week ahead/i);
     expect(digest.events).toEqual([]);
     expect(digest.subject).not.toMatch(/\b(?:week of|nov(?:ember)?\s+\d)/i);

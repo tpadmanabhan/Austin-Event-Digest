@@ -196,7 +196,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
               ) : `Read the full ${model.cityName || ""} edition`}
             </a>
           ) : null}
-          <a href={subscribe} className={linkCls}>{isLeadershipAustin ? "Subscribe to the monthly newsletter" : "Subscribe to the newsletter"}</a>
+          <a href={subscribe} className={linkCls}>Subscribe to the newsletter</a>
         </p>
       </>
     );

@@ -596,7 +596,7 @@ export default function DigestView() {
           <div className="prose prose-lg prose-p:text-muted-foreground prose-p:leading-relaxed max-w-none bg-card p-8 rounded-3xl border border-border shadow-sm">
             <p className="whitespace-pre-wrap">
               {isLeadershipAustin
-                ? "A monthly newsletter of upcoming events for Leadership Austin alumni and the Austin community."
+                ? "Upcoming events for Leadership Austin alumni and the Austin community."
                 : (isJapaneseEdition && lang === "ja" && isOsaka
                 ? (translatedIntros[isLatest ? `latest-${digest.id}` : `digest-${idStr}`] || digest.intro)
                 : digest.intro).split(/(zodiac signs)/i).map((part, i) =>
@@ -1175,7 +1175,7 @@ export default function DigestView() {
             <h3 className="font-serif text-3xl font-bold mb-2 text-center">{jt("Don't miss the next one", JA.subscribeHeading)}</h3>
             <p className="text-secondary-foreground/80 mb-8 max-w-lg mx-auto text-lg text-center">
               {isLeadershipAustin
-                ? "Get monthly updates about upcoming events in your inbox."
+                ? "Get updates about upcoming events in your inbox."
                 : isExtendedAustinEdition || isHouston
                 ? `Get upcoming ${cityShortName} events delivered straight to your inbox.`
                 : isOsaka && lang === "ja"
