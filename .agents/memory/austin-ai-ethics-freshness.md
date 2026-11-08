@@ -8,3 +8,9 @@ When refreshing Austin's AI Ethics section, do not carry prior-week stories forw
 **Why:** The user found last week's stories still appearing on Austin's site and newsletter and asked for them removed while retaining the new content.
 
 **How to apply:** Update the shared Austin section used by the homepage, full edition, and email. Carry older stories forward only when the user asks.
+
+When connecting Pflugerville's SAFE Technology policy to Round Rock, emphasize enforceable guardrails and public accountability rather than an unchecked free-market approach.
+
+**Why:** The user explicitly requested a stronger conclusion making this comparison.
+
+**How to apply:** Use this framing when editing the Pflugerville blurb or related Round Rock AI and surveillance-policy copy; do not generalize it to unrelated topics.

@@ -271,6 +271,7 @@ test("Austin's public city and edition documents render current content in one A
     assert.ok(body.includes("https://www.nytimes.com/video/us/politics/100000011266333/gina-hinojosa-data-centers-immigration-texas.html"));
     assert.ok(body.includes("Pflugerville adopts new policy for AI, surveillance technology and data privacy"));
     assert.ok(body.includes("SAFE Technology policy covering AI, surveillance and data sharing"));
+    assert.ok(body.includes("Round Rock should adopt enforceable guardrails and public reporting like Pflugerville instead of leaving procurement to an unchecked free-market approach."));
     assert.ok(body.includes("https://communityimpact.com/pflugerville-hutto/government/pflugerville-adopts-new-policy-for-ai-surveillance-technology-and-data-privacy/"));
     assert.ok(body.indexOf("Gina Hinojosa on data centers and immigration") < body.indexOf("Pflugerville adopts new policy for AI, surveillance technology and data privacy"));
     assert.ok(body.indexOf("Pflugerville adopts new policy for AI, surveillance technology and data privacy") < body.indexOf("dumb carpooling idea"));

@@ -211,6 +211,7 @@ describe("AI Ethics reading section", () => {
       "Watch the New York Times video",
       "Pflugerville adopts new policy for AI, surveillance technology and data privacy",
       "SAFE Technology policy covering AI, surveillance and data sharing",
+      "Round Rock should adopt enforceable guardrails and public reporting like Pflugerville instead of leaving procurement to an unchecked free-market approach.",
       "https://communityimpact.com/pflugerville-hutto/government/pflugerville-adopts-new-policy-for-ai-surveillance-technology-and-data-privacy/",
       "dumb carpooling idea",
       "https://www.msn.com/en-us/news/other/new-carpool-program-aims-to-reduce-congestion-offers-incentive-for-i-35-commuters-in-austin-area/ar-AA2gPBgP",

@@ -3,6 +3,7 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { db, digestsTable, tenantsTable, type EventItem } from "@workspace/db";
 import { withPublicEventIds } from "../lib/publicEventIdentity";
 import { isAdultContent } from "../lib/contentFilter";
+import { cityLabelFromVenue } from "../lib/cityLabelFromVenue";
 
 const router: IRouter = Router();
 
@@ -62,7 +63,9 @@ router.get("/events/upcoming-across-cities", async (req, res) => {
         events.push({
           id,
           citySlug: row.slug,
-          cityName: row.city || row.name,
+          // A city's edition can include out-of-town events; label the event's
+          // actual venue city when the venue includes a city/state suffix.
+          cityName: cityLabelFromVenue(event.venue) || row.city || row.name,
           title: event.title,
           date: event.date,
           ...(event.startDate ? { startDate: event.startDate } : {}),
