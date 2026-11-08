@@ -133,7 +133,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         {!isLeadershipAustin && model.editionRange
           ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Upcoming events · ${model.editionRange}`}</p>
           : !isLeadershipAustin && model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
-        <p className="mt-3 text-lg text-slate-800">{isLeadershipAustin ? "A practical home for the people, programs, and local stories shaping Austin. Browse alumni gatherings and follow each source for current details." : model.intro || model.description}</p>
+        <p className="mt-3 text-lg text-slate-800">{isLeadershipAustin ? "A monthly newsletter of upcoming events for Leadership Austin alumni and the Austin community." : model.intro || model.description}</p>
         {isLeadershipAustin && <LeadershipAlumniTestimonial profiles={model.leadershipClassProfiles} />}
         {isLeadershipAustin && (
           <div className="mt-8 space-y-5">
@@ -160,7 +160,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           </section>
         )}
         {miamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} digestId={model.digestId} className="mt-10" />}
-      <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : model.editionRange ? "Upcoming events" : isLeadershipAustin ? "Upcoming programs" : "Events this week"}</h2>
+      <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : model.editionRange || isLeadershipAustin ? "Upcoming events" : "Events this week"}</h2>
         <EventList events={listEvents} />
         {isLeadershipAustin && kind === "digest" && (
           <section aria-labelledby="public-event-contribution-title" className="mt-8 flex flex-col gap-4 rounded-2xl border border-[#314363]/20 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -196,7 +196,7 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
               ) : `Read the full ${model.cityName || ""} edition`}
             </a>
           ) : null}
-          <a href={subscribe} className={linkCls}>Subscribe to the newsletter</a>
+          <a href={subscribe} className={linkCls}>{isLeadershipAustin ? "Subscribe to the monthly newsletter" : "Subscribe to the newsletter"}</a>
         </p>
       </>
     );

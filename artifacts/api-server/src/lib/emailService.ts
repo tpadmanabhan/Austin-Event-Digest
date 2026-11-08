@@ -74,8 +74,7 @@ export function formatCityNewsletterSubject(
       ? title.toLowerCase() === label.toLowerCase() ? label : title
       : `${title || trimmed} — ${label}`;
 
-  const usesEditionDateInSubject =
-    tenantSlug === "austin" || tenantSlug === "leadershipaustin";
+  const usesEditionDateInSubject = tenantSlug === "austin";
   if (!usesEditionDateInSubject || !weekOf) return formattedSubject;
 
   const weekDateString = weekOf instanceof Date
@@ -197,6 +196,7 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
   const digestName = tenant?.digestTitle || tenant?.name || "Raj's Austin Events";
   const cityLabel = tenant?.city || "Austin, TX";
   const siteUrl = publicTenantUrl(tenant?.slug || "austin");
+  const isLeadershipAustin = tenant?.slug === "leadershipaustin";
   // When a tenant is provided, the DB value is authoritative.
   // null/blank = no attribution line. Only fall back to hardcoded text when
   // no tenant is supplied at all (e.g. internal previews).
@@ -445,16 +445,16 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
     <div style="background:${welcomeHeaderGradient};border-radius:20px;padding:40px 32px 32px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;">
       <div style="font-size:44px;margin-bottom:8px;line-height:1;">${welcomeHeaderEmoji}</div>
       <h1 style="margin:0 0 6px;color:${welcomeHeaderTitleColor};font-size:28px;font-weight:800;letter-spacing:-0.5px;">${escapeHtml(digestName)}</h1>
-      <p style="margin:0;color:#a8a29e;font-size:14px;letter-spacing:0.5px;text-transform:uppercase;">Weekly Digest · ${escapeHtml(cityLabel)}</p>
+      <p style="margin:0;color:#a8a29e;font-size:14px;letter-spacing:0.5px;text-transform:uppercase;">${isLeadershipAustin ? "Monthly newsletter · Upcoming events" : `Weekly Digest · ${escapeHtml(cityLabel)}`}</p>
     </div>
 
     <!-- Main card -->
     <div style="background:#ffffff;border:1px solid #e7e5e4;border-radius:16px;padding:32px;margin-bottom:16px;">
       <p style="margin:0 0 16px;color:#44403c;font-size:15px;line-height:1.75;">
-        You're officially on the list for ${escapeHtml(cityLabel)}'s most interesting week-ahead digest. 🎉
+        ${isLeadershipAustin ? "You're subscribed to Leadership Austin's monthly newsletter of upcoming events. 🎉" : `You're officially on the list for ${escapeHtml(cityLabel)}'s most interesting week-ahead digest. 🎉`}
       </p>
       <p style="margin:0 0 24px;color:#44403c;font-size:15px;line-height:1.75;">
-        <strong>Every Sunday</strong> you'll get a hand-picked roundup of the best things happening <strong>Sunday through Saturday</strong> — so you can plan your whole week before it starts.
+        ${isLeadershipAustin ? "You'll receive a monthly email with upcoming events." : "<strong>Every Sunday</strong> you'll get a hand-picked roundup of the best things happening <strong>Sunday through Saturday</strong> — so you can plan your whole week before it starts."}
       </p>
 
       <!-- What to expect -->
@@ -478,7 +478,7 @@ export function buildWelcomeEmailHtml(name?: string | null, tenant?: WelcomeEmai
 
       <!-- CTA -->
       <div style="text-align:center;">
-        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:${welcomeCtaBg};color:${welcomeCtaColor};font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">${tenant?.slug === "austincares" ? "Browse this week's deals →" : "Browse this week's events →"}</a>
+        <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:${welcomeCtaBg};color:${welcomeCtaColor};font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:100px;letter-spacing:-0.2px;">${tenant?.slug === "austincares" ? "Browse this week's deals →" : isLeadershipAustin ? "Browse upcoming events →" : "Browse this week's events →"}</a>
       </div>
     </div>
 
@@ -1140,7 +1140,7 @@ export function buildDigestEmailHtml(digest: {
     linkColor: "#314363",
     curatorName: "",
     curatorUrl: null as string | null,
-    cityGuideText: "Lead with Purpose",
+    cityGuideText: "Monthly newsletter · Upcoming events",
     digestDisplayName: tenant?.digestTitle || "Leadership Austin",
     headerEmoji: "",
     eventBtnColor: "#314363",
@@ -1727,7 +1727,7 @@ export function buildDigestEmailHtml(digest: {
     ${featuredCards}
 
     <!-- Events -->
-    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">${slug === "austincares" ? "This Week's Deals 🏷️" : "Upcoming Events 🎯"}</h2>${eventCards}` : ""}
+    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">${slug === "austincares" ? "This Week's Deals 🏷️" : slug === "leadershipaustin" ? "Upcoming Events" : "Upcoming Events 🎯"}</h2>${eventCards}` : ""}
 
     <!-- Also Nearby -->
     ${alsoNearbyCards ? `

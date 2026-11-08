@@ -750,6 +750,19 @@ describe("buildWelcomeEmailHtml — city branding isolation", () => {
     expect(html).not.toContain("#fbbf24");
   });
 
+  it("Leadership Austin welcome email promises monthly upcoming-event updates, not a Sunday digest", () => {
+    const html = buildWelcomeEmailHtml(
+      "Test",
+      { slug: "leadershipaustin", name: "Leadership Austin", city: "Austin, TX", digestTitle: null },
+      "sub@example.com"
+    );
+
+    expect(html).toContain("Monthly newsletter · Upcoming events");
+    expect(html).toContain("monthly email with upcoming events");
+    expect(html).toContain("Browse upcoming events");
+    expect(html).not.toMatch(/weekly|sunday|week-ahead/i);
+  });
+
   it("Tokyo welcome email uses Japanese language template with 🗼", () => {
     const html = buildWelcomeEmailHtml(
       null,
@@ -1087,7 +1100,8 @@ describe("Leadership Austin newsletter", () => {
     expect(html).toContain("#4EBEE7");
     expect(html).toContain("Barlow Condensed");
     expect(html).toContain("Figtree");
-    expect(html).toContain("Lead with Purpose");
+    expect(html).toContain("Monthly newsletter · Upcoming events");
+    expect(html).not.toMatch(/Weekly Digest|Every Sunday|Sunday through Saturday|Week of November 8/i);
     expect(html).toContain("Alumni Happenings");
     expect(html).toContain("<ul style=");
     expect(html).toContain("Give to the Annual Campaign");
@@ -1121,12 +1135,12 @@ describe("Leadership Austin newsletter", () => {
     expect(html.match(/Difficult Talks: Foundation for Courageous Communication/g)).toHaveLength(1);
   });
 
-  it("adds the edition date to the Leadership Austin subject", () => {
+  it("keeps the Leadership Austin subject focused on upcoming events without a weekly date", () => {
     expect(formatCityNewsletterSubject(
       "Leadership Austin — Week of November 8, 2026",
       "leadershipaustin",
       "2026-11-08",
-    )).toBe("Leadership Austin — Upcoming Events — Week of Nov 8, 2026");
+    )).toBe("Leadership Austin — Upcoming Events");
   });
 });
 

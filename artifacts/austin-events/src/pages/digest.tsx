@@ -577,7 +577,7 @@ export default function DigestView() {
           {isHouston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Houston / The citywide edition</div>}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             {!isAustinCares && <Calendar className="w-4 h-4" />}
-            <span>{isLeadershipAustin ? "Alumni & Community" : isAustinCares ? "Weekly Deals" : `${isOsaka && lang === "ja" ? "イベント" : "Events"}: ${displayEditionDateRange}`}</span>
+            <span>{isLeadershipAustin ? "Monthly Newsletter" : isAustinCares ? "Weekly Deals" : `${isOsaka && lang === "ja" ? "イベント" : "Events"}: ${displayEditionDateRange}`}</span>
           </div>
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
@@ -596,7 +596,7 @@ export default function DigestView() {
           <div className="prose prose-lg prose-p:text-muted-foreground prose-p:leading-relaxed max-w-none bg-card p-8 rounded-3xl border border-border shadow-sm">
             <p className="whitespace-pre-wrap">
               {isLeadershipAustin
-                ? "A practical home for the people and ideas shaping Austin. Browse alumni gatherings and community stories, then follow the organizer's source for current details."
+                ? "A monthly newsletter of upcoming events for Leadership Austin alumni and the Austin community."
                 : (isJapaneseEdition && lang === "ja" && isOsaka
                 ? (translatedIntros[isLatest ? `latest-${digest.id}` : `digest-${idStr}`] || digest.intro)
                 : digest.intro).split(/(zodiac signs)/i).map((part, i) =>
@@ -1078,7 +1078,7 @@ export default function DigestView() {
                 ) : visibleEvents.length === 0 ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border">
                     <p className="text-4xl mb-4">{isLeadershipAustin || isAtlanta || isHouston ? "•" : CAT_CONFIG[categoryFilter].emoji}</p>
-                    <p className="text-xl font-serif font-bold text-foreground mb-2">{isLeadershipAustin ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}programs` : hasExtendedRange ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                    <p className="text-xl font-serif font-bold text-foreground mb-2">{isLeadershipAustin ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events` : hasExtendedRange ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${categoryFilter} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                     <p className="text-muted-foreground text-sm mb-6">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     <button
                       onClick={() => setCategoryFilter("All")}
@@ -1174,7 +1174,9 @@ export default function DigestView() {
           <div className="relative z-10">
             <h3 className="font-serif text-3xl font-bold mb-2 text-center">{jt("Don't miss the next one", JA.subscribeHeading)}</h3>
             <p className="text-secondary-foreground/80 mb-8 max-w-lg mx-auto text-lg text-center">
-              {isExtendedAustinEdition || isHouston
+              {isLeadershipAustin
+                ? "Get monthly updates about upcoming events in your inbox."
+                : isExtendedAustinEdition || isHouston
                 ? `Get upcoming ${cityShortName} events delivered straight to your inbox.`
                 : isOsaka && lang === "ja"
                   ? "大阪で見つけた来週のイベントを、メールでお届けします。"

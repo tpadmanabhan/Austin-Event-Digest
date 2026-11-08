@@ -498,7 +498,7 @@ export default function Home() {
               
               <p className={`text-base text-muted-foreground mb-5 leading-relaxed max-w-xl ${isLeadershipAustin ? "leadership-intro-copy" : ""}`}>
                 {isLeadershipAustin
-                  ? "Stay close to the people and ideas shaping Austin. Find Leadership Austin gatherings, share alumni stories, and discover meaningful ways to keep showing up for the city."
+                  ? "A monthly newsletter of upcoming events for Leadership Austin alumni and the Austin community."
                   : isDallas
                   ? "From downtown Dallas to neighborhoods across North Texas, find verified tech, arts, sports, civic and wellness plans for October 23–31, with links back to organizers."
                   : isNYC
@@ -537,7 +537,7 @@ export default function Home() {
               <div className={`mb-8 bg-secondary/5 border border-secondary/20 rounded-2xl px-6 py-5 max-w-xl ${isDallas ? "dallas-fieldnote" : ""} ${isLeadershipAustin ? "leadership-alumni-panel" : ""}`}>
                 <p className={`text-foreground/90 leading-relaxed text-base italic whitespace-pre-line ${isLeadershipAustin ? "leadership-testimonial-copy" : ""}`}>
                   {isLeadershipAustin
-                    ? "Leadership Austin gatherings bring alumni together beyond the big moments. Find a connection worth growing and a local story worth passing along."
+                    ? "A monthly look at upcoming events for Leadership Austin alumni and the Austin community."
                     : isAustinCares
                     ? `"Hey crew! I scour inboxes and comb through Brushy Creek so you don't have to — volunteer gigs, school events, networking mixers, and club happenings, all lined up for the week ahead. Here's your fresh BCRR Crew Events digest — let's make some noise, Brushy Creek."`
                     : isDallas
@@ -578,7 +578,7 @@ export default function Home() {
                 {isLeadershipAustin && (
                   <p className="mt-4 border-l-2 border-[#FFBA01] pl-4 text-base font-medium leading-relaxed text-white sm:text-lg not-italic">
                     <span className="font-bold text-[#FFBA01]">Hey, all alumni.</span>{" "}
-                    We created this space to stay connected with our Emerge Class 18 community and share upcoming events.
+                    We share monthly updates about upcoming events with the Emerge Class 18 community.
                   </p>
                 )}
                 {isLeadershipAustin ? (
@@ -671,7 +671,7 @@ export default function Home() {
             <div className="max-w-2xl">
               <h2 className="font-serif text-4xl font-bold mb-4">{isLeadershipAustin ? "The community, in motion." : isDallas ? "Dallas, on your calendar." : isBoston ? "The edition, neighborhood by neighborhood." : isSF ? "The city, block by block." : isHouston ? "The city, on your calendar." : jt("Inside the Latest Issue", JA.insideLatestIssue)}</h2>
               <p className="text-muted-foreground text-lg">
-                {isLeadershipAustin ? "Find the people, programs, and local ideas you want to keep close." : isDallas ? "A first look at the October 23–31 Dallas edition. Filter by category, check the map, and follow each organizer’s link for current details." : isBoston ? "A look inside the Boston edition, October 14 – 31. Filter by category, check the map, and pick a plan in Allston, Eastie, JP or across the river." : isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : latestIssueRange || tenant.slug === "austin" ? jt("A look at the upcoming events in this edition.", "このエディションの今後のイベントをご覧ください。") : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
+                {isLeadershipAustin ? "A monthly newsletter of upcoming events for Leadership Austin alumni and the Austin community." : isDallas ? "A first look at the October 23–31 Dallas edition. Filter by category, check the map, and follow each organizer’s link for current details." : isBoston ? "A look inside the Boston edition, October 14 – 31. Filter by category, check the map, and pick a plan in Allston, Eastie, JP or across the river." : isSF ? "A look inside the San Francisco edition, October 12 – 31. Filter by category, check the map, and make a plan." : isHouston ? "A look inside the latest Houston edition. Pick a neighborhood, pick a date, and get out there." : latestIssueRange || tenant.slug === "austin" ? jt("A look at the upcoming events in this edition.", "このエディションの今後のイベントをご覧ください。") : jt("A sneak peek at what subscribers received this week.", JA.snackPeekSubtext)}
               </p>
               {latestIssueRange && !isLeadershipAustin && (
                 <p className="mt-3 text-sm font-semibold text-primary">Events: {latestIssueRange}</p>
@@ -1012,7 +1012,7 @@ export default function Home() {
                   ) : businessSpotlights.length === 0 && communityPosts.length === 0 ? (
                     <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-border">
                       <p className="text-4xl mb-3">{isLeadershipAustin || isAtlanta || isHouston ? "·" : CAT_CONFIG[categoryFilter].emoji}</p>
-                      <p className="text-lg font-serif font-bold text-foreground mb-2">{isLeadershipAustin ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}programs` : latestIssueRange || isHouston || tenant.slug === "austin" ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events in this edition`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
+                      <p className="text-lg font-serif font-bold text-foreground mb-2">{isLeadershipAustin ? `No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events` : latestIssueRange || isHouston || tenant.slug === "austin" ? jt(`No upcoming ${categoryFilter === "All" ? "" : `${categoryFilter.toLowerCase()} `}events in this edition`, `${JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter)}（このエディション）`) : jt(`No ${CAT_CONFIG[categoryFilter].label} events this week`, JA.noEvents(JA_CAT[categoryFilter] ?? categoryFilter))}</p>
                       <p className="text-muted-foreground text-sm">{jt(`Check back next issue for ${categoryFilter.toLowerCase()} events.`, JA.checkBack(JA_CAT[categoryFilter]?.toLowerCase() ?? categoryFilter))}</p>
                     </div>
                   ) : null}
@@ -1021,7 +1021,7 @@ export default function Home() {
             })()
           ) : (
             <div className="text-center py-20 bg-muted/30 rounded-3xl border border-dashed border-border">
-              <p className="text-muted-foreground">{isLeadershipAustin ? "New programs will be posted as they are announced." : latestIssueRange ? jt("No upcoming events found for this edition yet.", "このエディションの今後のイベントはまだありません。") : isHouston ? "The next Houston edition is on its way. Check back soon." : tenant.slug === "austin" ? "No upcoming events found for this edition yet." : "No events found for this week yet."}</p>
+              <p className="text-muted-foreground">{isLeadershipAustin ? "New events will be posted as they are announced." : latestIssueRange ? jt("No upcoming events found for this edition yet.", "このエディションの今後のイベントはまだありません。") : isHouston ? "The next Houston edition is on its way. Check back soon." : tenant.slug === "austin" ? "No upcoming events found for this edition yet." : "No events found for this week yet."}</p>
             </div>
           )}
         </div>

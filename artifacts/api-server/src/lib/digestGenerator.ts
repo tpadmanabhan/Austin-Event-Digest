@@ -92,10 +92,10 @@ export function generateSampleDigest(weekOf?: Date, customNotes?: string, tenant
     },
   ];
   
-  const cityIntro = customNotes
-    ? `Here's your curated guide to the best events happening this week.\n\n${customNotes}\n\nGet out there and enjoy ${cityFirst}!`
-    : slug === "leadershipaustin"
-      ? "Alumni Happenings, local stories, and community partners for people who lead with purpose."
+  const cityIntro = slug === "leadershipaustin"
+    ? `A monthly newsletter of upcoming events for the Leadership Austin community.${customNotes ? `\n\n${customNotes}` : ""}`
+    : customNotes
+      ? `Here's your curated guide to the best events happening this week.\n\n${customNotes}\n\nGet out there and enjoy ${cityFirst}!`
     : slug === "atlanta"
       ? `Here's your weekly roundup of Atlanta events across Tech, Arts, Sports, Civics, and Wellness. Get out there and enjoy Atlanta!`
       : slug === "houston"
