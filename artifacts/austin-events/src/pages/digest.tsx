@@ -577,7 +577,7 @@ export default function DigestView() {
           {isHouston && <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-9 bg-primary" /> Houston / The citywide edition</div>}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">
             {!isAustinCares && <Calendar className="w-4 h-4" />}
-            <span>{isLeadershipAustin ? "Monthly Newsletter" : isAustinCares ? "Weekly Deals" : `${isOsaka && lang === "ja" ? "イベント" : "Events"}: ${displayEditionDateRange}`}</span>
+            <span>{isLeadershipAustin ? "Monthly Newsletter" : isAustinCares ? "Weekly Deals" : tenant.slug === "austin" ? "Upcoming Events" : `${isOsaka && lang === "ja" ? "イベント" : "Events"}: ${displayEditionDateRange}`}</span>
           </div>
           
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-8">
@@ -589,6 +589,7 @@ export default function DigestView() {
                const titleBase = tenant.slug === "austin" && /upcoming events/i.test(digest.subject)
                  ? "Upcoming Events"
                  : tenant.digestTitle || `${cityShortName} Events`;
+                if (tenant.slug === "austin") return `${emoji}${titleBase}`;
                 return isOsaka && lang === "ja" ? `大阪のイベント：${displayEditionDateRange}` : `${emoji}${titleBase}: ${displayEditionDateRange}`;
             })()}
           </h1>
@@ -861,10 +862,12 @@ export default function DigestView() {
                 <section className="mb-12">
                   <h2 className="font-serif text-3xl font-bold mb-6 flex items-center gap-3">
                     <span className="w-8 h-1 bg-primary rounded-full"></span>
-                    {isLeadershipAustin ? "Where the community gathers" : isOsaka ? (lang === "ja" ? "大阪のイベントマップ" : "Events across Osaka") : isHouston ? "Across Houston, on the map" : isAtlanta && !hasExtendedRange ? "Around Atlanta this week" : hasExtendedRange ? jt("🗺️ Upcoming events on the map", "🗺️ 今後のイベントマップ") : "🗺️ This week on the map"}
+                    {isLeadershipAustin ? "Where the community gathers" : tenant.slug === "austin" ? "Upcoming Austin events on the map" : isOsaka ? (lang === "ja" ? "大阪のイベントマップ" : "Events across Osaka") : isHouston ? "Across Houston, on the map" : isAtlanta && !hasExtendedRange ? "Around Atlanta this week" : hasExtendedRange ? jt("🗺️ Upcoming events on the map", "🗺️ 今後のイベントマップ") : "🗺️ This week on the map"}
                   </h2>
                   <EventMap
-                    events={upcomingEvents}
+                    events={tenant.slug === "austin"
+                      ? upcomingEvents.filter((event: any) => !/\bsan\s+jos[eé]\b/i.test(`${event.title ?? ""} ${event.venue ?? ""}`))
+                      : upcomingEvents}
                     center={mapCenter}
                     radiusMiles={30}
                     height={400}

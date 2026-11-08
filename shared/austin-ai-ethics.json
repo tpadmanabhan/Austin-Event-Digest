@@ -1,21 +1,45 @@
 {
   "title": "AI Ethics",
-  "intro": "These stories connect Texas data-center growth and AI accountability with community access and human connection. Texas reporting asks who oversees permits and environmental effects as data centers expand.",
+  "intro": "These stories connect Texas data-center growth and AI accountability with community access, human connection, energy use, and local oversight.",
   "items": [
+    {
+      "title": "What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.",
+      "description": "IBTimes reports that Governor-elect Gina Hinojosa campaigned on pausing new data-center approvals until stronger protections are enacted, raising questions about how Texas balances AI infrastructure growth with public oversight.",
+      "links": [
+        {
+          "label": "Read the IBTimes article",
+          "url": "https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416"
+        },
+        {
+          "label": "Watch the New York Times video on data centers and immigration",
+          "url": "https://www.nytimes.com/video/us/politics/100000011266333/gina-hinojosa-data-centers-immigration-texas.html"
+        }
+      ]
+    },
+    {
+      "title": "Remember the 'dumb carpooling idea'? It's happening now in Austin.",
+      "description": "An Austin-area program is offering incentives for I-35 commuters to carpool, a current local example of shared rides being used to address congestion.",
+      "links": [
+        {
+          "label": "Read the MSN story",
+          "url": "https://www.msn.com/en-us/news/other/new-carpool-program-aims-to-reduce-congestion-offers-incentive-for-i-35-commuters-in-austin-area/ar-AA2gPBgP"
+        }
+      ]
+    },
     {
       "title": "Texas data-center governance, permits, and air quality",
       "description": "Three Texas updates surface the stakes of data-center growth: Rick Perry lost a board reelection vote at Fermi; watchdog concerns led officials to disable an online permit filing system; and a Houston Advanced Research Center analysis warns that growth could reverse air-quality gains, especially with on-site natural-gas power.",
       "links": [
         {
-          "label": "Fermi board update (Oct. 30)",
+          "label": "Fermi board update",
           "url": "https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/"
         },
         {
-          "label": "Texas permit filing update (Oct. 21)",
+          "label": "Texas permit filing update",
           "url": "https://www.texastribune.org/2026/10/21/data-center-permits-tceq-texas/"
         },
         {
-          "label": "Air-quality analysis (Oct. 20)",
+          "label": "Air-quality analysis",
           "url": "https://www.texastribune.org/2026/10/20/data-centers-texas-air-quality-report-pollution-health-risks/"
         }
       ]
@@ -61,8 +85,18 @@
       ]
     },
     {
+      "title": "The problem with IRL: Is any of it real?",
+      "description": "Mashable reports that the separate IRL social app shut down in 2023 after an investigation found that 95% of its claimed 20 million users were automated or bots. Three years later, AI-generated slop and apps with outlandish claims make the trust question more urgent. IRL.group is real and distinct from that app. Is the AI boom repeating the dot-com bust, when some startups rushed to sell everything online—even toilet paper—before proving lasting value?",
+      "links": [
+        {
+          "label": "Read Mashable's report",
+          "url": "https://mashable.com/article/irl-shuts-down-20-million-users-bots"
+        }
+      ]
+    },
+    {
       "title": "IRL.group: a home for local creators",
-      "description": "IRL.group gives city and community creators a place to bring people together offline.",
+      "description": "IRL.group is launching commercial and nonprofit pilots to help fine-tune the project. These pilots look different from the increasingly crowded events-on-a-map newsletter concept.",
       "links": [
         {
           "label": "Explore IRL.group",
@@ -72,7 +106,7 @@
     },
     {
       "title": "Why Every Election Matters to Democracy with Stacey Abrams",
-      "description": "Guy Kawasaki and Stacey Abrams discuss voting rights, democracy, and persistence. It connects to a core technology value: digital tools should make voting easier to access, not create new barriers. With Election Day approaching, remember to vote.",
+      "description": "Guy Kawasaki and Stacey Abrams discuss voting rights, democracy, and persistence. It connects to a core technology value: digital tools should make voting easier to access, not create new barriers.",
       "links": [
         {
           "label": "Listen on Apple Podcasts",

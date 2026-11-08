@@ -196,6 +196,12 @@ describe("AI Ethics reading section", () => {
     const ethicsHeading = '<h2 style="margin:0 0 12px; color:#1f2937; font-size:20px; font-weight:700;">AI Ethics</h2>';
     expect(html.split(ethicsHeading).length - 1).toBe(1);
     const requestedItems = [
+      "What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.",
+      "https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416",
+      "https://www.nytimes.com/video/us/politics/100000011266333/gina-hinojosa-data-centers-immigration-texas.html",
+      "Watch the New York Times video on data centers and immigration",
+      "dumb carpooling idea",
+      "https://www.msn.com/en-us/news/other/new-carpool-program-aims-to-reduce-congestion-offers-incentive-for-i-35-commuters-in-austin-area/ar-AA2gPBgP",
       "Texas data-center governance, permits, and air quality",
       "https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/",
       "https://www.texastribune.org/2026/10/21/data-center-permits-tceq-texas/",
@@ -208,7 +214,11 @@ describe("AI Ethics reading section", () => {
       "https://www.aol.com/articles/protons-cto-wrote-manifesto-ai-083701000.html",
       "Spurs² Hackathon at UT Austin",
       "https://customersuccessforgood.com/2026/10/26/spurs-hackathon-git/",
+      "The problem with IRL: Is any of it real?",
+      "Three years later, AI-generated slop and apps with outlandish claims",
+      "https://mashable.com/article/irl-shuts-down-20-million-users-bots",
       "IRL.group: a home for local creators",
+      "launching commercial and nonprofit pilots to help fine-tune the project",
       "https://irl.group/",
       "Why Every Election Matters to Democracy with Stacey Abrams",
       "https://podcasts.apple.com/us/podcast/guy-kawasakis-remarkable-people/id1483081827?i=1000797951025",
@@ -320,7 +330,7 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
 
     expect(html).toContain('<img src="https://irl.group/images/irl-monogram.png" alt="IRL — In Real Life" width="88" height="88"');
     expect(html).toContain('href="https://irl.group" style="color:#78716c; text-decoration:underline;">IRL (In Real Life)</a>');
-    expect(html).not.toMatch(/eventcarpooling|carpool/i);
+    expect(html).not.toMatch(/eventcarpooling/i);
     expect(html).not.toMatch(/eventcarpooling-logo\.(?:svg|png)/i);
   });
 
@@ -346,6 +356,47 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).toContain(">Upcoming events</p>");
     expect(html).not.toContain("Your weekly guide");
     expect(html).not.toContain("Week of ");
+  });
+
+  it("keeps a San Jose summit listed but excludes it from the Austin email map", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      siteUrl: "https://austin.irl.group",
+      events: [
+        {
+          title: "Local Austin meetup",
+          date: "Monday, Nov 9 at 6:00 PM",
+          category: "Tech",
+          venue: "Austin, TX",
+          description: "A local event.",
+          link: "https://example.com/austin",
+          lat: 30.267,
+          lng: -97.743,
+        },
+        {
+          title: "GovAI Coalition Summit 2026",
+          date: "Wednesday–Thursday, Dec 9–10",
+          category: "Tech",
+          venue: "San Jose Convention Center, San Jose, CA",
+          description: "A public-sector AI conference.",
+          link: "https://events.govtech.com/GovAI-Coalition-Summit",
+          featured: true,
+          lat: 37.3382,
+          lng: -121.8863,
+        },
+      ],
+    }, null, null, {
+      slug: "austin",
+      name: "Raj's Austin Events",
+      city: "Austin, TX",
+      digestTitle: null,
+    });
+
+    expect(html).toContain("GovAI Coalition Summit 2026");
+    expect(html).toContain("San Jose Convention Center, San Jose, CA");
+    expect(html).toContain("Upcoming event locations in Austin");
+    expect(html).toContain("30.267");
+    expect(html).not.toContain("37.3382");
   });
 
   it("orders Austin newsletter events chronologically, not by subscriber distance", () => {

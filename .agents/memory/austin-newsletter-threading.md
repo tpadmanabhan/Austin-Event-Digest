@@ -3,8 +3,8 @@ name: Austin newsletter threading
 description: Keep Austin weekly newsletter subjects distinct so Gmail does not collapse recurring messages together.
 ---
 
-Include the stored issue week in Austin newsletter email subjects. Keep the issue date stable as the digest's calendar date; do not let a UTC timezone conversion shift it to the prior local day. Other city subject formatting should remain unchanged unless requested.
+For Austin, show dates only on event listings. Keep newsletter subjects and edition framing date-free; leave other city subject formatting unchanged unless requested.
 
-**Why:** The user saw Gmail's trimmed-content ellipsis controls in an Austin newsletter. The sender had removed date ranges from every weekly subject, likely encouraging Gmail to group separate editions together.
+**Why:** The user changed the Austin editorial requirement to date event listings without adding issue dates to subjects or page framing, overriding the earlier Gmail-threading preference.
 
-**How to apply:** Pass the Austin digest's `weekOf` through the send path and include it in the subject. After publishing a subject-format change, send only the requested one-recipient test copy and confirm the subject and SMTP result.
+**How to apply:** Keep Austin email subjects, headers, and edition framing date-free. Do not restore issue dates for threading without the user's direction.

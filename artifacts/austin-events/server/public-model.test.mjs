@@ -403,7 +403,7 @@ test("platform and future city image fallbacks never borrow Austin's preview", a
   assert.equal(cityShareImage("portland", "https://preview.test", "/city-preview/"),
     "https://preview.test/city-preview/images/portland-hero.jpg");
 });
-test("all city landing pages and full editions omit carpooling references", async () => {
+test("Austin carpooling story stays local and no city uses legacy carpooling branding", async () => {
   for (const city of cities) {
     const paths = city === "austincares"
       ? ["/", "/full"]
@@ -413,16 +413,26 @@ test("all city landing pages and full editions omit carpooling references", asyn
       assert.equal(response.status, 200, `${city}${pathname}`);
       const visibleHtml = body.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
       assert.match(visibleHtml, /src="\/images\/irl-monogram\.png"/, `${city}${pathname} IRL logo`);
-      assert.doesNotMatch(visibleHtml, /carpool|eventcarpooling/i, `${city}${pathname}`);
+      assert.doesNotMatch(visibleHtml, /eventcarpooling/i, `${city}${pathname}`);
+      if (city === "austin") {
+        assert.match(visibleHtml, /dumb carpooling idea/i, `${city}${pathname} Austin AI Ethics story`);
+        assert.match(visibleHtml, /mashable\.com\/article\/irl-shuts-down-20-million-users-bots/i, `${city}${pathname} Mashable source`);
+        assert.match(visibleHtml, /AI-generated slop and apps with outlandish claims/i, `${city}${pathname} IRL trust context`);
+        assert.match(visibleHtml, /dot-com bust/i, `${city}${pathname} AI hype question`);
+        assert.match(visibleHtml, /nytimes\.com\/video\/us\/politics\/100000011266333/i, `${city}${pathname} NYT video`);
+      } else {
+        assert.doesNotMatch(visibleHtml, /carpool/i, `${city}${pathname}`);
+      }
     }
   }
 });
-test("edition dates are readable and city labels do not repeat events", async () => {
+test("Austin framing is date-free while event dates and city labels remain readable", async () => {
   for (const pathname of ["/", `/digest/${fixture("austin").id}`]) {
     const { body } = await document("austin.eventcarpooling.com", pathname);
     const visible = body.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
-    assert.match(visible, /Week of October 12, 2031/);
-    assert.doesNotMatch(visible, /Week of 2031-10-12T/);
+    assert.match(visible, /Upcoming events/);
+    assert.match(visible, /Oct 12, 2031/);
+    assert.doesNotMatch(visible, /Week of /);
     assert.match(visible, />Atlanta Events<\/a>/);
     assert.doesNotMatch(visible, /Events events/);
   }

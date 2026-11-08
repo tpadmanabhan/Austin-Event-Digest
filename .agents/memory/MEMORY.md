@@ -34,10 +34,10 @@
 - [Git provider authentication](git-provider-auth.md) — public fetch and healthy connection metadata do not prove push credentials work; preserve commits when synchronization is blocked.
 - [Package installation side effects](package-installation-side-effects.md) — failed installs may still alter workspace configuration; prefer existing tools for report exports.
 - [Newsletter sender choice](newsletter-sender-choice.md) — Titan sends outbound mail; keep Gmail credentials for inbox reading and verify actual headers before sending.
-- [Austin newsletter threading](austin-newsletter-threading.md) — include the issue date in Austin email subjects so weekly messages do not reuse the same Gmail thread.
+- [Austin newsletter threading](austin-newsletter-threading.md) — Austin subjects and edition framing are date-free; dates belong on event listings only.
 - [Scoped event corrections](scoped-event-corrections.md) — user chose link-only editing over rewriting whole editions, even when publishing was required first.
 - [Spock city-building defaults](spock-city-building-defaults.md) — latest formatting, autonomous spotlights, fresh AI Ethics readings, and city-specific visual themes.
-- [Trust and ethics vision](eventcarpooling-trust-vision.md) — trusted event influencers, subscriptions, delegated admins, and ethical AI instruction; Instinct means the assistant app.
+- [Trust and ethics vision](eventcarpooling-trust-vision.md) — trusted curators, ethical AI, and pilots distinct from the saturated map-newsletter model; Instinct means the assistant app.
 - [SQL callback result format](sql-callback-result-format.md) — JSON-valued SQL results may be CSV-escaped; decode the cell before JSON parsing.
 - [Display-only date corrections](display-date-corrections.md) — formatting fixes must retain verified source timestamps; visible ordering alone is not a preservation check.
 - [Vitest hook returns](vitest-hook-returns.md) — reset-only hooks must return void; a returned mock can be invoked as cleanup and reject after a passing test.

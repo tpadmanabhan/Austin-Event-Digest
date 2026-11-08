@@ -56,7 +56,7 @@ const NEWSLETTER_DATE_SUFFIX = new RegExp(
 export function formatCityNewsletterSubject(
   subject: string,
   tenantSlug?: string,
-  weekOf?: Date | string | null,
+  _weekOf?: Date | string | null,
 ): string {
   const label = tenantSlug === "austincares" ? "Upcoming Deals" : "Upcoming Events";
   const trimmed = subject.trim();
@@ -74,29 +74,7 @@ export function formatCityNewsletterSubject(
       ? title.toLowerCase() === label.toLowerCase() ? label : title
       : `${title || trimmed} — ${label}`;
 
-  const usesEditionDateInSubject = tenantSlug === "austin";
-  if (!usesEditionDateInSubject || !weekOf) return formattedSubject;
-
-  const weekDateString = weekOf instanceof Date
-    ? Number.isNaN(weekOf.getTime()) ? "" : weekOf.toISOString().slice(0, 10)
-    : String(weekOf).slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(weekDateString)) return formattedSubject;
-
-  const weekDate = new Date(`${weekDateString}T12:00:00.000Z`);
-  if (
-    Number.isNaN(weekDate.getTime()) ||
-    weekDate.toISOString().slice(0, 10) !== weekDateString
-  ) {
-    return formattedSubject;
-  }
-
-  const weekLabel = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(weekDate);
-  return `${formattedSubject} — Week of ${weekLabel}`;
+  return formattedSubject;
 }
 
 // Edition emails omit Reply-To so responses go to the visible From address.
@@ -664,6 +642,7 @@ function buildStaticMapSection(
     (e) =>
       e.lat != null && e.lng != null &&
       !e.isPost && !e.isBusinessSpotlight &&
+      !(slug === "austin" && /\bsan\s+jos[eé]\b/i.test(`${e.title ?? ""} ${e.venue ?? ""}`)) &&
       haversineMiles(center.lat, center.lng, e.lat!, e.lng!) <= MAX_MAP_RADIUS_MILES
   );
   if (geocoded.length === 0) return "";
@@ -683,10 +662,10 @@ function buildStaticMapSection(
     <!-- Event Map Preview -->
     <div style="margin-bottom:24px; border-radius:14px; overflow:hidden; border:1px solid #e7e5e4;">
       <div style="background:#f8fafc; padding:10px 16px; border-bottom:1px solid #e7e5e4;">
-        <p style="margin:0; font-size:13px; font-weight:700; color:#1c1917;">${slug === "austincares" ? "🗺️ Deal locations in Austin" : slug === "leadershipaustin" ? "🗺️ Alumni and community event locations in Austin" : `🗺️ This week's event locations in ${cityLabel}`}</p>
+        <p style="margin:0; font-size:13px; font-weight:700; color:#1c1917;">${slug === "austincares" ? "🗺️ Deal locations in Austin" : slug === "leadershipaustin" ? "🗺️ Alumni and community event locations in Austin" : slug === "austin" ? "🗺️ Upcoming event locations in Austin" : `🗺️ This week's event locations in ${cityLabel}`}</p>
       </div>
       ${linkUrl ? `<a href="${escapeHtml(linkUrl)}" style="display:block; line-height:0;">` : ""}
-        <img src="${escapeHtml(mapUrl)}" alt="${slug === "austincares" ? "Map of deal locations in Austin" : slug === "leadershipaustin" ? "Map of alumni and community events in Austin" : `Map of this week's events in ${cityLabel}`}" width="580" height="260" style="display:block; width:100%; max-width:580px; height:auto; border:none;" />
+        <img src="${escapeHtml(mapUrl)}" alt="${slug === "austincares" ? "Map of deal locations in Austin" : slug === "leadershipaustin" ? "Map of alumni and community events in Austin" : slug === "austin" ? "Map of upcoming events in Austin" : `Map of this week's events in ${cityLabel}`}" width="580" height="260" style="display:block; width:100%; max-width:580px; height:auto; border:none;" />
       ${linkUrl ? `</a>` : ""}
       ${linkUrl ? `<div style="background:#f8fafc; padding:8px 16px; border-top:1px solid #e7e5e4; text-align:center;"><a href="${escapeHtml(linkUrl)}" style="color:#7c3aed; font-size:12px; font-weight:600; text-decoration:none;">${slug === "leadershipaustin" ? "Open Leadership Austin site →" : "Open interactive map &amp; sort by distance →"}</a>${slug === "leadershipaustin" ? `<p style="margin:6px 0 0; color:#78716c; font-size:11px;">Only verified venue locations are pinned; other events remain listed without a pin.</p>` : ""}</div>` : ""}
     </div>`;

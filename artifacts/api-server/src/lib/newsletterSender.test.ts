@@ -63,7 +63,7 @@ describe("newsletter sender identity", () => {
     expect(sent).not.toHaveProperty("bcc");
   });
 
-  it("adds the Austin edition week to the subject so weekly copies do not collapse into one thread", async () => {
+  it("keeps Austin newsletter subjects date-free when an issue week is supplied", async () => {
     const { sendNewsletterEmail } = await import("./emailService");
     await sendNewsletterEmail({
       ...edition,
@@ -72,7 +72,7 @@ describe("newsletter sender identity", () => {
       weekOf: "2026-11-01T00:00:00.000Z",
     });
     expect(sendMail.mock.calls[0][0].subject)
-      .toBe("🤠 Austin Upcoming Events — Week of Nov 1, 2026");
+      .toBe("🤠 Austin Upcoming Events");
   });
 
   it("uses the default newsletter name when no city name is supplied", async () => {

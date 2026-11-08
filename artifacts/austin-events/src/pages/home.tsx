@@ -169,7 +169,7 @@ export default function Home() {
   }
 
   const latestDigest = latestDigestRes?.digest;
-  const latestIssueRangeMatch = tenant.slug === "austin" || tenant.slug === "atlanta"
+  const latestIssueRangeMatch = tenant.slug === "atlanta"
     ? latestDigest?.subject.match(/\b([A-Za-z]+\s+\d{1,2})\s+to\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})\s*$/i)
     : null;
   const houstonRangeMatch = tenant.slug === "houston" || tenant.slug === "tokyo" || tenant.slug === "sanfrancisco" || tenant.slug === "sacramento" || tenant.slug === "miami" || tenant.slug === "boston" || tenant.slug === "la" || tenant.slug === "stlouis" || tenant.slug === "portland" || tenant.slug === "bulverde" || tenant.slug === "dc" || tenant.slug === "manchester" || tenant.slug === "nyc" || tenant.slug === "dallas"
@@ -202,10 +202,14 @@ export default function Home() {
   const leadershipManagedEventsQuery = useLeadershipManagedEvents(isLeadershipAustin);
   const mapEvents = useMemo(() => {
     const digestEvents = ((latestDigest?.events ?? []) as any[])
-      .filter((event: any) => !(isLeadershipAustin && event.isAlumniHappening));
+      .filter((event: any) => {
+        if (isLeadershipAustin && event.isAlumniHappening) return false;
+        if (tenant.slug === "austin" && /\bsan\s+jos[eé]\b/i.test(`${event.title ?? ""} ${event.venue ?? ""}`)) return false;
+        return true;
+      });
     const alumniEvents = isLeadershipAustin ? (leadershipManagedEventsQuery.data?.events ?? []) : [];
     return [...digestEvents, ...alumniEvents];
-  }, [latestDigest?.events, leadershipManagedEventsQuery.data?.events, isLeadershipAustin]);
+  }, [latestDigest?.events, leadershipManagedEventsQuery.data?.events, isLeadershipAustin, tenant.slug]);
   const mapEventsKey = mapEvents
     .map((event: any) => [
       event.eventId ?? event.managedEventId ?? event.title,
