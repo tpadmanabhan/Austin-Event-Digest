@@ -407,6 +407,20 @@ export interface GenerateDigestRequest {
   customNotes?: string;
 }
 
+export interface DigestTestAttachment {
+  /**
+   * @maxLength 160
+   * @pattern ^[A-Za-z0-9][A-Za-z0-9._ -]{0,159}\.pdf$
+   */
+  filename: string;
+  /**
+   * @minLength 4
+   * @maxLength 200000
+   * @pattern ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$
+   */
+  contentBase64: string;
+}
+
 export interface SendDigestRequest {
   digestId: number;
   /** If provided, only sends to this test email */
@@ -415,6 +429,14 @@ export interface SendDigestRequest {
   confirm?: boolean;
   /** When false, sends the same event order to all recipients instead of applying Austin saved-location personalization. Defaults to true. */
   personalizeByLocation?: boolean;
+  /**
+   * Optional subject suffix for a one-off test email only
+   * @minLength 1
+   * @maxLength 80
+   * @pattern ^[^\r\n]*\S[^\r\n]*$
+   */
+  testSubjectSuffix?: string;
+  testAttachment?: DigestTestAttachment;
 }
 
 export interface TenantPublic {

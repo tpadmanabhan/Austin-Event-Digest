@@ -40,6 +40,7 @@ export * from "./cityRequestReceiptNotificationStatus";
 export * from "./digest";
 export * from "./digestListResponse";
 export * from "./digestResponse";
+export * from "./digestTestAttachment";
 export * from "./errorResponse";
 export * from "./eventItem";
 export * from "./eventItemAlumniHappeningType";

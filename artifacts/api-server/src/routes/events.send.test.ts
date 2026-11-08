@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { AddAlumniHappeningBody, ListDigestsResponse, SendDigestBody } from "@workspace/api-zod";
 import { selectRecipientDigestEvents } from "./events";
+import { decodeDigestTestAttachment } from "../lib/digestTestAttachment";
 
 const events = [
   { title: "Far event", lat: 30.5, lng: -97.743 },
@@ -40,6 +41,42 @@ describe("digest send location personalization", () => {
       mainEvents: [{ title: "Spotlight" }, { title: "Nearby event" }],
       alsoNearby: [{ title: "Far event" }],
     });
+  });
+});
+
+describe("one-off digest send options", () => {
+  it("accepts a single test recipient, subject suffix, and PDF attachment", () => {
+    const contentBase64 = Buffer.from("%PDF-1.4\n%%EOF\n").toString("base64");
+    const parsed = SendDigestBody.parse({
+      digestId: 155,
+      testEmail: "robertsonalex40@gmail.com",
+      testSubjectSuffix: "Draft with Admin Guide",
+      testAttachment: {
+        filename: "Leadership Austin Admin Guide.pdf",
+        contentBase64,
+      },
+    });
+
+    expect(parsed.testEmail).toBe("robertsonalex40@gmail.com");
+    expect(parsed.testSubjectSuffix).toBe("Draft with Admin Guide");
+    expect(decodeDigestTestAttachment(parsed.testAttachment!.contentBase64)?.toString("ascii"))
+      .toContain("%PDF-1.4");
+  });
+
+  it("rejects unsafe attachment filenames and invalid base64", () => {
+    const invalidFilename = SendDigestBody.safeParse({
+      digestId: 155,
+      testEmail: "recipient@example.com",
+      testAttachment: { filename: "../guide.pdf", contentBase64: "JVBERi0=" },
+    });
+    const invalidBase64 = SendDigestBody.safeParse({
+      digestId: 155,
+      testEmail: "recipient@example.com",
+      testAttachment: { filename: "guide.pdf", contentBase64: "%%%=" },
+    });
+
+    expect(invalidFilename.success).toBe(false);
+    expect(invalidBase64.success).toBe(false);
   });
 });
 

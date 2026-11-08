@@ -5,6 +5,7 @@
  * API specification for Raj's Austin Events newsletter
  * OpenAPI spec version: 0.1.0
  */
+import type { DigestTestAttachment } from "./digestTestAttachment";
 
 export interface SendDigestRequest {
   digestId: number;
@@ -14,4 +15,12 @@ export interface SendDigestRequest {
   confirm?: boolean;
   /** When false, sends the same event order to all recipients instead of applying Austin saved-location personalization. Defaults to true. */
   personalizeByLocation?: boolean;
+  /**
+   * Optional subject suffix for a one-off test email only
+   * @minLength 1
+   * @maxLength 80
+   * @pattern ^[^\r\n]*\S[^\r\n]*$
+   */
+  testSubjectSuffix?: string;
+  testAttachment?: DigestTestAttachment;
 }

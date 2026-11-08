@@ -779,6 +779,23 @@ export const GenerateDigestResponse = zod.object({
 /**
  * @summary Send the latest digest to all subscribers (admin)
  */
+export const sendDigestBodyTestSubjectSuffixMax = 80;
+
+export const sendDigestBodyTestSubjectSuffixRegExp = new RegExp(
+  "^[^\\r\\n]\*\\S[^\\r\\n]\*$",
+);
+export const sendDigestBodyTestAttachmentFilenameMax = 160;
+
+export const sendDigestBodyTestAttachmentFilenameRegExp = new RegExp(
+  "^[A-Za-z0-9][A-Za-z0-9._ -]{0,159}\\.pdf$",
+);
+export const sendDigestBodyTestAttachmentContentBase64Min = 4;
+export const sendDigestBodyTestAttachmentContentBase64Max = 200000;
+
+export const sendDigestBodyTestAttachmentContentBase64RegExp = new RegExp(
+  "^(?:[A-Za-z0-9+\/]{4})\*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$",
+);
+
 export const SendDigestBody = zod.object({
   digestId: zod.number(),
   testEmail: zod
@@ -796,6 +813,26 @@ export const SendDigestBody = zod.object({
     .describe(
       "When false, sends the same event order to all recipients instead of applying Austin saved-location personalization. Defaults to true.",
     ),
+  testSubjectSuffix: zod
+    .string()
+    .min(1)
+    .max(sendDigestBodyTestSubjectSuffixMax)
+    .regex(sendDigestBodyTestSubjectSuffixRegExp)
+    .optional()
+    .describe("Optional subject suffix for a one-off test email only"),
+  testAttachment: zod
+    .object({
+      filename: zod
+        .string()
+        .max(sendDigestBodyTestAttachmentFilenameMax)
+        .regex(sendDigestBodyTestAttachmentFilenameRegExp),
+      contentBase64: zod
+        .string()
+        .min(sendDigestBodyTestAttachmentContentBase64Min)
+        .max(sendDigestBodyTestAttachmentContentBase64Max)
+        .regex(sendDigestBodyTestAttachmentContentBase64RegExp),
+    })
+    .optional(),
 });
 
 export const SendDigestResponse = zod.object({

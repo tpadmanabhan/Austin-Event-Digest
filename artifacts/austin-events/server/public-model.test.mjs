@@ -261,6 +261,11 @@ test("Austin's public city and edition documents render current content in one A
     assert.ok(body.includes("https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416"));
     assert.ok(body.indexOf("What Texas Turning Blue Could Mean") < body.indexOf("Gina Hinojosa on data centers and immigration"));
     assert.ok(body.includes("https://www.nytimes.com/video/us/politics/100000011266333/gina-hinojosa-data-centers-immigration-texas.html"));
+    assert.ok(body.includes("Pflugerville adopts new policy for AI, surveillance technology and data privacy"));
+    assert.ok(body.includes("SAFE Technology policy covering AI, surveillance and data sharing"));
+    assert.ok(body.includes("https://communityimpact.com/pflugerville-hutto/government/pflugerville-adopts-new-policy-for-ai-surveillance-technology-and-data-privacy/"));
+    assert.ok(body.indexOf("Gina Hinojosa on data centers and immigration") < body.indexOf("Pflugerville adopts new policy for AI, surveillance technology and data privacy"));
+    assert.ok(body.indexOf("Pflugerville adopts new policy for AI, surveillance technology and data privacy") < body.indexOf("dumb carpooling idea"));
     assert.ok(body.includes("dumb carpooling idea"));
     assert.ok(body.includes("https://www.msn.com/en-us/news/other/new-carpool-program-aims-to-reduce-congestion-offers-incentive-for-i-35-commuters-in-austin-area/ar-AA2gPBgP"));
     assert.ok(body.includes("The problem with IRL: Is any of it real?"));
@@ -428,9 +433,14 @@ test("Austin carpooling story stays local and no city uses legacy carpooling bra
         assert.match(visibleHtml, /AI-generated slop and apps with outlandish claims/i, `${city}${pathname} IRL trust context`);
         assert.match(visibleHtml, /dot-com bust/i, `${city}${pathname} AI hype question`);
         assert.match(visibleHtml, /nytimes\.com\/video\/us\/politics\/100000011266333/i, `${city}${pathname} NYT video`);
+        assert.match(visibleHtml, /Pflugerville adopts new policy for AI, surveillance technology and data privacy/i, `${city}${pathname} Pflugerville policy article`);
+        assert.match(visibleHtml, /communityimpact\.com\/pflugerville-hutto\/government\/pflugerville-adopts-new-policy-for-ai-surveillance-technology-and-data-privacy/i, `${city}${pathname} Pflugerville source`);
         const texasArticlePosition = visibleHtml.indexOf("What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.");
         const nytVideoPosition = visibleHtml.indexOf("Gina Hinojosa on data centers and immigration");
+        const pflPagePosition = visibleHtml.indexOf("Pflugerville adopts new policy for AI, surveillance technology and data privacy");
+        const austinCarpoolPosition = visibleHtml.indexOf("dumb carpooling idea");
         assert.ok(texasArticlePosition >= 0 && nytVideoPosition > texasArticlePosition, `${city}${pathname} NYT video follows Texas blue article`);
+        assert.ok(pflPagePosition > nytVideoPosition && austinCarpoolPosition > pflPagePosition, `${city}${pathname} Pflugerville article follows NYT video and precedes Austin carpool story`);
         assert.match(visibleHtml, /commercial and nonprofit pilots to help fine-tune the project/i, `${city}${pathname} current IRL.group pilot context`);
         assert.doesNotMatch(visibleHtml, /Texas data-center governance, permits, and air quality|We are telling AI chatbots our biggest secrets|Meta's AI shopping agent threatens Amazon|Proton's CTO wrote a manifesto|Spurs² Hackathon|Why Every Election Matters to Democracy with Stacey Abrams/i, `${city}${pathname} stale AI Ethics items`);
       } else {

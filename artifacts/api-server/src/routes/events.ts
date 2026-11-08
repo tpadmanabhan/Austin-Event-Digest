@@ -3,6 +3,7 @@ import { withPublicEventIds } from "../lib/publicEventIdentity";
 import { verifiedEventMetadata } from "../lib/verifiedEventMetadata";
 import { parseEventLink } from "../lib/eventLink";
 import { createHmac } from "node:crypto";
+import { decodeDigestTestAttachment } from "../lib/digestTestAttachment";
 import { db, digestsTable, leadershipEventsTable, subscribersTable, type EventItem, EventItemSchema } from "@workspace/db";
 import { eq, desc, asc, and, sql } from "drizzle-orm";
 import {
@@ -2214,7 +2215,35 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
     return;
   }
 
-  const { digestId, testEmail, confirm, personalizeByLocation = true } = parseResult.data;
+  const {
+    digestId,
+    testEmail,
+    confirm,
+    personalizeByLocation = true,
+    testSubjectSuffix,
+    testAttachment,
+  } = parseResult.data;
+
+  if ((testSubjectSuffix !== undefined || testAttachment !== undefined) && !testEmail) {
+    res.status(400).json({
+      error: "test_email_required",
+      message: "Subject suffixes and attachments are only allowed for one-off test sends.",
+    });
+    return;
+  }
+
+  let testAttachmentBytes: Buffer | undefined;
+  if (testAttachment) {
+    const decodedAttachment = decodeDigestTestAttachment(testAttachment.contentBase64);
+    if (!decodedAttachment) {
+      res.status(400).json({
+        error: "invalid_test_attachment",
+        message: "The test attachment must be a valid PDF under 150 KB.",
+      });
+      return;
+    }
+    testAttachmentBytes = decodedAttachment;
+  }
 
   // Safety guard: a full subscriber send requires explicit opt-in.
   // Without testEmail OR confirm:true, reject the request immediately so that
@@ -2315,11 +2344,22 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
 
       const result = await sendNewsletterEmail({
         to: recipient.email,
-        subject: digest.subject,
+        subject: testSubjectSuffix
+          ? `${digest.subject} — ${testSubjectSuffix.trim()}`
+          : digest.subject,
         html,
         fromName: req.tenant?.name || undefined,
         tenantSlug: req.tenant?.slug,
         weekOf: digest.weekOf,
+        ...(testAttachment && testAttachmentBytes
+          ? {
+              attachments: [{
+                filename: testAttachment.filename,
+                content: testAttachmentBytes,
+                contentType: "application/pdf",
+              }],
+            }
+          : {}),
       });
 
       if (result.success) {

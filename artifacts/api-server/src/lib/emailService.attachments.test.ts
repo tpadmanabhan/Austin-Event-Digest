@@ -47,6 +47,31 @@ describe("sendEmail attachments", () => {
     expect(sent).not.toHaveProperty("bcc");
   });
 
+  it("preserves a one-off newsletter subject suffix and PDF attachment", async () => {
+    const { sendNewsletterEmail } = await import("./emailService");
+    const subject = "Leadership Austin — Upcoming Events — Draft with Admin Guide";
+    const pdf = {
+      filename: "Leadership Austin Admin Guide.pdf",
+      content: Buffer.from("%PDF-1.4\n%%EOF\n"),
+      contentType: "application/pdf",
+    };
+
+    await sendNewsletterEmail({
+      to: "recipient@example.com",
+      subject,
+      html: "<p>Leadership Austin newsletter</p>",
+      fromName: "Leadership Austin",
+      tenantSlug: "leadershipaustin",
+      attachments: [pdf],
+    });
+
+    const sent = sendMail.mock.calls[0][0];
+    expect(sent.to).toBe("recipient@example.com");
+    expect(sent.subject).toBe(subject);
+    expect(sent.attachments).toEqual([pdf]);
+    expect(sent.from).toBe("Leadership Austin — No Reply <raj@eventcarpooling.com>");
+  });
+
   it("uses the configured Titan SMTP mailbox for outbound sender identity", async () => {
     const { sendEmail } = await import("./emailService");
     await sendEmail(message);
