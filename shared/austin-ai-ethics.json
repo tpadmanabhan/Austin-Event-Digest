@@ -3,6 +3,24 @@
   "intro": "These stories connect Texas data-center growth and AI accountability with community access, human connection, energy use, and local oversight.",
   "items": [
     {
+      "title": "Why America Turned Blue?",
+      "description": "Writing about the winning anti-tech blue tsunami in the technology publication 404 Media, Jason Koebler noted that Americans are sick of being told they should “shut up and suffer” while tech barons make scads of money and economically and spiritually impoverish the rest of us by automating our jobs and humanity away. His term for the corrupt status quo is “the depravity economy.” I haven’t read a better description.",
+      "links": [
+        {
+          "label": "Read the New York Times opinion",
+          "url": "https://www.nytimes.com/2026/11/07/opinion/midterms-tech-economy.html"
+        },
+        {
+          "label": "Read Jason Koebler’s 404 Media article",
+          "url": "https://www.404media.co/there-is-one-fight-american-voters-reject-tech-oligarchy/?ref=daily-stories-newsletter"
+        },
+        {
+          "label": "Read about the “depravity economy”",
+          "url": "https://www.404media.co/with-iran-war-kalshi-and-polymarket-bet-that-the-depravity-economy-has-no-bottom/"
+        }
+      ]
+    },
+    {
       "title": "What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.",
       "description": "IBTimes reports that Governor-elect Gina Hinojosa campaigned on pausing new data-center approvals until stronger protections are enacted, raising questions about how Texas balances AI infrastructure growth with public oversight.",
       "links": [
