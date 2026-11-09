@@ -14,12 +14,6 @@ export const GOLF_COURSES = [
     imageAlt: "Fairway, water, and oak tree at Morris Williams Course.",
   },
   {
-    name: "Lions Municipal Course",
-    href: "https://www.austintexas.gov/golfatx/lions-municipal-course",
-    imageSrc: golfImage("lions-municipal.png"),
-    imageAlt: "Tree-lined fairway at Lions Municipal Course.",
-  },
-  {
     name: "Jimmy Clay Course",
     href: "https://www.austintexas.gov/golfatx/jimmy-clay-course",
     imageSrc: golfImage("jimmy-clay.png"),
