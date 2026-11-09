@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowDown, ArrowRight, Flag, MapPin, MoveUpRight } from "lucide-react";
+import { ArrowDown, ArrowRight, Flag, Mail, MapPin, MoveUpRight } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { GOLF_HOME_COPY } from "@/i18n/golf-home";
 import { EventCard } from "../components/event-card";
@@ -57,6 +57,15 @@ export function GolfHomePage({
             {lang === "ja" ? "English" : "日本語"}
           </button>
           <a className="gh-nav-cta" href="#submit-event">{copy.navShareEvent} <ArrowRight size={15} /></a>
+          <a
+            className="gh-subscribe-cta"
+            href="#newsletter"
+            aria-label={copy.navSubscribe}
+            data-testid="link-subscribe-newsletter"
+          >
+            <Mail size={14} aria-hidden="true" />
+            {copy.navSubscribe}
+          </a>
         </div>
       </header>
 
