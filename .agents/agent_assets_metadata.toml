@@ -444,13 +444,13 @@ id = "eRTlmGZG3-onw8ImAyz9f"
 uri = "file://generated-artifacts/leadership-austin-admin-guide.pdf"
 type = "pdf"
 title = "Leadership Austin Admin Guide"
-description = "Updated two-page guide for monthly newsletter editions, subscriber event review, admin-added events, and careful sending."
+description = "Updated three-page admin guide with highlighted event URL, Toys for Tots, and newsletter-hold notes."
 logical_id = "1a35d48c-cc43-4795-b166-07f38df8fe26"
-content_hash = "sha256:94d37f64d11fa1f7bce898096da973a11dca79c154445084ec6927764dabf3f0"
-size = 84358
-mtime_ms = 1794138176145
-storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/1a35d48c-cc43-4795-b166-07f38df8fe26/5d0630f4-9780-4e9b-be32-aeab638e5de2"
-storage_version_token = "1794138925376736"
+content_hash = "sha256:9142018910589adfdc4ce6c202168c5aa6864c43a0a83e3fb3e5885e703b8a08"
+size = 107680
+mtime_ms = 1794243552588
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/1a35d48c-cc43-4795-b166-07f38df8fe26/6acd0b19-d453-4a42-bf60-3639b753f5c7"
+storage_version_token = "1794243559693983"
 content_type = "application/pdf"
 
 [[outputs]]
