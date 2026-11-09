@@ -245,6 +245,10 @@ test("the platform document is readable and has real city links without scripts 
   const platformHomeCopySource = readFileSync(new URL("../src/i18n/platform-home.ts", import.meta.url), "utf8");
   assert.doesNotMatch(platformHomeCopySource, /NEW EDITION|新しい都市版/,
     "the Boston collage label should not imply another new city");
+  const japaneseCityCopySource = platformHomeCopySource.slice(platformHomeCopySource.indexOf("export const JAPANESE_CITY_COPY:"));
+  for (const slug of ["golf", "austin", "nyc", "dallas", "manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"]) {
+    assert.match(japaneseCityCopySource, new RegExp(`^\\s{2}${slug}:`, "m"), `${slug} should have Japanese directory copy`);
+  }
   assert.match(body, /<title>In Real Life \(IRL\) — Worthwhile things, close by<\/title>/);
   assert.match(body, /<meta property="og:title" content="In Real Life \(IRL\) — Worthwhile things, close by">/);
   assert.doesNotMatch(body, /EventCarpooling|eventcarpooling-logo/i);

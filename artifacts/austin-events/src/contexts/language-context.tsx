@@ -24,7 +24,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   });
   const [translationFailed, setTranslationFailed] = useState(false);
   useEffect(() => {
-    document.documentElement.lang = ["tokyo", "osaka"].includes(window.__PUBLIC_DOCUMENT__?.citySlug ?? "") ? lang : "en";
+    document.documentElement.lang = ["tokyo", "osaka", "golf"].includes(window.__PUBLIC_DOCUMENT__?.citySlug ?? "") ? lang : "en";
   }, [lang]);
 
   const setLang = useCallback((l: Lang) => {

@@ -39,7 +39,7 @@ export default function GolfHomeRoute() {
       digestId={latestDigest?.id}
       courses={[...GOLF_COURSES]}
       subscribeForm={<SubscribeForm />}
-      eventSubmissionForm={<LeadershipEventContribution communityName={tenant.name} />}
+      eventSubmissionForm={<LeadershipEventContribution communityName={tenant.name} japaneseGolf />}
     />
   );
 }

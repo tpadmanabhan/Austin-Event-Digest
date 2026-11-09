@@ -23,7 +23,7 @@ export function SubscribeForm() {
   const isToky = tenant.slug === "tokyo";
   const isOsaka = tenant.slug === "osaka";
   const { lang } = useLanguage();
-  const isJapaneseEdition = isToky || isOsaka;
+  const isJapaneseEdition = isToky || isOsaka || tenant.slug === "golf";
   const osakaCopy: Record<string, string> = {
     "You're on the list!": "登録が完了しました。",
     "Get ready for your first digest this Sunday.": "次回の大阪イベントガイドをお楽しみに。",

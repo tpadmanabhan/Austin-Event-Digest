@@ -215,10 +215,14 @@ export const CITY_REQUEST_MODAL_COPY: Record<Lang, {
 };
 
 export const JAPANESE_CITY_COPY: Record<string, { city: string; name: string; alt: string }> = {
+  golf: { city: "オースティン", name: "Golf IRL", alt: "オースティン近郊のゴルフコースに広がるGolf IRLコミュニティ" },
   la: { city: "ロサンゼルス", name: "ロサンゼルスのイベント", alt: "ロサンゼルス近郊、ポイント・デュームから望む太平洋" },
   boston: { city: "ボストン", name: "ボストンのイベント", alt: "ボストンの街並み" },
   atlanta: { city: "アトランタ", name: "アトランタのイベント", alt: "アトランタの街並みのイラスト" },
   sanfrancisco: { city: "サンフランシスコ", name: "サンフランシスコのイベント", alt: "サンフランシスコの湾越しの街並み" },
+  nyc: { city: "ニューヨーク市", name: "ニューヨーク市のイベント", alt: "イーストリバー越しに望むブルーアワーのニューヨークの街並み" },
+  dallas: { city: "ダラス", name: "ダラスのイベント", alt: "夕暮れのダラスのスカイライン" },
+  manchester: { city: "マンチェスター", name: "マンチェスターのイベント", alt: "夕暮れのマンチェスターの街並みと黄金色の蜂のマーク" },
   austin: { city: "オースティン", name: "Rajのオースティン版イベント", alt: "日没時のオースティンのスカイライン" },
   sacramento: { city: "サクラメント", name: "サクラメントのイベント", alt: "サクラメントの街並み" },
   miami: { city: "マイアミ", name: "マイアミのイベント", alt: "マイアミの水辺とビーチ沿いのスカイライン" },

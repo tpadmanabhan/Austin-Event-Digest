@@ -61,6 +61,7 @@
   color: var(--gh-sun);
 }
 .gh-nav-links { display: flex; gap: clamp(20px, 3.3vw, 49px); }
+.gh-nav-actions { display: flex; align-items: center; gap: 10px; }
 .gh-nav-links a, .gh-nav-cta {
   text-decoration: none;
   font-size: 12px;
@@ -79,6 +80,18 @@
   color: #fff9e9 !important;
 }
 .gh-nav-cta:hover { transform: translateY(-2px); }
+.gh-language-toggle {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #d7dfd4;
+  border-radius: 3px;
+  color: #52675d;
+  background: transparent;
+  font: 700 11px "DM Sans", sans-serif;
+  cursor: pointer;
+  transition: color .2s ease, border-color .2s ease, background .2s ease;
+}
+.gh-language-toggle:hover { border-color: var(--gh-green); color: var(--gh-green); background: rgba(49, 89, 75, .05); }
 
 .gh-hero {
   position: relative;
@@ -150,6 +163,14 @@
   font-size: clamp(66px, 8.4vw, 112px);
   line-height: .86;
   color: #fffaf0;
+}
+.golf-home-ja .gh-hero h1 {
+  max-width: 100%;
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  font-size: clamp(35px, 3.1vw, 42px);
+  line-height: 1.3;
+  letter-spacing: -.025em;
+  word-break: keep-all;
 }
 .gh-hero h1 em, .gh-section h2 em, .gh-share-section h2 em {
   font-weight: 400;
@@ -671,6 +692,8 @@
   .gh-nav { min-height: 64px; padding-inline: 19px; }
   .gh-brand { font-size: 20px; }
   .gh-nav-links { display: none; }
+  .gh-nav-actions { gap: 6px; }
+  .gh-language-toggle { min-height: 36px; padding-inline: 8px; font-size: 10px; }
   .gh-nav-cta { padding: 10px 11px; font-size: 10px; }
   .gh-hero { min-height: auto; }
   .gh-hero-inner {
@@ -679,6 +702,7 @@
     gap: 0;
   }
   .gh-hero h1 { font-size: clamp(65px, 18vw, 94px); }
+  .golf-home-ja .gh-hero h1 { font-size: clamp(35px, 9.2vw, 46px); line-height: 1.25; }
   .gh-hero-deck { max-width: 430px; margin-top: 22px; font-size: 14px; }
   .gh-hero-actions { gap: 18px; margin-top: 26px; }
   .gh-location-note { margin-top: 30px; flex-wrap: wrap; }
