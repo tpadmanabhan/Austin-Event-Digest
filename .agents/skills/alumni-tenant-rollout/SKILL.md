@@ -1,6 +1,6 @@
 ---
 name: alumni-tenant-rollout
-description: "Plan organization-based alumni/cohort tenants or add a Leadership Austin class cohort. Use for tenant rollouts or managing Leadership Austin class profiles, not for a one-off event edit or a geographic city guide."
+description: "Plan organization-based alumni/cohort tenants or manage Leadership Austin class profiles. Use for cohort subdomain rollouts or profile updates, not for a one-off event edit or a geographic city guide."
 ---
 
 # Alumni and Cohort Tenant Rollouts
@@ -25,9 +25,9 @@ Leadership Austin demonstrates a persistent event feed alongside the weekly dige
 
 These are not tenant-provisioning defaults. A new group will not get this feed by inserting a tenant or event row. Before onboarding another group, decide whether to generalize the persistent event model and tenant configuration; avoid expanding one-off slug checks. Keep attribution and community links specific to the organization and never reuse another cohort's contact or invite link.
 
-## Add a class cohort to Leadership Austin
+## Manage class profiles on the existing Leadership Austin site
 
-Adding an Emerge or other Leadership Austin class cohort is a profile update on the existing `leadershipaustin` tenant, not a new tenant rollout. Use the authenticated Leadership Austin admin page:
+The existing Leadership Austin admin page can add class-profile cards within the current `leadershipaustin` tenant. This does not provision a new cohort site. Use it only when the requested change is to add or edit a profile on the existing Leadership Austin site:
 
 1. Open **Admin → Settings → Leadership Austin class profiles** and select **Add class**.
 2. Enter a unique class name and class rep name. Add the rep's LinkedIn profile and cohort WhatsApp/LinkedIn links only when verified for that cohort.
@@ -38,6 +38,12 @@ Adding an Emerge or other Leadership Austin class cohort is a profile update on 
 Class name, rep name/photo, class photo, and group links are shared profile fields rendered from the tenant's saved `leadershipClassProfiles`. Keep them consistent across the landing page, full edition, and email. Full-edition-only event or edition content must remain on that surface; do not copy it onto the landing page just to make pages look alike.
 
 If editing through the admin API instead of the UI, first read the current profile array, append or edit only the intended profile, and send the complete preserved array to `PATCH /api/admin/settings` as `leadershipClassProfiles`. Each entry needs a unique nonempty `id`, `className`, `classRepName`, `classRepLinkedInUrl`, `teamWhatsAppUrl`, `teamLinkedInUrl`, `classPhotoUrl`, and `classRepPhotoUrl`; unused links should be empty strings and unused photos should be `null`. The route validates 1–20 entries and unique IDs. Use `admin-api-auth` for the correct environment and never write profiles directly to the database.
+
+## Provision a new Leadership cohort site
+
+Future Leadership cohorts are separate organization tenants with their own subdomains under `irl.group`, following the subdomain setup pattern used for City IRLs. Do not treat a new cohort as another profile on the existing `leadershipaustin` tenant, and do not assume it inherits Leadership Austin's events, admin access, links, email identity, or settings.
+
+The self-service intake page for new cohorts has not been set up. Do not link to it or tell applicants/admins that they can submit a cohort there. Until that page exists, confirm the cohort details and the approved intake/provisioning path directly before creating a tenant. Then follow the Rollout workflow below, including tenant-scoped auth, subdomain configuration, and checks in both development and production. Use `tenant-routing` for host setup and `admin-api-auth` for target-environment admin access.
 
 ## Rollout workflow
 
