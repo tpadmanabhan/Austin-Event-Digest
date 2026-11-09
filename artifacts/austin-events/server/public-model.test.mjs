@@ -257,14 +257,7 @@ test("Austin's public city and edition documents render current content in one A
     assert.equal(response.status, 200);
     assert.ok(body.includes("A test newsletter introduction."));
     assert.equal((body.match(/<h2[^>]*>AI Ethics<\/h2>/g) || []).length, 1);
-    assert.ok(body.includes("Why America Turned Blue?"));
-    assert.ok(body.includes("winning anti-tech blue tsunami in the technology publication 404 Media"));
-    assert.ok(body.includes("shut up and suffer"));
-    assert.ok(body.includes("I haven’t read a better description."));
-    assert.ok(body.includes("https://www.nytimes.com/2026/11/07/opinion/midterms-tech-economy.html"));
-    assert.ok(body.includes("https://www.404media.co/there-is-one-fight-american-voters-reject-tech-oligarchy/?ref=daily-stories-newsletter"));
-    assert.ok(body.includes("https://www.404media.co/with-iran-war-kalshi-and-polymarket-bet-that-the-depravity-economy-has-no-bottom/"));
-    assert.ok(body.indexOf("Why America Turned Blue?") < body.indexOf("What Texas Turning Blue Could Mean"));
+    assert.ok(!body.includes("Why America Turned Blue?"));
     assert.ok(body.includes("What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S."));
     assert.ok(body.includes("https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416"));
     assert.ok(body.indexOf("What Texas Turning Blue Could Mean") < body.indexOf("Gina Hinojosa on data centers and immigration"));
@@ -437,8 +430,9 @@ test("Austin carpooling story stays local and no city uses legacy carpooling bra
       assert.match(visibleHtml, /src="\/images\/irl-monogram\.png"/, `${city}${pathname} IRL logo`);
       assert.doesNotMatch(visibleHtml, /eventcarpooling/i, `${city}${pathname}`);
       if (city === "austin") {
-        assert.match(visibleHtml, /Why America Turned Blue\?/i, `${city}${pathname} new lead AI Ethics article`);
-        assert.match(visibleHtml, /nytimes\.com\/2026\/11\/07\/opinion\/midterms-tech-economy\.html/i, `${city}${pathname} New York Times opinion source`);
+        assert.doesNotMatch(visibleHtml, /Why America Turned Blue\?/i, `${city}${pathname} removed AI Ethics article`);
+        assert.match(visibleHtml, /What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U\.S\./i, `${city}${pathname} Texas data-center article`);
+        assert.match(visibleHtml, /ibtimes\.com\/gina-hinojosa-texas-data-center-moratorium-ai-3809416/i, `${city}${pathname} IBTimes source`);
         assert.match(visibleHtml, /dumb carpooling idea/i, `${city}${pathname} Austin AI Ethics story`);
         assert.match(visibleHtml, /mashable\.com\/article\/irl-shuts-down-20-million-users-bots/i, `${city}${pathname} Mashable source`);
         assert.match(visibleHtml, /AI-generated slop and apps with outlandish claims/i, `${city}${pathname} IRL trust context`);
@@ -446,13 +440,11 @@ test("Austin carpooling story stays local and no city uses legacy carpooling bra
         assert.match(visibleHtml, /nytimes\.com\/video\/us\/politics\/100000011266333/i, `${city}${pathname} NYT video`);
         assert.match(visibleHtml, /Pflugerville adopts new policy for AI, surveillance technology and data privacy/i, `${city}${pathname} Pflugerville policy article`);
         assert.match(visibleHtml, /communityimpact\.com\/pflugerville-hutto\/government\/pflugerville-adopts-new-policy-for-ai-surveillance-technology-and-data-privacy/i, `${city}${pathname} Pflugerville source`);
-        const whyAmericaPosition = visibleHtml.indexOf("Why America Turned Blue?");
         const texasArticlePosition = visibleHtml.indexOf("What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.");
         const nytVideoPosition = visibleHtml.indexOf("Gina Hinojosa on data centers and immigration");
         const pflPagePosition = visibleHtml.indexOf("Pflugerville adopts new policy for AI, surveillance technology and data privacy");
         const austinCarpoolPosition = visibleHtml.indexOf("dumb carpooling idea");
-        assert.ok(whyAmericaPosition >= 0 && texasArticlePosition > whyAmericaPosition, `${city}${pathname} new lead article precedes Texas items`);
-        assert.ok(texasArticlePosition >= 0 && nytVideoPosition > texasArticlePosition, `${city}${pathname} NYT video follows Texas blue article`);
+        assert.ok(texasArticlePosition >= 0 && nytVideoPosition > texasArticlePosition, `${city}${pathname} NYT video follows Texas data-center article`);
         assert.ok(pflPagePosition > nytVideoPosition && austinCarpoolPosition > pflPagePosition, `${city}${pathname} Pflugerville article follows NYT video and precedes Austin carpool story`);
         assert.match(visibleHtml, /commercial and nonprofit pilots to help fine-tune the project/i, `${city}${pathname} current IRL.group pilot context`);
         assert.doesNotMatch(visibleHtml, /Texas data-center governance, permits, and air quality|We are telling AI chatbots our biggest secrets|Meta's AI shopping agent threatens Amazon|Proton's CTO wrote a manifesto|Spurs² Hackathon|Why Every Election Matters to Democracy with Stacey Abrams/i, `${city}${pathname} stale AI Ethics items`);

@@ -196,14 +196,6 @@ describe("AI Ethics reading section", () => {
     const ethicsHeading = '<h2 style="margin:0 0 12px; color:#1f2937; font-size:20px; font-weight:700;">AI Ethics</h2>';
     expect(html.split(ethicsHeading).length - 1).toBe(1);
     const requestedItems = [
-      "Why America Turned Blue?",
-      "winning anti-tech blue tsunami in the technology publication 404 Media",
-      "shut up and suffer",
-      "the depravity economy",
-      "I haven’t read a better description.",
-      "https://www.nytimes.com/2026/11/07/opinion/midterms-tech-economy.html",
-      "https://www.404media.co/there-is-one-fight-american-voters-reject-tech-oligarchy/?ref=daily-stories-newsletter",
-      "https://www.404media.co/with-iran-war-kalshi-and-polymarket-bet-that-the-depravity-economy-has-no-bottom/",
       "What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.",
       "https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416",
       "Gina Hinojosa on data centers and immigration",
@@ -222,6 +214,7 @@ describe("AI Ethics reading section", () => {
       "launching commercial and nonprofit pilots to help fine-tune the project",
       "https://irl.group/",
     ];
+    expect(html).not.toContain("Why America Turned Blue?");
     const requestedPositions = requestedItems.map(value => html.indexOf(value));
     expect(requestedPositions.every(position => position >= 0)).toBe(true);
     expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
