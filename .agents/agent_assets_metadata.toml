@@ -480,3 +480,17 @@ mtime_ms = 1794139006776
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/6dfdf674-93ba-4d0d-a0db-9f0a5161ab55/a9fb80ce-12de-4965-aba3-e0c503654a41"
 storage_version_token = "1794139022181489"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "3JGBOWpsYmfFY_-S8GIx0"
+uri = "file://generated-artifacts/irl-group-salesforce-crm-recommendation.pdf"
+type = "pdf"
+title = "IRL.group Salesforce CRM Recommendation"
+description = "One-page decision brief comparing a Salesforce CRM, a custom Replit CRM, and a hybrid approach."
+logical_id = "821b8088-f55e-4eff-bb22-2b8a6cb62fe3"
+content_hash = "sha256:dbdc929b27c58566920f2a02095c90be8b1f103e3ec556121813652b6065ef42"
+size = 40146
+mtime_ms = 1794249075820
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/821b8088-f55e-4eff-bb22-2b8a6cb62fe3/f4da7c29-406c-4eb6-99f4-5a2dfff84d33"
+storage_version_token = "1794249080779860"
+content_type = "application/pdf"
