@@ -3,7 +3,7 @@ import { ArrowDown, ArrowRight, Flag, MapPin, MoveUpRight } from "lucide-react";
 import { EventCard } from "../components/event-card";
 import "./golf-home.css";
 
-type GolfCourse = { name: string; href: string; imageSrc?: string };
+type GolfCourse = { name: string; href: string; imageSrc?: string; imageAlt?: string };
 
 export type GolfHomePageProps = {
   events: any[];
@@ -96,7 +96,7 @@ export function GolfHomePage({
                 key={`${course.name}-${course.href}`}
               >
                 {course.imageSrc ? (
-                  <img src={course.imageSrc} alt="" loading="lazy" />
+                  <img src={course.imageSrc} alt={course.imageAlt ?? ""} loading="lazy" decoding="async" />
                 ) : (
                   <span className="gh-course-placeholder" aria-hidden="true">
                     <span className="gh-placeholder-sky" />
