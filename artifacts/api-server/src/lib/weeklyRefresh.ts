@@ -551,6 +551,7 @@ interface TenantConfig {
   slug: string;
   tz: string;
   tmCity?: string; // override when city != TM search city
+  keyword?: string;
 }
 
 const TENANT_CONFIGS: TenantConfig[] = [
@@ -572,6 +573,7 @@ const TENANT_CONFIGS: TenantConfig[] = [
   { slug: "la", tz: "America/Los_Angeles", tmCity: "Los Angeles, CA" },
   { slug: "nyc", tz: "America/New_York", tmCity: "New York, NY" },
   { slug: "dallas", tz: "America/Chicago", tmCity: "Dallas, TX" },
+  { slug: "golf", tz: "America/Chicago", tmCity: "Austin, TX", keyword: "golf" },
 ];
 
 // ── Ticketmaster fetch (server-side, direct env access) ───────────────────────
@@ -587,6 +589,7 @@ async function fetchTicketmaster(
   rangeStart: string,
   rangeEnd: string,
   nextWeekIso: string,
+  keyword?: string,
 ): Promise<EventItem[]> {
   const apiKey = process.env.TICKETMASTER_API_KEY?.trim();
   if (!apiKey) return [];
@@ -604,6 +607,7 @@ async function fetchTicketmaster(
       startDateTime: rangeStart,
       endDateTime:   rangeEnd,
     });
+    if (keyword) params.set("keyword", keyword);
      if (cls) params.set("classificationName", cls);
     if (stateCode) params.set("stateCode", stateCode);
 
@@ -761,7 +765,7 @@ async function refreshTenant(
   // Fetch TM events + build community events in parallel
   const searchCity = tmCity || tenant.city;
   const [tmEvents, communityEvents, atlTechEvents] = await Promise.all([
-    fetchTicketmaster(searchCity, tz, rangeStart, rangeEnd, nextWeekIso),
+    fetchTicketmaster(searchCity, tz, rangeStart, rangeEnd, nextWeekIso, config.keyword),
     Promise.resolve(buildCommunityEvents(slug, weekStart, nextWeekStart)),
     slug === "atlanta"
       ? atlTechEventsAdapter.fetchEvents({

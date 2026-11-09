@@ -101,6 +101,7 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const tenant = useTenant();
   const isLeadershipAustin = tenant.slug === "leadershipaustin";
+  const isGolf = tenant.slug === "golf";
   const queryClient = useQueryClient();
   const { data: subsData, isLoading: loadingSubs } = useNewsletterSubscriptions();
   const { data: digestsData, isLoading: loadingDigests } = useAllDigests();
@@ -1284,7 +1285,14 @@ export default function AdminDashboard() {
           </TabsList>
           
           <TabsContent value="digests" className="space-y-6 mt-0">
-            {isLeadershipAustin && <LeadershipManagedEventsAdmin categories={tenant.categories} />}
+            {(isLeadershipAustin || isGolf) && (
+              <LeadershipManagedEventsAdmin
+                categories={tenant.categories}
+                tenantName={tenant.name}
+                tenantSlug={tenant.slug}
+                defaultCategory={isGolf ? "Sports" : "Community"}
+              />
+            )}
 
             {/* SOURCE URL FORM */}
             <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">

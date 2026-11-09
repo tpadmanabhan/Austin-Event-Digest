@@ -162,19 +162,12 @@ const LOCATION_NEEDS_REVIEW = new Set([
   "Leadership Austin Offices",
 ]);
 
-export async function listUpcomingLeadershipEvents() {
-  const [tenant] = await db
-    .select({ id: tenantsTable.id })
-    .from(tenantsTable)
-    .where(eq(tenantsTable.slug, "leadershipaustin"))
-    .limit(1);
-  if (!tenant) return [];
-
+export async function listUpcomingCommunityEvents(tenantId: number) {
   const rows = await db
     .select()
     .from(leadershipEventsTable)
     .where(and(
-      eq(leadershipEventsTable.tenantId, tenant.id),
+      eq(leadershipEventsTable.tenantId, tenantId),
       eq(leadershipEventsTable.isActive, true),
       eq(leadershipEventsTable.submissionStatus, "approved"),
     ))
@@ -199,6 +192,15 @@ export async function listUpcomingLeadershipEvents() {
     lat: typeof geocoded[index]?.["lat"] === "number" ? geocoded[index]["lat"] as number : null,
     lng: typeof geocoded[index]?.["lng"] === "number" ? geocoded[index]["lng"] as number : null,
   }));
+}
+
+export async function listUpcomingLeadershipEvents() {
+  const [tenant] = await db
+    .select({ id: tenantsTable.id })
+    .from(tenantsTable)
+    .where(eq(tenantsTable.slug, "leadershipaustin"))
+    .limit(1);
+  return tenant ? listUpcomingCommunityEvents(tenant.id) : [];
 }
 
 export async function seedLeadershipAustinManagedEvents(): Promise<void> {

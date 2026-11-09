@@ -43,8 +43,9 @@ import { safeOutboundFetch } from "../lib/safeOutboundFetch";
 import { prewarmTranslationCache } from "../lib/translationPrewarm";
 import { signSubscriberToken } from "../lib/subscriberToken";
 import { publicTenantUrl } from "../lib/publicUrls";
-import { listUpcomingLeadershipEvents } from "../lib/leadershipAustinManagedEvents";
 import { verifyTurnstileToken } from "../lib/turnstile";
+import { getCommunityTenantSettings } from "../../../../shared/community-tenants";
+import { listUpcomingCommunityEvents } from "../lib/leadershipAustinManagedEvents";
 import {
   LEADERSHIP_CONTRIBUTOR_COOKIE,
   signLeadershipContributionToken,
@@ -197,7 +198,7 @@ function allowContributionAttempt(key: string, max: number, windowMs: number): b
  * not an invitation to auto-tag a later event.
  */
 function autoTagFutureEvents(events: EventItem[], weekOf: Date, tenantSlug?: string): EventItem[] {
-  if (tenantSlug === "leadershipaustin") return events;
+  if (getCommunityTenantSettings(tenantSlug)) return events;
   const MONTH_IDX: Record<string, number> = {
     Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11,
   };
@@ -219,6 +220,12 @@ function autoTagFutureEvents(events: EventItem[], weekOf: Date, tenantSlug?: str
     if (eventDate > weekEnd) return { ...event, featured: true } as EventItem;
     return event;
   });
+}
+
+function isGolfEvent(event: EventItem): boolean {
+  return /\bgolf\b|\bpga\b|\blpga\b|\bputt(?:ing)?\b/i.test(
+    `${event.title ?? ""} ${event.description ?? ""} ${event.venue ?? ""}`,
+  );
 }
 
 function parseAdminDateAnchor(value?: string): Date {
@@ -394,17 +401,17 @@ router.get("/digest/latest", async (req, res) => {
 });
 
 async function getLeadershipContributor(req: Request): Promise<{ email: string; name: string | null } | null> {
-  if (req.tenant?.slug !== "leadershipaustin") return null;
+  if (!getCommunityTenantSettings(req.tenant?.slug)) return null;
   const token = cookieValue(req.headers.cookie, LEADERSHIP_CONTRIBUTOR_COOKIE);
   if (!token) return null;
-  const claims = verifyLeadershipContributionToken(token, "session", req.tenant.id);
+  const claims = verifyLeadershipContributionToken(token, "session", req.tenant!.id);
   if (!claims) return null;
 
   const [subscriber] = await db
     .select({ email: subscribersTable.email, name: subscribersTable.name })
     .from(subscribersTable)
     .where(and(
-      eq(subscribersTable.tenantId, req.tenant.id),
+      eq(subscribersTable.tenantId, req.tenant!.id),
       eq(subscribersTable.email, claims.email),
       eq(subscribersTable.isActive, true),
     ))
@@ -412,12 +419,13 @@ async function getLeadershipContributor(req: Request): Promise<{ email: string; 
   return subscriber ? { email: subscriber.email, name: subscriber.name } : null;
 }
 
-function isLeadershipAustinRequest(req: Request): boolean {
-  return req.tenant?.slug === "leadershipaustin";
+function isSubscriberCommunityRequest(req: Request): boolean {
+  return !!getCommunityTenantSettings(req.tenant?.slug);
 }
 
 router.post("/leadership-event-contributions/access", async (req, res): Promise<void> => {
-  if (!isLeadershipAustinRequest(req)) {
+  const community = getCommunityTenantSettings(req.tenant?.slug);
+  if (!community) {
     res.status(404).json({ error: "not_found" });
     return;
   }
@@ -460,11 +468,11 @@ router.post("/leadership-event-contributions/access", async (req, res): Promise<
     });
     if (verificationToken) {
       const siteUrl = process.env.NODE_ENV === "production"
-        ? publicTenantUrl("leadershipaustin")
+        ? publicTenantUrl(req.tenant!.slug)
         : `${req.protocol}://${req.get("host")}`;
       const verificationUrl = `${siteUrl}/api/events/leadership-event-contributions/verify?token=${encodeURIComponent(verificationToken)}`;
-      const result = await sendLeadershipEventContributionAccessEmail(subscriber.email, subscriber.name, verificationUrl);
-      if (!result.success) req.log.warn({ error: result.error }, "Could not send Leadership Austin contributor verification email");
+      const result = await sendLeadershipEventContributionAccessEmail(subscriber.email, subscriber.name, verificationUrl, community.name);
+      if (!result.success) req.log.warn({ error: result.error }, "Could not send community contributor verification email");
     } else {
       req.log.error("Contributor verification is unavailable because no signing secret is configured");
     }
@@ -472,21 +480,21 @@ router.post("/leadership-event-contributions/access", async (req, res): Promise<
 
   res.json({
     success: true,
-    message: "If that address is an active Leadership Austin subscriber, a verification link is on its way.",
+    message: `If that address is an active ${community.name} subscriber, a verification link is on its way.`,
   });
 });
 
 router.get("/leadership-event-contributions/verify", async (req, res): Promise<void> => {
   res.set("Cache-Control", "no-store");
   res.set("Referrer-Policy", "no-referrer");
-  if (!isLeadershipAustinRequest(req)) {
+  if (!isSubscriberCommunityRequest(req)) {
     res.status(404).send("Not found");
     return;
   }
   const token = typeof req.query.token === "string" ? req.query.token : "";
   const claims = verifyLeadershipContributionToken(token, "verify", req.tenant!.id);
   if (!claims) {
-    res.status(400).send("This verification link is invalid or expired. Request a new link from Leadership Austin.");
+    res.status(400).send("This verification link is invalid or expired. Request a new subscriber link.");
     return;
   }
   const [subscriber] = await db
@@ -499,7 +507,7 @@ router.get("/leadership-event-contributions/verify", async (req, res): Promise<v
     ))
     .limit(1);
   if (!subscriber) {
-    res.status(403).send("This email is not an active Leadership Austin subscriber.");
+    res.status(403).send("This email is not an active subscriber for this community.");
     return;
   }
 
@@ -530,7 +538,7 @@ router.get("/leadership-event-contributions/verify", async (req, res): Promise<v
 });
 
 router.get("/leadership-event-contributions/session", async (req, res): Promise<void> => {
-  if (!isLeadershipAustinRequest(req)) {
+  if (!isSubscriberCommunityRequest(req)) {
     res.status(404).json({ error: "not_found" });
     return;
   }
@@ -539,7 +547,7 @@ router.get("/leadership-event-contributions/session", async (req, res): Promise<
 });
 
 router.post("/leadership-event-contributions/parse", async (req, res): Promise<void> => {
-  if (!isLeadershipAustinRequest(req)) {
+  if (!isSubscriberCommunityRequest(req)) {
     res.status(404).json({ error: "not_found" });
     return;
   }
@@ -570,13 +578,14 @@ router.post("/leadership-event-contributions/parse", async (req, res): Promise<v
       },
     });
   } catch (err) {
-    req.log.warn({ err }, "Leadership Austin subscriber event URL could not be parsed");
+    req.log.warn({ err }, "Subscriber event URL could not be parsed");
     res.status(400).json({ error: "invalid_request", message: "This event link could not be read safely." });
   }
 });
 
 router.post("/leadership-event-contributions", async (req, res): Promise<void> => {
-  if (!isLeadershipAustinRequest(req)) {
+  const community = getCommunityTenantSettings(req.tenant?.slug);
+  if (!community) {
     res.status(404).json({ error: "not_found" });
     return;
   }
@@ -597,7 +606,7 @@ router.post("/leadership-event-contributions", async (req, res): Promise<void> =
   const venue = input.venue.trim();
   const link = normalizedHttpUrl(input.url);
   const startDate = new Date(input.startDate).toISOString();
-  const startDay = eventDayInTimezone(startDate, "America/Chicago");
+  const startDay = eventDayInTimezone(startDate, community.timezone);
   if (!link || !title || !name || !venue || !startDay) {
     res.status(400).json({ error: "invalid_request", message: "Event details or date are invalid." });
     return;
@@ -624,7 +633,7 @@ router.post("/leadership-event-contributions", async (req, res): Promise<void> =
       ),
     );
     if (duplicate) {
-      res.status(409).json({ error: "duplicate_event", message: "This event is already in the Leadership Austin event list." });
+      res.status(409).json({ error: "duplicate_event", message: "This event is already in the community event list." });
       return;
     }
 
@@ -633,12 +642,12 @@ router.post("/leadership-event-contributions", async (req, res): Promise<void> =
       title,
       date: input.date.trim(),
       startDate,
-      timezone: "America/Chicago",
+      timezone: community.timezone,
       venue,
       description: input.description.trim(),
       link,
-      category: "Community",
-      sourceName: "Leadership Austin community",
+      category: community.eventCategory,
+      sourceName: community.eventSourceName,
       sourceUrl: link,
       sourceAlumni: name,
       imageUrl: null,
@@ -649,16 +658,16 @@ router.post("/leadership-event-contributions", async (req, res): Promise<void> =
     });
     res.status(201).json({
       success: true,
-      message: "Your event is with the Leadership Austin team for review. It will appear after approval.",
+      message: `Your event is with ${community.name} for review. It will appear after approval.`,
     });
   } catch (err) {
-    req.log.error({ err }, "Error saving Leadership Austin subscriber event contribution");
+    req.log.error({ err }, "Error saving subscriber community event contribution");
     res.status(500).json({ error: "server_error", message: "Could not submit the event." });
   }
 });
 
 router.get("/leadership-event-contributions/pending", requireAdmin, async (req, res): Promise<void> => {
-  if (!isLeadershipAustinRequest(req)) {
+  if (!isSubscriberCommunityRequest(req)) {
     res.status(404).json({ error: "not_found" });
     return;
   }
@@ -679,13 +688,13 @@ router.get("/leadership-event-contributions/pending", requireAdmin, async (req, 
       })),
     });
   } catch (err) {
-    req.log.error({ err }, "Error listing pending Leadership Austin event contributions");
+    req.log.error({ err }, "Error listing pending community event contributions");
     res.status(500).json({ error: "server_error", message: "Could not load pending submissions." });
   }
 });
 
 router.patch("/leadership-event-contributions/:id/review", requireAdmin, async (req, res): Promise<void> => {
-  if (!isLeadershipAustinRequest(req)) {
+  if (!isSubscriberCommunityRequest(req)) {
     res.status(404).json({ error: "not_found" });
     return;
   }
@@ -720,14 +729,14 @@ router.patch("/leadership-event-contributions/:id/review", requireAdmin, async (
     }
     res.json({ success: true, status: approved ? "approved" : "rejected" });
   } catch (err) {
-    req.log.error({ err, id }, "Error reviewing Leadership Austin event contribution");
+    req.log.error({ err, id }, "Error reviewing community event contribution");
     res.status(500).json({ error: "server_error", message: "Could not review the submission." });
   }
 });
 
 router.get("/leadership-managed/admin", requireAdmin, async (req, res) => {
-  if (req.tenant?.slug !== "leadershipaustin") {
-    res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
+  if (!getCommunityTenantSettings(req.tenant?.slug)) {
+    res.status(404).json({ error: "not_found", message: "Managed community events are not available for this tenant" });
     return;
   }
   try {
@@ -735,39 +744,40 @@ router.get("/leadership-managed/admin", requireAdmin, async (req, res) => {
       .select()
       .from(leadershipEventsTable)
       .where(and(
-        eq(leadershipEventsTable.tenantId, req.tenant.id),
+        eq(leadershipEventsTable.tenantId, req.tenant!.id),
         eq(leadershipEventsTable.submissionStatus, "approved"),
       ))
       .orderBy(asc(leadershipEventsTable.startDate), asc(leadershipEventsTable.id));
     res.json({ events: rows.map(leadershipEventToApi) });
   } catch (err) {
-    req.log.error({ err }, "Error listing persistent Leadership Austin events");
+    req.log.error({ err }, "Error listing managed community events");
     res.status(500).json({ error: "server_error", message: "Failed to list persistent events" });
   }
 });
 
 router.get("/leadership-managed", async (req, res) => {
-  if (req.tenant?.slug !== "leadershipaustin") {
-    res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
+  if (!getCommunityTenantSettings(req.tenant?.slug)) {
+    res.status(404).json({ error: "not_found", message: "Managed community events are not available for this tenant" });
     return;
   }
   try {
-    const events = (await listUpcomingLeadershipEvents()).map(leadershipEventToApi);
+    const events = (await listUpcomingCommunityEvents(req.tenant!.id)).map(leadershipEventToApi);
     res.json({ events });
   } catch (err) {
-    req.log.error({ err }, "Error listing upcoming persistent Leadership Austin events");
+    req.log.error({ err }, "Error listing upcoming managed community events");
     res.status(500).json({ error: "server_error", message: "Failed to list upcoming events" });
   }
 });
 
 router.post("/leadership-managed", requireAdmin, async (req, res) => {
-  if (req.tenant?.slug !== "leadershipaustin") {
-    res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
+  const community = getCommunityTenantSettings(req.tenant?.slug);
+  if (!community) {
+    res.status(404).json({ error: "not_found", message: "Managed community events are not available for this tenant" });
     return;
   }
   const parsed = CreateLeadershipManagedEventBody.safeParse(req.body ?? {});
   if (!parsed.success) {
-    res.status(400).json({ error: "invalid_request", message: "A title, date, start time, venue, description, category, source, and alumni source person are required" });
+    res.status(400).json({ error: "invalid_request", message: "A title, date, start time, venue, description, category, source, and source person are required" });
     return;
   }
   const input = parsed.data;
@@ -795,7 +805,7 @@ router.post("/leadership-managed", requireAdmin, async (req, res) => {
     const existing = await db
       .select()
       .from(leadershipEventsTable)
-      .where(eq(leadershipEventsTable.tenantId, req.tenant.id));
+      .where(eq(leadershipEventsTable.tenantId, req.tenant!.id));
     const normalizedTitle = normalizedEventTitle(title);
     const normalizedLink = normalizedHttpUrl(input.link);
     const startDay = eventDayInTimezone(startDate, input.timezone?.trim() || "America/Chicago");
@@ -806,14 +816,14 @@ router.post("/leadership-managed", requireAdmin, async (req, res) => {
       return !!sameLink || (!!startDay && sameTitleAndDay);
     });
     if (duplicate) {
-      res.status(409).json({ error: "duplicate_event", message: "This event is already in the persistent Leadership Austin list" });
+      res.status(409).json({ error: "duplicate_event", message: "This event is already in the community event list." });
       return;
     }
 
     const [created] = await db
       .insert(leadershipEventsTable)
       .values({
-        tenantId: req.tenant.id,
+        tenantId: req.tenant!.id,
         title,
         date,
         startDate,
@@ -834,17 +844,17 @@ router.post("/leadership-managed", requireAdmin, async (req, res) => {
       .returning();
     if (!created) throw new Error("Event insert returned no row");
     const event = leadershipEventToApi(created);
-    req.log.info({ eventId: event.eventId, title }, "Persistent Leadership Austin event added");
+    req.log.info({ eventId: event.eventId, title, tenantSlug: req.tenant!.slug }, "Managed community event added");
     res.status(201).json({ success: true, event });
   } catch (err) {
-    req.log.error({ err }, "Error creating persistent Leadership Austin event");
+    req.log.error({ err }, "Error creating managed community event");
     res.status(500).json({ error: "server_error", message: "Failed to add persistent event" });
   }
 });
 
 router.patch("/leadership-managed/:id", requireAdmin, async (req, res) => {
-  if (req.tenant?.slug !== "leadershipaustin") {
-    res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
+  if (!getCommunityTenantSettings(req.tenant?.slug)) {
+    res.status(404).json({ error: "not_found", message: "Managed community events are not available for this tenant" });
     return;
   }
   const id = Number.parseInt(req.params["id"] as string, 10);
@@ -854,35 +864,35 @@ router.patch("/leadership-managed/:id", requireAdmin, async (req, res) => {
   }
   const parsed = UpdateLeadershipManagedEventBody.safeParse(req.body ?? {});
   if (!parsed.success) {
-    res.status(400).json({ error: "invalid_request", message: "An alumni source person is required" });
+    res.status(400).json({ error: "invalid_request", message: "A source person is required" });
     return;
   }
   const sourceAlumni = parsed.data.sourceAlumni.trim();
   if (!sourceAlumni) {
-    res.status(400).json({ error: "invalid_request", message: "An alumni source person is required" });
+    res.status(400).json({ error: "invalid_request", message: "A source person is required" });
     return;
   }
   try {
     const [updated] = await db
       .update(leadershipEventsTable)
       .set({ sourceAlumni, updatedAt: new Date() })
-      .where(and(eq(leadershipEventsTable.id, id), eq(leadershipEventsTable.tenantId, req.tenant.id)))
+      .where(and(eq(leadershipEventsTable.id, id), eq(leadershipEventsTable.tenantId, req.tenant!.id)))
       .returning();
     if (!updated) {
       res.status(404).json({ error: "not_found", message: "Persistent event not found" });
       return;
     }
-    req.log.info({ eventId: id }, "Persistent Leadership Austin event source updated");
+    req.log.info({ eventId: id, tenantSlug: req.tenant!.slug }, "Managed community event source updated");
     res.json({ success: true, event: leadershipEventToApi(updated) });
   } catch (err) {
-    req.log.error({ err, eventId: id }, "Error updating persistent Leadership Austin event source");
+    req.log.error({ err, eventId: id }, "Error updating managed community event source");
     res.status(500).json({ error: "server_error", message: "Failed to update event source" });
   }
 });
 
 router.delete("/leadership-managed/:id", requireAdmin, async (req, res) => {
-  if (req.tenant?.slug !== "leadershipaustin") {
-    res.status(404).json({ error: "not_found", message: "Persistent Leadership Austin events are not available for this tenant" });
+  if (!getCommunityTenantSettings(req.tenant?.slug)) {
+    res.status(404).json({ error: "not_found", message: "Managed community events are not available for this tenant" });
     return;
   }
   const id = Number.parseInt(req.params["id"] as string, 10);
@@ -894,7 +904,7 @@ router.delete("/leadership-managed/:id", requireAdmin, async (req, res) => {
     const [archived] = await db
       .update(leadershipEventsTable)
       .set({ isActive: false, updatedAt: new Date() })
-      .where(and(eq(leadershipEventsTable.id, id), eq(leadershipEventsTable.tenantId, req.tenant.id)))
+      .where(and(eq(leadershipEventsTable.id, id), eq(leadershipEventsTable.tenantId, req.tenant!.id)))
       .returning();
     if (!archived) {
       res.status(404).json({ error: "not_found", message: "Persistent event not found" });
@@ -902,7 +912,7 @@ router.delete("/leadership-managed/:id", requireAdmin, async (req, res) => {
     }
     res.json({ success: true, event: leadershipEventToApi(archived) });
   } catch (err) {
-    req.log.error({ err, eventId: id }, "Error archiving persistent Leadership Austin event");
+    req.log.error({ err, eventId: id }, "Error archiving managed community event");
     res.status(500).json({ error: "server_error", message: "Failed to archive event" });
   }
 });
@@ -934,6 +944,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
 
   const { weekOf: weekOfStr, customNotes } = parseResult.data;
   const isLeadershipAustin = req.tenant!.slug === "leadershipaustin";
+  const isGolf = req.tenant!.slug === "golf";
   // weekEnd is not in the Zod schema (admin-only extension) — read directly
   const weekEndStr = (req.body as Record<string, unknown>)?.weekEnd as string | undefined;
 
@@ -1000,7 +1011,8 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     // Deduplicate merged events from all sources, then filter to tenant's categories
     const tenantCategories = (req.tenant!.categories as string[]) || [];
     const deduped = deduplicateEvents(combinedEvents);
-    const mergedEvents = filterByTenantCategories(deduped, tenantCategories);
+    const mergedEvents = filterByTenantCategories(deduped, tenantCategories)
+      .filter((event) => !isGolf || isGolfEvent(event));
 
     // Build subject line
     if (isLeadershipAustin) {
@@ -1011,7 +1023,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const _s = req.tenant!.slug;
       const separator = _s === "houston" ? " to " : "–";
       const label = `${weekOf.toLocaleDateString("en-US", opts)}${separator}${inclusiveEnd.toLocaleDateString("en-US", { ...opts, year: "numeric" })}`;
-      const subjectEmoji = ["la", "boston", "miami", "sanfrancisco", "osaka", "dallas"].includes(_s) ? "" : _s === "atlanta" ? "🍑" : _s === "houston" ? "⭐" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
+      const subjectEmoji = ["la", "boston", "miami", "sanfrancisco", "osaka", "dallas", "golf"].includes(_s) ? "" : _s === "atlanta" ? "🍑" : _s === "houston" ? "⭐" : _s === "austincares" ? "🏷️" : _s === "stlouis" ? "⚾" : _s === "sacramento" ? "👑" : _s === "portland" ? "🌲" : _s === "bulverde" || _s === "brushycreek" ? "🌿" : _s === "tokyo" ? "🗼" : "🤠";
       subject = `${subjectEmoji ? `${subjectEmoji} ` : ""}${req.tenant!.digestTitle || `${req.tenant!.city} Events`}: ${label}`;
     } else {
       subject = fallback.subject;
@@ -1026,7 +1038,9 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     if (mergedEvents.length > 0 || communityEvts.length > 0) {
       events = deduplicateEvents([...mergedEvents, ...communityEvts]);
       // Gmail intro is Austin-specific — never use it for other cities
-      const introBase = stripGreeting((req.tenant!.slug === "austin" && gmailIntro) ? gmailIntro : fallback.intro);
+      const introBase = isGolf
+        ? "A look at Austin-area golf events and community rounds."
+        : stripGreeting((req.tenant!.slug === "austin" && gmailIntro) ? gmailIntro : fallback.intro);
       intro = customNotes ? `${introBase}\n\n${customNotes}` : introBase;
       req.log.info(
         { adapterEvents: adapterResult.events.length, communityEvents: communityEvts.length, sources: adapterResult.sources, total: events.length },
@@ -1040,7 +1054,9 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       // a foreign city's brand.
       const isAustinFamily = req.tenant!.slug === "austin" || req.tenant!.slug === "stlouis";
       events = isAustinFamily ? fallback.events : [];
-      intro = customNotes ? `${stripGreeting(fallback.intro)}\n\n${customNotes}` : stripGreeting(fallback.intro);
+       intro = isGolf
+         ? (customNotes ? `A look at Austin-area golf events and community rounds.\n\n${customNotes}` : "A look at Austin-area golf events and community rounds.")
+         : customNotes ? `${stripGreeting(fallback.intro)}\n\n${customNotes}` : stripGreeting(fallback.intro);
       req.log.info(
         { weekOf: weekOf.toISOString().substring(0, 10), tenant: req.tenant!.slug, usedSample: isAustinFamily },
         isAustinFamily
@@ -2195,8 +2211,9 @@ router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
   if (!digest) { res.status(404).json({ error: "not_found" }); return; }
   const tenant = req.tenant!;
   const siteUrl = publicTenantUrl(tenant.slug);
-  const alumniSourcedEvents = tenant.slug === "leadershipaustin"
-    ? (await listUpcomingLeadershipEvents()).map(leadershipEventToEmailItem)
+  const community = getCommunityTenantSettings(tenant.slug);
+  const communityEvents = community
+    ? (await listUpcomingCommunityEvents(tenant.id)).map(leadershipEventToEmailItem)
     : [];
   const html = buildDigestEmailHtml({
     events: (digest.events as any[]) || [],
@@ -2205,7 +2222,8 @@ router.get("/digest/:id/preview-email", requireAdmin, async (req, res) => {
     weekOf: digest.weekOf instanceof Date ? digest.weekOf.toISOString() : String(digest.weekOf),
     digestId: digest.id,
     siteUrl,
-    alumniSourcedEvents,
+    communityEvents,
+    communityName: community?.name,
   }, undefined, tenant.adminEmail, tenant);
   res.setHeader("Content-Type", "text/html");
   res.send(html);
@@ -2316,8 +2334,9 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
       : emailEvents;
 
     const isAustin = req.tenant?.slug === "austin";
-    const alumniSourcedEvents = req.tenant?.slug === "leadershipaustin"
-      ? (await listUpcomingLeadershipEvents()).map(leadershipEventToEmailItem)
+    const community = getCommunityTenantSettings(req.tenant?.slug);
+    const communityEvents = community
+      ? (await listUpcomingCommunityEvents(req.tenant!.id)).map(leadershipEventToEmailItem)
       : [];
 
     for (const recipient of recipients) {
@@ -2342,7 +2361,8 @@ router.post("/digest/send", requireAdmin, async (req, res) => {
         siteUrl,
         preferencesUrl,
         alsoNearby,
-        alumniSourcedEvents,
+        communityEvents,
+        communityName: community?.name,
       }, recipient.name, recipient.email, req.tenant ?? undefined);
 
       const result = await sendNewsletterEmail({

@@ -134,7 +134,7 @@ export function eventSchema(event, origin) {
 
 import cityAiEthicsData from "../../../shared/city-ai-ethics.json" with { type: "json" };
 
-const PLATFORM_CITY_ORDER = ["austin", "nyc", "dallas", "manchester", "la", "boston", "atlanta", "sanfrancisco", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
+const PLATFORM_CITY_ORDER = ["austin", "golf", "nyc", "dallas", "manchester", "la", "boston", "atlanta", "sanfrancisco", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
 const CITY_ETHICS_RESOURCES = {
   la: { url: "https://ita.lacity.gov/news/ita-publishes-ai-safety-checklist", title: "L.A. A.I. Safety Checklist" },
   boston: { url: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", title: "Boston’s generative AI policy" },
@@ -160,7 +160,7 @@ export async function loadPublicModel(site, pathname) {
       const localEthics = cityAiEthicsData[t.slug];
       return {
         slug: t.slug, name: t.name || t.city, url,
-          ...(t.slug !== "leadershipaustin" ? {
+          ...(t.slug !== "leadershipaustin" && t.slug !== "golf" ? {
             ethicsUrl: t.slug === "dallas" ? ethics?.url : localEthics ? `${url}#city-ai-ethics` : ethics?.url || url,
             ethicsTitle: t.slug === "dallas" ? ethics?.title : localEthics ? `${localEthics.city} AI Ethics reading list` : ethics?.title || `Explore the ${t.city || t.name} edition for local updates`,
           } : {}),
@@ -217,14 +217,19 @@ export async function loadPublicModel(site, pathname) {
     : null;
   const cityModel = { ...base, kind: digestMatch ? "digest" : site.slug === "austincares" ? "deals" : "city",
     noindex: false,
-    title: isLeadershipAustin ? "Leadership Austin — Alumni Happenings" :
+    title: site.slug === "golf" ? "Golf IRL — Austin Golf Events" :
+      isLeadershipAustin ? "Leadership Austin — Alumni Happenings" :
       site.slug === "austincares" ? "AustinCares — Local Deals & Free Services" :
         digestMatch && digest ? digest.subject : `${tenant.name} | Local Events & Community`,
-    description: isLeadershipAustin
+    description: site.slug === "golf"
+      ? "Find Austin-area golf events, meet local players, share events as a verified subscriber, and express interest in approved rounds."
+      : isLeadershipAustin
       ? "A place for Leadership Austin alumni to stay connected, share upcoming events, and learn about local community stories."
       : site.slug === "austincares" ? "Explore Austin-area curated offers, community-submitted deals, free services, and map-based local discovery."
       : `Explore curated ${cityName} events, local newsletters, venues, and community activities.`,
-    intro: digest?.intro || `Explore local activities in ${cityName}. Subscribe on this city's homepage for new editions.`,
+    intro: digest?.intro || (site.slug === "golf"
+      ? "A recurring Golf IRL newsletter for Austin-area golf events and ways to play together."
+      : `Explore local activities in ${cityName}. Subscribe on this city's homepage for new editions.`),
     weekOf: digest?.weekOf, editionRange: publicEditionRange(site.slug, digest?.subject), digestId: digest?.id, events,
     ...(isLeadershipAustin ? { leadershipClassProfiles: leadershipSettings?.tenant?.leadershipClassProfiles || [] } : {}),
     editionUrl: digest ? `/digest/${digest.id}` : undefined,
@@ -248,8 +253,10 @@ export async function loadPublicModel(site, pathname) {
     }
     return { ...cityModel, kind: "event", event, events: [event],
       canonical: origin + event.url,
-      title: isLeadershipAustin ? `${event.title} | Leadership Austin` : `${event.title} in ${cityName} | EventCarpooling`,
-      description: isLeadershipAustin
+      title: site.slug === "golf" ? `${event.title} | Golf IRL` : isLeadershipAustin ? `${event.title} | Leadership Austin` : `${event.title} in ${cityName} | EventCarpooling`,
+      description: site.slug === "golf"
+        ? `${event.title}: event details, the organizer's source, and how Golf IRL subscribers can express interest.`
+        : isLeadershipAustin
         ? `${event.title}: details and the organizer's source for Leadership Austin alumni.`
         : `Explore ${event.title} in ${cityName}: event details, venue, official registration, and how to express interest in attending or carpooling.`,
       schema: eventSchema(event, origin) };

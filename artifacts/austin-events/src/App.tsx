@@ -10,6 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AudioProvider } from "@/components/audio-provider";
 
 import Home from "./pages/home";
+import GolfHomeRoute from "./pages/golf-home-route";
 import AustinCaresDeals from "./pages/austin-cares-deals";
 import AustinCaresFullEdition from "./pages/austin-cares-full";
 import { CityPageMetadata } from "./components/city-page-metadata";
@@ -278,7 +279,7 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
         <CentinelaRoutes />
       ) : (
         <Switch>
-          <Route path="/" component={citySlug === "austincares" ? AustinCaresDeals : Home} />
+          <Route path="/" component={citySlug === "austincares" ? AustinCaresDeals : citySlug === "golf" ? GolfHomeRoute : Home} />
           <Route path="/full" component={citySlug === "austincares" ? AustinCaresFullEdition : NotFound} />
           <Route path="/digest/:id" component={DigestView} />
           <Route path="/toys-for-tots" component={citySlug === "leadershipaustin" ? LeadershipToysForTotsPage : NotFound} />

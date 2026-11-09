@@ -31,7 +31,7 @@ type FormState = {
   sourceAlumni: string;
 };
 
-function initialForm(categories: string[]): FormState {
+function initialForm(categories: string[], tenantName: string, defaultCategory: string): FormState {
   return {
     title: "",
     startDate: "",
@@ -39,10 +39,10 @@ function initialForm(categories: string[]): FormState {
     venue: "",
     venueAddress: "",
     description: "",
-    category: categories.includes("Community") ? "Community" : categories[0] ?? "",
+    category: categories.includes(defaultCategory) ? defaultCategory : categories[0] ?? "",
     organizer: "",
     link: "",
-    sourceName: "Leadership Austin",
+    sourceName: tenantName,
     sourceAlumni: "",
   };
 }
@@ -66,18 +66,30 @@ async function loadPendingSubmissions(): Promise<PendingSubmission[]> {
   return data.contributions as PendingSubmission[];
 }
 
-export function LeadershipManagedEventsAdmin({ categories }: { categories: string[] }) {
+export function LeadershipManagedEventsAdmin({
+  categories,
+  tenantName = "Leadership Austin",
+  tenantSlug = "leadershipaustin",
+  defaultCategory = "Community",
+}: {
+  categories: string[];
+  tenantName?: string;
+  tenantSlug?: string;
+  defaultCategory?: string;
+}) {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<FormState>(() => initialForm(categories));
+  const accent = tenantSlug === "golf" ? "#286551" : "#314363";
+  const accentHighlight = tenantSlug === "golf" ? "#efc478" : "#4EBEE7";
+  const [form, setForm] = useState<FormState>(() => initialForm(categories, tenantName, defaultCategory));
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const eventsQuery = useQuery({
-    queryKey: ["admin-leadership-managed-events"],
+    queryKey: ["admin-managed-community-events", tenantSlug],
     queryFn: loadAdminEvents,
     staleTime: 30_000,
   });
   const pendingQuery = useQuery({
-    queryKey: ["admin-leadership-event-contributions"],
+    queryKey: ["admin-community-event-contributions", tenantSlug],
     queryFn: loadPendingSubmissions,
     staleTime: 15_000,
   });
@@ -112,10 +124,11 @@ export function LeadershipManagedEventsAdmin({ categories }: { categories: strin
       return data;
     },
     onSuccess: () => {
-      setMessage("Event added to the Leadership Austin event list.");
+      setMessage(`Event added to the ${tenantName} event list.`);
       setError("");
-      setForm(initialForm(categories));
-      queryClient.invalidateQueries({ queryKey: ["admin-leadership-managed-events"] });
+      setForm(initialForm(categories, tenantName, defaultCategory));
+      queryClient.invalidateQueries({ queryKey: ["admin-managed-community-events", tenantSlug] });
+      queryClient.invalidateQueries({ queryKey: ["community-managed-events", tenantSlug] });
       queryClient.invalidateQueries({ queryKey: ["leadership-managed-events"] });
     },
     onError: (cause) => {
@@ -135,7 +148,8 @@ export function LeadershipManagedEventsAdmin({ categories }: { categories: strin
       return eventId;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-leadership-managed-events"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-managed-community-events", tenantSlug] });
+      queryClient.invalidateQueries({ queryKey: ["community-managed-events", tenantSlug] });
       queryClient.invalidateQueries({ queryKey: ["leadership-managed-events"] });
     },
     onError: (cause) => setError(cause instanceof Error ? cause.message : "Could not archive the event."),
@@ -155,8 +169,9 @@ export function LeadershipManagedEventsAdmin({ categories }: { categories: strin
     onSuccess: ({ decision }) => {
       setMessage(decision === "approve" ? "Event approved and added to the public list." : "Event submission rejected.");
       setError("");
-      queryClient.invalidateQueries({ queryKey: ["admin-leadership-event-contributions"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-leadership-managed-events"] });
+       queryClient.invalidateQueries({ queryKey: ["admin-community-event-contributions", tenantSlug] });
+       queryClient.invalidateQueries({ queryKey: ["admin-managed-community-events", tenantSlug] });
+      queryClient.invalidateQueries({ queryKey: ["community-managed-events", tenantSlug] });
       queryClient.invalidateQueries({ queryKey: ["leadership-managed-events"] });
     },
     onError: (cause) => {
@@ -172,11 +187,11 @@ export function LeadershipManagedEventsAdmin({ categories }: { categories: strin
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#314363]/20 bg-card shadow-sm" aria-labelledby="admin-managed-events-title">
-      <div className="border-b border-[#314363]/15 bg-[#314363] px-6 py-5 text-white">
-        <p className="text-[10px] font-bold uppercase tracking-[.24em] text-[#4EBEE7]">Leadership Austin event list</p>
+    <section className="overflow-hidden rounded-2xl border border-[#314363]/20 bg-card shadow-sm" style={{ borderColor: `${accent}33` }} aria-labelledby="admin-managed-events-title">
+      <div className="border-b border-[#314363]/15 px-6 py-5 text-white" style={{ borderColor: `${accent}33`, backgroundColor: accent }}>
+        <p className="text-[10px] font-bold uppercase tracking-[.24em]" style={{ color: accentHighlight }}>{tenantName} event list</p>
         <h3 id="admin-managed-events-title" className="mt-1 text-2xl font-bold uppercase">Upcoming events</h3>
-        <p className="mt-1 max-w-2xl text-sm text-white/70">Approved subscriber suggestions and admin-added events appear on the Leadership Austin site and in future newsletter editions.</p>
+        <p className="mt-1 max-w-2xl text-sm text-white/70">Approved subscriber suggestions and admin-added events appear on the {tenantName} site and in future newsletter editions.</p>
       </div>
 
       <div className="space-y-6 p-6">

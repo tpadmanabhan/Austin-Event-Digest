@@ -7,6 +7,7 @@ import {
   getGetLatestDigestQueryKey,
   getListDigestsQueryKey,
 } from "@workspace/api-client-react";
+import { useTenant } from "@/contexts/tenant-context";
 
 export function useLatestDigest() {
   return useGetLatestApi();
@@ -48,6 +49,23 @@ export function useLeadershipManagedEvents(enabled = true) {
       return response.json() as Promise<{ events: LeadershipManagedEvent[] }>;
     },
     enabled,
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+  });
+}
+
+export type CommunityManagedEvent = LeadershipManagedEvent;
+
+export function useCommunityManagedEvents(enabled = true) {
+  const tenant = useTenant();
+  return useQuery({
+    queryKey: ["community-managed-events", tenant.slug],
+    queryFn: async () => {
+      const response = await fetch("/api/events/leadership-managed");
+      if (!response.ok) throw new Error("Unable to load approved community events.");
+      return response.json() as Promise<{ events: CommunityManagedEvent[] }>;
+    },
+    enabled: enabled && ["leadershipaustin", "golf"].includes(tenant.slug),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
   });

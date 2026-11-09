@@ -1108,7 +1108,7 @@ export async function runStartupMigration(): Promise<void> {
     await db.execute(sql`
       UPDATE tenants
       SET categories = '["Arts","Sports","Tech","Civics","Wellness"]'::jsonb
-      WHERE slug <> 'leadershipaustin'
+      WHERE slug NOT IN ('leadershipaustin', 'golf')
         AND categories::text != '["Arts","Sports","Tech","Civics","Wellness"]'
     `);
     logger.info("Canonical categories enforced on all tenants");
@@ -1292,6 +1292,30 @@ export async function runStartupMigration(): Promise<void> {
     logger.info("Leadership Austin tenant and unsent first edition seeded");
   } catch (err) {
     logger.warn({ err }, "Leadership Austin seed failed (non-fatal)");
+  }
+
+  // Golf IRL is development-only until production activation is explicitly approved.
+  try {
+    if (process.env.NODE_ENV !== "production") {
+      const [existingGolf] = await db.select({ id: tenantsTable.id }).from(tenantsTable)
+        .where(eq(tenantsTable.slug, "golf")).limit(1);
+      if (!existingGolf) {
+        const configuredPassword = process.env.ADMIN_PASSWORD;
+        const passwordHash = configuredPassword && configuredPassword.trim().length >= 12
+          ? await hashPassword(configuredPassword)
+          : null;
+        await db.execute(sql`
+          INSERT INTO tenants (slug, name, city, accent_color, categories, digest_title,
+            is_active, email_verified, password_hash)
+          VALUES ('golf', 'Golf IRL', 'Austin, TX', '#286551',
+            '["Sports"]'::jsonb, 'Golf IRL', true, false, ${passwordHash})
+          ON CONFLICT (slug) DO NOTHING
+        `);
+      }
+    }
+    logger.info({ enabled: process.env.NODE_ENV !== "production" }, "Golf IRL development tenant checked");
+  } catch (err) {
+    logger.warn({ err }, "Golf IRL tenant seed failed (non-fatal)");
   }
 
   try {

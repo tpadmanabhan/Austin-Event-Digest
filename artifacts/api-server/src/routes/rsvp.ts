@@ -6,7 +6,6 @@ import {
   digestsTable,
   leadershipEventsTable,
   leadershipEventRsvpsTable,
-  tenantsTable,
 } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 import {
@@ -20,6 +19,7 @@ import {
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { verifyManagedEventRsvpSignature, verifyRsvpSignature, verifyRsvpSignatureByWeek } from "../lib/rsvpToken";
 import { awardXP } from "../lib/gamification";
+import { getCommunityTenantSettings } from "../../../../shared/community-tenants";
 
 const router: IRouter = Router();
 
@@ -29,12 +29,26 @@ router.get("/managed", async (req, res) => {
     res.status(400).json({ error: "invalid_request", message: "managedEventId is required" });
     return;
   }
-  if (req.tenant?.slug !== "leadershipaustin") {
+  if (!getCommunityTenantSettings(req.tenant?.slug)) {
     res.status(404).json({ error: "not_found" });
     return;
   }
 
   try {
+    const [event] = await db
+      .select({ id: leadershipEventsTable.id })
+      .from(leadershipEventsTable)
+      .where(and(
+        eq(leadershipEventsTable.id, managedEventId),
+        eq(leadershipEventsTable.tenantId, req.tenant!.id),
+        eq(leadershipEventsTable.isActive, true),
+        eq(leadershipEventsTable.submissionStatus, "approved"),
+      ))
+      .limit(1);
+    if (!event) {
+      res.status(404).json({ error: "not_found", message: "Approved event not found" });
+      return;
+    }
     const rows = await db
       .select({ id: leadershipEventRsvpsTable.id })
       .from(leadershipEventRsvpsTable)
@@ -63,7 +77,7 @@ router.post("/managed", async (req, res) => {
     res.status(400).json({ error: "invalid_request", message: "Invalid event interest data" });
     return;
   }
-  if (req.tenant?.slug !== "leadershipaustin") {
+  if (!getCommunityTenantSettings(req.tenant?.slug)) {
     res.status(404).json({ error: "not_found" });
     return;
   }
@@ -88,22 +102,13 @@ router.post("/managed", async (req, res) => {
   }
 
   try {
-    const [sourceTenant] = await db
-      .select({ id: tenantsTable.id })
-      .from(tenantsTable)
-      .where(eq(tenantsTable.slug, "leadershipaustin"))
-      .limit(1);
-    if (!sourceTenant) {
-      res.status(404).json({ error: "not_found", message: "Source event not found" });
-      return;
-    }
-
     const [event] = await db
       .select()
       .from(leadershipEventsTable)
       .where(and(
         eq(leadershipEventsTable.id, managedEventId),
-        eq(leadershipEventsTable.tenantId, sourceTenant.id),
+        eq(leadershipEventsTable.tenantId, req.tenant!.id),
+        eq(leadershipEventsTable.submissionStatus, "approved"),
         eq(leadershipEventsTable.isActive, true),
       ))
       .limit(1);

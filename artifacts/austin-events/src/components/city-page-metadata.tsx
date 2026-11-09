@@ -31,6 +31,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     const isSF = citySlug === "sanfrancisco";
     const isLA = citySlug === "la";
     const isLeadershipAustin = citySlug === "leadershipaustin";
+    const isGolf = citySlug === "golf";
     const isHoustonDigest = isHouston && path.startsWith("/digest/");
     const isAtlantaDigest = isAtlanta && path.startsWith("/digest/");
     const title = isCares
@@ -44,6 +45,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
       : isLA ? "Los Angeles Events — Pacific Coast, Citywide | IRL"
       : isHoustonDigest ? "Houston Events — Full Citywide Edition | IRL"
       : isHouston ? "Houston Events — The Whole City. Your Next Plan. | IRL"
+      : isGolf ? "Golf IRL — Austin Golf Events"
       : isLeadershipAustin ? "Leadership Austin — Alumni Happenings"
       : `${tenant.name} | Local Events & Community`;
     const description = isCares
@@ -58,6 +60,8 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
         ? "Explore Los Angeles events across Tech, Arts, Sports, Civics and Wellness, with local organizer links and a city-specific AI ethics reading list."
         : isHouston
         ? "Explore Houston's citywide events edition: real local plans across innovation, art, sports, civic life and wellness, from the bayou to your neighborhood."
+        : isGolf
+        ? "Find Austin-area golf events, meet local players, and join the recurring Golf IRL newsletter."
         : isLeadershipAustin
         ? "A place for Leadership Austin alumni to stay connected, share upcoming events, and learn about local community stories."
         : `Explore curated ${tenant.city} events, local newsletters, venues, and community activities.`;
@@ -75,7 +79,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
     setMeta('meta[name="twitter:card"]', "summary_large_image");
 
     const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-    if (icon) icon.href = `${import.meta.env.BASE_URL}${isLA ? "images/la-mark.svg" : isSF ? "images/sf-giants.svg" : isHouston ? "images/houston-astros.svg" : isAtlanta ? "images/atlanta-icon.svg" : isCares ? "austincares-favicon.svg" : "favicon.svg"}`;
+    if (icon) icon.href = `${import.meta.env.BASE_URL}${isGolf ? "images/golf/favicon.svg" : isLA ? "images/la-mark.svg" : isSF ? "images/sf-giants.svg" : isHouston ? "images/houston-astros.svg" : isAtlanta ? "images/atlanta-icon.svg" : isCares ? "austincares-favicon.svg" : "favicon.svg"}`;
   }, [citySlug, path, tenant.name, tenant.city]);
 
   return null;

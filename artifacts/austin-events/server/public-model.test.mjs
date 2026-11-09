@@ -173,11 +173,11 @@ test("Leadership Austin client pages use admin-managed profiles in both shared v
 
 test("Leadership Austin full edition has one subscriber-verified event submission form after listings", () => {
   const digest = readFileSync(new URL("../src/pages/digest.tsx", import.meta.url), "utf8");
-  const contribution = digest.indexOf("{isLeadershipAustin && <LeadershipEventContribution />}");
+  const contribution = digest.indexOf("{isSubscriberCommunity && <LeadershipEventContribution");
   const eventListings = digest.indexOf("regularEvents.map");
   const cityPromo = digest.indexOf("{/* AustinCares launch promo");
   assert.ok(eventListings >= 0 && contribution > eventListings && cityPromo > contribution);
-  assert.equal((digest.match(/<LeadershipEventContribution\s*\/>/g) || []).length, 1);
+  assert.equal((digest.match(/<LeadershipEventContribution communityName=\{tenant\.name\} \/>/g) || []).length, 1);
   assert.doesNotMatch(digest, /leadership-event-contribution-cta-title|Know an event the community should see\?|Suggest a community event/);
 });
 

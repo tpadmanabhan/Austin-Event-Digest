@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { Layout } from "@/components/layout";
 import { EventCard } from "@/components/event-card";
-import { useAllDigests, useLatestDigest, useLeadershipManagedEvents } from "@/hooks/use-events";
+import { useAllDigests, useLatestDigest, useCommunityManagedEvents } from "@/hooks/use-events";
 import { format, parseISO } from "date-fns";
 import { Calendar, ArrowLeft, Leaf, ExternalLink, Trophy, Loader2 } from "lucide-react";
 import { Link } from "wouter";
@@ -356,7 +356,8 @@ export default function DigestView() {
   const isBoston = tenant.slug === "boston";
   const isLA = tenant.slug === "la";
   const isLeadershipAustin = tenant.slug === "leadershipaustin";
-  const leadershipManagedEventsQuery = useLeadershipManagedEvents(isLeadershipAustin);
+  const isSubscriberCommunity = isLeadershipAustin || tenant.slug === "golf";
+  const communityManagedEventsQuery = useCommunityManagedEvents(isSubscriberCommunity);
   const { lang, translate, translationFailed } = useLanguage();
   const adultBlocklist = useAdultBlocklist();
   const [translatedMap, setTranslatedMap] = useState<Map<string, { title: string; description: string }>>(() => new Map());
@@ -531,9 +532,9 @@ export default function DigestView() {
     return null;
   }
 
-  const managedEvents = isLeadershipAustin ? leadershipManagedEventsQuery.data?.events ?? [] : [];
+  const managedEvents = isSubscriberCommunity ? communityManagedEventsQuery.data?.events ?? [] : [];
   const managedEventKeys = new Set(managedEvents.map(eventIdentityKey));
-  const editionEvents = isLeadershipAustin
+  const editionEvents = isSubscriberCommunity
     ? digest.events.filter((event: any) => !managedEventKeys.has(eventIdentityKey(event)))
     : digest.events;
   const managedCardEvents: any[] = managedEvents.map((event) => ({
@@ -1058,27 +1059,27 @@ export default function DigestView() {
                     )}
                   </div>
                 </div>
-                {isLeadershipAustin && leadershipManagedEventsQuery.isError && visibleEvents.length > 0 && (
+                {isSubscriberCommunity && communityManagedEventsQuery.isError && visibleEvents.length > 0 && (
                   <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
-                    <span>The live alumni event list could not load, so this edition may be incomplete.</span>
+                    <span>The live community event list could not load, so this edition may be incomplete.</span>
                     <button
-                      onClick={() => { void leadershipManagedEventsQuery.refetch(); }}
+                      onClick={() => { void communityManagedEventsQuery.refetch(); }}
                       className="font-semibold underline underline-offset-2"
                     >
                       Try again
                     </button>
                   </div>
                 )}
-                {visibleEvents.length === 0 && isLeadershipAustin && leadershipManagedEventsQuery.isLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8" role="status" aria-label="Loading upcoming alumni events">
+                {visibleEvents.length === 0 && isSubscriberCommunity && communityManagedEventsQuery.isLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8" role="status" aria-label="Loading upcoming community events">
                     {[1, 2, 3, 4].map(index => <div key={index} className="h-64 animate-pulse rounded-2xl bg-muted" />)}
                   </div>
-                ) : visibleEvents.length === 0 && isLeadershipAustin && leadershipManagedEventsQuery.isError ? (
+                ) : visibleEvents.length === 0 && isSubscriberCommunity && communityManagedEventsQuery.isError ? (
                   <div className="text-center py-16 bg-muted/40 rounded-3xl border border-border" role="status">
-                    <p className="text-xl font-serif font-bold text-foreground mb-2">Alumni events could not load</p>
+                    <p className="text-xl font-serif font-bold text-foreground mb-2">Community events could not load</p>
                     <p className="text-muted-foreground text-sm mb-6">Try again to load the latest shared events.</p>
                     <button
-                      onClick={() => { void leadershipManagedEventsQuery.refetch(); }}
+                      onClick={() => { void communityManagedEventsQuery.refetch(); }}
                       className="text-primary text-sm font-medium hover:underline"
                     >
                       Try again
@@ -1114,7 +1115,7 @@ export default function DigestView() {
             <LeadershipToysForTotsCallout />
           </div>
         )}
-        {isLeadershipAustin && <LeadershipEventContribution />}
+        {isSubscriberCommunity && <LeadershipEventContribution communityName={tenant.name} />}
 
         {/* AustinCares launch promo — shown on every city digest except AustinCares itself */}
         {tenant.slug !== "austincares" && !isHouston && (

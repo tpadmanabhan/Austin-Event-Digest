@@ -37,6 +37,7 @@ export const MAP_CENTERS: Record<string, CityCenter> = {
   nyc: { lat: 40.7128, lng: -74.0060 },
   dallas: { lat: 32.7767, lng: -96.7970 },
   leadershipaustin: { lat: 30.2672, lng: -97.7431 },
+  golf: { lat: 30.2672, lng: -97.7431 },
 };
 
 export const CITY_LABELS: Record<string, string> = {
@@ -60,6 +61,7 @@ export const CITY_LABELS: Record<string, string> = {
   nyc: "New York City",
   dallas: "Dallas",
   leadershipaustin: "Austin",
+  golf: "Austin golf community",
 };
 
 /**
@@ -90,6 +92,7 @@ export const CITY_MAX_RADIUS_MILES: Record<string, number> = {
   nyc: 60,
   dallas: 60,
   leadershipaustin: 60,
+  golf: 60,
 };
 
 /** Haversine distance in miles between two lat/lng pairs. */

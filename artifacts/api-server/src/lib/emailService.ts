@@ -12,6 +12,7 @@ import { buildLaAiEthicsSection } from "./laAiEthics";
 import { buildCityAiEthicsSection } from "./cityAiEthics";
 import { signManagedEventRsvpParams, signRsvpParams, signRsvpParamsByWeek } from "./rsvpToken";
 import { publicTenantUrl } from "./publicUrls";
+import { getCommunityTenantSettings } from "../../../../shared/community-tenants";
 import {
   leadershipClassProfilesOrDefault,
   type LeadershipClassProfile,
@@ -138,24 +139,27 @@ export async function sendLeadershipEventContributionAccessEmail(
   to: string,
   name: string | null,
   verificationUrl: string,
+  communityName = "Leadership Austin",
 ): Promise<SendEmailResult> {
   const greeting = name?.trim() ? `Hi ${escapeHtml(name.trim())},` : "Hi,";
+  const isLeadershipAustin = communityName === "Leadership Austin";
+  const brandColor = isLeadershipAustin ? "#314363" : "#286551";
   return sendEmail({
     to,
-    subject: "Verify your Leadership Austin subscriber email",
-    fromName: "Leadership Austin",
+    subject: `Verify your ${communityName} subscriber email`,
+    fromName: communityName,
     html: `<!doctype html>
 <html lang="en">
 <body style="margin:0;background:#f5f3ef;font-family:Arial,sans-serif;color:#1e293b;">
   <div style="max-width:560px;margin:32px auto;padding:28px;background:#fff;border:1px solid #dbe2ea;border-radius:16px;">
-    <p style="margin:0 0 18px;color:#314363;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Leadership Austin · Community Events</p>
-    <h1 style="margin:0 0 12px;color:#314363;font-size:25px;">Confirm your subscriber email</h1>
+    <p style="margin:0 0 18px;color:${brandColor};font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">${escapeHtml(communityName)} · Community Events</p>
+    <h1 style="margin:0 0 12px;color:${brandColor};font-size:25px;">Confirm your subscriber email</h1>
     <p style="margin:0 0 12px;line-height:1.6;">${greeting}</p>
-    <p style="margin:0 0 22px;line-height:1.6;">Use this secure link to submit an event for the Leadership Austin community. It expires in 20 minutes.</p>
+    <p style="margin:0 0 22px;line-height:1.6;">Use this secure link to submit an event for the ${escapeHtml(communityName)} community. It expires in 20 minutes.</p>
     <p style="margin:0 0 24px;text-align:center;">
-      <a href="${escapeHtml(verificationUrl)}" style="display:inline-block;padding:13px 24px;border-radius:8px;background:#314363;color:#fff;text-decoration:none;font-weight:700;">Continue to event submission</a>
+      <a href="${escapeHtml(verificationUrl)}" style="display:inline-block;padding:13px 24px;border-radius:8px;background:${brandColor};color:#fff;text-decoration:none;font-weight:700;">Continue to event submission</a>
     </p>
-    <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">Only active Leadership Austin newsletter subscribers can submit events. Submissions are reviewed before appearing publicly.</p>
+    <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6;">Only active ${escapeHtml(communityName)} newsletter subscribers can submit events. Submissions are reviewed before appearing publicly.</p>
   </div>
 </body>
 </html>`,
@@ -662,12 +666,12 @@ function buildStaticMapSection(
     <!-- Event Map Preview -->
     <div style="margin-bottom:24px; border-radius:14px; overflow:hidden; border:1px solid #e7e5e4;">
       <div style="background:#f8fafc; padding:10px 16px; border-bottom:1px solid #e7e5e4;">
-        <p style="margin:0; font-size:13px; font-weight:700; color:#1c1917;">${slug === "austincares" ? "🗺️ Deal locations in Austin" : slug === "leadershipaustin" ? "🗺️ Alumni and community event locations in Austin" : slug === "austin" ? "🗺️ Upcoming event locations in Austin" : `🗺️ This week's event locations in ${cityLabel}`}</p>
+        <p style="margin:0; font-size:13px; font-weight:700; color:#1c1917;">${slug === "austincares" ? "🗺️ Deal locations in Austin" : slug === "leadershipaustin" ? "🗺️ Alumni and community event locations in Austin" : slug === "golf" ? "Austin golf community event locations" : slug === "austin" ? "🗺️ Upcoming event locations in Austin" : `🗺️ This week's event locations in ${cityLabel}`}</p>
       </div>
       ${linkUrl ? `<a href="${escapeHtml(linkUrl)}" style="display:block; line-height:0;">` : ""}
-        <img src="${escapeHtml(mapUrl)}" alt="${slug === "austincares" ? "Map of deal locations in Austin" : slug === "leadershipaustin" ? "Map of alumni and community events in Austin" : slug === "austin" ? "Map of upcoming events in Austin" : `Map of this week's events in ${cityLabel}`}" width="580" height="260" style="display:block; width:100%; max-width:580px; height:auto; border:none;" />
+        <img src="${escapeHtml(mapUrl)}" alt="${slug === "austincares" ? "Map of deal locations in Austin" : slug === "leadershipaustin" ? "Map of alumni and community events in Austin" : slug === "golf" ? "Map of approved Golf IRL community events in Austin" : slug === "austin" ? "Map of upcoming event locations in Austin" : `Map of this week's events in ${cityLabel}`}" width="580" height="260" style="display:block; width:100%; max-width:580px; height:auto; border:none;" />
       ${linkUrl ? `</a>` : ""}
-      ${linkUrl ? `<div style="background:#f8fafc; padding:8px 16px; border-top:1px solid #e7e5e4; text-align:center;"><a href="${escapeHtml(linkUrl)}" style="color:#7c3aed; font-size:12px; font-weight:600; text-decoration:none;">${slug === "leadershipaustin" ? "Open Leadership Austin site →" : "Open interactive map &amp; sort by distance →"}</a>${slug === "leadershipaustin" ? `<p style="margin:6px 0 0; color:#78716c; font-size:11px;">Only verified venue locations are pinned; other events remain listed without a pin.</p>` : ""}</div>` : ""}
+      ${linkUrl ? `<div style="background:#f8fafc; padding:8px 16px; border-top:1px solid #e7e5e4; text-align:center;"><a href="${escapeHtml(linkUrl)}" style="color:#7c3aed; font-size:12px; font-weight:600; text-decoration:none;">${slug === "leadershipaustin" ? "Open Leadership Austin site →" : slug === "golf" ? "Open Golf IRL →" : "Open interactive map &amp; sort by distance →"}</a>${slug === "leadershipaustin" || slug === "golf" ? `<p style="margin:6px 0 0; color:#78716c; font-size:11px;">Only verified venue locations are pinned; other events remain listed without a pin.</p>` : ""}</div>` : ""}
     </div>`;
 }
 
@@ -731,6 +735,8 @@ export function buildDigestEmailHtml(digest: {
   siteUrl?: string;
   alsoNearby?: DigestEventItem[];
   alumniSourcedEvents?: DigestEventItem[];
+  communityEvents?: DigestEventItem[];
+  communityName?: string;
   preferencesUrl?: string | null;
 }, subscriberName?: string | null, subscriberEmail?: string | null, tenant?: {
   slug?: string | null;
@@ -748,6 +754,9 @@ export function buildDigestEmailHtml(digest: {
   });
 
   const slug = tenant?.slug;
+  const communitySettings = getCommunityTenantSettings(slug);
+  const communityName = digest.communityName || communitySettings?.name || tenant?.name || "the community";
+  const communityEvents = digest.communityEvents ?? digest.alumniSourcedEvents ?? [];
   const renderedIntro = slug === "leadershipaustin"
     ? digest.intro.replace(
       /^A monthly newsletter of upcoming events for (?:the )?Leadership Austin(?: alumni(?: and the Austin community)?| community)\./i,
@@ -1134,6 +1143,28 @@ export function buildDigestEmailHtml(digest: {
     pillBorder: "rgba(78,190,231,0.6)",
     rideBtnBg: "#FFBA01",
     rideBtnColor: "#314363",
+  } : slug === "golf" ? {
+    headerGradient: "linear-gradient(135deg, #10382e 0%, #286551 60%, #789263 100%)",
+    primary: "#286551",
+    primaryBtn: "#efc478",
+    primaryDark: "#10382e",
+    primaryLight: "#f3f6ef",
+    primaryMuted: "#d9e5d2",
+    textOnDark: "#fffaf0",
+    textMutedOnDark: "#d5e0d6",
+    textStrong: "#153b31",
+    linkColor: "#286551",
+    curatorName: "",
+    curatorUrl: null as string | null,
+    cityGuideText: "Austin golf events and community rounds",
+    digestDisplayName: tenant?.digestTitle || "Golf IRL",
+    headerEmoji: "",
+    eventBtnColor: "#286551",
+    eventBtnBorder: "#286551",
+    pillText: "#fffaf0",
+    pillBorder: "rgba(239,196,120,0.55)",
+    rideBtnBg: "#efc478",
+    rideBtnColor: "#153b31",
   } : slug === "austin" ? {
     headerGradient: "linear-gradient(135deg, #f1faf4 0%, #e4f3e9 58%, #d4eadb 100%)",
     primary: "#2f855a",
@@ -1425,26 +1456,26 @@ export function buildDigestEmailHtml(digest: {
         <p style="margin:12px 0 0; padding:12px 14px; border-left:4px solid #FFBA01; border-radius:4px; background:#f7f4ef; color:#334155; font-family:'Figtree',Arial,sans-serif; font-size:16px; line-height:1.65; font-weight:600;"><span style="color:#a94832; font-weight:800;">Hey, all alumni.</span> We created this space to stay connected with our Emerge Class 18 community and share upcoming events.</p>
         ${leadershipProfilesHtml}
       </div>` : "";
-  const alumniSourcedEventsHtml = slug === "leadershipaustin" && (digest.alumniSourcedEvents ?? []).length > 0
-    ? `<section style="margin:0 0 28px;border:1px solid #314363;border-radius:12px;overflow:hidden;background:#fff;">
-        <div style="background:#314363;padding:16px 20px;">
-          <p style="margin:0 0 4px;color:#4EBEE7;font-family:'Figtree',Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Leadership Austin alumni</p>
+  const communityEventsHtml = communitySettings && communityEvents.length > 0
+    ? `<section style="margin:0 0 28px;border:1px solid ${theme.primary};border-radius:12px;overflow:hidden;background:#fff;">
+        <div style="background:${theme.primary};padding:16px 20px;">
+          <p style="margin:0 0 4px;color:${theme.primaryBtn};font-family:'Figtree',Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">${escapeHtml(communityName)} subscribers</p>
           <h2 style="margin:0;color:#fff;font-family:'Barlow Condensed',Arial,sans-serif;font-size:26px;line-height:1.05;text-transform:uppercase;">Upcoming community events</h2>
         </div>
-        ${(digest.alumniSourcedEvents ?? []).map((event) => {
+        ${communityEvents.map((event) => {
           const link = safeHref(event.link);
           const rsvpLink = event.managedEventId && digest.siteUrl && subscriberEmail && slug
             ? buildManagedEventRsvpUrl(digest.siteUrl, slug, event.managedEventId, event.title, subscriberEmail, subscriberName)
             : null;
           return `<article style="padding:18px 20px;border-top:1px solid #e2e8f0;background:#fff;">
-            <p style="margin:0 0 5px;color:#64748b;font-family:'Figtree',Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;">Shared by ${escapeHtml(event.sourceAlumni || "a Leadership Austin alum")}</p>
-            <h3 style="margin:0 0 7px;color:#314363;font-family:'Barlow Condensed',Arial,sans-serif;font-size:21px;line-height:1.1;">${link ? `<a href="${link}" style="color:#314363;text-decoration:none;">${escapeHtml(event.title)}</a>` : escapeHtml(event.title)}</h3>
-            ${event.date ? `<p style="margin:0 0 5px;color:#314363;font-family:'Figtree',Arial,sans-serif;font-size:13px;font-weight:700;">${escapeHtml(event.date)}</p>` : ""}
+            <p style="margin:0 0 5px;color:#64748b;font-family:'Figtree',Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;">Shared by ${escapeHtml(event.sourceAlumni || `${communityName} subscriber`)}</p>
+            <h3 style="margin:0 0 7px;color:${theme.primary};font-family:'Barlow Condensed',Arial,sans-serif;font-size:21px;line-height:1.1;">${link ? `<a href="${link}" style="color:${theme.primary};text-decoration:none;">${escapeHtml(event.title)}</a>` : escapeHtml(event.title)}</h3>
+            ${event.date ? `<p style="margin:0 0 5px;color:${theme.primary};font-family:'Figtree',Arial,sans-serif;font-size:13px;font-weight:700;">${escapeHtml(event.date)}</p>` : ""}
             ${event.venue ? `<p style="margin:0 0 8px;color:#64748b;font-family:'Figtree',Arial,sans-serif;font-size:13px;">${escapeHtml(event.venue)}</p>` : ""}
             ${event.description ? `<p style="margin:0 0 12px;color:#475569;font-family:'Figtree',Arial,sans-serif;font-size:14px;line-height:1.65;">${escapeHtml(event.description)}</p>` : ""}
             <div style="display:flex;gap:12px;flex-wrap:wrap;">
-              ${link ? `<a href="${link}" style="display:inline-block;color:#314363;font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:800;text-decoration:underline;">Event details</a>` : ""}
-              ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-block;background:#fff;color:#314363;border:1.5px solid #314363;border-radius:8px;padding:7px 14px;text-decoration:none;font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:800;">✨ Interested?</a>` : ""}
+              ${link ? `<a href="${link}" style="display:inline-block;color:${theme.primary};font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:800;text-decoration:underline;">Event details</a>` : ""}
+              ${rsvpLink ? `<a href="${escapeHtml(rsvpLink)}" style="display:inline-block;background:#fff;color:${theme.primary};border:1.5px solid ${theme.primary};border-radius:8px;padding:7px 14px;text-decoration:none;font-family:'Figtree',Arial,sans-serif;font-size:12px;font-weight:800;">${slug === "leadershipaustin" ? "✨ Interested?" : "Interested?"}</a>` : ""}
             </div>
           </article>`;
         }).join("")}
@@ -1579,7 +1610,7 @@ export function buildDigestEmailHtml(digest: {
     </div>
 
     ${alumniHappeningsHtml}
-    ${alumniSourcedEventsHtml}
+    ${communityEventsHtml}
 
     ${slug === "austin" ? buildAustinAiEthicsSection() : ""}
     ${slug === "sanfrancisco" ? buildSanFranciscoAiEthicsSection() : ""}
@@ -1587,7 +1618,7 @@ export function buildDigestEmailHtml(digest: {
     ${slug === "miami" ? buildMiamiAiEthicsSection() : ""}
     ${slug === "boston" ? buildBostonAiEthicsSection() : ""}
     ${slug === "la" ? buildLaAiEthicsSection() : ""}
-    ${slug === "leadershipaustin" ? "" : buildCityAiEthicsSection(slug ?? "")}
+    ${slug === "leadershipaustin" || slug === "golf" ? "" : buildCityAiEthicsSection(slug ?? "")}
 
     <!-- Location CTA -->
     ${digest.preferencesUrl ? `
@@ -1613,7 +1644,7 @@ export function buildDigestEmailHtml(digest: {
     </div>` : ""}
 
     <!-- AustinCares Launch Promo (other established city newsletters) -->
-    ${slug !== "austincares" && slug !== "leadershipaustin" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
+    ${slug !== "austincares" && slug !== "leadershipaustin" && slug !== "golf" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
     <div style="background:${slug === "austin" ? "linear-gradient(135deg,#fff8ed 0%,#f8f2e8 54%,#edf7f0 100%)" : "linear-gradient(135deg,#1c0a05 0%,#3b0e07 55%,#5c1a0d 100%)"}; border:${slug === "austin" ? "1.5px solid #ead7ba" : "none"}; border-radius:16px; padding:26px 28px; margin-bottom:24px; text-align:center;">
       <p style="margin:0 0 6px; color:${slug === "austin" ? "#a45b22" : "#fbbf24"}; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:2px;">🏷️ New · Austin Cares</p>
       <p style="margin:0 0 10px; color:${slug === "austin" ? "#3f392f" : "#ffffff"}; font-size:19px; font-weight:800; letter-spacing:-0.3px;">The best local deals, curated every week.</p>
@@ -1632,8 +1663,8 @@ export function buildDigestEmailHtml(digest: {
     </div>` : ""}
 
     ${buildStaticMapSection(
-      slug === "leadershipaustin"
-        ? [...contentEvents, ...(digest.alumniSourcedEvents ?? [])]
+      communitySettings
+        ? [...contentEvents, ...communityEvents]
         : contentEvents,
       slug ?? undefined,
       digest.siteUrl ?? undefined,
@@ -1654,7 +1685,7 @@ export function buildDigestEmailHtml(digest: {
     </div>` : ""}
 
     <!-- Coming Soon: New Features -->
-    ${slug !== "austin" && slug !== "leadershipaustin" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
+    ${slug !== "austin" && slug !== "leadershipaustin" && slug !== "golf" && slug !== "atlanta" && slug !== "houston" && slug !== "sanfrancisco" && slug !== "miami" && slug !== "boston" && slug !== "la" && slug !== "dallas" ? `
     <div style="background:${theme.headerGradient}; border-radius:16px; padding:28px 24px; margin-bottom:24px;">
       <!-- Badge -->
       <div style="display:inline-block; background:${slug === "austin" ? "rgba(47,133,90,0.10)" : "rgba(255,255,255,0.12)"}; border:1px solid ${slug === "austin" ? "rgba(47,133,90,0.22)" : "rgba(255,255,255,0.2)"}; border-radius:100px; padding:5px 14px; margin-bottom:16px;">
@@ -1712,7 +1743,7 @@ export function buildDigestEmailHtml(digest: {
     ${featuredCards}
 
     <!-- Events -->
-    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">${slug === "austincares" ? "This Week's Deals 🏷️" : slug === "leadershipaustin" ? "Upcoming Events" : "Upcoming Events 🎯"}</h2>${eventCards}` : ""}
+    ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">${slug === "austincares" ? "This Week's Deals 🏷️" : slug === "leadershipaustin" || slug === "golf" ? "Upcoming Events" : "Upcoming Events 🎯"}</h2>${eventCards}` : ""}
 
     <!-- Also Nearby -->
     ${alsoNearbyCards ? `
@@ -1722,11 +1753,11 @@ export function buildDigestEmailHtml(digest: {
       ${alsoNearbyCards}
     </div>` : ""}
 
-    ${slug === "leadershipaustin" && digest.siteUrl && digest.digestId ? `
-    <div style="background:linear-gradient(135deg,#f6f8fb 0%,#ffffff 100%); border:1.5px solid #d8e0ec; border-radius:16px; padding:22px; margin:28px 0 24px; text-align:center;">
-      <p style="margin:0 0 7px; color:#314363; font-family:Georgia,'Times New Roman',serif; font-size:21px; font-weight:700;">Know an event the community should see?</p>
-      <p style="margin:0 auto 16px; max-width:460px; color:#64748b; font-size:13px; line-height:1.6;">Active Leadership Austin subscribers can suggest a public event. Admins review every suggestion before it appears.</p>
-      <a href="${escapeHtml(`${digest.siteUrl.replace(/\/+$/, "")}/digest/${digest.digestId}#add-event`)}" style="display:inline-block; padding:11px 20px; border-radius:7px; background:#314363; color:#fff; font-size:13px; font-weight:700; text-decoration:none;">Suggest a community event</a>
+    ${communitySettings && digest.siteUrl && digest.digestId ? `
+    <div style="background:linear-gradient(135deg,#f6f8fb 0%,#ffffff 100%); border:1.5px solid ${theme.primaryMuted}; border-radius:16px; padding:22px; margin:28px 0 24px; text-align:center;">
+      <p style="margin:0 0 7px; color:${theme.primary}; font-family:Georgia,'Times New Roman',serif; font-size:21px; font-weight:700;">Know an event the community should see?</p>
+      <p style="margin:0 auto 16px; max-width:460px; color:#64748b; font-size:13px; line-height:1.6;">Active ${escapeHtml(communityName)} subscribers can suggest a public event. Admins review every suggestion before it appears.</p>
+      <a href="${escapeHtml(`${digest.siteUrl.replace(/\/+$/, "")}/digest/${digest.digestId}#add-event`)}" style="display:inline-block; padding:11px 20px; border-radius:7px; background:${theme.primary}; color:#fff; font-size:13px; font-weight:700; text-decoration:none;">Suggest a community event</a>
     </div>` : ""}
 
     <!-- Austin Event Discovery Positioning -->

@@ -33,7 +33,7 @@ async function readJson(response: Response): Promise<Record<string, any>> {
   return response.json().catch(() => ({}));
 }
 
-export function LeadershipEventContribution() {
+export function LeadershipEventContribution({ communityName = "Leadership Austin" }: { communityName?: string }) {
   const [session, setSession] = useState<ContributorSession | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [email, setEmail] = useState("");
@@ -185,7 +185,7 @@ export function LeadershipEventContribution() {
           Suggest an event
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/80">
-          Active subscribers can suggest public events. Admins review each suggestion before it appears on the Leadership Austin site or in a future newsletter; approval does not send an email.
+          Active subscribers can suggest public events. Admins review each suggestion before it appears on the {communityName} site or in a future newsletter; approval does not send an email.
         </p>
       </div>
 
@@ -276,10 +276,10 @@ export function LeadershipEventContribution() {
         ) : (
           <form className="mx-auto max-w-xl space-y-4" onSubmit={requestAccess}>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Verify the email address you use for the Leadership Austin newsletter. We’ll send a one-time link if it’s an active subscription.
+              Verify the email address you use for the {communityName} newsletter. We’ll send a one-time link if it’s an active subscription.
             </p>
             <Input
-              aria-label="Leadership Austin subscriber email"
+              aria-label={`${communityName} subscriber email`}
               type="email"
               autoComplete="email"
               maxLength={320}
