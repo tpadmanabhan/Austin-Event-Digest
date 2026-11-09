@@ -3,6 +3,8 @@ export const LA_HERO_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons
 
 const CITY_SHARE_IMAGES: Record<string, string> = {
   austin: "opengraph.jpg",
+  golf: "images/golf-share.png",
+  leadershipaustin: "images/leadership-austin-share.png",
   austincares: "images/austin-cares-brand-icon.jpg",
   brushycreek: "images/brushycreek-hero.jpg",
   portland: "images/portland-hero.jpg",
@@ -18,6 +20,7 @@ const CITY_SHARE_IMAGES: Record<string, string> = {
   boston: "api/storage/public-objects/cities/boston/hero.jpg",
   la: LA_HERO_IMAGE_URL,
   tokyo: "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1200&h=630&auto=format&fit=crop&q=80",
+  osaka: "images/osaka-hero.jpg",
   manchester: "images/manchester-share.jpg",
   nyc: "images/nyc-share.jpg",
   dallas: "images/dallas-hero.jpg",

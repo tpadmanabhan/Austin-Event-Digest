@@ -7,9 +7,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolveSite, legacyRedirectHost, eventSchema, validIsoDate, venueIdentity, publicApiOrigin, publicEditionRange } from "./public-model.mjs";
 
-const cities = ["nyc", "dallas", "la", "austin", "atlanta", "tokyo", "austincares", "sanfrancisco",
+const cities = ["nyc", "dallas", "la", "austin", "golf", "atlanta", "tokyo", "austincares", "sanfrancisco",
   "brushycreek", "portland", "sacramento", "bulverde", "stlouis", "dc", "houston", "boston", "miami", "osaka", "manchester"];
-const tenants = cities.map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
+const tenants = cities.filter(slug => slug !== "golf").map((slug, i) => ({ slug, id: i + 1, name: slug === "atlanta" ? "Atlanta Events" : `${slug} community`, city: slug }));
+const golfTenant = { slug: "golf", id: 21, name: "Golf IRL", city: "Austin, TX" };
 const leadershipAustinTenant = { slug: "leadershipaustin", id: 20, name: "Leadership Austin", city: "Austin, TX" };
 const eventId = city => `ev-${String(cities.indexOf(city) + 1).padStart(24, "0")}`;
 const fixture = city => ({
@@ -36,7 +37,8 @@ before(async () => {
     if (failed) { res.writeHead(500); return res.end('{"error":"test_failure"}'); }
     if (!cities.includes(city) && city !== "leadershipaustin" && host !== "irl.group") { res.writeHead(404); return res.end("{}"); }
     if (req.url === "/api/tenants/list") {
-      const hostTenants = city === "leadershipaustin" ? [...tenants, leadershipAustinTenant] : tenants;
+      const hostTenants = city === "leadershipaustin" ? [...tenants, leadershipAustinTenant]
+        : city === "golf" ? [...tenants, golfTenant] : tenants;
       return res.end(JSON.stringify({ tenants: hostTenants }));
     }
     if (req.url === "/api/tenant/config?slug=leadershipaustin") {
@@ -371,6 +373,7 @@ test("San Francisco shares its Golden Gate image in initial homepage and edition
 test("every city sends its configured share image or platform fallback in the initial document", async () => {
   const expected = {
     austin: "/opengraph.jpg",
+    golf: "/images/golf-share.png",
     austincares: "/images/austin-cares-brand-icon.jpg",
     brushycreek: "/images/brushycreek-hero.jpg",
     portland: "/images/portland-hero.jpg",
@@ -385,7 +388,7 @@ test("every city sends its configured share image or platform fallback in the in
     la: "https://upload.wikimedia.org/wikipedia/commons/3/33/POINTDUME_CA6.jpg",
     miami: "/api/storage/public-objects/cities/miami/share.jpg",
     tokyo: "https://images.unsplash.com/photo-1480796927426-f609979314bd",
-    osaka: "/images/irl-open-graph.jpg",
+    osaka: "/images/osaka-hero.jpg",
     manchester: "/images/manchester-share.jpg",
     nyc: "/images/nyc-share.jpg",
     dallas: "/images/dallas-hero.jpg",
@@ -400,6 +403,7 @@ test("every city sends its configured share image or platform fallback in the in
       const image = body.match(/<meta property="og:image" content="([^"]+)">/)[1];
       const twitter = body.match(/<meta name="twitter:image" content="([^"]+)">/)[1];
       assert.equal(twitter, image);
+      assert.match(body, /<meta name="twitter:card" content="summary_large_image">/);
       assert.ok(image.includes(expected[city]), `${city}: ${image}`);
       if (city !== "austin") {
         assert.doesNotMatch(image, /\/opengraph\.jpg|\/austin-hero\.png/);
@@ -436,6 +440,18 @@ test("every city sends its configured share image or platform fallback in the in
       assert.match(response.headers.get("content-type"), /^image\/(?:jpeg|png)/);
     }
   }
+});
+test("Leadership Austin shares its branded image in the initial document", async () => {
+  const host = "leadershipaustin.irl.group";
+  const image = `https://${host}/images/leadership-austin-share.png`;
+  const { response, body } = await document(host, "/", "facebookexternalhit/1.1");
+  assert.equal(response.status, 200);
+  assert.ok(body.includes(`<meta property="og:image" content="${image}">`));
+  assert.ok(body.includes(`<meta name="twitter:image" content="${image}">`));
+  assert.match(body, /<meta name="twitter:card" content="summary_large_image">/);
+  const asset = await document(host, "/images/leadership-austin-share.png");
+  assert.equal(asset.response.status, 200);
+  assert.match(asset.response.headers.get("content-type"), /^image\/png/);
 });
 test("Austin leads New York and Dallas in the city directory", async () => {
   const { response, body } = await document("eventcarpooling.com");

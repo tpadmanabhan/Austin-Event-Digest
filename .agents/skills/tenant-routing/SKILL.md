@@ -33,6 +33,16 @@ New active cities use the shared dynamic public web server; do not add API-only 
 
 After city setup, follow `docs/public-pages-publishing.md`: inspect no-JavaScript homepage/edition/event/venue content, correct branding/canonicals, robots and XML sitemap, real 404s for unknown tenants, and enabled navigation/signup/map controls. Treat AustinCares as deals and Tokyo as bilingual; never advertise unconfigured adapters as available features.
 
+## Tenant link previews and social images
+
+Every tenant homepage needs its own branded share image. Golf IRL and Leadership Austin are organization-style tenants but use the same subdomain preview requirements as cities.
+
+- Add the tenant slug and its public image path to `artifacts/austin-events/src/lib/city-share-image.ts`. The resolver is used by both the server-rendered initial document and client-side navigation; do not add a client-only override.
+- Use a tenant-specific raster image (preferably 1200×630 PNG/JPEG) that shows the tenant's name or mark with relevant local imagery. Do not use a favicon by itself or another tenant's logo. If no logo file exists, use the wordmark already shown on the tenant page.
+- The server inserts `og:image` and `twitter:image` into the initial HTML because share crawlers commonly do not execute the page's JavaScript. Keep `twitter:card` set to `summary_large_image`.
+- For each tenant, fetch the homepage as a crawler and confirm its initial HTML contains matching absolute HTTPS `og:image` and `twitter:image` URLs. Fetch the image URL separately and verify HTTP 200 and an image content type. Check the existing `public-model.test.mjs` coverage when adding or changing tenant images.
+- Social platforms cache previews. After a published change, request a re-scrape in the platform's sharing debugger where available; a browser refresh alone does not clear a cached card.
+
 Use persistent event/venue identities and source-verified ISO metadata. Keep signed subscriber actions private and preserve exact legacy inputs. Publishing and notifications require separate authorization.
 
 ## How It Works
