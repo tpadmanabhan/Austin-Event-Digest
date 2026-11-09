@@ -150,6 +150,16 @@ test("Leadership Austin client pages use admin-managed profiles in both shared v
   assert.doesNotMatch(home, /Suggest a community event/);
 });
 
+test("Leadership Austin full edition has one subscriber-verified event submission form after listings", () => {
+  const digest = readFileSync(new URL("../src/pages/digest.tsx", import.meta.url), "utf8");
+  const contribution = digest.indexOf("{isLeadershipAustin && <LeadershipEventContribution />}");
+  const eventListings = digest.indexOf("regularEvents.map");
+  const cityPromo = digest.indexOf("{/* AustinCares launch promo");
+  assert.ok(eventListings >= 0 && contribution > eventListings && cityPromo > contribution);
+  assert.equal((digest.match(/<LeadershipEventContribution\s*\/>/g) || []).length, 1);
+  assert.doesNotMatch(digest, /leadership-event-contribution-cta-title|Know an event the community should see\?|Suggest a community event/);
+});
+
 test("host resolution never defaults an unknown production host to Austin", () => {
   assert.equal(resolveSite("unrelated.example", false), null);
   assert.equal(resolveSite("tokyo.irl.group", false).slug, "tokyo");
