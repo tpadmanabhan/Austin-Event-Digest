@@ -139,6 +139,25 @@ test("Leadership Austin full editions end with a subscriber event contribution p
   assert.match(body, /Active subscribers can submit public events for review/);
   assert.match(body, /Approved events may appear on this site and in a future newsletter/);
   assert.match(body, /href="[^"]*#add-event"/);
+  assert.match(body, /View the Leadership Austin information page/);
+});
+
+test("Toys for Tots information page is public only on Leadership Austin", async () => {
+  const home = await document("leadershipaustin.irl.group", "/");
+  assert.equal(home.response.status, 200);
+  assert.match(home.body, /Support Toys for Tots in Austin/);
+  assert.match(home.body, /View the Leadership Austin information page/);
+
+  const leadership = await document("leadershipaustin.irl.group", "/toys-for-tots");
+  assert.equal(leadership.response.status, 200);
+  const model = modelOf(leadership.body);
+  assert.equal(model.kind, "toys-for-tots");
+  assert.equal(model.canonical, "https://leadershipaustin.irl.group/toys-for-tots");
+  assert.match(leadership.body, /secure\.toysfortots\.org\/a\/donatelocal/);
+  assert.match(leadership.body, /does not announce a Leadership Austin collection or drop-off location/i);
+
+  const austin = await document("austin.irl.group", "/toys-for-tots");
+  assert.equal(austin.response.status, 404);
 });
 
 test("Leadership Austin client pages use admin-managed profiles in both shared views", () => {
@@ -148,6 +167,8 @@ test("Leadership Austin client pages use admin-managed profiles in both shared v
   assert.match(digest, /<LeadershipAlumniTestimonial[\s\S]*?profiles={tenant\.leadershipClassProfiles}[\s\S]*?\/>/);
   assert.match(digest, /<AlumniHappeningsSection events={editionEvents as any\[\]} compact \/>/);
   assert.doesNotMatch(home, /Suggest a community event/);
+  assert.match(home, /LeadershipToysForTotsCallout/);
+  assert.match(digest, /LeadershipToysForTotsCallout/);
 });
 
 test("Leadership Austin full edition has one subscriber-verified event submission form after listings", () => {
@@ -538,6 +559,9 @@ test("robots and sitemaps have correct formats and exclude private links and pos
     assert.match(xml.body, /^<\?xml/);
     assert.doesNotMatch(xml.body, /<loc>[^<]*(?:\/admin|\/rsvp|email=|token=|000000000000000000000090)/);
   }
+  const leadershipSitemap = await document("leadershipaustin.irl.group", "/sitemap.xml");
+  assert.equal(leadershipSitemap.response.status, 200);
+  assert.match(leadershipSitemap.body, /https:\/\/leadershipaustin\.irl\.group\/toys-for-tots/);
 });
 test("unknown tenants, missing resources and post-only event URLs return real 404s", async () => {
   for (const [host, path] of [

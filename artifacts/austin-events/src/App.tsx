@@ -19,6 +19,7 @@ import { AdminLoginGate } from "@/components/admin-login-gate";
 import RsvpPage from "./pages/rsvp";
 import UnsubscribePage from "./pages/unsubscribe";
 import PreferencesPage from "./pages/preferences";
+import LeadershipToysForTotsPage from "./pages/toys-for-tots";
 import NotFound from "@/pages/not-found";
 import PlatformHome from "./pages/platform-home";
 import MaintenancePage from "./pages/maintenance";
@@ -280,6 +281,7 @@ function CityRoutes({ citySlug }: { citySlug: string }) {
           <Route path="/" component={citySlug === "austincares" ? AustinCaresDeals : Home} />
           <Route path="/full" component={citySlug === "austincares" ? AustinCaresFullEdition : NotFound} />
           <Route path="/digest/:id" component={DigestView} />
+          <Route path="/toys-for-tots" component={citySlug === "leadershipaustin" ? LeadershipToysForTotsPage : NotFound} />
           <Route path="/admin">
             <AdminLoginGate>
               <AdminDashboard />

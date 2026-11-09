@@ -189,6 +189,13 @@ export async function loadPublicModel(site, pathname) {
   Object.assign(base, { cityName, citySlug: site.slug, siteName: tenant.name });
   if (about) return { ...base, kind: "about", noindex: false, title: `About ${tenant.name} | In Real Life`,
     description: `Learn how ${tenant.name} brings together local events, newsletters, maps, and community participation.` };
+  if (pathname === "/toys-for-tots") {
+    if (site.slug !== "leadershipaustin") return base;
+    return { ...base, kind: "toys-for-tots", noindex: false,
+      title: "Toys for Tots | Leadership Austin",
+      description: "Find the official Austin, TX Toys for Tots campaign donation page.",
+      canonical: `${origin}/toys-for-tots`, homeUrl: "/" };
+  }
   const digestMatch = pathname.match(/^\/digest\/(\d+)$/);
   if (pathname !== "/" && pathname !== "/full" && !digestMatch && !pathname.startsWith("/events/") && !pathname.startsWith("/venues/")) return base;
   if (pathname === "/full" && site.slug !== "austincares") return base;
@@ -268,6 +275,7 @@ export async function sitemap(site) {
   const collection = await publicApi(site, "/events/digest/list");
   const urls = new Set([origin + "/", origin + "/about"]);
   if (site.slug === "austincares") urls.add(origin + "/full");
+  if (site.slug === "leadershipaustin") urls.add(`${origin}/toys-for-tots`);
   for (const digest of collection?.digests || []) {
     urls.add(`${origin}/digest/${digest.id}`);
     if (site.slug !== "austincares") for (const raw of digest.events || []) {

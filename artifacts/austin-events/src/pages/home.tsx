@@ -28,6 +28,7 @@ import { PrivacyFirstGroupsFeature } from "@/components/privacy-first-groups-fea
 import { LA_HERO_IMAGE_URL } from "@/lib/city-share-image";
 import { AlumniHappeningsSection } from "@/components/alumni-happenings-section";
 import { LeadershipClassProfiles } from "@/components/leadership-class-profiles";
+import { LeadershipToysForTotsCallout } from "@/components/leadership-toys-for-tots-callout";
 
 const SHOW_AUSTIN_CARES = true;
 
@@ -1031,6 +1032,11 @@ export default function Home() {
         </div>
       </section>
 
+      {isLeadershipAustin && (
+        <section className="bg-background px-4 py-8 sm:px-6 lg:px-8">
+          <LeadershipToysForTotsCallout />
+        </section>
+      )}
 
       {SHOW_AUSTIN_CARES && tenant.slug === "austin" && (
         <section className="py-16 px-4 sm:px-6 lg:px-8">

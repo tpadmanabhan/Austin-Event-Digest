@@ -11,6 +11,7 @@ import { useTenant } from "@/contexts/tenant-context";
 import { AlumniHappeningsSection } from "@/components/alumni-happenings-section";
 import { LeadershipAlumniTestimonial } from "@/components/leadership-alumni-testimonial";
 import { LeadershipEventContribution } from "@/components/leadership-event-contribution";
+import { LeadershipToysForTotsCallout } from "@/components/leadership-toys-for-tots-callout";
 import { useLanguage } from "@/contexts/language-context";
 import { JA } from "@/i18n/ja";
 import { EventMap } from "@/components/event-map";
@@ -1108,6 +1109,11 @@ export default function DigestView() {
             </>
           );
         })()}
+        {isLeadershipAustin && (
+          <div className="mt-10">
+            <LeadershipToysForTotsCallout />
+          </div>
+        )}
         {isLeadershipAustin && <LeadershipEventContribution />}
 
         {/* AustinCares launch promo — shown on every city digest except AustinCares itself */}

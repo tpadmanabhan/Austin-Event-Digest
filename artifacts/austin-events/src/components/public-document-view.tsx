@@ -12,6 +12,7 @@ import { MiamiFeaturedEvent, isMiamiFeaturedEvent } from "./miami-featured-event
 import { SpockAboutMention } from "./spock-mascot";
 import { AlumniHappeningsSection } from "./alumni-happenings-section";
 import { LeadershipAlumniTestimonial } from "./leadership-alumni-testimonial";
+import { LEADERSHIP_TOYS_FOR_TOTS_URL } from "@/lib/leadership-toys-for-tots";
 
 const wrap = "mx-auto max-w-3xl px-4 py-10 sm:px-6";
 const linkCls = "font-semibold text-green-800 underline underline-offset-2 hover:text-green-700";
@@ -164,6 +165,25 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
         {miamiFeatured && <MiamiFeaturedEvent event={miamiFeatured} digestId={model.digestId} className="mt-10" />}
       <h2 className="mb-4 mt-10 font-serif text-2xl font-bold text-slate-900">{kind === "deals" ? "Local deals" : model.citySlug === "austin" || model.editionRange || isLeadershipAustin ? "Upcoming events" : "Events this week"}</h2>
         <EventList events={listEvents} />
+        {isLeadershipAustin && (kind === "city" || kind === "digest") && (
+          <section aria-labelledby="public-toys-for-tots-title" className="mt-8 rounded-2xl border border-[#314363]/20 bg-slate-50 p-5">
+            <h2 id="public-toys-for-tots-title" className="font-serif text-xl font-bold text-[#314363]">
+              Support Toys for Tots in Austin
+            </h2>
+            <p className="mt-2 text-sm text-slate-700">
+              See the official Austin, TX campaign donation information.
+            </p>
+            <p className="mt-3">
+              <a href="/toys-for-tots" className="font-semibold text-[#314363] underline underline-offset-2">
+                View the Leadership Austin information page
+              </a>
+              {" · "}
+              <a href={LEADERSHIP_TOYS_FOR_TOTS_URL} rel="noopener noreferrer" className="font-semibold text-[#314363] underline underline-offset-2">
+                Official campaign link
+              </a>
+            </p>
+          </section>
+        )}
         {isLeadershipAustin && kind === "digest" && (
           <section aria-labelledby="public-event-contribution-title" className="mt-8 flex flex-col gap-4 rounded-2xl border border-[#314363]/20 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -199,6 +219,24 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
             </a>
           ) : null}
           <a href={subscribe} className={linkCls}>Subscribe to the newsletter</a>
+        </p>
+      </>
+    );
+  } else if (kind === "toys-for-tots") {
+    body = (
+      <>
+        <p className="text-xs font-bold uppercase tracking-widest text-[#314363]">Community giving · Austin, TX</p>
+        <h1 className="mt-2 font-serif text-3xl font-bold text-[#314363] sm:text-4xl">Toys for Tots</h1>
+        <p className="mt-3 text-lg text-slate-800">
+          Visit the official Austin, TX campaign page for donation information.
+        </p>
+        <p className="mt-5">
+          <a href={LEADERSHIP_TOYS_FOR_TOTS_URL} rel="noopener noreferrer" className="font-bold text-[#314363] underline underline-offset-2">
+            Open the official Austin campaign donation page
+          </a>
+        </p>
+        <p className="mt-5 max-w-3xl text-slate-700">
+          This page shares the official campaign link only. It does not announce a Leadership Austin collection or drop-off location.
         </p>
       </>
     );

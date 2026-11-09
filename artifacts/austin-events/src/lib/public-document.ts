@@ -22,7 +22,7 @@ export interface PublicEvent {
 }
 
 export interface PublicDocumentModel {
-  kind: "platform" | "city" | "digest" | "event" | "venue" | "about" | "deals" | "not-found" | "unavailable" | "private";
+  kind: "platform" | "city" | "digest" | "event" | "venue" | "about" | "deals" | "toys-for-tots" | "not-found" | "unavailable" | "private";
   title: string;
   description: string;
   canonical: string;
