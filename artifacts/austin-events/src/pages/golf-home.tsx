@@ -91,7 +91,7 @@ export function GolfHomePage({
           <div className={`gh-course-grid ${courses.length === 1 ? "gh-course-grid-single" : ""}`}>
             {courses.map((course, index) => (
               <a
-                className={`gh-course-card gh-course-card-${index % 3}`}
+                className={`gh-course-card gh-course-card-${courses.length === 5 ? index % 3 : index % 2}`}
                 href={course.href}
                 key={`${course.name}-${course.href}`}
               >
