@@ -1294,26 +1294,26 @@ export async function runStartupMigration(): Promise<void> {
     logger.warn({ err }, "Leadership Austin seed failed (non-fatal)");
   }
 
-  // Golf IRL is development-only until production activation is explicitly approved.
+  // Provision Golf IRL in each environment once approved; keep existing tenant settings unchanged.
   try {
-    if (process.env.NODE_ENV !== "production") {
-      const [existingGolf] = await db.select({ id: tenantsTable.id }).from(tenantsTable)
-        .where(eq(tenantsTable.slug, "golf")).limit(1);
-      if (!existingGolf) {
-        const configuredPassword = process.env.ADMIN_PASSWORD;
-        const passwordHash = configuredPassword && configuredPassword.trim().length >= 12
-          ? await hashPassword(configuredPassword)
-          : null;
-        await db.execute(sql`
-          INSERT INTO tenants (slug, name, city, accent_color, categories, digest_title,
-            is_active, email_verified, password_hash)
-          VALUES ('golf', 'Golf IRL', 'Austin, TX', '#286551',
-            '["Sports"]'::jsonb, 'Golf IRL', true, false, ${passwordHash})
-          ON CONFLICT (slug) DO NOTHING
-        `);
-      }
+    const [existingGolf] = await db.select({ id: tenantsTable.id }).from(tenantsTable)
+      .where(eq(tenantsTable.slug, "golf")).limit(1);
+    let created = false;
+    if (!existingGolf) {
+      const configuredPassword = process.env.ADMIN_PASSWORD;
+      const passwordHash = configuredPassword && configuredPassword.trim().length >= 12
+        ? await hashPassword(configuredPassword)
+        : null;
+      await db.execute(sql`
+        INSERT INTO tenants (slug, name, city, accent_color, categories, digest_title,
+          is_active, email_verified, password_hash)
+        VALUES ('golf', 'Golf IRL', 'Austin, TX', '#286551',
+          '["Sports"]'::jsonb, 'Golf IRL', true, false, ${passwordHash})
+        ON CONFLICT (slug) DO NOTHING
+      `);
+      created = true;
     }
-    logger.info({ enabled: process.env.NODE_ENV !== "production" }, "Golf IRL development tenant checked");
+    logger.info({ created, environment: process.env.NODE_ENV }, "Golf IRL tenant provisioning checked");
   } catch (err) {
     logger.warn({ err }, "Golf IRL tenant seed failed (non-fatal)");
   }
