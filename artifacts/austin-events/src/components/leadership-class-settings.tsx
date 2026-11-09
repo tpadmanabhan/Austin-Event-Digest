@@ -156,8 +156,8 @@ export function LeadershipClassSettings() {
         <div>
           <h3 className="font-serif text-lg font-bold text-foreground">Leadership Austin class profiles</h3>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            These details appear below “Hey, all alumni” on the full edition and in the newsletter email.
-            Add one profile for each class.
+            These shared details appear on the landing page, full edition, and newsletter email.
+            Add one profile for each class. Full-edition-only content stays on the full edition.
           </p>
         </div>
         <Button type="button" variant="outline" onClick={addProfile} disabled={profiles.length >= 20}>

@@ -117,6 +117,8 @@ test("Leadership Austin's public edition renders its configured class and rep ph
   assert.equal(response.status, 200);
   const model = modelOf(body);
   assert.equal(model.leadershipClassProfiles[0].className, "LA Emerge 18-2025");
+  assert.equal(model.leadershipClassProfiles[0].classRepName, "Alexandria Robertson");
+  assert.equal(model.leadershipClassProfiles[0].classRepPhotoUrl, "/api/storage/objects/rep-photo");
   assert.match(body, /src="\/api\/storage\/objects\/class-photo"/);
   assert.match(body, /src="\/api\/storage\/objects\/rep-photo"/);
   assert.match(body, /Alexandria Robertson/);
@@ -129,10 +131,23 @@ test("Leadership Austin's public edition renders its configured class and rep ph
 test("Leadership Austin full editions end with a subscriber event contribution prompt", async () => {
   const { response, body } = await document("leadershipaustin.irl.group", "/digest/9");
   assert.equal(response.status, 200);
+  const model = modelOf(body);
+  assert.equal(model.leadershipClassProfiles[0].classRepPhotoUrl, "/api/storage/objects/rep-photo");
+  assert.match(body, /src="\/api\/storage\/objects\/class-photo"/);
+  assert.match(body, /src="\/api\/storage\/objects\/rep-photo"/);
   assert.match(body, /Suggest a community event/);
   assert.match(body, /Active subscribers can submit public events for review/);
   assert.match(body, /Approved events may appear on this site and in a future newsletter/);
   assert.match(body, /href="[^"]*#add-event"/);
+});
+
+test("Leadership Austin client pages use admin-managed profiles in both shared views", () => {
+  const home = readFileSync(new URL("../src/pages/home.tsx", import.meta.url), "utf8");
+  const digest = readFileSync(new URL("../src/pages/digest.tsx", import.meta.url), "utf8");
+  assert.match(home, /<LeadershipClassProfiles profiles={tenant\.leadershipClassProfiles} variant="dark" \/>/);
+  assert.match(digest, /<LeadershipAlumniTestimonial[\s\S]*?profiles={tenant\.leadershipClassProfiles}[\s\S]*?\/>/);
+  assert.match(digest, /<AlumniHappeningsSection events={editionEvents as any\[\]} compact \/>/);
+  assert.doesNotMatch(home, /Suggest a community event/);
 });
 
 test("host resolution never defaults an unknown production host to Austin", () => {

@@ -616,7 +616,12 @@ export default function DigestView() {
                 )}
               </p>
             )}
-            {isLeadershipAustin && <LeadershipAlumniTestimonial className="not-prose" />}
+            {isLeadershipAustin && (
+              <LeadershipAlumniTestimonial
+                className="not-prose"
+                profiles={tenant.leadershipClassProfiles}
+              />
+            )}
           </div>
           {!isLeadershipAustin && tenant.slug === "austin" && <AiEthicsSection className="mt-6" />}
           {isSF && <SfAiEthicsSection className="mt-6" />}

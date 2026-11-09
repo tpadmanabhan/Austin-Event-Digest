@@ -1,6 +1,6 @@
 ---
 name: alumni-tenant-rollout
-description: "Plan or launch an IRL Group tenant for an alumni association, cohort, or professional community. Use for organization-based tenants modeled on Leadership Austin, not for a one-off event edit or a geographic city guide."
+description: "Plan organization-based alumni/cohort tenants or add a Leadership Austin class cohort. Use for tenant rollouts or managing Leadership Austin class profiles, not for a one-off event edit or a geographic city guide."
 ---
 
 # Alumni and Cohort Tenant Rollouts
@@ -24,6 +24,20 @@ Leadership Austin demonstrates a persistent event feed alongside the weekly dige
 - The current feed resolver uses Austin's tenant, time zone, and geocoding behavior.
 
 These are not tenant-provisioning defaults. A new group will not get this feed by inserting a tenant or event row. Before onboarding another group, decide whether to generalize the persistent event model and tenant configuration; avoid expanding one-off slug checks. Keep attribution and community links specific to the organization and never reuse another cohort's contact or invite link.
+
+## Add a class cohort to Leadership Austin
+
+Adding an Emerge or other Leadership Austin class cohort is a profile update on the existing `leadershipaustin` tenant, not a new tenant rollout. Use the authenticated Leadership Austin admin page:
+
+1. Open **Admin → Settings → Leadership Austin class profiles** and select **Add class**.
+2. Enter a unique class name and class rep name. Add the rep's LinkedIn profile and cohort WhatsApp/LinkedIn links only when verified for that cohort.
+3. Upload the class image and rep portrait when available. The admin editor accepts JPG, PNG, WEBP, or GIF up to 4 MB; it stores the resulting object paths. Do not copy another cohort's private invitation or contact links.
+4. Select **Save class profiles**. The saved profile list is capped at 20 entries, requires at least one profile, and requires both names for every profile.
+5. Verify the new profile on the Leadership Austin landing page, a full edition, and the newsletter preview if the email is in scope. Confirm image URLs load and existing cohorts remain present.
+
+Class name, rep name/photo, class photo, and group links are shared profile fields rendered from the tenant's saved `leadershipClassProfiles`. Keep them consistent across the landing page, full edition, and email. Full-edition-only event or edition content must remain on that surface; do not copy it onto the landing page just to make pages look alike.
+
+If editing through the admin API instead of the UI, first read the current profile array, append or edit only the intended profile, and send the complete preserved array to `PATCH /api/admin/settings` as `leadershipClassProfiles`. Each entry needs a unique nonempty `id`, `className`, `classRepName`, `classRepLinkedInUrl`, `teamWhatsAppUrl`, `teamLinkedInUrl`, `classPhotoUrl`, and `classRepPhotoUrl`; unused links should be empty strings and unused photos should be `null`. The route validates 1–20 entries and unique IDs. Use `admin-api-auth` for the correct environment and never write profiles directly to the database.
 
 ## Rollout workflow
 
