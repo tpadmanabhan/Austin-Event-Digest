@@ -18,13 +18,14 @@ interface TenantSummary {
   categories: string[];
 }
 
-const FEATURED_CITY_SLUG = "austin";
-const LIVE_CITY_ORDER = ["austin", "nyc", "dallas", "manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
-const NEW_CITY_SLUGS = new Set([FEATURED_CITY_SLUG]);
+const FEATURED_CITY_SLUG = "golf";
+const LIVE_CITY_ORDER = ["golf", "austin", "nyc", "dallas", "manchester", "osaka", "la", "boston", "atlanta", "sanfrancisco", "sacramento", "miami", "houston", "tokyo", "stlouis", "portland", "bulverde", "dc"];
+const NEW_CITY_SLUGS = new Set(["golf", "austin"]);
 const cityUrl = (slug: string) => `https://${slug}.irl.group`;
 const publicImage = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
 
 const CITY_DIRECTORY = [
+  { slug: "golf", name: "Golf IRL", city: "Austin", image: publicImage("golf-share.png"), alt: "Golf IRL community on an Austin-area golf course" },
   { slug: "austin", name: "Raj's Austin Events", city: "Austin", image: publicImage("austin-hero.png"), alt: "Austin skyline at sunset" },
   { slug: "nyc", name: "New York City Events", city: "New York City", image: publicImage("nyc-hero-photo.jpg"), alt: "New York skyline at blue hour viewed across the East River" },
   { slug: "dallas", name: "Dallas Events", city: "Dallas", image: publicImage("dallas-hero.jpg"), alt: "Dallas skyline at dusk" },
@@ -77,9 +78,12 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
   const japaneseCity = lang === "ja" ? JAPANESE_CITY_COPY[city.slug] : undefined;
   const cityName = japaneseCity?.city ?? city.city;
   const displayName = japaneseCity?.name ?? city.name;
-  const readingTitle = reading
+  const readingTitle = city.slug === "golf"
+    ? copy.golfCardDescription
+    : reading
     ? lang === "ja" ? reading.jaLabel : reading.label
     : copy.cityExplore.replace("{city}", cityName);
+  const ReadingIcon = city.slug === "golf" ? MapPin : Newspaper;
   return (
       <article className={`city-card group ${city.slug === FEATURED_CITY_SLUG ? "city-card-featured" : ""} ${city.slug === "dallas" ? "city-card-dallas" : ""}`}>
       <a className="city-card-main" href={cityUrl(city.slug)} target="_blank" rel="noopener noreferrer" aria-label={lang === "ja" ? `${displayName}を見る` : `Visit ${city.name}`}>
@@ -97,7 +101,7 @@ function CityCard({ city }: { city: (typeof CITY_DIRECTORY)[number] }) {
         <ExternalLink className="city-card-external" size={17} aria-hidden="true" />
       </a>
       <a className="city-card-reading" href={reading?.href ?? cityUrl(city.slug)} target="_blank" rel="noopener noreferrer">
-        <span className="reading-label"><Newspaper size={14} aria-hidden="true" />{copy.localEthics}</span>
+        <span className="reading-label"><ReadingIcon size={14} aria-hidden="true" />{city.slug === "golf" ? copy.golfCommunity : copy.localEthics}</span>
         <span className="reading-title">{readingTitle}</span>
         <ExternalLink size={13} aria-hidden="true" />
       </a>

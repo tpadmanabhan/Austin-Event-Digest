@@ -20,6 +20,8 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
   customNewsletterEnding: string;
   newBadge: string;
   localEthics: string;
+  golfCommunity: string;
+  golfCardDescription: string;
   cityExplore: string;
   directoryError: string;
   tryAgain: string;
@@ -62,6 +64,8 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
     customNewsletterEnding: ".",
     newBadge: "New",
     localEthics: "Local AI Ethics",
+    golfCommunity: "Golf IRL community",
+    golfCardDescription: "Austin golf events and community rounds",
     cityExplore: "Explore the {city} edition",
     directoryError: "The directory is taking a moment. Showing the available editions.",
     tryAgain: "Try again",
@@ -104,6 +108,8 @@ export const PLATFORM_HOME_COPY: Record<Lang, {
     customNewsletterEnding: "。",
     newBadge: "新着",
     localEthics: "地域のAI倫理",
+    golfCommunity: "Golf IRLコミュニティ",
+    golfCardDescription: "オースティンのゴルフイベントと交流ラウンド",
     cityExplore: "{city}の都市版を見る",
     directoryError: "都市一覧の読み込みに時間がかかっています。表示できる都市をご案内します。",
     tryAgain: "再読み込み",

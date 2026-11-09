@@ -226,21 +226,22 @@ test("the platform document is readable and has real city links without scripts 
   assert.match(body, /Every edition has its own point of view/);
   assert.match(body, /Raj’s Austin Events/);
   assert.match(body, /https:\/\/austincares\.irl\.group/);
+  assert.match(body, /https:\/\/golf\.irl\.group/);
   assert.match(body, /https:\/\/nyc\.irl\.group/);
   assert.match(body, /https:\/\/dallas\.irl\.group/);
   const platformHomeSource = readFileSync(new URL("../src/pages/platform-home.tsx", import.meta.url), "utf8");
   assert.match(platformHomeSource, /<CityEventsFeed \/>/,
     "the hydrated irl.group landing page should show the cross-city event feed");
-  assert.match(platformHomeSource, /const FEATURED_CITY_SLUG = "austin"/,
-    "Austin should be the featured city");
-  assert.match(platformHomeSource, /const LIVE_CITY_ORDER = \["austin", "nyc", "dallas"/,
-    "Austin should lead the city directory");
-  assert.match(platformHomeSource, /const NEW_CITY_SLUGS = new Set\(\[FEATURED_CITY_SLUG\]\)/,
-    "Austin should be the only city marked new");
+  assert.match(platformHomeSource, /const FEATURED_CITY_SLUG = "golf"/,
+    "Golf IRL should be the featured city");
+  assert.match(platformHomeSource, /const LIVE_CITY_ORDER = \["golf", "austin", "nyc", "dallas"/,
+    "Golf IRL should lead, with Austin next in the city directory");
+  assert.match(platformHomeSource, /const NEW_CITY_SLUGS = new Set\(\["golf", "austin"\]\)/,
+    "Golf IRL and Austin should both carry the New badge");
   assert.match(platformHomeSource, /city\.slug === FEATURED_CITY_SLUG \? "city-card-featured"/,
-    "Austin should use the featured card style");
+    "Golf IRL should use the featured card style");
   assert.match(platformHomeSource, /NEW_CITY_SLUGS\.has\(city\.slug\).*copy\.newBadge/,
-    "the New badge should be limited to the configured city");
+    "the New badge should use the shared translated label");
   const platformHomeCopySource = readFileSync(new URL("../src/i18n/platform-home.ts", import.meta.url), "utf8");
   assert.doesNotMatch(platformHomeCopySource, /NEW EDITION|新しい都市版/,
     "the Boston collage label should not imply another new city");
@@ -251,16 +252,17 @@ test("the platform document is readable and has real city links without scripts 
   assert.equal(model.title, "In Real Life (IRL) — Worthwhile things, close by");
   assert.equal(model.schema.name, "In Real Life");
   assert.equal(model.schema.alternateName, "IRL");
-  assert.equal(model.cities[0].slug, "austin");
-  assert.equal(model.cities[1].slug, "nyc");
-  assert.equal(model.cities[2].slug, "dallas");
-  assert.equal(model.cities[3].slug, "manchester");
+  assert.equal(model.cities[0].slug, "golf");
+  assert.equal(model.cities[1].slug, "austin");
+  assert.equal(model.cities[2].slug, "nyc");
+  assert.equal(model.cities[3].slug, "dallas");
+  assert.equal(model.cities[4].slug, "manchester");
   assert.ok(model.cities.some(city => city.slug === "manchester"), "Manchester should remain in the directory");
-  assert.equal(model.cities.length, 19);
+  assert.equal(model.cities.length, 20);
   assert.ok(model.cities.every(city => city.url.startsWith("https://") && city.url.endsWith(".irl.group/")));
   assert.ok(model.cities.every(city => !("isNew" in city)), "City listings must not advertise New badges");
-  assert.match(model.cities[1].ethicsUrl, /nyc\.irl\.group\/#city-ai-ethics/);
-  assert.equal(model.cities[4].slug, "la");
+  assert.match(model.cities[2].ethicsUrl, /nyc\.irl\.group\/#city-ai-ethics/);
+  assert.equal(model.cities[5].slug, "la");
   assert.match(body, /https:\/\/tokyo\.irl\.group\//);
   assert.match(body, /<h1/);
   assert.equal(modelOf(body).kind, "platform");
@@ -453,15 +455,16 @@ test("Leadership Austin shares its branded image in the initial document", async
   assert.equal(asset.response.status, 200);
   assert.match(asset.response.headers.get("content-type"), /^image\/png/);
 });
-test("Austin leads New York and Dallas in the city directory", async () => {
+test("Golf IRL leads Austin in the city directory", async () => {
   const { response, body } = await document("eventcarpooling.com");
   assert.equal(response.status, 200);
   const cities = modelOf(body).cities;
-  assert.equal(cities[0].slug, "austin");
-  assert.equal(cities[1].slug, "nyc");
-  assert.equal(cities[2].slug, "dallas");
-  assert.equal(cities[2].ethicsTitle, "Dallas AI Plan and governance briefing");
-  assert.equal(cities[2].ethicsUrl, "https://dallascityhall.com/government/citymanager/Documents/Council%20Materials/C.%20Update%20on%20AI%20City%20AI%20Plan.pdf");
+  assert.equal(cities[0].slug, "golf");
+  assert.equal(cities[1].slug, "austin");
+  assert.equal(cities[2].slug, "nyc");
+  assert.equal(cities[3].slug, "dallas");
+  assert.equal(cities[3].ethicsTitle, "Dallas AI Plan and governance briefing");
+  assert.equal(cities[3].ethicsUrl, "https://dallascityhall.com/government/citymanager/Documents/Council%20Materials/C.%20Update%20on%20AI%20City%20AI%20Plan.pdf");
 });
 test("platform and future city image fallbacks never borrow Austin's preview", async () => {
   const { response, body } = await document("eventcarpooling.com");

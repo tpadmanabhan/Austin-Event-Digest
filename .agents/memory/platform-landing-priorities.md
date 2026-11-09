@@ -9,11 +9,11 @@ Prioritize “Event Newsletter in an Hour,” city editions, AustinCares deals, 
 
 **How to apply:** Keep future platform-homepage changes concise, preserve Boston as the hero collage's lead image, and use pleasing, restful colors with scenic city photos rather than returning to a dense feature catalogue.
 
-Austin is the featured city in the directory and the only city with a New badge. Keep Austin first and featured; do not mark other cities New.
+Golf IRL is the featured directory card and carries the shared New badge. Keep Austin second in a compact card beside Golf IRL; Austin retains its New badge.
 
-**Why:** On November 1, 2026, the user directed that Austin replace New York City as the featured directory city and carry the only New badge.
+**Why:** On November 9, 2026, the user asked to feature golf.irl.group with the same New label as Austin and place Austin in the smaller pane beside it.
 
-**How to apply:** Keep the interactive city directory and the public HTML fallback ordered with Austin first, and keep all other city cards free of New badges.
+**How to apply:** Keep Golf IRL first and featured, Austin second and compact, and both badges localized consistently in the interactive directory and city links ordered alike in the public HTML fallback.
 
 Preserve public HTML readability when redesigning the page, not only its JavaScript view.
 

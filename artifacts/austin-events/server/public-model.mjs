@@ -134,7 +134,7 @@ export function eventSchema(event, origin) {
 
 import cityAiEthicsData from "../../../shared/city-ai-ethics.json" with { type: "json" };
 
-const PLATFORM_CITY_ORDER = ["austin", "golf", "nyc", "dallas", "manchester", "la", "boston", "atlanta", "sanfrancisco", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
+const PLATFORM_CITY_ORDER = ["golf", "austin", "nyc", "dallas", "manchester", "la", "boston", "atlanta", "sanfrancisco", "sacramento", "miami", "houston", "tokyo", "osaka", "stlouis", "portland", "bulverde", "dc", "austincares", "brushycreek"];
 const CITY_ETHICS_RESOURCES = {
   la: { url: "https://ita.lacity.gov/news/ita-publishes-ai-safety-checklist", title: "L.A. A.I. Safety Checklist" },
   boston: { url: "https://www.boston.gov/government/cabinets/innovation-and-technology/city-boston-generative-artificial-intelligence-gen-ai", title: "Boston’s generative AI policy" },
@@ -151,10 +151,13 @@ export async function loadPublicModel(site, pathname) {
   const listing = await publicApi(site, "/tenants/list");
   const tenants = listing?.tenants || [];
   const tenant = site.slug ? tenants.find(t => t.slug === site.slug) : null;
+  const directoryTenants = !site.slug && !tenants.some(t => t.slug === "golf")
+    ? [...tenants, { slug: "golf", name: "Golf IRL", city: "Austin, TX" }]
+    : tenants;
   const base = {
     kind: "not-found", title: "Page not found | In Real Life", description: "This public page could not be found.",
     canonical: origin + pathname, homeUrl: "/", events: [],
-    cities: tenants.map(t => {
+    cities: directoryTenants.map(t => {
       const url = `https://${t.slug}.${PLATFORM_DOMAIN}/`;
       const ethics = CITY_ETHICS_RESOURCES[t.slug];
       const localEthics = cityAiEthicsData[t.slug];
