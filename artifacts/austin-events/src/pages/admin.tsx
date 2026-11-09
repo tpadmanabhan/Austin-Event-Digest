@@ -1296,7 +1296,7 @@ export default function AdminDashboard() {
                   <h3 className="font-semibold text-sm">Generate from Event Sources</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {isLeadershipAustin
-                      ? "Paste up to 10 event page URLs to find upcoming events in the next 30 days."
+                      ? "Paste up to 10 event page URLs to find upcoming events in the next 30 days. Some CRM portals load events with JavaScript; use a direct event page or add the event manually."
                       : "Paste up to 10 event page URLs (Luma, Eventbrite, Meetup, org sites, etc.) and we'll extract this week's events"}
                   </p>
                 </div>
@@ -2294,7 +2294,7 @@ export default function AdminDashboard() {
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl">Add Event from URL</DialogTitle>
             <DialogDescription>
-              Paste an event URL — fields will be auto-filled from the page. Review and save to append to {isLeadershipAustin ? "edition" : "digest"} #{addEventDigestId}.
+              Paste a direct event URL to auto-fill fields. Some event portals load details with JavaScript; if auto-fill fails, enter the details below and the URL can still be saved to {isLeadershipAustin ? "edition" : "digest"} #{addEventDigestId}.
             </DialogDescription>
           </DialogHeader>
           <div className="py-3 space-y-3">

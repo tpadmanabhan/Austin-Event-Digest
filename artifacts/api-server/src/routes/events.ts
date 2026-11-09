@@ -1552,7 +1552,10 @@ router.post("/digest/:id/parse-event-url", requireAdmin, async (req, res) => {
     res.json({ success: true, event });
   } catch (err) {
     req.log.warn({ err }, "Failed to parse event URL");
-    res.status(400).json({ error: "invalid_request", message: "This event link could not be read safely." });
+    res.status(400).json({
+      error: "invalid_request",
+      message: "Could not auto-fill event details from this page. Use a direct event page or enter the details manually; a public event URL can still be saved.",
+    });
   }
 });
 
