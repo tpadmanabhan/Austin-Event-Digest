@@ -6,6 +6,11 @@ import { LeadershipEventContribution } from "@/components/leadership-event-contr
 import { GOLF_COURSES } from "@/lib/golf-courses";
 import { GolfHomePage } from "./golf-home";
 
+const SPARK_GOLF_LOGO =
+  "https://spark-golf.imgix.net/assets/spark-logo-d7427997.png?w=800&auto=format&fit=max";
+const FIRST_TEE_COMMUNITY_IMAGE =
+  "https://firsttee.org/wp-content/uploads/2025/09/RG2_1879-scaled.jpg";
+
 function isGolfEvent(event: any): boolean {
   if (event?.isBusinessSpotlight || event?.isPost) return false;
   if (event?.managedEventId || event?.isPersistentManaged) return true;
@@ -51,12 +56,26 @@ export default function GolfHomeRoute() {
   }, [latestDigest?.events, managedEventsQuery.data?.events]);
   const spotlights = (latestDigest?.events ?? [])
     .filter((event: any) => event?.isBusinessSpotlight || event?.isPost)
-    .map((event: any) => ({
-      type: event.isBusinessSpotlight ? "business" as const : "community" as const,
-      title: String(event.title ?? ""),
-      description: String(event.description ?? ""),
-      link: String(event.link ?? ""),
-    }))
+    .map((event: any) => {
+      const title = String(event.title ?? "");
+      const link = String(event.link ?? "");
+      const providedImage = typeof event.imageUrl === "string" ? event.imageUrl.trim() : "";
+      const normalizedLink = link.toLowerCase();
+      const fallbackImage = normalizedLink.includes("spark.golf")
+        ? { src: SPARK_GOLF_LOGO, alt: "Spark Golf logo" }
+        : normalizedLink.includes("firsttee.org")
+          ? { src: FIRST_TEE_COMMUNITY_IMAGE, alt: "First Tee participants celebrating at a golf program" }
+          : undefined;
+
+      return {
+        type: event.isBusinessSpotlight ? "business" as const : "community" as const,
+        title,
+        description: String(event.description ?? ""),
+        link,
+        imageSrc: providedImage || fallbackImage?.src,
+        imageAlt: providedImage ? `${title} image` : fallbackImage?.alt,
+      };
+    })
     .filter((spotlight) => spotlight.title && spotlight.link);
 
   return (

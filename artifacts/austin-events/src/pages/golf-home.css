@@ -247,95 +247,19 @@
   position: relative;
   min-height: 425px;
   overflow: hidden;
-  isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 28px 8px 28px 8px;
+  background: #315c40;
+  box-shadow: 0 24px 55px rgba(7, 28, 20, .24);
 }
-.gh-sun {
-  position: absolute;
-  top: 2%;
-  right: 13%;
-  width: clamp(100px, 13vw, 170px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 34%, #f5dda9, #dfab68);
-  box-shadow: 0 0 0 18px rgba(235, 197, 131, .07), 0 0 75px rgba(234, 196, 130, .2);
+.gh-hero-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  object-fit: cover;
+  object-position: center;
 }
-.gh-art-orbit {
-  position: absolute;
-  border: 1px solid rgba(236, 229, 202, .34);
-  border-radius: 50%;
-  transform: rotate(-27deg);
-}
-.gh-art-orbit-one { width: 100%; height: 49%; top: 12%; left: -5%; }
-.gh-art-orbit-two { width: 116%; height: 64%; top: 2%; left: -14%; opacity: .56; }
-.gh-hill { position: absolute; left: -6%; right: -8%; bottom: -1%; }
-.gh-hill-back {
-  height: 66%;
-  border-radius: 51% 49% 0 0 / 22% 33% 0 0;
-  background: linear-gradient(160deg, #668a61, #376e52 65%);
-  transform: rotate(3deg) translateY(6%);
-}
-.gh-hill-front {
-  height: 53%;
-  border-radius: 52% 48% 0 0 / 26% 22% 0 0;
-  background:
-    repeating-linear-gradient(159deg, transparent 0 22px, rgba(217, 225, 174, .14) 23px 24px, transparent 25px 42px),
-    linear-gradient(165deg, #80a568, #4e8258 58%, #376b4d);
-  transform: rotate(-3deg) translateY(18%);
-  box-shadow: 0 -1px rgba(241, 229, 186, .55);
-}
-.gh-pin {
-  position: absolute;
-  z-index: 2;
-  right: 24%;
-  bottom: 43%;
-  height: 102px;
-  color: #f1c67f;
-  transform-origin: bottom center;
-  animation: gh-pin-sway 4.8s ease-in-out infinite;
-}
-.gh-pin::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 10px;
-  width: 1px;
-  height: 97px;
-  background: rgba(255, 245, 221, .75);
-}
-.gh-pin svg { position: relative; z-index: 1; }
-.gh-ball {
-  position: absolute;
-  z-index: 3;
-  bottom: 17%;
-  left: 29%;
-  width: 39px;
-  height: 39px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 26%, #fffdf3, #e7e4d7 72%, #c8c7b9);
-  box-shadow: 0 8px 15px rgba(15, 42, 33, .22);
-  animation: gh-ball-bob 4.8s ease-in-out infinite;
-}
-.gh-ball span, .gh-ball span::before, .gh-ball span::after {
-  position: absolute;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: rgba(109, 119, 105, .3);
-  content: "";
-}
-.gh-ball span { left: 12px; top: 12px; }
-.gh-ball span::before { left: 10px; top: 4px; }
-.gh-ball span::after { left: 5px; top: 12px; }
-.gh-art-label {
-  position: absolute;
-  z-index: 4;
-  color: rgba(247, 245, 226, .78);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .18em;
-}
-.gh-art-label-top { top: 9%; left: 2%; }
-.gh-art-label-bottom { right: 0; bottom: 17%; writing-mode: vertical-rl; }
 .gh-scroll-cue {
   position: absolute;
   bottom: 24px;
@@ -360,9 +284,6 @@
   font-weight: 700;
   letter-spacing: .14em;
 }
-@keyframes gh-pin-sway { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
-@keyframes gh-ball-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-
 .gh-section { padding: clamp(72px, 9vw, 124px) clamp(22px, 8vw, 120px); }
 .gh-course-section { max-width: 1440px; margin: 0 auto; }
 .gh-section-head {
@@ -498,15 +419,24 @@
   letter-spacing: .14em;
 }
 .gh-course-caption span:last-child { display: inline-flex; align-items: center; gap: 8px; }
+.gh-course-more-note {
+  max-width: 720px;
+  margin: 20px 0 0;
+  color: #52675a;
+  font-size: 13px;
+  line-height: 1.65;
+}
 
 .gh-events-section { background: #e8eee2; }
 .gh-spotlights-section { background: #f7f5ed; }
 .gh-spotlight-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .gh-spotlight-card {
   min-height: 205px;
-  display: flex;
-  flex-direction: column;
-  padding: 26px 28px;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  padding: 22px 24px;
   border: 1px solid #d9dfd1;
   border-radius: 16px;
   background: #fffefa;
@@ -515,9 +445,23 @@
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
 .gh-spotlight-card:hover { transform: translateY(-3px); border-color: #82957e; box-shadow: 0 12px 28px rgba(40, 57, 43, .09); }
+.gh-spotlight-visual {
+  width: 112px;
+  height: 112px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #e6e9df;
+  border-radius: 13px;
+  background: #f4f5ed;
+}
+.gh-spotlight-visual img { display: block; width: 100%; height: 100%; }
+.gh-spotlight-visual-business img { padding: 10px; object-fit: contain; }
+.gh-spotlight-visual-community img { object-fit: cover; }
+.gh-spotlight-copy { min-width: 0; min-height: 155px; display: flex; flex-direction: column; align-items: flex-start; }
 .gh-spotlight-label { color: #607861; font-size: 10px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
-.gh-spotlight-card h3 { margin: 14px 0 8px; font-family: "DM Serif Display", Georgia, serif; font-size: 27px; line-height: 1.08; }
-.gh-spotlight-card p { margin: 0; color: #69766c; font-size: 13px; line-height: 1.65; }
+.gh-spotlight-title { margin: 12px 0 8px; font-family: "DM Serif Display", Georgia, serif; font-size: 27px; line-height: 1.08; }
+.gh-spotlight-description { color: #69766c; font-size: 13px; line-height: 1.65; }
 .gh-spotlight-link { display: inline-flex; align-items: center; gap: 7px; margin-top: auto; padding-top: 19px; color: #3d654d; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .gh-events-head { max-width: 1200px; margin: 0 auto 40px; }
 .gh-events-aside {
@@ -753,11 +697,7 @@
   .gh-hero-deck { max-width: 430px; margin-top: 22px; font-size: 14px; }
   .gh-hero-actions { gap: 18px; margin-top: 26px; }
   .gh-location-note { margin-top: 30px; flex-wrap: wrap; }
-  .gh-hero-art { min-height: 270px; margin: 10px -5px -15px 0; }
-  .gh-sun { width: 112px; right: 16%; }
-  .gh-pin { bottom: 38%; transform: scale(.82); }
-  .gh-pin::after { height: 90px; }
-  .gh-ball { width: 32px; height: 32px; bottom: 16%; }
+  .gh-hero-art { min-height: 270px; margin: 10px -5px -15px 0; border-radius: 20px 6px 20px 6px; }
   .gh-scroll-cue { left: 23px; bottom: 22px; font-size: 9px; }
   .gh-hero-index { right: 22px; bottom: 23px; font-size: 9px; }
   .gh-section { padding: 68px 22px; }
@@ -769,7 +709,12 @@
   .gh-course-card-2 { grid-column: auto; }
   .gh-course-caption { font-size: 8px; }
   .gh-spotlight-grid { grid-template-columns: 1fr; }
-  .gh-spotlight-card { min-height: 180px; padding: 22px; }
+  .gh-spotlight-card { min-height: 170px; grid-template-columns: 82px minmax(0, 1fr); gap: 15px; padding: 18px; }
+  .gh-spotlight-visual { width: 82px; height: 82px; border-radius: 11px; }
+  .gh-spotlight-visual-business img { padding: 7px; }
+  .gh-spotlight-copy { min-height: 132px; }
+  .gh-spotlight-title { margin: 9px 0 6px; font-size: 24px; }
+  .gh-spotlight-description { font-size: 12px; }
   .gh-events-section { padding-inline: 20px; }
   .gh-events-aside { width: auto; max-width: 370px; margin-top: 20px; }
   .gh-event-grid { grid-template-columns: 1fr; gap: 13px; }

@@ -11,7 +11,11 @@ type GolfSpotlight = {
   title: string;
   description: string;
   link: string;
+  imageSrc?: string;
+  imageAlt?: string;
 };
+
+const golfHeroImage = `${import.meta.env.BASE_URL}golf-events/golf-course-hero.png`;
 
 export type GolfHomePageProps = {
   events: any[];
@@ -90,16 +94,8 @@ export function GolfHomePage({
             </div>
             <div className="gh-location-note"><MapPin size={15} /> {copy.city} <span className="gh-note-rule" /> {copy.golferWelcome}</div>
           </div>
-          <div className="gh-hero-art" aria-label={copy.heroArtAlt}>
-            <div className="gh-sun" />
-            <div className="gh-art-orbit gh-art-orbit-one" />
-            <div className="gh-art-orbit gh-art-orbit-two" />
-            <div className="gh-hill gh-hill-back" />
-            <div className="gh-hill gh-hill-front" />
-            <div className="gh-pin"><Flag size={23} fill="currentColor" /></div>
-            <div className="gh-ball"><span /></div>
-            <span className="gh-art-label gh-art-label-top">{copy.artLocation}</span>
-            <span className="gh-art-label gh-art-label-bottom">{copy.artInvitation}</span>
+          <div className="gh-hero-art">
+            <img className="gh-hero-photo" src={golfHeroImage} alt={copy.heroArtAlt} />
           </div>
         </div>
         <a className="gh-scroll-cue" href="#courses"><span>{copy.scrollExplore}</span><ArrowDown size={14} /></a>
@@ -145,6 +141,7 @@ export function GolfHomePage({
             <p>{copy.courseEmpty}</p>
           </div>
         )}
+        <p className="gh-course-more-note">{copy.moreCourses}</p>
         <div className="gh-course-caption">
           <span>{copy.courseCaption}</span>
           <span>{copy.scrollOn} <ArrowDown size={13} /></span>
@@ -168,12 +165,24 @@ export function GolfHomePage({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <span className="gh-spotlight-label">
-                  {spotlight.type === "business" ? copy.businessSpotlight : copy.communitySpotlight}
+                {spotlight.imageSrc && (
+                  <span className={`gh-spotlight-visual gh-spotlight-visual-${spotlight.type}`}>
+                    <img
+                      src={spotlight.imageSrc}
+                      alt={spotlight.imageAlt ?? ""}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                )}
+                <span className="gh-spotlight-copy">
+                  <span className="gh-spotlight-label">
+                    {spotlight.type === "business" ? copy.businessSpotlight : copy.communitySpotlight}
+                  </span>
+                  <span className="gh-spotlight-title">{spotlight.title}</span>
+                  <span className="gh-spotlight-description">{spotlight.description}</span>
+                  <span className="gh-spotlight-link">{copy.visitSpotlight} <MoveUpRight size={14} /></span>
                 </span>
-                <h3>{spotlight.title}</h3>
-                <p>{spotlight.description}</p>
-                <span className="gh-spotlight-link">{copy.visitSpotlight} <MoveUpRight size={14} /></span>
               </a>
             ))}
           </div>
