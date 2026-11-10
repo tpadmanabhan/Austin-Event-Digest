@@ -1017,6 +1017,8 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
     // Build subject line
     if (isLeadershipAustin) {
       subject = fallback.subject;
+    } else if (isGolf) {
+      subject = "Golf IRL — Upcoming Events";
     } else if (weekEnd) {
       const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric" };
       const inclusiveEnd = new Date(weekEnd.getTime() - 86400000);
@@ -1039,7 +1041,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       events = deduplicateEvents([...mergedEvents, ...communityEvts]);
       // Gmail intro is Austin-specific — never use it for other cities
       const introBase = isGolf
-        ? "A look at Austin-area golf events and community rounds."
+        ? "Upcoming events from the Golf IRL community."
         : stripGreeting((req.tenant!.slug === "austin" && gmailIntro) ? gmailIntro : fallback.intro);
       intro = customNotes ? `${introBase}\n\n${customNotes}` : introBase;
       req.log.info(
@@ -1055,7 +1057,7 @@ router.post("/digest/generate", requireAdmin, async (req, res) => {
       const isAustinFamily = req.tenant!.slug === "austin" || req.tenant!.slug === "stlouis";
       events = isAustinFamily ? fallback.events : [];
        intro = isGolf
-         ? (customNotes ? `A look at Austin-area golf events and community rounds.\n\n${customNotes}` : "A look at Austin-area golf events and community rounds.")
+         ? (customNotes ? `Upcoming events from the Golf IRL community.\n\n${customNotes}` : "Upcoming events from the Golf IRL community.")
          : customNotes ? `${stripGreeting(fallback.intro)}\n\n${customNotes}` : stripGreeting(fallback.intro);
       req.log.info(
         { weekOf: weekOf.toISOString().substring(0, 10), tenant: req.tenant!.slug, usedSample: isAustinFamily },
@@ -1946,12 +1948,17 @@ router.post("/digest/create-empty", requireAdmin, async (req, res) => {
     const weekOf = parseAdminDateAnchor(weekOfStr);
     const dateLabel = weekOf.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     const isLeadershipAustin = req.tenant!.slug === "leadershipaustin";
+    const isGolf = req.tenant!.slug === "golf";
     const subject = isLeadershipAustin
       ? "Leadership Austin — Upcoming Events"
-      : `Events — Week of ${dateLabel}`;
+      : isGolf
+        ? "Golf IRL — Upcoming Events"
+        : `Events — Week of ${dateLabel}`;
     const intro = isLeadershipAustin
       ? "Upcoming events for the Leadership Austin community."
-      : `Here's your curated digest for the week of ${dateLabel}.`;
+      : isGolf
+        ? "Upcoming events from the Golf IRL community."
+        : `Here's your curated digest for the week of ${dateLabel}.`;
     const [inserted] = await db
       .insert(digestsTable)
       .values({ tenantId: req.tenant!.id, weekOf, subject, intro, events: [] })

@@ -500,6 +500,25 @@
 .gh-course-caption span:last-child { display: inline-flex; align-items: center; gap: 8px; }
 
 .gh-events-section { background: #e8eee2; }
+.gh-spotlights-section { background: #f7f5ed; }
+.gh-spotlight-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.gh-spotlight-card {
+  min-height: 205px;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 28px;
+  border: 1px solid #d9dfd1;
+  border-radius: 16px;
+  background: #fffefa;
+  color: #26382d;
+  text-decoration: none;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.gh-spotlight-card:hover { transform: translateY(-3px); border-color: #82957e; box-shadow: 0 12px 28px rgba(40, 57, 43, .09); }
+.gh-spotlight-label { color: #607861; font-size: 10px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.gh-spotlight-card h3 { margin: 14px 0 8px; font-family: "DM Serif Display", Georgia, serif; font-size: 27px; line-height: 1.08; }
+.gh-spotlight-card p { margin: 0; color: #69766c; font-size: 13px; line-height: 1.65; }
+.gh-spotlight-link { display: inline-flex; align-items: center; gap: 7px; margin-top: auto; padding-top: 19px; color: #3d654d; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .gh-events-head { max-width: 1200px; margin: 0 auto 40px; }
 .gh-events-aside {
   width: min(330px, 35%);
@@ -582,6 +601,8 @@
   font-size: 10px;
   letter-spacing: .04em;
 }
+.gh-full-edition-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; color: #355b43; font-size: 13px; font-weight: 800; text-decoration: none; }
+.gh-full-edition-link:hover { text-decoration: underline; text-underline-offset: 4px; }
 
 .gh-how-section {
   display: grid;
@@ -747,6 +768,8 @@
   .gh-course-card, .gh-course-grid-single .gh-course-card { min-height: 230px; }
   .gh-course-card-2 { grid-column: auto; }
   .gh-course-caption { font-size: 8px; }
+  .gh-spotlight-grid { grid-template-columns: 1fr; }
+  .gh-spotlight-card { min-height: 180px; padding: 22px; }
   .gh-events-section { padding-inline: 20px; }
   .gh-events-aside { width: auto; max-width: 370px; margin-top: 20px; }
   .gh-event-grid { grid-template-columns: 1fr; gap: 13px; }

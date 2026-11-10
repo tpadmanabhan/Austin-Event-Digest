@@ -9,6 +9,14 @@ The normal app-preview screenshot host resolves to the configured development te
 
 **How to apply:** For visual testing of a non-default tenant, use a local headless browser with a host-resolver rule mapping the tenant's domain to `127.0.0.1`, disable the browser proxy, and browse through the shared local proxy on port 80. Do not treat the default-host 404 as an application failure.
 
+## Public asset paths on tenant previews
+
+Public files are served from the tenant app origin's root, not necessarily below the artifact preview prefix. A preview-prefixed URL can return 404 even when the root-relative asset URL works.
+
+**Why:** Golf event screenshots returned 404 under the artifact prefix but loaded from the root-relative public path on the tenant-mapped preview.
+
+**How to apply:** When checking tenant-hosted images or other `public/` files, test the app-origin root path as well as the artifact-prefixed path; build the final URL using the app's configured base.
+
 ## Keep preview branding and data on the same tenant
 
 When changing the ordinary development preview's city, set both backend `DEFAULT_TENANT_SLUG` and frontend `VITE_TENANT_SLUG` in the development environment and restart the corresponding services.

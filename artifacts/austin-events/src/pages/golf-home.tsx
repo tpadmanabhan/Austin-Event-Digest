@@ -6,9 +6,16 @@ import { EventCard } from "../components/event-card";
 import "./golf-home.css";
 
 type GolfCourse = { name: string; href: string; imageSrc?: string; imageAlt?: string };
+type GolfSpotlight = {
+  type: "business" | "community";
+  title: string;
+  description: string;
+  link: string;
+};
 
 export type GolfHomePageProps = {
   events: any[];
+  spotlights: GolfSpotlight[];
   isEventsLoading: boolean;
   digestId?: number;
   courses: GolfCourse[];
@@ -26,6 +33,7 @@ function GolfMark() {
 
 export function GolfHomePage({
   events,
+  spotlights,
   isEventsLoading,
   digestId,
   courses,
@@ -143,6 +151,35 @@ export function GolfHomePage({
         </div>
       </section>
 
+      {spotlights.length > 0 && (
+        <section className="gh-spotlights-section gh-section" aria-labelledby="gh-spotlights-title">
+          <div className="gh-section-head">
+            <div>
+              <p className="gh-eyebrow">{copy.spotlightsEyebrow}</p>
+              <h2 id="gh-spotlights-title">{copy.spotlightsTitle}</h2>
+            </div>
+          </div>
+          <div className="gh-spotlight-grid">
+            {spotlights.slice(0, 2).map((spotlight) => (
+              <a
+                className={`gh-spotlight-card gh-spotlight-${spotlight.type}`}
+                href={spotlight.link}
+                key={`${spotlight.type}-${spotlight.link}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className="gh-spotlight-label">
+                  {spotlight.type === "business" ? copy.businessSpotlight : copy.communitySpotlight}
+                </span>
+                <h3>{spotlight.title}</h3>
+                <p>{spotlight.description}</p>
+                <span className="gh-spotlight-link">{copy.visitSpotlight} <MoveUpRight size={14} /></span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="gh-events-section gh-section" id="events" aria-labelledby="gh-events-title">
         <div className="gh-section-head gh-events-head">
           <div>
@@ -168,7 +205,7 @@ export function GolfHomePage({
           </div>
         ) : events.length > 0 ? (
           <div className="gh-event-grid">
-            {events.map((event, index) => (
+            {events.slice(0, 3).map((event, index) => (
               <div className="gh-event-wrap" key={event?.managedEventId ?? event?.eventId ?? `${event?.title ?? "approved-event"}-${index}`}>
                 <EventCard event={event} digestId={digestId} />
               </div>
@@ -185,6 +222,11 @@ export function GolfHomePage({
           </div>
         )}
         <p className="gh-event-footnote">{copy.approvedEventsNote}</p>
+        {digestId && (
+          <a className="gh-full-edition-link" href={`${import.meta.env.BASE_URL}digest/${digestId}`}>
+            {copy.fullEdition} <ArrowRight size={15} />
+          </a>
+        )}
       </section>
 
       <section className="gh-how-section gh-section" id="how-it-works" aria-labelledby="gh-how-title">

@@ -429,10 +429,24 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
     }, 100);
     return () => window.clearTimeout(timer);
   }, [cardId, interestRequested]);
-  // Keep the original event photo on our own host so all four recurring yoga cards render reliably.
-  const imageUrl = citySlug === "austin" && event.title === "FREE Yoga in San Gabriel Park"
-    ? `${import.meta.env.BASE_URL}images/san-gabriel-yoga.jpg`
-    : event.imageUrl;
+  // Keep selected community images on the app origin so they render in development and production.
+  const imageUrl = (() => {
+    if (citySlug === "austin" && event.title === "FREE Yoga in San Gabriel Park") {
+      return `${import.meta.env.BASE_URL}images/san-gabriel-yoga.jpg`;
+    }
+    if (citySlug === "golf" && event.imageUrl) {
+      try {
+        const url = new URL(event.imageUrl);
+        if (url.hostname === "golf.irl.group" && url.pathname.startsWith("/golf-events/")) {
+          return `${import.meta.env.BASE_URL}${url.pathname.slice(1)}`;
+        }
+      } catch {
+        // Keep the supplied URL when it is not an absolute URL.
+      }
+    }
+    return event.imageUrl;
+  })();
+  const isGolfTeeScreenshot = citySlug === "golf" && Boolean(imageUrl?.includes("/golf-events/"));
   const getCategoryIcon = (category: string) => {
     const cat = category.toLowerCase();
     if (cat.includes("music") || cat.includes("concert")) return <Music className="w-4 h-4" />;
@@ -458,11 +472,11 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
         </div>
       )}
       {imageUrl && (
-        <div className="w-full overflow-hidden bg-muted rounded-t-2xl" style={{ height: "120px" }}>
+        <div className={`w-full overflow-hidden rounded-t-2xl flex items-center justify-center ${isGolfTeeScreenshot ? "bg-white" : "bg-muted"}`} style={{ height: isGolfTeeScreenshot ? "180px" : "120px" }}>
           <img
             src={imageUrl}
             alt={event.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className={`h-full w-full ${isGolfTeeScreenshot ? "object-contain" : "object-cover transition-transform duration-500 group-hover:scale-105"}`}
           />
         </div>
       )}
@@ -475,10 +489,18 @@ export function EventCard({ event, digestId, distanceMiles, translating }: { eve
             : null;
           return (
             <div className="flex items-start justify-between gap-2 mb-4">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border ${getCategoryColor(event.category)}`}>
-                {getCategoryIcon(event.category)}
-                {event.category}
-              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border ${getCategoryColor(event.category)}`}>
+                  {getCategoryIcon(event.category)}
+                  {event.category}
+                </span>
+                {citySlug === "golf" && event.featured && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#d9ba81] bg-[#f7e3ba] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#79532a]">
+                    <Sparkles className="h-3 w-3" />
+                    Featured
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-1">
                 <div className="flex flex-col items-end text-right">
                   <span className="text-sm font-bold text-primary flex items-center gap-1.5">
