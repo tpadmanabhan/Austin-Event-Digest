@@ -542,7 +542,10 @@ export default function DigestView() {
     date: event.startDate || event.date,
   }));
   const categoryOptions = (Object.keys(CAT_CONFIG) as DisplayCat[])
-    .filter((category) => category !== "Programs" || isLeadershipAustin);
+    .filter((category) => {
+      if (tenant.slug === "golf") return category === "All" || category === "Sports";
+      return category !== "Programs" || isLeadershipAustin;
+    });
 
   const { label: editionDateRange, extended: hasExtendedRange } =
       getEditionDateRange(digest.weekOf, digest.subject, tenant.slug === "austin" || isAtlanta || isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc" || isManchester || isNYC, isHouston || isJapaneseEdition || isSF || isSacramento || isMiami || isBoston || isLA || isStLouis || isPortland || isBulverde || tenant.slug === "dc" || isManchester || isNYC);
