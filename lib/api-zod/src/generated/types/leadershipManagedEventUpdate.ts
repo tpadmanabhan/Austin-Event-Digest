@@ -11,5 +11,10 @@ export interface LeadershipManagedEventUpdate {
    * @minLength 1
    * @maxLength 120
    */
-  sourceAlumni: string;
+  sourceAlumni?: string;
+  /**
+   * @minLength 1
+   * @maxLength 3000
+   */
+  description?: string;
 }

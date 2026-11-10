@@ -1835,7 +1835,7 @@ export const useReviewLeadershipEventContribution = <
 };
 
 /**
- * @summary Update the alumni source for a persistent Leadership Austin event (admin)
+ * @summary Update a persistent managed community event (admin)
  */
 export const getUpdateLeadershipManagedEventUrl = (id: number) => {
   return `/api/events/leadership-managed/${id}`;
@@ -1904,7 +1904,7 @@ export type UpdateLeadershipManagedEventMutationError =
   ErrorType<ErrorResponse>;
 
 /**
- * @summary Update the alumni source for a persistent Leadership Austin event (admin)
+ * @summary Update a persistent managed community event (admin)
  */
 export const useUpdateLeadershipManagedEvent = <
   TError = ErrorType<ErrorResponse>,

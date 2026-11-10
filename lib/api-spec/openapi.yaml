@@ -442,7 +442,7 @@ paths:
     patch:
       operationId: updateLeadershipManagedEvent
       tags: [events]
-      summary: Update the alumni source for a persistent Leadership Austin event (admin)
+      summary: Update a persistent managed community event (admin)
       parameters:
         - name: id
           in: path
@@ -1479,7 +1479,10 @@ components:
           type: string
           minLength: 1
           maxLength: 120
-      required: [sourceAlumni]
+        description:
+          type: string
+          minLength: 1
+          maxLength: 3000
 
     LeadershipManagedEventsResponse:
       type: object

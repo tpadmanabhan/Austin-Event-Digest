@@ -594,7 +594,7 @@ export const ReviewLeadershipEventContributionResponse = zod.object({
 });
 
 /**
- * @summary Update the alumni source for a persistent Leadership Austin event (admin)
+ * @summary Update a persistent managed community event (admin)
  */
 export const UpdateLeadershipManagedEventParams = zod.object({
   id: zod.coerce.number(),
@@ -602,11 +602,19 @@ export const UpdateLeadershipManagedEventParams = zod.object({
 
 export const updateLeadershipManagedEventBodySourceAlumniMax = 120;
 
+export const updateLeadershipManagedEventBodyDescriptionMax = 3000;
+
 export const UpdateLeadershipManagedEventBody = zod.object({
   sourceAlumni: zod
     .string()
     .min(1)
-    .max(updateLeadershipManagedEventBodySourceAlumniMax),
+    .max(updateLeadershipManagedEventBodySourceAlumniMax)
+    .optional(),
+  description: zod
+    .string()
+    .min(1)
+    .max(updateLeadershipManagedEventBodyDescriptionMax)
+    .optional(),
 });
 
 export const UpdateLeadershipManagedEventResponse = zod.object({

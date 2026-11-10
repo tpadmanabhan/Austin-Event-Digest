@@ -46,6 +46,7 @@ import { publicTenantUrl } from "../lib/publicUrls";
 import { verifyTurnstileToken } from "../lib/turnstile";
 import { getCommunityTenantSettings } from "../../../../shared/community-tenants";
 import { listUpcomingCommunityEvents } from "../lib/leadershipAustinManagedEvents";
+import { parseLeadershipManagedEventUpdate } from "../lib/leadershipManagedEventUpdate";
 import {
   LEADERSHIP_CONTRIBUTOR_COOKIE,
   signLeadershipContributionToken,
@@ -862,31 +863,31 @@ router.patch("/leadership-managed/:id", requireAdmin, async (req, res) => {
     res.status(400).json({ error: "invalid_request", message: "Invalid event id" });
     return;
   }
-  const parsed = UpdateLeadershipManagedEventBody.safeParse(req.body ?? {});
-  if (!parsed.success) {
-    res.status(400).json({ error: "invalid_request", message: "A source person is required" });
-    return;
-  }
-  const sourceAlumni = parsed.data.sourceAlumni.trim();
-  if (!sourceAlumni) {
-    res.status(400).json({ error: "invalid_request", message: "A source person is required" });
+  const update = parseLeadershipManagedEventUpdate(req.tenant?.slug, req.body ?? {});
+  if (!update) {
+    res.status(400).json({
+      error: "invalid_request",
+      message: req.tenant?.slug === "golf"
+        ? "A non-empty event description is required"
+        : "A non-empty source person is required",
+    });
     return;
   }
   try {
     const [updated] = await db
       .update(leadershipEventsTable)
-      .set({ sourceAlumni, updatedAt: new Date() })
+      .set({ ...update, updatedAt: new Date() })
       .where(and(eq(leadershipEventsTable.id, id), eq(leadershipEventsTable.tenantId, req.tenant!.id)))
       .returning();
     if (!updated) {
       res.status(404).json({ error: "not_found", message: "Persistent event not found" });
       return;
     }
-    req.log.info({ eventId: id, tenantSlug: req.tenant!.slug }, "Managed community event source updated");
+    req.log.info({ eventId: id, tenantSlug: req.tenant!.slug }, "Managed community event updated");
     res.json({ success: true, event: leadershipEventToApi(updated) });
   } catch (err) {
-    req.log.error({ err, eventId: id }, "Error updating managed community event source");
-    res.status(500).json({ error: "server_error", message: "Failed to update event source" });
+    req.log.error({ err, eventId: id }, "Error updating managed community event");
+    res.status(500).json({ error: "server_error", message: "Failed to update event" });
   }
 });
 
