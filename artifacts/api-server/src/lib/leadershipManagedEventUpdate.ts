@@ -17,6 +17,7 @@ export function parseLeadershipManagedEventUpdate(
     return { description: description.trim() };
   }
 
+  if (tenantSlug !== "leadershipaustin") return null;
   if (description !== undefined || !sourceAlumni?.trim()) return null;
   return { sourceAlumni: sourceAlumni.trim() };
 }

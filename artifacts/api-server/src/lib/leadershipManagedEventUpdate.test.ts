@@ -24,4 +24,13 @@ describe("managed community event updates", () => {
       description: "Updated description",
     })).toBeNull();
   });
+
+  it("rejects managed-event updates for tenants outside Golf and Leadership Austin", () => {
+    expect(parseLeadershipManagedEventUpdate("austin", {
+      sourceAlumni: "Alex",
+    })).toBeNull();
+    expect(parseLeadershipManagedEventUpdate("austin", {
+      description: "Updated description",
+    })).toBeNull();
+  });
 });

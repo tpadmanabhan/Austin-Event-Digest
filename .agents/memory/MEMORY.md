@@ -56,3 +56,4 @@
 - [Leadership Austin newsletter cadence](leadership-austin-newsletter-cadence.md) — monthly, date-free upcoming-events messaging; never promise Sunday week-ahead publishing.
 - [Leadership cohort provisioning](leadership-cohort-provisioning.md) — future cohorts use separate irl.group subdomains; the self-service intake page is not set up yet.
 - [Golf IRL launch gate](golf-irl-launch-gate.md) — keep its tenant dev-only; production records, DNS, publishing, and sends need separate authorization.
+- [Tenant isolation](tenant-isolation.md) — shared changes must preserve behavior and data for tenants outside the requested scope.
