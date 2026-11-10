@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, CalendarPlus, Check, Loader2, X } from "lucide-react";
+import { Archive, CalendarPlus, Check, Loader2, Pencil, X } from "lucide-react";
 import type { LeadershipManagedEvent } from "@/hooks/use-events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,6 +83,8 @@ export function LeadershipManagedEventsAdmin({
   const [form, setForm] = useState<FormState>(() => initialForm(categories, tenantName, defaultCategory));
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [editingEventId, setEditingEventId] = useState<number | null>(null);
+  const [editDescription, setEditDescription] = useState("");
   const eventsQuery = useQuery({
     queryKey: ["admin-managed-community-events", tenantSlug],
     queryFn: loadAdminEvents,
@@ -153,6 +155,32 @@ export function LeadershipManagedEventsAdmin({
       queryClient.invalidateQueries({ queryKey: ["leadership-managed-events"] });
     },
     onError: (cause) => setError(cause instanceof Error ? cause.message : "Could not archive the event."),
+  });
+
+  const updateDescriptionMutation = useMutation({
+    mutationFn: async ({ eventId, description }: { eventId: number; description: string }) => {
+      const response = await fetch(`/api/events/leadership-managed/${eventId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...adminHeaders() },
+        body: JSON.stringify({ description }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Could not update the event description.");
+      return eventId;
+    },
+    onSuccess: () => {
+      setEditingEventId(null);
+      setEditDescription("");
+      setMessage("Event description updated.");
+      setError("");
+      queryClient.invalidateQueries({ queryKey: ["admin-managed-community-events", tenantSlug] });
+      queryClient.invalidateQueries({ queryKey: ["community-managed-events", tenantSlug] });
+      queryClient.invalidateQueries({ queryKey: ["leadership-managed-events"] });
+    },
+    onError: (cause) => {
+      setError(cause instanceof Error ? cause.message : "Could not update the event description.");
+      setMessage("");
+    },
   });
 
   const reviewMutation = useMutation({
@@ -331,6 +359,67 @@ export function LeadershipManagedEventsAdmin({
                   <div className="min-w-0">
                     <p className="font-semibold text-foreground">{event.title}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{event.date} · {event.venue} · Shared by {event.sourceAlumni}</p>
+                      {tenantSlug === "golf" && (
+                        <div className="mt-2 space-y-2">
+                          {editingEventId === event.id ? (
+                            <>
+                              <Textarea
+                                aria-label={`Description for ${event.title}`}
+                                value={editDescription}
+                                onChange={e => setEditDescription(e.target.value)}
+                                className="min-h-24"
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  disabled={updateDescriptionMutation.isPending || !editDescription.trim()}
+                                  onClick={() => updateDescriptionMutation.mutate({
+                                    eventId: event.id,
+                                    description: editDescription,
+                                  })}
+                                >
+                                  {updateDescriptionMutation.isPending && updateDescriptionMutation.variables?.eventId === event.id
+                                    ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                    : <Check className="mr-1.5 h-3.5 w-3.5" />}
+                                  Save description
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updateDescriptionMutation.isPending}
+                                  onClick={() => {
+                                    setEditingEventId(null);
+                                    setEditDescription("");
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <p className="text-sm text-muted-foreground">{event.description}</p>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                aria-label={`Edit description for ${event.title}`}
+                                onClick={() => {
+                                  setEditingEventId(event.id);
+                                  setEditDescription(event.description);
+                                  setError("");
+                                  setMessage("");
+                                }}
+                              >
+                                <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                                Edit description
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     <span className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${event.isActive ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
                       {event.isActive ? "Active" : "Archived"}
                     </span>
