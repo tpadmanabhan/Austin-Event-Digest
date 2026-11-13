@@ -240,8 +240,8 @@ test("the platform document is readable and has real city links without scripts 
     "Golf IRL and Austin should both carry the New badge");
   assert.match(platformHomeSource, /city\.slug === FEATURED_CITY_SLUG \? "city-card-featured"/,
     "Golf IRL should use the featured card style");
-  assert.match(platformHomeSource, /slug: "golf", name: "Golf IRL", city: "Austin", image: publicImage\("golf-bulletin-board\.webp"\)/,
-    "the Golf directory card should use the new bulletin-board photo");
+  assert.match(platformHomeSource, /slug: "golf", name: "Golf IRL", city: "Austin", image: publicImage\("golf-bulletin-board-tagline\.webp"\)/,
+    "the Golf directory card should use the updated bulletin-board photo");
   assert.match(platformHomeSource, /<a className="city-card-main" href={cityUrl\(city\.slug\)}/,
     "the Golf directory card should continue linking to its city website");
   assert.match(platformHomeSource, /NEW_CITY_SLUGS\.has\(city\.slug\).*copy\.newBadge/,

@@ -25,7 +25,7 @@ const cityUrl = (slug: string) => `https://${slug}.irl.group`;
 const publicImage = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
 
 const CITY_DIRECTORY = [
-  { slug: "golf", name: "Golf IRL", city: "Austin", image: publicImage("golf-bulletin-board.webp"), alt: "Golf IRL flyer displayed on a community bulletin board" },
+  { slug: "golf", name: "Golf IRL", city: "Austin", image: publicImage("golf-bulletin-board-tagline.webp"), alt: "Golf IRL flyer displayed on a community bulletin board" },
   { slug: "austin", name: "Raj's Austin Events", city: "Austin", image: publicImage("austin-hero.png"), alt: "Austin skyline at sunset" },
   { slug: "nyc", name: "New York City Events", city: "New York City", image: publicImage("nyc-hero-photo.jpg"), alt: "New York skyline at blue hour viewed across the East River" },
   { slug: "dallas", name: "Dallas Events", city: "Dallas", image: publicImage("dallas-hero.jpg"), alt: "Dallas skyline at dusk" },
