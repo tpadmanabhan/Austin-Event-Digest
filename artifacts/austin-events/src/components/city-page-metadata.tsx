@@ -45,7 +45,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
       : isLA ? "Los Angeles Events — Pacific Coast, Citywide | IRL"
       : isHoustonDigest ? "Houston Events — Full Citywide Edition | IRL"
       : isHouston ? "Houston Events — The Whole City. Your Next Plan. | IRL"
-      : isGolf ? "Golf IRL — Austin Golf Events"
+      : isGolf ? "Golf IRL — Good Golf, Better Company | Austin Golf Events"
       : isLeadershipAustin ? "Leadership Austin — Alumni Happenings"
       : `${tenant.name} | Local Events & Community`;
     const description = isCares
@@ -61,7 +61,7 @@ export function CityPageMetadata({ citySlug }: { citySlug: string }) {
         : isHouston
         ? "Explore Houston's citywide events edition: real local plans across innovation, art, sports, civic life and wellness, from the bayou to your neighborhood."
         : isGolf
-        ? "Find Austin-area golf events, meet local players, and join the recurring Golf IRL newsletter."
+        ? "Good golf. Better company. Explore Austin-area golf events, connect with local players, and get the Golf IRL newsletter."
         : isLeadershipAustin
         ? "A place for Leadership Austin alumni to stay connected, share upcoming events, and learn about local community stories."
         : `Explore curated ${tenant.city} events, local newsletters, venues, and community activities.`;

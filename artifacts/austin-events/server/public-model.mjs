@@ -220,12 +220,12 @@ export async function loadPublicModel(site, pathname) {
     : null;
   const cityModel = { ...base, kind: digestMatch ? "digest" : site.slug === "austincares" ? "deals" : "city",
     noindex: false,
-    title: site.slug === "golf" ? "Golf IRL — Austin Golf Events" :
+    title: site.slug === "golf" ? "Golf IRL — Good Golf, Better Company | Austin Golf Events" :
       isLeadershipAustin ? "Leadership Austin — Alumni Happenings" :
       site.slug === "austincares" ? "AustinCares — Local Deals & Free Services" :
         digestMatch && digest ? digest.subject : `${tenant.name} | Local Events & Community`,
     description: site.slug === "golf"
-      ? "Find Austin-area golf events, meet local players, share events as a verified subscriber, and express interest in approved rounds."
+      ? "Good golf. Better company. Discover Austin-area golf events, connect with local players, share events as a verified subscriber, and express interest in approved rounds."
       : isLeadershipAustin
       ? "A place for Leadership Austin alumni to stay connected, share upcoming events, and learn about local community stories."
       : site.slug === "austincares" ? "Explore Austin-area curated offers, community-submitted deals, free services, and map-based local discovery."
