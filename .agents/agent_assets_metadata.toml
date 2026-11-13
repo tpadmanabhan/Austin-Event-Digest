@@ -494,3 +494,17 @@ mtime_ms = 1794249075820
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/821b8088-f55e-4eff-bb22-2b8a6cb62fe3/f4da7c29-406c-4eb6-99f4-5a2dfff84d33"
 storage_version_token = "1794249080779860"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "kjJvn4IPMZLr8NG31syeJ"
+uri = "file://artifacts/austin-events/public/images/golf-share-tagline.png"
+type = "image"
+title = "Updated Golf IRL share graphic"
+description = "The new Golf IRL tagline is now on the Golf pane and share preview image."
+logical_id = "eca49386-0c94-47f7-bec1-ea4a9dc3c083"
+content_hash = "sha256:3689fc9152554ea9d3ea790c4662111875c9aa4bbbfa7d524bd2d62c4c032978"
+size = 717651
+mtime_ms = 1794537550613
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:b3a93a80-c9a5-46a0-8e8c-7cb9c2ba76e5/eca49386-0c94-47f7-bec1-ea4a9dc3c083/6a8e1904-eef3-47eb-b508-ef30dd49fd0e"
+storage_version_token = "1794537738473710"
+content_type = "image/png"

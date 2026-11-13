@@ -3,7 +3,7 @@ export const LA_HERO_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons
 
 const CITY_SHARE_IMAGES: Record<string, string> = {
   austin: "opengraph.jpg",
-  golf: "images/golf-share.png",
+  golf: "images/golf-share-tagline.png",
   leadershipaustin: "images/leadership-austin-share.png",
   austincares: "images/austin-cares-brand-icon.jpg",
   brushycreek: "images/brushycreek-hero.jpg",

@@ -379,7 +379,7 @@ test("San Francisco shares its Golden Gate image in initial homepage and edition
 test("every city sends its configured share image or platform fallback in the initial document", async () => {
   const expected = {
     austin: "/opengraph.jpg",
-    golf: "/images/golf-share.png",
+    golf: "/images/golf-share-tagline.png",
     austincares: "/images/austin-cares-brand-icon.jpg",
     brushycreek: "/images/brushycreek-hero.jpg",
     portland: "/images/portland-hero.jpg",
