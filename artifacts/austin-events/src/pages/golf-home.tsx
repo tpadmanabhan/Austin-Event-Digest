@@ -1,7 +1,9 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { ArrowDown, ArrowRight, Flag, Mail, MapPin, MoveUpRight } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { GOLF_HOME_COPY } from "@/i18n/golf-home";
+import { GolfCourseRequestModal } from "@/components/golf-course-request-modal";
 import { EventCard } from "../components/event-card";
 import "./golf-home.css";
 
@@ -46,6 +48,7 @@ export function GolfHomePage({
 }: GolfHomePageProps) {
   const { lang, setLang } = useLanguage();
   const copy = GOLF_HOME_COPY[lang];
+  const [isCourseRequestOpen, setIsCourseRequestOpen] = useState(false);
 
   return (
     <main className={`golf-home${lang === "ja" ? " golf-home-ja" : ""}`}>
@@ -142,6 +145,20 @@ export function GolfHomePage({
           </div>
         )}
         <p className="gh-course-more-note">{copy.moreCourses}</p>
+        <div className="gh-course-request">
+          <div>
+            <p className="gh-course-request-eyebrow">{copy.courseRequest.eyebrow}</p>
+            <p className="gh-course-request-description">{copy.courseRequest.description}</p>
+          </div>
+          <button
+            type="button"
+            className="gh-course-request-button"
+            onClick={() => setIsCourseRequestOpen(true)}
+            data-testid="button-suggest-golf-course"
+          >
+            {copy.courseRequest.button} <ArrowRight size={15} aria-hidden="true" />
+          </button>
+        </div>
         <div className="gh-course-caption">
           <span>{copy.courseCaption}</span>
           <span>{copy.scrollOn} <ArrowDown size={13} /></span>
@@ -283,6 +300,7 @@ export function GolfHomePage({
         <p>{copy.city} <span>·</span> {copy.footerTagline}</p>
         <a href="#top" className="gh-back-top">{copy.backToTop} <ArrowDown size={14} /></a>
       </footer>
+      <GolfCourseRequestModal open={isCourseRequestOpen} onOpenChange={setIsCourseRequestOpen} />
     </main>
   );
 }

@@ -45,6 +45,44 @@ export interface CityRequestReceipt {
   acknowledgementStatus?: CityRequestReceiptAcknowledgementStatus;
 }
 
+export interface GolfCourseRequestInput {
+  /**
+   * @minLength 2
+   * @maxLength 120
+   */
+  courseName: string;
+  /**
+   * @minLength 5
+   * @maxLength 200
+   */
+  address: string;
+  /** @maxLength 500 */
+  courseWebsite?: string;
+  /** @maxLength 500 */
+  bookingUrl?: string;
+  /** @maxLength 100 */
+  submitterName?: string;
+  /** @maxLength 254 */
+  email: string;
+  /** @maxLength 1000 */
+  notes?: string;
+}
+
+export type GolfCourseRequestReceiptNotificationStatus =
+  (typeof GolfCourseRequestReceiptNotificationStatus)[keyof typeof GolfCourseRequestReceiptNotificationStatus];
+
+export const GolfCourseRequestReceiptNotificationStatus = {
+  sent: "sent",
+  failed: "failed",
+  unconfirmed: "unconfirmed",
+} as const;
+
+export interface GolfCourseRequestReceipt {
+  saved: boolean;
+  duplicate: boolean;
+  notificationStatus: GolfCourseRequestReceiptNotificationStatus;
+}
+
 export interface HealthStatus {
   status: string;
 }

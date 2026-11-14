@@ -426,6 +426,50 @@
   font-size: 13px;
   line-height: 1.65;
 }
+.gh-course-request {
+  margin-top: 22px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border: 1px solid rgba(21, 59, 49, .14);
+  border-radius: 16px;
+  background: #e8eee2;
+}
+.gh-course-request-eyebrow {
+  margin: 0 0 5px;
+  color: #9a795b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.gh-course-request-description {
+  margin: 0;
+  color: #52675a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.gh-course-request-button {
+  min-height: 44px;
+  padding: 0 17px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gh-green);
+  color: #fffdf6;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+.gh-course-request-button:hover { background: #194d3c; transform: translateY(-1px); }
+.gh-course-request-button:focus-visible { outline: 3px solid #d28a57; outline-offset: 3px; }
 
 .gh-events-section { background: #e8eee2; }
 .gh-spotlights-section { background: #f7f5ed; }
@@ -675,6 +719,10 @@
   .gh-event-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .gh-how-section { gap: 44px; }
   .gh-share-section { padding-inline: 6vw; gap: 45px; }
+}
+@media (max-width: 600px) {
+  .gh-course-request { align-items: stretch; flex-direction: column; }
+  .gh-course-request-button { width: 100%; }
 }
 @media (max-width: 760px) {
   .gh-nav-links { display: none; }

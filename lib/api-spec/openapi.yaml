@@ -15,6 +15,8 @@ tags:
     description: Events and digest management
   - name: tenants
     description: Multi-tenant platform operations
+  - name: golf
+    description: Golf IRL course suggestions
   - name: gamification
     description: Superconnector XP, badges, challenges, streaks and leaderboard
 paths:
@@ -46,6 +48,40 @@ paths:
           description: Invalid city or email
         "403":
           description: Platform root only
+        "429":
+          description: Request limit reached
+        "503":
+          description: Request could not be saved
+  /golf-course-requests:
+    post:
+      operationId: submitGolfCourseRequest
+      tags: [golf]
+      summary: Save an Austin-area golf course suggestion for manual review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GolfCourseRequestInput"
+      responses:
+        "201":
+          description: Saved; notificationStatus separately reports email provider acceptance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GolfCourseRequestReceipt"
+        "200":
+          description: Already saved; duplicate submissions never resend email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GolfCourseRequestReceipt"
+        "400":
+          description: Invalid course details or email
+        "403":
+          description: Golf IRL only
+        "404":
+          description: A city subdomain is required
         "429":
           description: Request limit reached
         "503":
@@ -1113,6 +1149,49 @@ components:
           type: string
           enum: [not_sent, sent, failed, unconfirmed]
           description: Requester email provider acceptance, tracked separately from the admin notification. Absent on older servers.
+    GolfCourseRequestInput:
+      type: object
+      additionalProperties: false
+      required: [courseName, address, email]
+      properties:
+        courseName:
+          type: string
+          minLength: 2
+          maxLength: 120
+        address:
+          type: string
+          minLength: 5
+          maxLength: 200
+        courseWebsite:
+          type: string
+          format: uri
+          maxLength: 500
+        bookingUrl:
+          type: string
+          format: uri
+          maxLength: 500
+        submitterName:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        notes:
+          type: string
+          maxLength: 1000
+    GolfCourseRequestReceipt:
+      type: object
+      required: [saved, duplicate, notificationStatus]
+      properties:
+        saved:
+          type: boolean
+          enum: [true]
+        duplicate:
+          type: boolean
+        notificationStatus:
+          type: string
+          enum: [sent, failed, unconfirmed]
     HealthStatus:
       type: object
       properties:

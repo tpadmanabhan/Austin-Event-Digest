@@ -45,6 +45,8 @@ import type {
   GetLeadershipEventRsvpCountParams,
   GetPublicEventMetadata200,
   GetTenantConfigParams,
+  GolfCourseRequestInput,
+  GolfCourseRequestReceipt,
   HealthStatus,
   LeaderboardResponse,
   LeadershipEventContributionAccessInput,
@@ -170,6 +172,96 @@ export const useSubmitCityRequest = <
   TContext
 > => {
   return useMutation(getSubmitCityRequestMutationOptions(options));
+};
+
+/**
+ * @summary Save an Austin-area golf course suggestion for manual review
+ */
+export const getSubmitGolfCourseRequestUrl = () => {
+  return `/api/golf-course-requests`;
+};
+
+export const submitGolfCourseRequest = async (
+  golfCourseRequestInput: GolfCourseRequestInput,
+  options?: RequestInit,
+): Promise<GolfCourseRequestReceipt> => {
+  return customFetch<GolfCourseRequestReceipt>(
+    getSubmitGolfCourseRequestUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(golfCourseRequestInput),
+    },
+  );
+};
+
+export const getSubmitGolfCourseRequestMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitGolfCourseRequest>>,
+    TError,
+    { data: BodyType<GolfCourseRequestInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof submitGolfCourseRequest>>,
+  TError,
+  { data: BodyType<GolfCourseRequestInput> },
+  TContext
+> => {
+  const mutationKey = ["submitGolfCourseRequest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof submitGolfCourseRequest>>,
+    { data: BodyType<GolfCourseRequestInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return submitGolfCourseRequest(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SubmitGolfCourseRequestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof submitGolfCourseRequest>>
+>;
+export type SubmitGolfCourseRequestMutationBody =
+  BodyType<GolfCourseRequestInput>;
+export type SubmitGolfCourseRequestMutationError = ErrorType<void>;
+
+/**
+ * @summary Save an Austin-area golf course suggestion for manual review
+ */
+export const useSubmitGolfCourseRequest = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitGolfCourseRequest>>,
+    TError,
+    { data: BodyType<GolfCourseRequestInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof submitGolfCourseRequest>>,
+  TError,
+  { data: BodyType<GolfCourseRequestInput> },
+  TContext
+> => {
+  return useMutation(getSubmitGolfCourseRequestMutationOptions(options));
 };
 
 /**

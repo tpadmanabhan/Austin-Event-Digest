@@ -36,6 +36,58 @@ export const SubmitCityRequestResponse = zod.object({
 });
 
 /**
+ * @summary Save an Austin-area golf course suggestion for manual review
+ */
+export const submitGolfCourseRequestBodyCourseNameMin = 2;
+export const submitGolfCourseRequestBodyCourseNameMax = 120;
+
+export const submitGolfCourseRequestBodyAddressMin = 5;
+export const submitGolfCourseRequestBodyAddressMax = 200;
+
+export const submitGolfCourseRequestBodyCourseWebsiteMax = 500;
+
+export const submitGolfCourseRequestBodyBookingUrlMax = 500;
+
+export const submitGolfCourseRequestBodySubmitterNameMax = 100;
+
+export const submitGolfCourseRequestBodyEmailMax = 254;
+
+export const submitGolfCourseRequestBodyNotesMax = 1000;
+
+export const SubmitGolfCourseRequestBody = zod.object({
+  courseName: zod
+    .string()
+    .min(submitGolfCourseRequestBodyCourseNameMin)
+    .max(submitGolfCourseRequestBodyCourseNameMax),
+  address: zod
+    .string()
+    .min(submitGolfCourseRequestBodyAddressMin)
+    .max(submitGolfCourseRequestBodyAddressMax),
+  courseWebsite: zod
+    .string()
+    .url()
+    .max(submitGolfCourseRequestBodyCourseWebsiteMax)
+    .optional(),
+  bookingUrl: zod
+    .string()
+    .url()
+    .max(submitGolfCourseRequestBodyBookingUrlMax)
+    .optional(),
+  submitterName: zod
+    .string()
+    .max(submitGolfCourseRequestBodySubmitterNameMax)
+    .optional(),
+  email: zod.string().email().max(submitGolfCourseRequestBodyEmailMax),
+  notes: zod.string().max(submitGolfCourseRequestBodyNotesMax).optional(),
+});
+
+export const SubmitGolfCourseRequestResponse = zod.object({
+  saved: zod.literal(true),
+  duplicate: zod.boolean(),
+  notificationStatus: zod.enum(["sent", "failed", "unconfirmed"]),
+});
+
+/**
  * @summary Read source-verified metadata for a publicly visible event
  */
 export const GetPublicEventMetadataParams = zod.object({

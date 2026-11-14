@@ -6,6 +6,7 @@ import rsvpRouter from "./rsvp";
 import adminRouter from "./admin";
 import tenantsRouter from "./tenants";
 import cityRequestsRouter from "./cityRequests";
+import golfCourseRequestsRouter from "./golfCourseRequests";
 import gamificationRouter from "./gamification";
 import mapImageRouter from "./mapImage";
 import translateRouter from "./translate";
@@ -27,6 +28,7 @@ router.use(storageRouter);
 // Platform-only guards are per-route; legacy public city creation is retired.
 router.use(tenantsRouter);
 router.use(cityRequestsRouter);
+router.use(golfCourseRequestsRouter);
 router.use(platformEventsRouter);
 
 // City-level routes — require a resolved tenant from the subdomain
