@@ -31,6 +31,12 @@ For a non-geographic alumni, cohort, or professional-community tenant, read `.ag
 
 Some organization event feeds are stored independently from weekly `digests.events` and appended dynamically by the authenticated email preview/send handlers. Inspect the target tenant's actual data path before editing a digest: do not duplicate persistent events in the weekly array, and do not assume an existing tenant-specific feed or email callout is enabled for a new slug. Verify the landing page, full edition, and authenticated email preview separately. Template changes require publication; event-source edits require the tenant-scoped production API.
 
+## Keep tenant-specific edition rules separate
+
+- **Austin city:** This is a geographic city guide, so city-wide AI Ethics and verified local AI-event defaults apply. Use [Austin edition maintenance](references/austin-edition-maintenance.md) for its date ranges, recurring photos, qualified curator copy, community-post labels, and RSVP links. Keep organizer **Register** separate from platform **Interested?**; do not apply Austin city copy or defaults to other tenants.
+- **Leadership Austin:** This is an alumni/cohort tenant, not the Austin city edition. Use `alumni-tenant-rollout` for its monthly, date-free newsletter cadence and persistent Leadership-managed event feed. Keep that feed, source attribution, class profiles, branding, and group links separate; do not duplicate its managed events in the weekly digest array or borrow Austin city defaults.
+- **Golf IRL:** This is a thematic golf-community tenant, not a geographic city. Do not apply city-only AI Ethics or local AI-event defaults. Use Golf's configured sources, categories, branding, and event criteria. Keep production data updates, code publishing, DNS or tenant setup, and newsletter sends as separate actions; follow `.agents/memory/golf-irl-launch-gate.md` and the Golf-specific transfer procedure in `push-to-production`.
+
 ## Keep digests readable publicly
 
 Use `.agents/skills/verify-ai-readable-pages/SKILL.md` for the live HTML audit. Check real body text with scripts/data removed, verified Event-schema coverage, and readable week/navigation labels. Local tests do not prove a change is published; do not promise rides or AI indexing.

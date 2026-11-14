@@ -46,6 +46,28 @@ The admin UI's production-status check compares digest weeks. Its push action us
 
 For Austin, AustinCares, or another unsupported tenant, do not assume the push action works. Use the authenticated production admin workflow/API available for that tenant and the authentication procedures in `admin-api-auth`.
 
+#### Golf IRL: publish digest data without deploying code
+
+Golf is not supported by `push-to-prod`. Keep its launch gate intact: a production digest-data update does not authorize tenant creation, DNS changes, code deployment, or an email send. Each needs separate authorization.
+
+For an explicitly authorized Golf edition:
+
+1. Check the production public list and read-only production data for the exact tenant and `weekOf`. If a matching edition already exists, do not create a duplicate; inspect its raw event array and clarify whether the user intends an update.
+2. Read the complete development event array and verify the edition metadata. Do not build the replacement from a filtered public GET.
+3. If no production edition exists, create one with `POST /api/events/digest/create-empty` and `{ "weekOf": "YYYY-MM-DD" }`. This route supplies Golf's default subject and intro. Then populate it with the complete nonempty array using `PATCH /api/events/digest/:id/events`.
+4. Remove development-generated `eventId` and `venueId` fields from the transfer payload so the production tenant receives its own identities. Preserve event content, links, coordinates, spotlight/post flags, order, and explicit `featured: false` values. Check the deployed API's normalization and auto-tagging behavior before relying on exact field preservation.
+5. Verify HTTP status and `success: true`, then read the production row and check its `weekOf`, subject, intro, raw event count, event identities, and send metadata. Confirm the public `/digest/latest` and `/digest/list` show the intended edition. A new data-only edition should remain unsent (`sentAt` null and `sentCount` zero).
+
+Never call a digest-send endpoint as part of this data transfer. It is live as soon as the authenticated production API write succeeds; no code republish is needed.
+
+#### Leadership Austin: keep its managed event feed separate
+
+Leadership Austin's persistent `leadership_events` records use the tenant-scoped `/api/events/leadership-managed` API family and are rendered separately from `digests.events`. For a managed-feed update, use that feed's supported admin route; do not create an empty weekly digest or copy the records into the digest array. Preserve `sourceAlumni` attribution and follow `alumni-tenant-rollout` for its organization-specific behavior. Keep Leadership Austin data and links separate from the Austin city tenant.
+
+#### Austin city: use its geographic-edition rules
+
+Austin is the geographic city guide, distinct from both Leadership Austin and Golf. Use the Austin-specific digest workflow and reference for city content, date ranges, curator wording, labels, images, and RSVP links. Do not copy the Leadership Austin managed feed or Golf-specific curation rules into Austin. Use the authenticated tenant-scoped API for approved production data changes; email sending remains a separate authorization.
+
 When the user approves a draft for production sending, follow the comparison and scheduling checklist in `digest-workflow`. Include subject, intro, event order/IDs, links, Special labels, and spotlight flags in the comparison. Explicit `featured: false` must remain false; older deployed auto-tagging code can change it. Do not create a duplicate edition when the intended production edition already exists.
 
 ### 5. Inspect or add production subscribers
