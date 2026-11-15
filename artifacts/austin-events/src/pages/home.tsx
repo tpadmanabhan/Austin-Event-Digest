@@ -687,7 +687,7 @@ export default function Home() {
                 href={`/digest/${latestDigest.id}`}
                 className={isLeadershipAustin
                   ? "group inline-flex w-full shrink-0 items-center justify-center gap-5 rounded-2xl border-2 border-[#4EBEE7] bg-[#314363] px-9 py-5 text-xl font-extrabold text-white shadow-xl shadow-[#314363]/30 ring-2 ring-[#314363]/10 ring-offset-2 transition-all hover:-translate-y-0.5 hover:bg-[#253550] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4EBEE7]/50 sm:w-auto"
-                  : "inline-flex items-center gap-2 text-primary font-semibold hover:text-primary/80 transition-colors group"}
+                  : "group inline-flex w-full shrink-0 items-center justify-center gap-5 rounded-2xl border-2 border-primary bg-secondary px-7 py-5 text-lg font-extrabold text-secondary-foreground shadow-xl shadow-secondary/25 ring-2 ring-secondary/10 ring-offset-2 transition-all hover:-translate-y-0.5 hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 sm:w-auto"}
               >
                 {isLeadershipAustin ? (
                   <span className="flex flex-col items-start leading-tight">
@@ -697,7 +697,7 @@ export default function Home() {
                 ) : jt("Read full edition", JA.readFullEdition)}
                 <ArrowRight className={isLeadershipAustin
                   ? "h-7 w-7 transition-transform group-hover:translate-x-1"
-                  : "w-5 h-5 transition-transform group-hover:translate-x-1"} />
+                  : "h-6 w-6 transition-transform group-hover:translate-x-1"} />
               </Link>
             )}
           </div>
