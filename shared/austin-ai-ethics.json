@@ -1,64 +1,44 @@
 {
   "title": "AI Ethics",
-  "intro": "These stories connect Texas data-center growth and AI accountability with community access, human connection, energy use, and local oversight.",
+  "intro": "Amid concerns about AI-enabled cyber threats, chip access and the ethics of powerful institutions, these stories ask how AI could serve humanity—not simply automate human-centered work. Could stronger ethical guidance and public accountability help keep increasingly capable systems aligned with human values?",
   "items": [
     {
-      "title": "What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.",
-      "description": "IBTimes reports that Governor-elect Gina Hinojosa campaigned on pausing new data-center approvals until stronger protections are enacted, raising questions about how Texas balances AI infrastructure growth with public oversight.",
+      "title": "Can ethical traditions help guide AI alignment?",
+      "description": "Anthropic consulted Vedanta monk Swami Sarvapriyananda and other contributors on AI ethics, consciousness and alignment. Their discussion raises questions about whether values and ethical frameworks can help guide increasingly capable AI beyond simple rule-following.",
       "links": [
         {
-          "label": "Read the IBTimes article",
-          "url": "https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416"
+          "label": "Read the NDTV Profit story on MSN",
+          "url": "https://www.msn.com/en-in/technology/artificial-intelligence/anthropic-consults-vedanta-monk-swami-sarvapriyananda-on-ai-ethics-consciousness-and-alignment/ar-AA2gSljo"
         }
       ]
     },
     {
-      "title": "Gina Hinojosa on data centers and immigration",
-      "description": "A New York Times video interview with Texas Governor-elect Gina Hinojosa, published alongside coverage of data-center policy and immigration.",
+      "title": "Japan weighs penalties to strengthen its AI law",
+      "description": "Japan is considering penalties for AI companies that refuse government orders or fail to cooperate with investigations. The proposal could add enforcement tools to a law that currently relies largely on investigation and guidance; the details are still under review.",
       "links": [
         {
-          "label": "Watch the New York Times video",
-          "url": "https://www.nytimes.com/video/us/politics/100000011266333/gina-hinojosa-data-centers-immigration-texas.html"
+          "label": "Read Cryptopolitan's report",
+          "url": "https://www.cryptopolitan.com/japan-to-put-penalties-behind-ai-law/"
         }
       ]
     },
     {
-      "title": "Pflugerville adopts new policy for AI, surveillance technology and data privacy",
-      "description": "After ending its Flock Safety contract following questions about camera-data searches, Pflugerville adopted a SAFE Technology policy covering AI, surveillance and data sharing. It includes risk tiers, City Council review of high-risk tools, resident oversight, limits on data use and annual public reporting. Because AI and surveillance tools can affect privacy and residents’ rights, Round Rock should adopt enforceable guardrails and public reporting like Pflugerville instead of leaving procurement to an unchecked free-market approach.",
+      "title": "U.S. moves to restrict remote access to advanced AI chips",
+      "description": "The Associated Press reports that new U.S. rules target remote access to advanced computing chips and servers, aiming to limit indirect access to powerful AI hardware. The move raises questions about how governments balance national security, chip access and the global development of AI.",
       "links": [
         {
-          "label": "Read the Community Impact article",
-          "url": "https://communityimpact.com/pflugerville-hutto/government/pflugerville-adopts-new-policy-for-ai-surveillance-technology-and-data-privacy/"
+          "label": "Read the Associated Press report",
+          "url": "https://apnews.com/article/nvidia-export-controls-chips-china-remote-access-60f868d3bb430b85a8657b27d421096e"
         }
       ]
     },
     {
-      "title": "Remember the 'dumb carpooling idea'? It's happening now in Austin.",
-      "description": "An Austin-area program is offering incentives for I-35 commuters to carpool, a current local example of shared rides being used to address congestion.",
+      "title": "Where are the guardrails for AI?",
+      "description": "Published in February 2020—more than six years ago—Gary A. Bolles' argument for transparent, enforceable AI guardrails still resonates as governments and companies debate alignment, oversight and accountability. The article asks whether AI needs safeguards comparable in purpose, if not form, to Sarbanes-Oxley.",
       "links": [
         {
-          "label": "Read the MSN story",
-          "url": "https://www.msn.com/en-us/news/other/new-carpool-program-aims-to-reduce-congestion-offers-incentive-for-i-35-commuters-in-austin-area/ar-AA2gPBgP"
-        }
-      ]
-    },
-    {
-      "title": "The problem with IRL: Is any of it real?",
-      "description": "Mashable reports that the separate IRL social app shut down in 2023 after an investigation found that 95% of its claimed 20 million users were automated or bots. Three years later, AI-generated slop and apps with outlandish claims make the trust question more urgent. IRL.group is real and distinct from that app. Is the AI boom repeating the dot-com bust, when some startups rushed to sell everything online—even toilet paper—before proving lasting value?",
-      "links": [
-        {
-          "label": "Read Mashable's report",
-          "url": "https://mashable.com/article/irl-shuts-down-20-million-users-bots"
-        }
-      ]
-    },
-    {
-      "title": "IRL.group: a home for local creators",
-      "description": "IRL.group is launching commercial and nonprofit pilots to help fine-tune the project. These pilots look different from the increasingly crowded events-on-a-map newsletter concept.",
-      "links": [
-        {
-          "label": "Explore IRL.group",
-          "url": "https://irl.group/"
+          "label": "Read Gary A. Bolles' 2020 essay",
+          "url": "https://medium.com/@gbolles/wheres-the-sarbanes-oxley-of-ai-cb16305a62cf"
         }
       ]
     }

@@ -196,23 +196,20 @@ describe("AI Ethics reading section", () => {
     const ethicsHeading = '<h2 style="margin:0 0 12px; color:#1f2937; font-size:20px; font-weight:700;">AI Ethics</h2>';
     expect(html.split(ethicsHeading).length - 1).toBe(1);
     const requestedItems = [
-      "What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.",
-      "https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416",
-      "Gina Hinojosa on data centers and immigration",
-      "https://www.nytimes.com/video/us/politics/100000011266333/gina-hinojosa-data-centers-immigration-texas.html",
-      "Watch the New York Times video",
-      "Pflugerville adopts new policy for AI, surveillance technology and data privacy",
-      "SAFE Technology policy covering AI, surveillance and data sharing",
-      "Round Rock should adopt enforceable guardrails and public reporting like Pflugerville instead of leaving procurement to an unchecked free-market approach.",
-      "https://communityimpact.com/pflugerville-hutto/government/pflugerville-adopts-new-policy-for-ai-surveillance-technology-and-data-privacy/",
-      "dumb carpooling idea",
-      "https://www.msn.com/en-us/news/other/new-carpool-program-aims-to-reduce-congestion-offers-incentive-for-i-35-commuters-in-austin-area/ar-AA2gPBgP",
-      "The problem with IRL: Is any of it real?",
-      "Three years later, AI-generated slop and apps with outlandish claims",
-      "https://mashable.com/article/irl-shuts-down-20-million-users-bots",
-      "IRL.group: a home for local creators",
-      "launching commercial and nonprofit pilots to help fine-tune the project",
-      "https://irl.group/",
+      "Amid concerns about AI-enabled cyber threats, chip access and the ethics of powerful institutions",
+      "Can ethical traditions help guide AI alignment?",
+      "Anthropic consulted Vedanta monk Swami Sarvapriyananda",
+      "https://www.msn.com/en-in/technology/artificial-intelligence/anthropic-consults-vedanta-monk-swami-sarvapriyananda-on-ai-ethics-consciousness-and-alignment/ar-AA2gSljo",
+      "Japan weighs penalties to strengthen its AI law",
+      "the details are still under review",
+      "https://www.cryptopolitan.com/japan-to-put-penalties-behind-ai-law/",
+      "U.S. moves to restrict remote access to advanced AI chips",
+      "The Associated Press reports that new U.S. rules target remote access",
+      "https://apnews.com/article/nvidia-export-controls-chips-china-remote-access-60f868d3bb430b85a8657b27d421096e",
+      "Where are the guardrails for AI?",
+      "Published in February 2020—more than six years ago",
+      "https://medium.com/@gbolles/wheres-the-sarbanes-oxley-of-ai-cb16305a62cf",
+      "Read Gary A. Bolles&#39; 2020 essay",
     ];
     expect(html).not.toContain("Why America Turned Blue?");
     const requestedPositions = requestedItems.map(value => html.indexOf(value));
