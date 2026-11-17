@@ -308,19 +308,23 @@ test("city and historical edition responses are tenant-specific and readable", a
     assert.equal(modelOf(edition.body).kind, "digest");
   }
 });
-test("Austin's public city and edition documents render current content in one AI Ethics section", async () => {
+test("Austin's public city and edition documents render the current five-reading list", async () => {
   const host = "austin.eventcarpooling.com";
   for (const pathname of ["/", `/digest/${fixture("austin").id}`]) {
     const { response, body } = await document(host, pathname);
     assert.equal(response.status, 200);
     assert.ok(body.includes("A test newsletter introduction."));
     assert.equal((body.match(/<h2[^>]*>AI Ethics<\/h2>/g) || []).length, 1);
-    assert.ok(!body.includes("Why America Turned Blue?"));
     const requestedReadings = [
       "Can ethical traditions help guide AI alignment?",
+      "https://www.msn.com/en-in/technology/artificial-intelligence/anthropic-consults-vedanta-monk-swami-sarvapriyananda-on-ai-ethics-consciousness-and-alignment/ar-AA2gSljo",
       "Japan weighs penalties to strengthen its AI law",
+      "https://www.cryptopolitan.com/japan-to-put-penalties-behind-ai-law/",
       "U.S. moves to restrict remote access to advanced AI chips",
+      "https://apnews.com/article/nvidia-export-controls-chips-china-remote-access-60f868d3bb430b85a8657b27d421096e",
       "Where are the guardrails for AI?",
+      "Published in February 2020—more than six years ago",
+      "https://medium.com/@gbolles/wheres-the-sarbanes-oxley-of-ai-cb16305a62cf",
       "A weekend trip to see Starship Flight 15",
       "powered by Grok",
       "https://customersuccessforgood.com/2026/11/16/starship-15-launch-11-13-to-11-14-2026/",
@@ -328,38 +332,18 @@ test("Austin's public city and edition documents render current content in one A
     const readingPositions = requestedReadings.map((item) => body.indexOf(item));
     assert.ok(readingPositions.every((position) => position >= 0));
     assert.deepEqual(readingPositions, [...readingPositions].sort((a, b) => a - b));
-    assert.ok(!body.includes("What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S."));
-    assert.ok(!body.includes("https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416"));
-    assert.ok(!body.includes("Pflugerville adopts new policy for AI, surveillance technology and data privacy"));
-    assert.ok(!body.includes("https://communityimpact.com/pflugerville-hutto/government/pflugerville-adopts-new-policy-for-ai-surveillance-technology-and-data-privacy/"));
-    assert.ok(body.includes("dumb carpooling idea"));
-    assert.ok(body.includes("https://www.msn.com/en-us/news/other/new-carpool-program-aims-to-reduce-congestion-offers-incentive-for-i-35-commuters-in-austin-area/ar-AA2gPBgP"));
-    assert.ok(body.includes("The problem with IRL: Is any of it real?"));
-    assert.ok(body.includes("AI-generated slop and apps with outlandish claims"));
-    assert.ok(body.includes("https://mashable.com/article/irl-shuts-down-20-million-users-bots"));
-    assert.ok(body.includes("IRL.group: a home for local creators"));
-    assert.ok(body.includes("commercial and nonprofit pilots to help fine-tune the project"));
     const removedItems = [
-      "ServiceSpace and Awakin Circles",
-      "https://nipun.servicespace.org/",
-      "https://www.awakin.org/",
-      "The IRL economy is taking off",
-      "https://fortune.com/2026/10/25/irl-economy-live-events-experience-economy-ai/",
-      "Golfer Scottie Scheffler on choosing the right partnerships",
-      "https://www.nytimes.com/athletic/7708954/2026/10/21/scottie-scheffler-golf-commercial-impact/",
-      "What you’ll find here",
-      "I’ll favor recurring, mindful gatherings over transactional one-offs",
-      "Faith leaders and AI guardrails",
-      "https://religionnews.com/2026/09/15/at-ai-conference-religious-leaders-confront-what-technology-could-cost-humanity/",
       "IRL’s upcoming Groups feature applies privacy-first thinking to local community",
       "What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.",
+      "https://www.ibtimes.com/gina-hinojosa-texas-data-center-moratorium-ai-3809416",
       "https://www.nytimes.com/video/us/politics/100000011266333/gina-hinojosa-data-centers-immigration-texas.html",
       "Texas data-center governance, permits, and air quality",
       "https://www.texastribune.org/2026/10/30/rick-perry-texas-data-center-fermi-project-matador/",
       "We are telling AI chatbots our biggest secrets",
       "https://tech.yahoo.com/cybersecurity/articles/telling-ai-chatbots-biggest-secrets-144603184.html",
       "Pflugerville adopts new policy for AI, surveillance technology and data privacy",
-      "Meta's AI shopping agent threatens Amazon",
+      "https://communityimpact.com/pflugerville-hutto/government/pflugerville-adopts-new-policy-for-ai-surveillance-technology-and-data-privacy/",
+      "Meta's AI shopping agent threatens Amazon's lucrative advertising business",
       "https://seekingalpha.com/news/4661876-metas-ai-shopping-agent-threatens-amazons-lucrative-advertising-business",
       "Proton's CTO wrote a manifesto for the AI coding age",
       "https://www.aol.com/articles/protons-cto-wrote-manifesto-ai-083701000.html",
@@ -369,7 +353,6 @@ test("Austin's public city and edition documents render current content in one A
       "https://podcasts.apple.com/us/podcast/guy-kawasaki",
     ];
     for (const item of removedItems) assert.ok(!body.includes(item), `removed item remains in AI Ethics section: ${item}`);
-    assert.ok(body.indexOf("AI Ethics") < body.indexOf("IRL.group: a home for local creators"));
   }
 });
 test("San Francisco shares its Golden Gate image in initial homepage and edition HTML", async () => {
@@ -500,7 +483,7 @@ test("platform and future city image fallbacks never borrow Austin's preview", a
   assert.equal(cityShareImage("portland", "https://preview.test", "/city-preview/"),
     "https://preview.test/city-preview/images/portland-hero.jpg");
 });
-test("Austin's current AI Ethics readings stay local and no city uses legacy carpooling branding", async () => {
+test("Austin's current AI Ethics readings stay tenant-specific and no city uses legacy branding", async () => {
   for (const city of cities) {
     const paths = city === "austincares"
       ? ["/", "/full"]
@@ -512,18 +495,10 @@ test("Austin's current AI Ethics readings stay local and no city uses legacy car
       assert.match(visibleHtml, /src="\/images\/irl-monogram\.png"/, `${city}${pathname} IRL logo`);
       assert.doesNotMatch(visibleHtml, /eventcarpooling/i, `${city}${pathname}`);
       if (city === "austin") {
-        assert.doesNotMatch(visibleHtml, /Why America Turned Blue\?/i, `${city}${pathname} removed AI Ethics article`);
         assert.match(visibleHtml, /A weekend trip to see Starship Flight 15/i, `${city}${pathname} current AI Ethics article`);
         assert.match(visibleHtml, /powered by Grok/i, `${city}${pathname} firsthand Grok attribution`);
-        assert.doesNotMatch(visibleHtml, /What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U\.S\./i, `${city}${pathname} removed Texas article`);
-        assert.match(visibleHtml, /dumb carpooling idea/i, `${city}${pathname} Austin AI Ethics story`);
-        assert.match(visibleHtml, /mashable\.com\/article\/irl-shuts-down-20-million-users-bots/i, `${city}${pathname} Mashable source`);
-        assert.match(visibleHtml, /AI-generated slop and apps with outlandish claims/i, `${city}${pathname} IRL trust context`);
-        assert.match(visibleHtml, /dot-com bust/i, `${city}${pathname} AI hype question`);
-        assert.match(visibleHtml, /commercial and nonprofit pilots to help fine-tune the project/i, `${city}${pathname} current IRL.group pilot context`);
-        assert.doesNotMatch(visibleHtml, /Texas data-center governance, permits, and air quality|We are telling AI chatbots our biggest secrets|Meta's AI shopping agent threatens Amazon|Proton's CTO wrote a manifesto|Spurs² Hackathon|Why Every Election Matters to Democracy with Stacey Abrams|Gina Hinojosa on data centers and immigration|Pflugerville adopts new policy for AI, surveillance technology and data privacy/i, `${city}${pathname} stale AI Ethics items`);
       } else {
-        assert.doesNotMatch(visibleHtml, /carpool/i, `${city}${pathname}`);
+        assert.doesNotMatch(visibleHtml, /A weekend trip to see Starship Flight 15|powered by Grok|customersuccessforgood\.com\/2026\/11\/16\/starship-15-launch-11-13-to-11-14-2026/i, `${city}${pathname} Austin-only AI Ethics story`);
       }
     }
   }
