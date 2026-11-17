@@ -391,6 +391,31 @@ describe("buildDigestEmailHtml — city branding isolation", () => {
     expect(html).toContain("Raj");           // Austin curator
   });
 
+  it("links Golf IRL in the Austin intro without changing other tenants", () => {
+    const digest = {
+      ...baseDigest,
+      intro: "I'm also building Golf IRL to help local golfers find people to play with.",
+    };
+    const austinHtml = buildDigestEmailHtml(digest, null, null, {
+      slug: "austin",
+      name: "Raj's Austin Events",
+      city: "Austin, TX",
+      digestTitle: null,
+    });
+    expect(austinHtml).toContain(
+      '<a href="https://golf.irl.group" style="color:#2f855a; text-decoration:underline;">Golf IRL</a>',
+    );
+
+    const otherTenantHtml = buildDigestEmailHtml(digest, null, null, {
+      slug: "leadershipaustin",
+      name: "Leadership Austin",
+      city: "Austin, TX",
+      digestTitle: null,
+    });
+    expect(otherTenantHtml).not.toContain('href="https://golf.irl.group"');
+    expect(otherTenantHtml).toContain("Golf IRL");
+  });
+
   it("Austin digest header says Upcoming events without a Week of date", () => {
     const html = buildDigestEmailHtml(
       baseDigest,

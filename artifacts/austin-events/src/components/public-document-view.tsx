@@ -13,6 +13,7 @@ import { SpockAboutMention } from "./spock-mascot";
 import { AlumniHappeningsSection } from "./alumni-happenings-section";
 import { LeadershipAlumniTestimonial } from "./leadership-alumni-testimonial";
 import { LEADERSHIP_TOYS_FOR_TOTS_URL } from "@/lib/leadership-toys-for-tots";
+import { GolfIrlLinkText } from "@/components/golf-irl-link-text";
 
 const wrap = "mx-auto max-w-3xl px-4 py-10 sm:px-6";
 const linkCls = "font-semibold text-green-800 underline underline-offset-2 hover:text-green-700";
@@ -136,7 +137,13 @@ export function PublicDocumentView({ model }: { model: PublicDocumentModel }) {
           : !isLeadershipAustin && model.editionRange
           ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Upcoming events · ${model.editionRange}`}</p>
           : !isLeadershipAustin && model.weekOf ? <p className="mt-2 text-sm font-bold uppercase tracking-widest text-green-800">{`Week of ${displayPublicWeek(model.weekOf)}`}</p> : null}
-        <p className="mt-3 text-lg text-slate-800">{isLeadershipAustin ? "A monthly newsletter of upcoming events for Leadership Austin alumni and the Austin community." : model.intro || model.description}</p>
+        <p className="mt-3 text-lg text-slate-800">
+          {isLeadershipAustin
+            ? "A monthly newsletter of upcoming events for Leadership Austin alumni and the Austin community."
+            : model.citySlug === "austin"
+            ? <GolfIrlLinkText text={model.intro || model.description || ""} />
+            : model.intro || model.description}
+        </p>
         {isLeadershipAustin && <LeadershipAlumniTestimonial profiles={model.leadershipClassProfiles} />}
         {isLeadershipAustin && (
           <div className="mt-8 space-y-5">

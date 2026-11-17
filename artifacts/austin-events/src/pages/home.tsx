@@ -29,6 +29,7 @@ import { LA_HERO_IMAGE_URL } from "@/lib/city-share-image";
 import { AlumniHappeningsSection } from "@/components/alumni-happenings-section";
 import { LeadershipClassProfiles } from "@/components/leadership-class-profiles";
 import { LeadershipToysForTotsCallout } from "@/components/leadership-toys-for-tots-callout";
+import { GolfIrlLinkText } from "@/components/golf-irl-link-text";
 
 const SHOW_AUSTIN_CARES = true;
 
@@ -574,7 +575,7 @@ export default function Home() {
                     : tenant.slug === "austincares"
                     ? `"Hey Austin! I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy Austin 🤠"`
                     : tenant.slug === "austin" && latestDigest?.intro
-                    ? `"${latestDigest.intro}"`
+                    ? <>{'"'}<GolfIrlLinkText text={latestDigest.intro} />{'"'}</>
                     : tenant.slug === "austin"
                     ? `"Hey Austin! I hand-pick events happening around the city. I personally attend most of the events marked Special. Join me by clicking the “Interested?” button. Here's your curated digest — get out there and enjoy Austin 🤠"`
                     : `"Hey ${cityShortName}! I combed through various event newsletters in my inbox and hand-picked some cool events happening around the city including upcoming special events. Here's your curated digest — get out there and enjoy ${cityShortName} 🤠"`

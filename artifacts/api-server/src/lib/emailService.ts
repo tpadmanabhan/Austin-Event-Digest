@@ -763,6 +763,13 @@ export function buildDigestEmailHtml(digest: {
       "Upcoming events for the Leadership Austin community.",
     )
     : digest.intro;
+  const escapedIntro = escapeHtml(renderedIntro);
+  const introHtml = slug === "austin"
+    ? escapedIntro.replace(
+      /\bGolf IRL\b/g,
+      '<a href="https://golf.irl.group" style="color:#2f855a; text-decoration:underline;">Golf IRL</a>',
+    )
+    : escapedIntro;
   const editionRangeMatch = slug === "austin" || slug === "atlanta" || slug === "houston" || slug === "sanfrancisco" || slug === "sacramento" || slug === "miami" || slug === "boston" || slug === "la" || slug === "manchester" || slug === "nyc" || slug === "dallas"
     ? digest.subject.match(/\b([A-Za-z]+)\s+(\d{1,2})\s*(?:to|[-–—])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),\s*(\d{4})\s*$/i)
     : null;
@@ -1604,7 +1611,7 @@ export function buildDigestEmailHtml(digest: {
 
     <!-- Intro -->
     <div style="background:#fff; border:1px solid #e7e5e4; border-radius:12px; padding:24px; margin-bottom:16px;">
-      <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${escapeHtml(renderedIntro).replace(/\n/g, "<br>")}</p>
+      <p style="margin:0 0 12px; color:#44403c; font-size:15px; line-height:1.7;">${introHtml.replace(/\n/g, "<br>")}</p>
       ${theme.curatorName ? `<p style="margin:0; color:#78716c; font-size:14px; font-weight:600;">— ${theme.curatorUrl ? `<a href="${theme.curatorUrl}" style="color:${theme.linkColor}; text-decoration:none;">${theme.curatorName}</a>` : theme.curatorName}</p>` : ""}
       ${leadershipTestimonialHtml}
     </div>

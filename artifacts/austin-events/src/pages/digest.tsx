@@ -24,6 +24,7 @@ import { BostonAiEthicsSection } from "@/components/boston-ai-ethics-section";
 import { LaAiEthicsSection } from "@/components/la-ai-ethics-section";
 import { CityAiEthicsSection } from "@/components/city-ai-ethics-section";
 import { PrivacyFirstGroupsFeature } from "@/components/privacy-first-groups-feature";
+import { GolfIrlLinkText } from "@/components/golf-irl-link-text";
 
 // Fallback blocklist used before the API responds or if the fetch fails
 const ADULT_BLOCKED_FALLBACK = [
@@ -604,6 +605,8 @@ export default function DigestView() {
             <p className="whitespace-pre-wrap">
               {isLeadershipAustin
                 ? "Upcoming events for Leadership Austin alumni and the Austin community."
+                : tenant.slug === "austin"
+                ? <GolfIrlLinkText text={digest.intro} />
                 : (isJapaneseEdition && lang === "ja" && isOsaka
                 ? (translatedIntros[isLatest ? `latest-${digest.id}` : `digest-${idStr}`] || digest.intro)
                 : digest.intro).split(/(zodiac signs)/i).map((part, i) =>
