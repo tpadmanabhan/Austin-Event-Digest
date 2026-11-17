@@ -41,6 +41,16 @@
           "url": "https://medium.com/@gbolles/wheres-the-sarbanes-oxley-of-ai-cb16305a62cf"
         }
       ]
+    },
+    {
+      "title": "A weekend trip to see Starship Flight 15",
+      "description": "Published Nov. 16, this first-person account recounts a Nov. 13–14 trip to South Padre Island to watch Starship Flight 15: the booster catch failed, the ship was caught successfully, and the mission deployed 26 Starlink V3 satellites. The curator describes the trip as powered by Grok; the post's source note separately credits Claude, real photos and Wikipedia.",
+      "links": [
+        {
+          "label": "Read the Starship 15 trip report",
+          "url": "https://customersuccessforgood.com/2026/11/16/starship-15-launch-11-13-to-11-14-2026/"
+        }
+      ]
     }
   ]
 }

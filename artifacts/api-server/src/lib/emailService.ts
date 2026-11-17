@@ -1609,6 +1609,8 @@ export function buildDigestEmailHtml(digest: {
       ${leadershipTestimonialHtml}
     </div>
 
+    ${slug === "austin" ? featuredCards : ""}
+
     ${alumniHappeningsHtml}
     ${communityEventsHtml}
 
@@ -1740,7 +1742,7 @@ export function buildDigestEmailHtml(digest: {
     ${miamiAttendingCards}
 
     <!-- Featured Events -->
-    ${featuredCards}
+    ${slug === "austin" ? "" : featuredCards}
 
     <!-- Events -->
     ${eventCards ? `<h2 style="margin:0 0 16px; color:#1c1917; font-size:20px; font-weight:700;">${slug === "austincares" ? "This Week's Deals 🏷️" : slug === "leadershipaustin" || slug === "golf" ? "Upcoming Events" : "Upcoming Events 🎯"}</h2>${eventCards}` : ""}

@@ -210,6 +210,12 @@ describe("AI Ethics reading section", () => {
       "Published in February 2020—more than six years ago",
       "https://medium.com/@gbolles/wheres-the-sarbanes-oxley-of-ai-cb16305a62cf",
       "Read Gary A. Bolles&#39; 2020 essay",
+      "A weekend trip to see Starship Flight 15",
+      "Nov. 13–14 trip to South Padre Island",
+      "powered by Grok",
+      "the post&#39;s source note separately credits Claude",
+      "https://customersuccessforgood.com/2026/11/16/starship-15-launch-11-13-to-11-14-2026/",
+      "Read the Starship 15 trip report",
     ];
     expect(html).not.toContain("Why America Turned Blue?");
     const requestedPositions = requestedItems.map(value => html.indexOf(value));
@@ -246,6 +252,44 @@ describe("AI Ethics reading section", () => {
     expect(html).not.toContain("Meta updates data-scraping policy following criticism");
     expect(html.indexOf("AI Ethics")).toBeGreaterThan(html.indexOf("<!-- Intro -->"));
     expect(html.indexOf("AI Ethics")).toBeLessThan(html.indexOf("<!-- Location CTA -->"));
+  });
+
+  it("places Austin's featured event before editorial sections and spotlights", () => {
+    const html = buildDigestEmailHtml({
+      ...baseDigest,
+      events: [
+        {
+          title: "Leadership Austin Alumni Holiday Party",
+          date: "Thursday, Dec 3 at 6:00 PM – 9:00 PM",
+          venue: "KMFA Studio, 41 Navasota Street, Austin, TX 78702",
+          description: "Alumni only; plus-ones are welcome.",
+          category: "Community",
+          link: "https://leadershipaustin.org/event/alumni-holiday-party/",
+          featured: true,
+        },
+        {
+          title: "Ollin Biosciences",
+          date: "",
+          venue: "",
+          description: "An Austin biotech acquisition story.",
+          category: "Tech & Business",
+          link: "https://ollin.bio/press-releases/ollin-biosciences-and-its-next-generation-medicines-for-patients-with-vision-threatening-eye-diseases-to-be-acquired",
+          isBusinessSpotlight: true,
+        },
+      ],
+    }, "Austin reader", "reader@example.com", {
+      slug: "austin", name: "Raj's Austin Events", city: "Austin, TX", digestTitle: null,
+    });
+
+    const featuredPosition = html.indexOf("Leadership Austin Alumni Holiday Party");
+    const introPosition = html.indexOf("<!-- Intro -->");
+    const ethicsPosition = html.indexOf("AI Ethics");
+    const spotlightPosition = html.indexOf("Ollin Biosciences");
+
+    expect(featuredPosition).toBeGreaterThan(introPosition);
+    expect(featuredPosition).toBeLessThan(ethicsPosition);
+    expect(featuredPosition).toBeLessThan(spotlightPosition);
+    expect(html.indexOf("Leadership Austin Alumni Holiday Party", featuredPosition + 1)).toBe(-1);
   });
 
   it("keeps Austin men's basketball and the cycling event heading visible and chronological", () => {
