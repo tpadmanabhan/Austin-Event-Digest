@@ -326,12 +326,12 @@ test("Austin's public city and edition documents render the current five-reading
       "Published in February 2020—more than six years ago",
       "https://medium.com/@gbolles/wheres-the-sarbanes-oxley-of-ai-cb16305a62cf",
       "A weekend trip to see Starship Flight 15",
-      "powered by Grok",
       "https://customersuccessforgood.com/2026/11/16/starship-15-launch-11-13-to-11-14-2026/",
     ];
     const readingPositions = requestedReadings.map((item) => body.indexOf(item));
     assert.ok(readingPositions.every((position) => position >= 0));
     assert.deepEqual(readingPositions, [...readingPositions].sort((a, b) => a - b));
+    assert.doesNotMatch(body, /The curator describes the trip as powered by Grok|source note separately credits Claude|real photos and Wikipedia/i);
     const removedItems = [
       "IRL’s upcoming Groups feature applies privacy-first thinking to local community",
       "What Texas Turning Blue Could Mean for Data Centers and the AI Industry in the U.S.",
@@ -496,9 +496,9 @@ test("Austin's current AI Ethics readings stay tenant-specific and no city uses 
       assert.doesNotMatch(visibleHtml, /eventcarpooling/i, `${city}${pathname}`);
       if (city === "austin") {
         assert.match(visibleHtml, /A weekend trip to see Starship Flight 15/i, `${city}${pathname} current AI Ethics article`);
-        assert.match(visibleHtml, /powered by Grok/i, `${city}${pathname} firsthand Grok attribution`);
+        assert.doesNotMatch(visibleHtml, /The curator describes the trip as powered by Grok|source note separately credits Claude|real photos and Wikipedia/i, `${city}${pathname} removed attribution`);
       } else {
-        assert.doesNotMatch(visibleHtml, /A weekend trip to see Starship Flight 15|powered by Grok|customersuccessforgood\.com\/2026\/11\/16\/starship-15-launch-11-13-to-11-14-2026/i, `${city}${pathname} Austin-only AI Ethics story`);
+        assert.doesNotMatch(visibleHtml, /A weekend trip to see Starship Flight 15|customersuccessforgood\.com\/2026\/11\/16\/starship-15-launch-11-13-to-11-14-2026/i, `${city}${pathname} Austin-only AI Ethics story`);
       }
     }
   }

@@ -212,12 +212,12 @@ describe("AI Ethics reading section", () => {
       "Read Gary A. Bolles&#39; 2020 essay",
       "A weekend trip to see Starship Flight 15",
       "Nov. 13–14 trip to South Padre Island",
-      "powered by Grok",
-      "the post&#39;s source note separately credits Claude",
       "https://customersuccessforgood.com/2026/11/16/starship-15-launch-11-13-to-11-14-2026/",
       "Read the Starship 15 trip report",
     ];
     expect(html).not.toContain("Why America Turned Blue?");
+    expect(html).not.toContain("The curator describes the trip as powered by Grok");
+    expect(html).not.toContain("real photos and Wikipedia");
     const requestedPositions = requestedItems.map(value => html.indexOf(value));
     expect(requestedPositions.every(position => position >= 0)).toBe(true);
     expect(requestedPositions).toEqual([...requestedPositions].sort((a, b) => a - b));
